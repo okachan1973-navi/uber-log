@@ -1,0 +1,17 @@
+# Test files and scratch
+scratch/
+test/
+tests/
+*.log
+*.tmp
+
+# Local backups and private JSON dumps
+*backup*.json
+*BACKUP*.json
+*.ldb
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

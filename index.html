@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>UBER LOG - モバイル配達ダッシュボード</title>
+
+  <!-- iOS PWA / ホーム画面追加対応 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="UBER LOG">
+  <meta name="theme-color" content="#0a0d12">
+  <script>
+    // file:// 起動時のCORSブロックを回避し、HTTP/HTTPS環境でのみPWAマニフェストを読み込む
+    if (window.location.protocol.startsWith('http')) {
+      const manifestLink = document.createElement('link');
+      manifestLink.rel = 'manifest';
+      manifestLink.href = 'manifest.json';
+      document.head.appendChild(manifestLink);
+    }
+  </script>
+
+  <!-- スタイルシート -->
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+  <!-- トースト通知コンテナ -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <div class="app-container">
+    <!-- 上部固定ヘッダー -->
+    <header class="top-header">
+      <div class="brand-title">
+        <span>UBER LOG</span>
+        <span class="brand-badge">V1.1</span>
+      </div>
+      <div class="header-right">
+        <div id="sync-status-badge" class="sync-status-badge" title="クラウド同期状態">
+          <span id="sync-status-icon">☁️</span>
+          <span id="sync-status-text">未接続</span>
+        </div>
+        <div id="today-date-text" class="date-indicator">--年--月--日</div>
+        <button id="btn-open-settings" class="btn-icon-header" type="button" title="設定・データ管理" aria-label="設定">⚙️</button>
+      </div>
+    </header>
+
+    <!-- ==========================================
+         【1. 今日】タブコンテンツ（メイン画面）
+         ========================================== -->
+    <main id="tab-today" class="tab-content active">
+      
+      <!-- 今日のサマリーカード -->
+      <section class="summary-hero-card">
+        <div class="hero-date-row">
+          <span class="hero-date-text">本日の実績</span>
+          <div id="work-status-badge" class="work-status-badge">
+            <span class="status-dot"></span> 未稼働
+          </div>
+        </div>
+
+        <div class="hero-main-stat">
+          <div class="hero-stat-label">本日の配達</div>
+          <div>
+            <span id="today-delivery-count" class="hero-stat-count">0</span>
+            <span class="hero-stat-unit">件</span>
+          </div>
+        </div>
+
+        <div class="hero-time-row">
+          <div class="time-item">
+            <span class="time-item-label">稼働開始</span>
+            <span id="today-start-time" class="time-item-val">--:--</span>
+          </div>
+          <div class="time-item" style="text-align: right;">
+            <span class="time-item-label">実質稼働時間</span>
+            <span id="today-last-time" class="time-item-val">--</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 最重要アクションエリア -->
+      <section class="action-area">
+        <!-- 画面最大の1タップ完了ボタン -->
+        <button id="btn-add-delivery" class="btn-big-delivery" type="button">
+          <span class="btn-icon">＋</span>
+          <span>配達1件完了</span>
+        </button>
+
+        <!-- 直前1件取消ボタン -->
+        <button id="btn-undo-delivery" class="btn-undo-delivery" type="button" disabled>
+          <span>↶ 直前の記録を取消</span>
+        </button>
+      </section>
+
+      <!-- 複数セッション稼働制御ボタンエリア -->
+      <section class="work-control-row" id="work-control-container">
+        <!-- 状況に応じてJSで動的切り替え（開始・休憩・再開・終了） -->
+        <button id="btn-work-toggle" class="btn-work-toggle" type="button">
+          <span>▶ 稼働開始（第1部）</span>
+        </button>
+      </section>
+
+      <!-- 本日の稼働セッション一覧（何部でも追加・休憩可能） -->
+      <section class="collapsible-section" id="section-today-sessions">
+        <div class="collapsible-header" id="btn-toggle-today-sessions">
+          <div class="collapsible-summary">
+            <span class="collapsible-icon">⏱️</span>
+            <span class="collapsible-title">稼働セッション</span>
+            <span class="collapsible-badge" id="today-sessions-count">0部</span>
+            <span class="collapsible-amount" id="today-sessions-duration" style="font-size:13px; color:var(--text-main);">未記録</span>
+          </div>
+          <span class="expand-icon" id="today-sessions-expand-icon">▼</span>
+        </div>
+        <div class="collapsible-body" id="today-sessions-body" style="display:none;">
+          <div id="today-sessions-list" class="sessions-list">
+            <!-- JSで動的生成 -->
+          </div>
+          <div class="sessions-action-row">
+            <button id="btn-open-session-modal" class="btn-session-add" type="button">
+              <span>＋ セッションを追加・修正</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 原則回避ルール確認カード -->
+      <section class="avoidance-rules-card">
+        <div class="avoidance-header" id="btn-toggle-avoidance">
+          <div class="avoidance-title">
+            <span>⚠️ 現時点の原則回避ルール</span>
+            <span class="avoidance-badge">要確認</span>
+          </div>
+          <span class="expand-icon" id="avoidance-expand-icon">▼</span>
+        </div>
+        <div class="avoidance-body" id="avoidance-body" style="display:none;">
+          <div class="avoidance-block">
+            <div class="avoidance-block-title">【避ける方面】</div>
+            <div class="avoidance-subtext">長距離・橋越え・帰路空走多発方面</div>
+            <div class="avoidance-reason">理由：橋越え、急坂、長距離、帰還負担、空走リスク。<br><span style="color:var(--text-dim);">※絶対拒否ではなく「原則回避」。エリア内近距離高効率等は例外。</span></div>
+          </div>
+          <div class="avoidance-block" style="margin-top:8px;">
+            <div class="avoidance-block-title">【避ける施設タイプ】</div>
+            <div class="avoidance-subtext">大型タワーマンション / 大型商業施設 / 大型ホテル・観光施設</div>
+            <div class="avoidance-reason">理由：駐輪場所、入館手続き、入口探索、エレベーター待ち、館内徒歩、退出導線による時間ロス（分類情報）。</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 今日のダッシュボードカード（実走指標：整理版） -->
+      <section class="dashboard-section">
+        <div class="section-header">
+          <h2 class="section-title">📊 今日のダッシュボード（確定指標）</h2>
+        </div>
+        
+        <div class="dashboard-grid">
+          <!-- 1. 配達件数 -->
+          <div class="stat-card">
+            <span class="stat-card-label">配達件数</span>
+            <span id="stat-delivery-count" class="stat-card-val">0件</span>
+          </div>
+
+          <!-- 2. 1日総売上（自動計算） -->
+          <div class="stat-card highlight">
+            <span class="stat-card-label">1日総売上</span>
+            <span id="stat-total-sales" class="stat-card-val" style="color: var(--color-uber-green);">--</span>
+          </div>
+
+          <!-- 3. 通常配達報酬 -->
+          <div class="stat-card">
+            <span class="stat-card-label">通常配達報酬</span>
+            <span id="stat-delivery-sales" class="stat-card-val">--</span>
+          </div>
+
+          <!-- 4. クエスト報酬 -->
+          <div class="stat-card">
+            <span class="stat-card-label">クエスト報酬</span>
+            <span id="stat-quest-sales" class="stat-card-val">--</span>
+          </div>
+
+          <!-- 5. 実質稼働時間（全セッション合算・休憩除外） -->
+          <div class="stat-card">
+            <span class="stat-card-label">実質稼働時間</span>
+            <span id="stat-work-duration" class="stat-card-val">未記録</span>
+          </div>
+
+          <!-- 6. 実質時給（総売上 ÷ 実質稼働時間） -->
+          <div class="stat-card highlight">
+            <span class="stat-card-label">実質時給</span>
+            <span id="stat-hourly-wage" class="stat-card-val">算出不可</span>
+          </div>
+
+          <!-- 7. Uber表示配達距離（主要距離指標） -->
+          <div class="stat-card">
+            <span class="stat-card-label" id="stat-uber-dist-label">確認済み配達距離</span>
+            <div class="stat-card-val">
+              <span id="stat-uber-dist">未記録</span>
+              <span id="stat-uber-dist-coverage" class="stat-coverage-badge"></span>
+            </div>
+          </div>
+
+          <!-- 8. 空走距離（主要距離指標：推測せず未記録/算出不可） -->
+          <div class="stat-card">
+            <span class="stat-card-label">空走距離</span>
+            <span id="stat-deadhead-dist" class="stat-card-val">算出不可</span>
+          </div>
+
+          <!-- 9. 1件あたり平均報酬 -->
+          <div class="stat-card">
+            <span class="stat-card-label">1件あたり平均報酬</span>
+            <span id="stat-avg-fee" class="stat-card-val">--</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 本日のクエスト一覧（折りたたみ式） -->
+      <section class="collapsible-section" id="section-today-quests">
+        <div class="collapsible-header" id="btn-toggle-today-quests">
+          <div class="collapsible-summary">
+            <span class="collapsible-icon">🎁</span>
+            <span class="collapsible-title">クエスト</span>
+            <span class="collapsible-badge" id="today-quests-summary-count">0件</span>
+            <span class="collapsible-amount" id="today-quests-summary-amount">¥0</span>
+          </div>
+          <span class="expand-icon" id="today-quests-expand-icon">▼</span>
+        </div>
+        <div class="collapsible-body" id="today-quests-body" style="display:none;">
+          <div id="today-quest-list" class="delivery-list">
+            <!-- JSで動的生成 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 本日の配達履歴リスト（折りたたみ式） -->
+      <section class="collapsible-section" id="section-today-deliveries">
+        <div class="collapsible-header" id="btn-toggle-today-deliveries">
+          <div class="collapsible-summary">
+            <span class="collapsible-icon">📋</span>
+            <span class="collapsible-title">配達明細</span>
+            <span class="collapsible-badge" id="today-deliveries-summary-count">0件</span>
+            <span class="collapsible-amount" id="today-deliveries-summary-amount">¥0</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 11px; color: var(--text-dim);">詳細編集</span>
+            <span class="expand-icon" id="today-deliveries-expand-icon">▼</span>
+          </div>
+        </div>
+        <div class="collapsible-body" id="today-deliveries-body" style="display:none;">
+          <div id="today-delivery-list" class="delivery-list">
+            <!-- JSで動的生成 -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ==========================================
+         【2. 履歴】タブコンテンツ
+         ========================================== -->
+    <main id="tab-history" class="tab-content">
+      <div class="section-header" style="margin-top: 4px;">
+        <h2 class="section-title">📅 日別稼働アーカイブ（2026-09-14 ～ 09-17）</h2>
+      </div>
+      <div id="history-list-container" class="history-date-list">
+        <!-- JSで動的生成 -->
+      </div>
+    </main>
+
+    <!-- ==========================================
+         【3. 分析】タブコンテンツ（今週の売上最重要）
+         ========================================== -->
+    <main id="tab-analytics" class="tab-content">
+      <div class="section-header" style="margin-top: 4px;">
+        <h2 class="section-title">📈 売上・配達効率分析</h2>
+      </div>
+
+      <!-- 最重要：今週の売上ヒーローカード -->
+      <section class="week-sales-hero-card" id="analytics-week-hero">
+        <div class="week-hero-header">
+          <div class="week-hero-tag">今週の売上（最重要）</div>
+          <div class="week-hero-period" id="week-sales-period">2026/09/14（月）〜 09/20（日）</div>
+        </div>
+        <div class="week-hero-amount-row">
+          <span class="week-hero-currency">¥</span>
+          <span class="week-hero-val" id="week-sales-val">17,080</span>
+          <span id="week-prev-diff" class="week-prev-diff no-data">先週比：比較データ未登録</span>
+        </div>
+        <div class="week-hero-subtext">次回振込対象・当週確定売上（公式正本）</div>
+        <div class="week-hero-stats-row">
+          <div class="week-stat-item">
+            <span class="week-stat-label">配達報酬</span>
+            <span class="week-stat-val" id="week-delivery-sales">¥15,184</span>
+          </div>
+          <div class="week-stat-item">
+            <span class="week-stat-label">クエスト報酬</span>
+            <span class="week-stat-val" id="week-quest-sales">¥1,900</span>
+          </div>
+          <div class="week-stat-item">
+            <span class="week-stat-label">配達件数</span>
+            <span class="week-stat-val" id="week-delivery-count">30件</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- サブ売上カード（今月 ＆ 登録済み累計） -->
+      <section class="period-sales-grid">
+        <div class="period-card">
+          <div class="period-card-header">
+            <span class="period-card-title">今月の売上</span>
+            <span class="period-card-badge" id="month-sales-period">2026年9月</span>
+          </div>
+          <div class="period-card-amount" id="month-sales-val">¥17,080</div>
+          <div class="period-card-note">※9/14〜9/17 登録分（30件）</div>
+        </div>
+
+        <div class="period-card">
+          <div class="period-card-header">
+            <span class="period-card-title">登録済み累計売上</span>
+            <span class="period-card-badge">登録分</span>
+          </div>
+          <div class="period-card-amount" id="cumulative-sales-val">¥17,080</div>
+          <div class="period-card-note">※2026/09/14〜09/17登録分（全期間確定値ではありません）</div>
+        </div>
+      </section>
+
+      <!-- パフォーマンス分析指標 -->
+      <section class="analytics-hero-grid">
+        <div class="stat-card">
+          <span class="stat-card-label">累計配達件数</span>
+          <span id="analytics-total-deliveries" class="stat-card-val">30件</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-label">平均日給（稼働日）</span>
+          <span id="analytics-avg-daily" class="stat-card-val">¥4,270</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-label">平均1件単価</span>
+          <span id="analytics-avg-per-delivery" class="stat-card-val">¥569</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-label">確認済み配達距離</span>
+          <span id="analytics-total-distance" class="stat-card-val">5.58 km (1件)</span>
+        </div>
+      </section>
+
+      <!-- 実績推移テーブル -->
+      <section class="recent-table-card">
+        <div class="section-header">
+          <h3 class="section-title" style="font-size: 13px;">登録済み期間（9/14〜9/17）の日別実績</h3>
+        </div>
+        <table class="recent-table">
+          <thead>
+            <tr>
+              <th>日付</th>
+              <th>件数</th>
+              <th>通常報酬</th>
+              <th>クエスト</th>
+              <th>日計</th>
+            </tr>
+          </thead>
+          <tbody id="recent-7days-table-body">
+            <!-- JSで動的生成 -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 目立たない控えめな監査注記フッター（黄色警告バナーから移行） -->
+      <div id="analytics-audit-footer" class="audit-discreet-footer">
+        <!-- JSで動的生成 -->
+      </div>
+    </main>
+
+    <!-- ==========================================
+         【4. 地雷】タブコンテンツ（原則回避DB）
+         ========================================== -->
+    <main id="tab-avoidance" class="tab-content">
+      <div class="section-header" style="margin-top: 4px;">
+        <h2 class="section-title">⚠️ 地雷（原則回避）データベース</h2>
+      </div>
+
+      <!-- 原則回避ポリシーバナー -->
+      <div class="avoidance-policy-card">
+        <div class="policy-title">🛡️ 原則回避ポリシー</div>
+        <div class="policy-desc">
+          絶対拒否ではなく<strong>「原則回避」</strong>です。<br>
+          すでにその方面・エリア内に滞在しており、短距離・高単価で完結する効率的な案件などは例外として受注判断できます。
+        </div>
+      </div>
+
+      <!-- 原則回避 3方面 -->
+      <div class="avoidance-section-block">
+        <div class="avoidance-sub-title">🚫 原則回避方面（3方面）</div>
+        <div class="avoidance-cards-list" id="avoidance-areas-list">
+          <!-- JSで動的生成 -->
+        </div>
+      </div>
+
+      <!-- 原則回避 3施設タイプ -->
+      <div class="avoidance-section-block">
+        <div class="avoidance-sub-title">🏢 原則回避施設タイプ（3タイプ）</div>
+        <div class="avoidance-cards-list" id="avoidance-facilities-list">
+          <!-- JSで動的生成 -->
+        </div>
+      </div>
+
+      <!-- 管理理由タグ一覧 -->
+      <div class="avoidance-section-block">
+        <div class="avoidance-sub-title">🏷️ 回避理由タグ体系</div>
+        <div class="tags-container" id="avoidance-tags-list">
+          <!-- JSで動的生成 -->
+        </div>
+      </div>
+
+      <!-- 実走事例・配達効率判断（育てるDB・3段階評価） -->
+      <div class="avoidance-section-block">
+        <div class="avoidance-sub-title">📋 実走事例・配達効率判断（3段階評価）</div>
+        <div class="benchmark-cards-container" id="avoidance-benchmarks-list">
+          <!-- JSで動的生成 -->
+        </div>
+      </div>
+
+      <!-- 今後の個別地雷登録スロット -->
+      <div class="avoidance-section-block">
+        <div class="avoidance-sub-title">➕ 個別地雷スポット蓄積</div>
+        <div class="custom-spot-placeholder">
+          <span style="font-size: 20px;">📍</span>
+          <div style="font-size: 13px; font-weight: 600; margin-top: 4px;">今後の実走データから個別スポットを追加蓄積</div>
+          <div style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">
+            タワマン名、商業施設名、危険交差点・急階段等を実走メモからワンタップ登録可能にするスロットです。
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ==========================================
+         下部固定ナビゲーションバー（4タブ: 今日 / 履歴 / 分析 / 地雷）
+         ========================================== -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-tab="today" type="button">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">今日</span>
+      </button>
+      <button class="nav-btn" data-tab="history" type="button">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">履歴</span>
+      </button>
+      <button class="nav-btn" data-tab="analytics" type="button">
+        <span class="nav-icon">📈</span>
+        <span class="nav-label">分析</span>
+      </button>
+      <button class="nav-btn" data-tab="avoidance" type="button">
+        <span class="nav-icon">⚠️</span>
+        <span class="nav-label">地雷</span>
+      </button>
+    </nav>
+
+    <!-- ==========================================
+         【設定・データ管理】モーダル（ヘッダー⚙️から開く）
+         ========================================== -->
+    <div id="settings-modal-overlay" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">⚙️ システム設定 & データ管理</h3>
+          <button id="btn-close-settings-modal" class="btn-close-modal" type="button">&times;</button>
+        </div>
+
+        <div class="modal-body-scrollable">
+          <!-- クラウド同期 (Supabase) -->
+          <div class="settings-group">
+            <div class="settings-group-title">☁️ クラウド同期 (Supabase)</div>
+            <div class="settings-item">
+              <div class="settings-item-info">
+                <span class="settings-item-name">接続状態</span>
+                <span id="settings-sync-status-desc" class="settings-item-desc">未ログイン（端末単体稼働中）</span>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button id="btn-open-login-modal" class="btn-settings primary" type="button">ログイン</button>
+                <button id="btn-logout-cloud" class="btn-settings danger" type="button" style="display:none;">ログアウト</button>
+              </div>
+            </div>
+            <div class="settings-item" id="settings-manual-sync-row" style="display:none;">
+              <div class="settings-item-info">
+                <span class="settings-item-name">手動同期</span>
+                <span class="settings-item-desc">最新データをクラウドと双方向照合</span>
+              </div>
+              <button id="btn-manual-sync" class="btn-settings" type="button">今すぐ同期</button>
+            </div>
+            <div class="settings-item" id="settings-migration-row" style="display:none;">
+              <div class="settings-item-info">
+                <span class="settings-item-name">確定データ初回移行</span>
+                <span class="settings-item-desc">30件配達・12クエスト・正本17,080円を投入</span>
+              </div>
+              <button id="btn-migrate-initial" class="btn-settings primary" type="button">移行実行</button>
+            </div>
+            <div class="settings-item">
+              <div class="settings-item-info">
+                <span class="settings-item-name">接続先情報</span>
+                <span id="settings-supabase-config-desc" class="settings-item-desc">Project URL / Publishable key 設定</span>
+              </div>
+              <button id="btn-open-config-modal" class="btn-settings" type="button">設定変更</button>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-group-title">確定データ管理</div>
+            <div class="settings-item">
+              <div class="settings-item-info">
+                <span class="settings-item-name">確定データ（9/14〜9/17）復元</span>
+                <span class="settings-item-desc">公式正本（17,080円）と30件配達・12件クエスト明細を復元</span>
+              </div>
+              <button id="btn-reload-confirmed" class="btn-settings primary" type="button">確定値復元</button>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-group-title">データバックアップ</div>
+            <div class="settings-item">
+              <div class="settings-item-info">
+                <span class="settings-item-name">バックアップ保存</span>
+                <span class="settings-item-desc">全記録をJSONファイルとしてダウンロード</span>
+              </div>
+              <button id="btn-export-data" class="btn-settings" type="button">書き出し</button>
+            </div>
+            <div class="settings-item">
+              <div class="settings-item-info">
+                <span class="settings-item-name">バックアップ復元</span>
+                <span class="settings-item-desc">JSONファイルからデータを復元</span>
+              </div>
+              <label class="btn-settings" style="cursor:pointer; display:inline-block; text-align:center;">
+                読み込み
+                <input type="file" id="input-import-file" accept=".json" style="display:none;">
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-group-title" style="color:var(--color-danger-red);">危険な操作</div>
+            <div class="settings-item">
+              <div class="settings-item-info">
+                <span class="settings-item-name" style="color:var(--color-danger-red);">全データの初期化</span>
+                <span class="settings-item-desc">ブラウザに保存されている全稼働履歴を削除</span>
+              </div>
+              <button id="btn-clear-all" class="btn-settings danger" type="button">初期化</button>
+            </div>
+          </div>
+
+          <div style="text-align:center; padding: 16px 8px 4px 8px; color: var(--text-dim); font-size: 11px; line-height: 1.5;">
+            UBER LOG V1.1 Mobile Dashboard<br>
+            稼ぎの実態把握 & 地雷案件・方面・施設蓄積
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         配達詳細編集モーダル（帰宅後に入力可能）
+         ========================================== -->
+    <div id="delivery-modal-overlay" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modal-title" class="modal-title">配達詳細の編集</h3>
+          <button id="btn-close-modal" class="btn-close-modal" type="button">&times;</button>
+        </div>
+
+        <form id="delivery-detail-form">
+          <div class="form-group">
+            <label class="form-label" for="modal-time">完了時刻</label>
+            <input type="time" id="modal-time" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-restaurant">店舗名</label>
+            <input type="text" id="modal-restaurant" class="form-control" placeholder="例: カフェ・レストラン・ファストフード等">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-area">配達エリア / ドロップ先</label>
+            <input type="text" id="modal-area" class="form-control" placeholder="例: ○○区△△1丁目">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-fee">配達報酬 (円)</label>
+            <input type="number" id="modal-fee" class="form-control" placeholder="例: 621" inputmode="numeric">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-distance">配達距離 (km)</label>
+            <input type="number" step="0.01" id="modal-distance" class="form-control" placeholder="例: 5.58" inputmode="decimal">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-duration">所要時間</label>
+            <input type="text" id="modal-duration" class="form-control" placeholder="例: 34分36秒">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-memo">メモ</label>
+            <input type="text" id="modal-memo" class="form-control" placeholder="例: 橋越え・階段・帰路空走">
+          </div>
+
+          <div class="modal-actions">
+            <button id="btn-modal-delete" class="btn-modal-delete" type="button">削除</button>
+            <button id="btn-modal-save" class="btn-modal-save" type="button">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         稼働セッション追加・編集モーダル（30分単位UI）
+         ========================================== -->
+    <div id="session-modal-overlay" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="session-modal-title" class="modal-title">稼働セッションの編集</h3>
+          <button id="btn-close-session-modal" class="btn-close-modal" type="button">&times;</button>
+        </div>
+
+        <form id="session-detail-form">
+          <input type="hidden" id="modal-session-id" value="">
+
+          <div class="form-group">
+            <label class="form-label" for="modal-session-start">開始時刻（30分刻み）</label>
+            <select id="modal-session-start" class="form-control">
+              <!-- JSで30分刻みの選択肢を動的生成 -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-session-end">終了時刻（30分刻み）</label>
+            <select id="modal-session-end" class="form-control">
+              <option value="">未終了（稼働中・未確定）</option>
+              <!-- JSで30分刻みの選択肢を動的生成 -->
+            </select>
+          </div>
+
+          <div class="form-group-checkbox">
+            <label class="checkbox-label">
+              <input type="checkbox" id="modal-session-approx" class="checkbox-input">
+              <span>概算時刻として記録（画面上に「〜頃」と表示）</span>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modal-session-note">セッション名／メモ</label>
+            <input type="text" id="modal-session-note" class="form-control" placeholder="例: 第1部、ブレーキ交換後再開 など">
+          </div>
+
+          <div class="modal-actions">
+            <button id="btn-session-modal-delete" class="btn-modal-delete" type="button">削除</button>
+            <button id="btn-session-modal-save" class="btn-modal-save" type="button">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         Supabase ログインモーダル（Email + Password）
+         ========================================== -->
+    <div id="login-modal-overlay" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">🔐 クラウドログイン</h3>
+          <button id="btn-close-login-modal" class="btn-close-modal" type="button">&times;</button>
+        </div>
+
+        <form id="login-form">
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.4;">
+            Supabaseで作成した本人専用アカウント（メール・パスワード）を入力してください。セッションは端末に安全に維持されます。
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="login-email">メールアドレス</label>
+            <input type="email" id="login-email" class="form-control" placeholder="your-email@example.com" required autocomplete="email">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="login-password">パスワード</label>
+            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+
+          <div id="login-error-msg" style="color:var(--color-danger-red); font-size:12px; margin-bottom:10px; display:none;"></div>
+
+          <div class="modal-actions">
+            <button id="btn-cancel-login" class="btn-modal-delete" type="button">キャンセル</button>
+            <button id="btn-submit-login" class="btn-modal-save" type="submit">ログイン</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         Supabase 接続情報モーダル（URL / Publishable key）
+         ========================================== -->
+    <div id="config-modal-overlay" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">⚙️ Supabase 接続先設定</h3>
+          <button id="btn-close-config-modal" class="btn-close-modal" type="button">&times;</button>
+        </div>
+
+        <form id="config-form">
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.4;">
+            Supabaseダッシュボードの Project Settings → API にある Project URL と Publishable key (sb_publishable_... または anon key) を登録します。
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="input-supabase-url">Project URL</label>
+            <input type="url" id="input-supabase-url" class="form-control" placeholder="https://xxxxxxxxxxxx.supabase.co" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="input-supabase-key">Publishable key (sb_publishable_... / anon)</label>
+            <input type="text" id="input-supabase-key" class="form-control" placeholder="sb_publishable_... または eyJhbGciOi..." required>
+          </div>
+
+          <div class="modal-actions">
+            <button id="btn-cancel-config" class="btn-modal-delete" type="button">キャンセル</button>
+            <button id="btn-save-config" class="btn-modal-save" type="submit">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Supabase JS CDN (v2) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- アプリスクリプト（順次読込） -->
+  <script src="js/supabase-config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/cloud-sync.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
