@@ -108,7 +108,7 @@ class UI {
     bannerEl.style.display = 'none';
   }
 
-  // 「今日」画面のレンダリング
+  // 「今日」画面のレンダリング（視認性・巨大文字・昨日比較最優先）
   renderTodayView() {
     this.renderAuditBanner();
 
@@ -119,22 +119,21 @@ class UI {
     const isWorking = !!ongoingSession || !!(log.workStartedAt && !log.workEndedAt);
     const isPausedOrEnded = sessions.length > 0 && !ongoingSession;
 
-    // ヘッダー日付
+    // 1. ヘッダー日付
     const dateEl = document.getElementById('today-date-text');
     if (dateEl) {
       dateEl.textContent = formatJapaneseDate(this.currentDate);
     }
 
-    // 稼働ステータスバッジ
+    // 2. 稼働ステータスバッジ
     const statusBadge = document.getElementById('work-status-badge');
     if (statusBadge) {
       if (isWorking) {
         statusBadge.className = 'work-status-badge working';
-        const sessionNum = ongoingSession ? (sessions.indexOf(ongoingSession) + 1) : 1;
-        statusBadge.innerHTML = `<span class="status-dot"></span> 稼働中（第${sessionNum}部）`;
+        statusBadge.innerHTML = '<span class="status-dot"></span> 稼働中';
       } else if (isPausedOrEnded) {
         statusBadge.className = 'work-status-badge';
-        statusBadge.innerHTML = `<span class="status-dot"></span> 休憩／終了（全${sessions.length}部）`;
+        statusBadge.innerHTML = '<span class="status-dot"></span> 休憩中';
       } else if (log.workStartedAt && log.workEndedAt) {
         statusBadge.className = 'work-status-badge';
         statusBadge.innerHTML = '<span class="status-dot"></span> 稼働終了';
@@ -144,82 +143,37 @@ class UI {
       }
     }
 
-    // 複数セッション稼働制御ボタンコンテナ
-    const controlContainer = document.getElementById('work-control-container');
-    if (controlContainer) {
-      if (isWorking) {
-        controlContainer.innerHTML = `
-          <div class="work-actions-group">
-            <button id="btn-work-pause" class="btn-work-action pause" type="button">
-              <span>⏸ 休憩に入る（第${sessions.length || 1}部終了）</span>
-            </button>
-            <button id="btn-work-finish" class="btn-work-action finish" type="button">
-              <span>⏹ 本日の稼働を完全終了</span>
-            </button>
-          </div>
-        `;
-      } else if (sessions.length > 0) {
-        controlContainer.innerHTML = `
-          <div class="work-actions-group">
-            <button id="btn-work-resume" class="btn-work-action resume" type="button">
-              <span>▶ 稼働再開（第${sessions.length + 1}部）</span>
-            </button>
-          </div>
-        `;
+    // 開始時刻表示
+    const startTimeEl = document.getElementById('today-start-time-text');
+    if (startTimeEl) {
+      if (sessions.length > 0 && sessions[0].start) {
+        startTimeEl.textContent = `${sessions[0].start} 開始`;
+      } else if (log.workStartedAt) {
+        startTimeEl.textContent = `${log.workStartedAt} 開始`;
       } else {
-        controlContainer.innerHTML = `
-          <button id="btn-work-start" class="btn-work-toggle" type="button">
-            <span>▶ 稼働開始（第1部）</span>
-          </button>
-        `;
+        startTimeEl.textContent = '--:-- 開始';
       }
     }
 
-    // 本日の配達件数（巨大数字）
+    // 3. メイン数字：配達件数（巨大）
     const countEl = document.getElementById('today-delivery-count');
     if (countEl) {
       countEl.textContent = metrics.count;
     }
 
-    // 稼働開始時刻（概算対応）
-    const startTimeEl = document.getElementById('today-start-time');
-    if (startTimeEl) {
-      if (sessions.length > 0 && sessions[0].start) {
-        startTimeEl.textContent = sessions[0].start + (sessions[0].isApproximate ? '頃' : '');
-      } else if (log.workStartedAt) {
-        startTimeEl.textContent = log.workStartedAt;
-      } else {
-        startTimeEl.textContent = '--:--';
-      }
-    }
-
-    // 実質稼働時間サマリー（概算対応）
-    const lastTimeEl = document.getElementById('today-last-time');
-    if (lastTimeEl) {
+    // メイン数字：本日の実働時間（巨大）
+    const durationEl = document.getElementById('today-work-duration-text');
+    if (durationEl) {
       if (metrics.workMinutes !== null) {
-        lastTimeEl.textContent = `${formatMinutes(metrics.workMinutes)}${metrics.isWorkTimeApproximate ? '（概算）' : ''}${isWorking ? ' (稼働中)' : ''}`;
+        durationEl.textContent = formatMinutes(metrics.workMinutes);
       } else if (isWorking) {
-        lastTimeEl.textContent = '稼働中';
+        durationEl.textContent = '稼働中';
       } else {
-        lastTimeEl.textContent = '--';
+        durationEl.textContent = '--';
       }
     }
 
-    // 稼働セッション折りたたみサマリー
-    const sessCountEl = document.getElementById('today-sessions-count');
-    if (sessCountEl) sessCountEl.textContent = `${sessions.length}部`;
-
-    const sessDurationEl = document.getElementById('today-sessions-duration');
-    if (sessDurationEl) {
-      sessDurationEl.textContent = metrics.workMinutes !== null
-        ? `${formatMinutes(metrics.workMinutes)}${metrics.isWorkTimeApproximate ? '（概算）' : ''}`
-        : (isWorking ? '稼働中' : '未記録');
-    }
-
-    // 稼働セッション明細リスト
-    this.renderTodaySessions(sessions);
-
-    // 直前取消ボタンの状態更新
+    // 4. 直前取消ボタン
     const undoBtn = document.getElementById('btn-undo-delivery');
     if (undoBtn) {
       if (log.deliveries && log.deliveries.length > 0) {
@@ -229,164 +183,98 @@ class UI {
         undoBtn.innerHTML = `<span>↶ 直前の記録（#${last.index} ${last.completedAt}）を取消</span>`;
       } else {
         undoBtn.disabled = true;
-        undoBtn.style.opacity = '0.4';
+        undoBtn.style.opacity = '0.35';
         undoBtn.innerHTML = '<span>↶ 直前の記録を取消</span>';
       }
     }
 
-    // ダッシュボード指標の更新
-    const cardCountEl = document.getElementById('stat-delivery-count');
-    if (cardCountEl) cardCountEl.textContent = `${metrics.count}件`;
-
-    const totalSalesEl = document.getElementById('stat-total-sales');
-    if (totalSalesEl) {
-      totalSalesEl.textContent = metrics.totalSales !== null ? `¥${metrics.totalSales.toLocaleString()}` : '--';
-    }
-
-    const delivSalesEl = document.getElementById('stat-delivery-sales');
-    if (delivSalesEl) {
-      delivSalesEl.textContent = metrics.deliverySales !== null ? `¥${metrics.deliverySales.toLocaleString()}` : '--';
-    }
-
-    const questSalesEl = document.getElementById('stat-quest-sales');
-    if (questSalesEl) {
-      questSalesEl.textContent = metrics.questSales !== null ? `¥${metrics.questSales.toLocaleString()}` : '--';
-    }
-
-    // 実質稼働時間（休憩除外、複数セッション合算、概算フラグ対応）
-    const workDurationEl = document.getElementById('stat-work-duration');
-    if (workDurationEl) {
-      if (metrics.workMinutes !== null) {
-        workDurationEl.textContent = `${formatMinutes(metrics.workMinutes)}${metrics.isWorkTimeApproximate ? '（概算）' : ''}${isWorking ? ' (稼働中)' : ''}`;
-      } else if (isWorking) {
-        workDurationEl.textContent = '稼働中';
+    // 5. 稼働操作ボタングループ
+    const controlContainer = document.getElementById('work-control-container');
+    if (controlContainer) {
+      if (isWorking) {
+        controlContainer.innerHTML = `
+          <div class="work-actions-group">
+            <button id="btn-work-pause" class="btn-work-action pause" type="button">
+              <span>⏸ 休憩する</span>
+            </button>
+            <button id="btn-work-finish" class="btn-work-action finish" type="button">
+              <span>⏹ 稼働終了</span>
+            </button>
+          </div>
+        `;
+      } else if (sessions.length > 0 && !log.workEndedAt) {
+        controlContainer.innerHTML = `
+          <div class="work-actions-group" style="grid-template-columns: 1fr;">
+            <button id="btn-work-resume" class="btn-work-action resume" type="button">
+              <span>▶ 稼働再開</span>
+            </button>
+          </div>
+        `;
       } else {
-        workDurationEl.textContent = '未記録';
+        controlContainer.innerHTML = `
+          <button id="btn-work-start" class="btn-big-delivery" type="button" style="height:48px; font-size:16px; background:rgba(6,193,103,0.15); border:1px solid rgba(6,193,103,0.4); color:var(--color-uber-green); box-shadow:none;">
+            <span>▶ 稼働開始</span>
+          </button>
+        `;
       }
     }
 
-    // 実質時給（総売上 ÷ 実質稼働時間、概算フラグ対応）
-    const hourlyWageEl = document.getElementById('stat-hourly-wage');
-    if (hourlyWageEl) {
-      if (metrics.hourlyWage !== null) {
-        hourlyWageEl.textContent = `¥${metrics.hourlyWage.toLocaleString()}${metrics.isWorkTimeApproximate ? '（概算）' : ''}`;
-      } else {
-        hourlyWageEl.textContent = '算出不可';
+    // 6. 昨日との比較カード
+    const comp = store.getYesterdayComparison(this.currentDate);
+    const compCard = document.getElementById('yesterday-compare-card');
+    if (comp && compCard) {
+      compCard.style.display = 'block';
+      const dateBadge = document.getElementById('yesterday-compare-date');
+      const paceEl = document.getElementById('yesterday-compare-pace');
+      const snippetEl = document.getElementById('yesterday-result-snippet');
+
+      if (dateBadge) dateBadge.textContent = comp.yesterdayLabel;
+      if (paceEl) {
+        const paceDiff = comp.diffCount;
+        const paceBadge = paceDiff > 0 
+          ? `<span class="pace-up">+${paceDiff}件 📈 好調</span>`
+          : (paceDiff === 0 ? '<span style="color:var(--text-muted);">同数</span>' : `<span class="pace-down">${paceDiff}件</span>`);
+        paceEl.innerHTML = `今日 ${comp.todayCount}件 ／ 昨日 ${comp.yesterdayCount}件 (${paceBadge})`;
       }
-    }
-
-    // 配達距離（確認済み配達距離 / Uber配達中距離）
-    const uberDistLabelEl = document.getElementById('stat-uber-dist-label');
-    const uberDistEl = document.getElementById('stat-uber-dist');
-    const uberDistCovEl = document.getElementById('stat-uber-dist-coverage');
-
-    if (uberDistLabelEl) {
-      uberDistLabelEl.textContent = metrics.isFullDistanceRecorded ? 'Uber配達中距離' : '確認済み配達距離';
-    }
-    if (uberDistEl) {
-      uberDistEl.textContent = metrics.uberDeliveryDistanceKm !== null ? `${metrics.uberDeliveryDistanceKm} km` : '未記録';
-    }
-    if (uberDistCovEl) {
-      if (metrics.count > 0 && metrics.distanceRecordedCount > 0 && !metrics.isFullDistanceRecorded) {
-        uberDistCovEl.textContent = `（${metrics.distanceRecordedCount}/${metrics.count}件）`;
-      } else {
-        uberDistCovEl.textContent = '';
+      if (snippetEl) {
+        const ySalesStr = comp.yesterdaySales !== null ? `売上 ¥${comp.yesterdaySales.toLocaleString()}` : '';
+        snippetEl.innerHTML = `昨日の確定結果: <strong>${comp.yesterdayCount}件配達</strong> ｜ <strong>${ySalesStr || '売上未登録'}</strong>`;
       }
+    } else if (compCard) {
+      compCard.style.display = 'none';
     }
 
-    // 空走距離（実測・確定データなしのため推測せず算出不可）
-    const deadheadDistEl = document.getElementById('stat-deadhead-dist');
-    if (deadheadDistEl) {
-      deadheadDistEl.textContent = metrics.deadheadDistanceKm !== null ? `${metrics.deadheadDistanceKm} km` : '算出不可';
+    // 7. 本日の確定結果カード（売上確定時のみ表示）
+    const settledCard = document.getElementById('today-settled-card');
+    const unsettledNote = document.getElementById('today-unsettled-note');
+
+    if (metrics.totalSales !== null) {
+      if (settledCard) settledCard.style.display = 'block';
+      if (unsettledNote) unsettledNote.style.display = 'none';
+
+      const pProfit = document.getElementById('settled-net-profit');
+      const pNetHourly = document.getElementById('settled-net-hourly');
+      const pSales = document.getElementById('settled-total-sales');
+      const pExpenses = document.getElementById('settled-total-expenses');
+      const pGrossHourly = document.getElementById('settled-gross-hourly');
+      const pAvgDelivery = document.getElementById('settled-avg-delivery');
+
+      if (pProfit) pProfit.textContent = `¥${(metrics.netProfit || 0).toLocaleString()}`;
+      if (pNetHourly) pNetHourly.textContent = metrics.netHourlyWage !== null ? `¥${metrics.netHourlyWage.toLocaleString()}/h` : '--';
+      if (pSales) pSales.textContent = `¥${metrics.totalSales.toLocaleString()}`;
+      if (pExpenses) pExpenses.textContent = `-¥${(metrics.totalExpenses || 0).toLocaleString()}`;
+      if (pGrossHourly) pGrossHourly.textContent = metrics.grossHourlyWage !== null ? `¥${metrics.grossHourlyWage.toLocaleString()}/h` : '--';
+      if (pAvgDelivery) pAvgDelivery.textContent = metrics.avgSalesPerDelivery !== null ? `¥${metrics.avgSalesPerDelivery.toLocaleString()}/件` : '--';
+    } else {
+      if (settledCard) settledCard.style.display = 'none';
+      if (unsettledNote) unsettledNote.style.display = 'flex';
     }
 
-    const avgFeeEl = document.getElementById('stat-avg-fee');
-    if (avgFeeEl) {
-      avgFeeEl.textContent = metrics.avgFeePerDelivery !== null ? `¥${metrics.avgFeePerDelivery.toLocaleString()}` : '--';
+    // 8. 配達履歴ドロワーのサマリー
+    const histTitle = document.getElementById('today-history-toggle-title');
+    if (histTitle) {
+      histTitle.textContent = `📋 今日の配達明細（${metrics.count}件）`;
     }
-
-    // 損益・実質時給カードの更新
-    const pnlProfitEl = document.getElementById('pnl-net-profit');
-    if (pnlProfitEl) {
-      pnlProfitEl.textContent = metrics.netProfit !== null ? metrics.netProfit.toLocaleString() : '--';
-    }
-
-    const pnlTotalSalesEl = document.getElementById('pnl-total-sales');
-    if (pnlTotalSalesEl) {
-      pnlTotalSalesEl.textContent = metrics.totalSales !== null ? `¥${metrics.totalSales.toLocaleString()}` : '--';
-    }
-
-    const pnlExpensesEl = document.getElementById('pnl-total-expenses');
-    if (pnlExpensesEl) {
-      pnlExpensesEl.textContent = `¥${(metrics.totalExpenses || 0).toLocaleString()}`;
-    }
-
-    const pnlNetHourlyEl = document.getElementById('pnl-net-hourly');
-    if (pnlNetHourlyEl) {
-      pnlNetHourlyEl.textContent = metrics.netHourlyWage !== null ? `¥${metrics.netHourlyWage.toLocaleString()}/h` : '算出不可';
-    }
-
-    const pnlGrossHourlyEl = document.getElementById('pnl-gross-hourly');
-    if (pnlGrossHourlyEl) {
-      pnlGrossHourlyEl.textContent = metrics.grossHourlyWage !== null ? `¥${metrics.grossHourlyWage.toLocaleString()}/h` : '算出不可';
-    }
-
-    const pnlAvgDeliveryEl = document.getElementById('pnl-avg-delivery');
-    if (pnlAvgDeliveryEl) {
-      pnlAvgDeliveryEl.textContent = metrics.avgSalesPerDelivery !== null ? `¥${metrics.avgSalesPerDelivery.toLocaleString()}/件` : '--';
-    }
-
-    const pnlVehicleEl = document.getElementById('pnl-vehicle-badge');
-    if (pnlVehicleEl) {
-      const v = metrics.vehicleType || 'レンタサイクル';
-      pnlVehicleEl.textContent = `🚲 ${v}`;
-    }
-
-    const pnlTagsEl = document.getElementById('pnl-breakdown-tags');
-    if (pnlTagsEl) {
-      const tags = [];
-      if (metrics.deliverySales !== null) {
-        tags.push(`<span class="pnl-breakdown-pill">配達: ¥${metrics.deliverySales.toLocaleString()}</span>`);
-      }
-      if (metrics.questSales !== null && metrics.questSales > 0) {
-        tags.push(`<span class="pnl-breakdown-pill" style="color:#fbbf24;">クエスト: ¥${metrics.questSales.toLocaleString()}</span>`);
-      }
-      if (metrics.adjustmentSales > 0) {
-        tags.push(`<span class="pnl-breakdown-pill" style="color:#60a5fa;">調整金: ¥${metrics.adjustmentSales.toLocaleString()}</span>`);
-      }
-      if (metrics.otherSales > 0) {
-        tags.push(`<span class="pnl-breakdown-pill">その他: ¥${metrics.otherSales.toLocaleString()}</span>`);
-      }
-      pnlTagsEl.innerHTML = tags.join('');
-    }
-
-    // 折りたたみヘッダーサマリー（クエスト・経費・配達明細）のリアルタイム更新
-    const dedupedQuests = deduplicateQuests(log.quests || []);
-    const validQuests = dedupedQuests.filter(q => !q.isDuplicateIgnored);
-    const questCountEl = document.getElementById('today-quests-summary-count');
-    const questAmountEl = document.getElementById('today-quests-summary-amount');
-    if (questCountEl) questCountEl.textContent = `${validQuests.length}件`;
-    if (questAmountEl) questAmountEl.textContent = `¥${(metrics.questSales || 0).toLocaleString()}`;
-
-    const expCountEl = document.getElementById('today-expenses-summary-count');
-    const expAmountEl = document.getElementById('today-expenses-summary-amount');
-    if (expCountEl) expCountEl.textContent = `${(metrics.expenses || []).length}件`;
-    if (expAmountEl) expAmountEl.textContent = `¥${(metrics.totalExpenses || 0).toLocaleString()}`;
-
-    const delivCountEl = document.getElementById('today-deliveries-summary-count');
-    const delivAmountEl = document.getElementById('today-deliveries-summary-amount');
-    if (delivCountEl) delivCountEl.textContent = `${metrics.count}件`;
-    if (delivAmountEl) {
-      delivAmountEl.textContent = metrics.deliverySales !== null ? `¥${metrics.deliverySales.toLocaleString()}` : '¥0';
-    }
-
-    // 本日のクエストリスト
-    this.renderTodayQuests(log.quests || []);
-
-    // 本日の当日変動経費リスト
-    this.renderTodayExpenses(metrics.expenses || []);
-
-    // 本日の配達履歴リスト
     this.renderDeliveryList(log.deliveries || []);
   }
 

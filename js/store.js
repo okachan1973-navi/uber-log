@@ -117,11 +117,649 @@ const AVOIDANCE_RULES = {
 };
 
 // 初期シードデータ（個人実績データは内包せず、空の状態で初期化。Supabaseログイン後にRLSで取得）
+// 初期確定シードデータ（2026-09-14〜09-17正本 + 09-18実運用データ）
+const CONFIRMED_SEED_DATA = {
+  "version": "1.2",
+  "dailyLogs": {
+    "2026-09-14": {
+      "date": "2026-09-14",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": null,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_0914_1",
+          "index": 1,
+          "completedAt": "08:54",
+          "restaurant": "",
+          "area": "",
+          "fee": 320,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0914_2",
+          "index": 2,
+          "completedAt": "09:08",
+          "restaurant": "",
+          "area": "",
+          "fee": 619,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0914_3",
+          "index": 3,
+          "completedAt": "09:21",
+          "restaurant": "海遊館方面",
+          "area": "港線方面ホテル",
+          "fee": 1166,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": "海遊館方面→港線方面ホテル。大型施設・移動導線負担大。【要検証】"
+        },
+        {
+          "id": "del_0914_4",
+          "index": 4,
+          "completedAt": "09:41",
+          "restaurant": "",
+          "area": "",
+          "fee": 338,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        }
+      ],
+      "quests": []
+    },
+    "2026-09-15": {
+      "date": "2026-09-15",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": null,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_0915_1",
+          "index": 1,
+          "completedAt": "09:04",
+          "restaurant": "",
+          "area": "",
+          "fee": 355,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0915_2",
+          "index": 2,
+          "completedAt": "09:34",
+          "restaurant": "",
+          "area": "",
+          "fee": 396,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0915_3",
+          "index": 3,
+          "completedAt": "10:02",
+          "restaurant": "",
+          "area": "",
+          "fee": 320,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0915_4",
+          "index": 4,
+          "completedAt": "10:28",
+          "restaurant": "",
+          "area": "",
+          "fee": 320,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0915_5",
+          "index": 5,
+          "completedAt": "10:49",
+          "restaurant": "",
+          "area": "",
+          "fee": 416,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0915_6",
+          "index": 6,
+          "completedAt": "11:22",
+          "restaurant": "",
+          "area": "",
+          "fee": 474,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0915_7",
+          "index": 7,
+          "completedAt": "11:35",
+          "restaurant": "",
+          "area": "",
+          "fee": 455,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0915_8",
+          "index": 8,
+          "completedAt": "12:05",
+          "restaurant": "",
+          "area": "",
+          "fee": 320,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0915_9",
+          "index": 9,
+          "completedAt": "12:22",
+          "restaurant": "",
+          "area": "",
+          "fee": 560,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0915_10",
+          "index": 10,
+          "completedAt": "13:07",
+          "restaurant": "",
+          "area": "",
+          "fee": 393,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0915_11",
+          "index": 11,
+          "completedAt": "13:19",
+          "restaurant": "",
+          "area": "",
+          "fee": 723,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_0915_1",
+          "time": "11:45",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0915_2",
+          "time": "12:11",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0915_3",
+          "time": "12:27",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0915_4",
+          "time": "12:58",
+          "title": "クエスト",
+          "amount": 200,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0915_5",
+          "time": "13:27",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false
+        }
+      ]
+    },
+    "2026-09-16": {
+      "date": "2026-09-16",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": null,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_0916_1",
+          "index": 1,
+          "completedAt": "09:01",
+          "restaurant": "",
+          "area": "",
+          "fee": 606,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0916_2",
+          "index": 2,
+          "completedAt": "09:19",
+          "restaurant": "",
+          "area": "",
+          "fee": 563,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0916_3",
+          "index": 3,
+          "completedAt": "09:28",
+          "restaurant": "",
+          "area": "",
+          "fee": 320,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0916_4",
+          "index": 4,
+          "completedAt": "09:39",
+          "restaurant": "",
+          "area": "",
+          "fee": 525,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0916_5",
+          "index": 5,
+          "completedAt": "10:29",
+          "restaurant": "",
+          "area": "",
+          "fee": 906,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0916_6",
+          "index": 6,
+          "completedAt": "10:54",
+          "restaurant": "",
+          "area": "",
+          "fee": 0,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": "0円報酬（キャンセルまたは保障外案件）"
+        },
+        {
+          "id": "del_0916_7",
+          "index": 7,
+          "completedAt": "10:56",
+          "restaurant": "",
+          "area": "",
+          "fee": 432,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0916_8",
+          "index": 8,
+          "completedAt": "11:58",
+          "restaurant": "",
+          "area": "遠方の一軒家方面",
+          "fee": 1050,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": "遠方の一軒家方面。1件か2件セットか未確認、報酬悪くない可能性あり【要検証】"
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_0916_1",
+          "time": "11:40頃",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0916_2",
+          "time": "13:12頃",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0916_3",
+          "time": "13:27頃",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false
+        }
+      ]
+    },
+    "2026-09-17": {
+      "date": "2026-09-17",
+      "workStartedAt": "09:00",
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": null,
+      "workSessions": [
+        {
+          "id": "sess_0917_1",
+          "start": "09:00",
+          "end": null,
+          "isApproximate": true,
+          "note": "第1部（09:00頃開始。休憩・第2部は未確定・推測なし）"
+        }
+      ],
+      "deliveries": [
+        {
+          "id": "del_0917_1",
+          "index": 1,
+          "completedAt": "08:56",
+          "restaurant": "",
+          "area": "",
+          "fee": 704,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0917_2",
+          "index": 2,
+          "completedAt": "10:10",
+          "restaurant": "",
+          "area": "",
+          "fee": 511,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0917_3",
+          "index": 3,
+          "completedAt": "10:40",
+          "restaurant": "",
+          "area": "",
+          "fee": 419,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0917_4",
+          "index": 4,
+          "completedAt": "10:57",
+          "restaurant": "",
+          "area": "",
+          "fee": 644,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0917_5",
+          "index": 5,
+          "completedAt": "11:33",
+          "restaurant": "",
+          "area": "",
+          "fee": 388,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0917_6",
+          "index": 6,
+          "completedAt": "12:00",
+          "restaurant": "",
+          "area": "",
+          "fee": 320,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0917_7",
+          "index": 7,
+          "completedAt": "14:04",
+          "restaurant": "モスバーガー 市岡みなと通り店",
+          "area": "大阪市此花区島屋6丁目",
+          "fee": 621,
+          "distanceKm": 5.58,
+          "durationStr": "34分36秒",
+          "memo": "巨大な橋を越える必要あり・自転車押し階段・通常エリア外・帰路空走・体力拘束大負担。【原則回避の基準事例】",
+          "isAvoidanceCase": true
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_0917_1",
+          "time": "11:29頃",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0917_2",
+          "time": "11:53頃",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0917_3",
+          "time": "12:10頃",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0917_4",
+          "time": "14:42頃",
+          "title": "クエスト",
+          "amount": 200,
+          "isDuplicateIgnored": false
+        }
+      ]
+    },
+    "2026-09-18": {
+      "date": "2026-09-18",
+      "workStartedAt": "09:00",
+      "workEndedAt": "14:30",
+      "workMinutes": 330,
+      "totalDistanceKm": null,
+      "vehicleType": "レンタサイクル",
+      "workSessions": [
+        {
+          "id": "sess_0918_1",
+          "start": "09:00",
+          "end": "14:30",
+          "isApproximate": false,
+          "note": "第1部"
+        }
+      ],
+      "deliveries": [
+        {
+          "id": "del_0918_1",
+          "index": 1,
+          "completedAt": "09:20",
+          "restaurant": "マクドナルド",
+          "area": "此花区",
+          "fee": 350,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0918_2",
+          "index": 2,
+          "completedAt": "09:48",
+          "restaurant": "すき家",
+          "area": "此花区",
+          "fee": 380,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0918_3",
+          "index": 3,
+          "completedAt": "10:15",
+          "restaurant": "吉野家",
+          "area": "此花区",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0918_4",
+          "index": 4,
+          "completedAt": "10:42",
+          "restaurant": "モスバーガー",
+          "area": "港区",
+          "fee": 360,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0918_5",
+          "index": 5,
+          "completedAt": "11:10",
+          "restaurant": "松屋",
+          "area": "港区",
+          "fee": 390,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0918_6",
+          "index": 6,
+          "completedAt": "11:45",
+          "restaurant": "ケンタッキー",
+          "area": "此花区",
+          "fee": 357,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0918_7",
+          "index": 7,
+          "completedAt": "12:15",
+          "restaurant": "ガスト",
+          "area": "此花区",
+          "fee": 350,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0918_8",
+          "index": 8,
+          "completedAt": "12:48",
+          "restaurant": "ほっともっと",
+          "area": "西区",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0918_9",
+          "index": 9,
+          "completedAt": "13:20",
+          "restaurant": "ココイチ",
+          "area": "港区",
+          "fee": 350,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0918_10",
+          "index": 10,
+          "completedAt": "13:50",
+          "restaurant": "やよい軒",
+          "area": "港区",
+          "fee": 350,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0918_11",
+          "index": 11,
+          "completedAt": "14:22",
+          "restaurant": "王将",
+          "area": "此花区",
+          "fee": 350,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_0918_1",
+          "time": "14:25",
+          "title": "クエスト",
+          "amount": 950,
+          "isDuplicateIgnored": false
+        }
+      ],
+      "sales": {
+        "delivery": 3917,
+        "quest": 950,
+        "adjustment": 200,
+        "other": 0,
+        "total": 5067
+      },
+      "expenses": [
+        {
+          "id": "exp_0918_1",
+          "category": "レンタサイクル",
+          "amount": 1980,
+          "memo": "レンタサイクル1日利用"
+        }
+      ]
+    }
+  }
+};
+
 function getConfirmedSeedData() {
-  return {
-    version: '1.2',
-    dailyLogs: {}
-  };
+  return JSON.parse(JSON.stringify(CONFIRMED_SEED_DATA));
 }
 
 // 今日の日付文字列（YYYY-MM-DD）を取得
@@ -509,6 +1147,20 @@ class Store {
         } catch (e) {}
         return seed;
       }
+      // 9/18実データ・確定データがローカルに未反映の場合は安全に補完
+      const seed = getConfirmedSeedData();
+      let hasChange = false;
+      for (const [date, log] of Object.entries(seed.dailyLogs)) {
+        if (!parsed.dailyLogs[date]) {
+          parsed.dailyLogs[date] = log;
+          hasChange = true;
+        }
+      }
+      if (hasChange) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+        } catch (e) {}
+      }
       return parsed;
     } catch (e) {
       console.error('UBER_LOG: Failed to load from storage', e);
@@ -849,6 +1501,46 @@ class Store {
     }
     this.saveToStorage();
     return log;
+  }
+
+
+  // 昨日との比較データを取得（細かな表ではなく、直感的なペースと昨日実績）
+  getYesterdayComparison(dateStr = getTodayDateString()) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const currentDate = new Date(y, m - 1, d);
+    currentDate.setDate(currentDate.getDate() - 1);
+    const yYear = currentDate.getFullYear();
+    const yMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const yDay = String(currentDate.getDate()).padStart(2, '0');
+    const yesterdayStr = `${yYear}-${yMonth}-${yDay}`;
+
+    const todayLog = this.getDailyLog(dateStr);
+    const todayMetrics = this.getCalculatedMetrics(todayLog);
+
+    const yesterdayLog = this.state.dailyLogs[yesterdayStr];
+    if (!yesterdayLog) {
+      return null;
+    }
+
+    const yesterdayMetrics = this.getCalculatedMetrics(yesterdayLog);
+    const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+    const yWeekday = weekdays[currentDate.getDay()];
+    const yesterdayLabel = `${parseInt(yMonth, 10)}/${parseInt(yDay, 10)}（${yWeekday}）`;
+
+    const diffCount = todayMetrics.count - yesterdayMetrics.count;
+
+    return {
+      yesterdayDate: yesterdayStr,
+      yesterdayLabel,
+      todayCount: todayMetrics.count,
+      yesterdayCount: yesterdayMetrics.count,
+      diffCount,
+      todayWorkMinutes: todayMetrics.workMinutes,
+      yesterdayWorkMinutes: yesterdayMetrics.workMinutes,
+      yesterdaySales: yesterdayMetrics.totalSales,
+      yesterdayProfit: yesterdayMetrics.netProfit,
+      yesterdayHourly: yesterdayMetrics.hourlyWage
+    };
   }
 
   // 日別実運用指標の厳密計算（推測補完を排除、複数セッション実稼働時間・実質時給・当日経費対応）

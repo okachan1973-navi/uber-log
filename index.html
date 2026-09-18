@@ -48,269 +48,115 @@
     </header>
 
     <!-- ==========================================
-         【1. 今日】タブコンテンツ（メイン画面）
+         【1. 今日】タブコンテンツ（配達中・実稼働メイン画面）
          ========================================== -->
     <main id="tab-today" class="tab-content active">
       
-      <!-- 今日のサマリーカード -->
-      <section class="summary-hero-card">
-        <div class="hero-date-row">
-          <span class="hero-date-text">本日の実績</span>
+      <!-- 1. 今日のメインサマリーカード（巨大数字・一目で状況がわかる） -->
+      <section class="today-hero-card">
+        <div class="today-hero-status-row">
           <div id="work-status-badge" class="work-status-badge">
             <span class="status-dot"></span> 未稼働
           </div>
+          <span id="today-start-time-text" class="today-start-time-text">--:-- 開始</span>
         </div>
 
-        <div class="hero-main-stat">
-          <div class="hero-stat-label">本日の配達</div>
-          <div>
-            <span id="today-delivery-count" class="hero-stat-count">0</span>
-            <span class="hero-stat-unit">件</span>
+        <div class="today-main-metrics-grid">
+          <!-- 配達件数（特大） -->
+          <div class="today-metric-box">
+            <span class="today-metric-label">配達完了</span>
+            <div class="today-metric-val-row">
+              <span id="today-delivery-count" class="today-metric-number">0</span>
+              <span class="today-metric-unit">件</span>
+            </div>
           </div>
-        </div>
 
-        <div class="hero-time-row">
-          <div class="time-item">
-            <span class="time-item-label">稼働開始</span>
-            <span id="today-start-time" class="time-item-val">--:--</span>
-          </div>
-          <div class="time-item" style="text-align: right;">
-            <span class="time-item-label">実質稼働時間</span>
-            <span id="today-last-time" class="time-item-val">--</span>
+          <!-- 本日の実働時間（特大） -->
+          <div class="today-metric-box">
+            <span class="today-metric-label">本日の実働</span>
+            <div class="today-metric-val-row">
+              <span id="today-work-duration-text" class="today-metric-number duration">--</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- 最重要アクションエリア（配達完了：最優先1タップ操作） -->
+      <!-- 2. 最重要アクション: 配達完了ボタン（全幅・特大） -->
       <section class="action-area">
-        <!-- 画面最大の1タップ完了ボタン -->
         <button id="btn-add-delivery" class="btn-big-delivery" type="button">
           <span class="btn-icon">＋</span>
           <span>配達完了</span>
         </button>
-
-        <!-- 直前1件取消ボタン -->
         <button id="btn-undo-delivery" class="btn-undo-delivery" type="button" disabled>
           <span>↶ 直前の記録を取消</span>
         </button>
       </section>
 
-      <!-- 勤務状態操作ボタンエリア（配達ボタンと明確に異なる視覚階層） -->
+      <!-- 3. 稼働セッション操作ボタン（押しやすく直感的） -->
       <section class="work-control-row" id="work-control-container">
-        <!-- 状況に応じてJSで動的切り替え（開始・休憩・再開・終了） -->
-        <button id="btn-work-toggle" class="btn-work-toggle" type="button">
-          <span>▶ 稼働開始（第1部）</span>
+        <!-- JSで動的にボタン生成: 開始 / 休憩・終了 / 再開 -->
+      </section>
+
+      <!-- 4. 昨日との比較カード（細かな数字を並べず直感的な比較） -->
+      <section class="yesterday-compare-card" id="yesterday-compare-card">
+        <div class="yesterday-compare-header">
+          <span class="yesterday-compare-title">📅 昨日との比較</span>
+          <span id="yesterday-compare-date" class="yesterday-compare-badge">9/17（木）</span>
+        </div>
+        <div class="yesterday-compare-body">
+          <div class="yesterday-compare-row">
+            <span class="yesterday-compare-label">配達ペース</span>
+            <span id="yesterday-compare-pace" class="yesterday-compare-val">今日 0件 / 昨日 0件</span>
+          </div>
+          <div class="yesterday-result-row" id="yesterday-result-row">
+            <span id="yesterday-result-snippet" class="yesterday-result-snippet">昨日の確定結果: --</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. 本日の確定結果カード（売上確定時または稼働終了後に綺麗に表示） -->
+      <section class="today-settled-card" id="today-settled-card" style="display:none;">
+        <div class="today-settled-header">
+          <span class="today-settled-title">🏆 本日の確定実績</span>
+          <button id="btn-open-sales-modal-link" class="btn-link-edit" type="button">📝 売上・経費</button>
+        </div>
+        <div class="today-settled-grid">
+          <div class="settled-item highlight">
+            <span class="settled-label">当日利益（純利益）</span>
+            <span id="settled-net-profit" class="settled-val highlight">--</span>
+          </div>
+          <div class="settled-item">
+            <span class="settled-label">実質時給</span>
+            <span id="settled-net-hourly" class="settled-val">--</span>
+          </div>
+          <div class="settled-item">
+            <span class="settled-label">総売上</span>
+            <span id="settled-total-sales" class="settled-val">--</span>
+          </div>
+          <div class="settled-item">
+            <span class="settled-label">当日経費</span>
+            <span id="settled-total-expenses" class="settled-val expenses">--</span>
+          </div>
+        </div>
+        <div class="today-settled-sub-row">
+          <span>売上時給: <strong id="settled-gross-hourly">--</strong></span>
+          <span>1件平均: <strong id="settled-avg-delivery">--</strong></span>
+        </div>
+      </section>
+
+      <!-- 稼働中の場合の控えめな入力導線（売上未確定時のみ表示） -->
+      <div id="today-unsettled-note" class="today-unsettled-note" style="display:none;">
+        <span>※売上・経費は本日の稼働終了後にまとめて入力できます</span>
+        <button id="btn-open-sales-modal-from-unsettled" class="btn-link-simple" type="button">売上・経費を入力</button>
+      </div>
+
+      <!-- 6. 配達履歴アコーディオン（控えめな1行トグル） -->
+      <section class="today-history-toggle-section">
+        <button id="btn-toggle-today-history" class="btn-history-toggle" type="button">
+          <span id="today-history-toggle-title">📋 今日の配達明細（0件）</span>
+          <span id="today-history-toggle-icon">▼</span>
         </button>
-      </section>
-
-      <!-- 本日の日次損益＆実質時給カード -->
-      <section class="pnl-hero-card" id="section-today-pnl">
-        <div class="pnl-header">
-          <div class="pnl-title-group">
-            <span class="pnl-title">📊 本日の損益・時給</span>
-            <span id="pnl-vehicle-badge" class="pnl-vehicle-badge">🚲 レンタサイクル</span>
-          </div>
-          <div class="pnl-actions">
-            <button id="btn-open-sales-import" class="btn-pnl-action" type="button" title="Uber Driver PCテキスト貼付">📥 売上取込</button>
-            <button id="btn-open-expenses-modal" class="btn-pnl-action" type="button" title="当日変動経費登録">🚴 経費登録</button>
-          </div>
-        </div>
-
-        <div class="pnl-main-grid">
-          <!-- 当日利益 -->
-          <div class="pnl-stat-box highlight">
-            <span class="pnl-box-label">当日利益（純利益）</span>
-            <div class="pnl-box-value">
-              <span class="pnl-currency">¥</span>
-              <span id="pnl-net-profit" class="pnl-val-number">--</span>
-            </div>
-          </div>
-
-          <!-- 総売上 & 当日経費 -->
-          <div class="pnl-stat-box-sub">
-            <div class="pnl-sub-row">
-              <span class="pnl-sub-label">総売上:</span>
-              <span id="pnl-total-sales" class="pnl-sub-value" style="color: var(--color-uber-green);">--</span>
-            </div>
-            <div class="pnl-sub-row">
-              <span class="pnl-sub-label">当日経費:</span>
-              <span id="pnl-total-expenses" class="pnl-sub-value" style="color: #f87171;">--</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 時給指標行 -->
-        <div class="pnl-rates-grid">
-          <div class="pnl-rate-card net">
-            <span class="rate-card-label">実質時給（経費控除後）</span>
-            <span id="pnl-net-hourly" class="rate-card-val">算出不可</span>
-          </div>
-          <div class="pnl-rate-card gross">
-            <span class="rate-card-label">売上時給</span>
-            <span id="pnl-gross-hourly" class="rate-card-val">算出不可</span>
-          </div>
-          <div class="pnl-rate-card avg">
-            <span class="rate-card-label">1件平均売上</span>
-            <span id="pnl-avg-delivery" class="rate-card-val">--</span>
-          </div>
-        </div>
-
-        <!-- 売上内訳バッジ列 -->
-        <div id="pnl-breakdown-tags" class="pnl-breakdown-tags">
-          <!-- JSで Delivery, Quest, Adjustment を表示 -->
-        </div>
-      </section>
-
-      <!-- 本日の稼働セッション一覧（何部でも追加・休憩可能） -->
-      <section class="collapsible-section" id="section-today-sessions">
-        <div class="collapsible-header" id="btn-toggle-today-sessions">
-          <div class="collapsible-summary">
-            <span class="collapsible-icon">⏱️</span>
-            <span class="collapsible-title">稼働セッション</span>
-            <span class="collapsible-badge" id="today-sessions-count">0部</span>
-            <span class="collapsible-amount" id="today-sessions-duration" style="font-size:13px; color:var(--text-main);">未記録</span>
-          </div>
-          <span class="expand-icon" id="today-sessions-expand-icon">▼</span>
-        </div>
-        <div class="collapsible-body" id="today-sessions-body" style="display:none;">
-          <div id="today-sessions-list" class="sessions-list">
-            <!-- JSで動的生成 -->
-          </div>
-          <div class="sessions-action-row">
-            <button id="btn-open-session-modal" class="btn-session-add" type="button">
-              <span>＋ セッションを追加・修正</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-
-
-      <!-- 今日のダッシュボードカード（実走指標：整理版） -->
-      <section class="dashboard-section">
-        <div class="section-header">
-          <h2 class="section-title">📊 今日のダッシュボード（確定指標）</h2>
-        </div>
-        
-        <div class="dashboard-grid">
-          <!-- 1. 配達件数 -->
-          <div class="stat-card">
-            <span class="stat-card-label">配達件数</span>
-            <span id="stat-delivery-count" class="stat-card-val">0件</span>
-          </div>
-
-          <!-- 2. 1日総売上（自動計算） -->
-          <div class="stat-card highlight">
-            <span class="stat-card-label">1日総売上</span>
-            <span id="stat-total-sales" class="stat-card-val" style="color: var(--color-uber-green);">--</span>
-          </div>
-
-          <!-- 3. 通常配達報酬 -->
-          <div class="stat-card">
-            <span class="stat-card-label">通常配達報酬</span>
-            <span id="stat-delivery-sales" class="stat-card-val">--</span>
-          </div>
-
-          <!-- 4. クエスト報酬 -->
-          <div class="stat-card">
-            <span class="stat-card-label">クエスト報酬</span>
-            <span id="stat-quest-sales" class="stat-card-val">--</span>
-          </div>
-
-          <!-- 5. 実質稼働時間（全セッション合算・休憩除外） -->
-          <div class="stat-card">
-            <span class="stat-card-label">実質稼働時間</span>
-            <span id="stat-work-duration" class="stat-card-val">未記録</span>
-          </div>
-
-          <!-- 6. 実質時給（総売上 ÷ 実質稼働時間） -->
-          <div class="stat-card highlight">
-            <span class="stat-card-label">実質時給</span>
-            <span id="stat-hourly-wage" class="stat-card-val">算出不可</span>
-          </div>
-
-          <!-- 7. Uber表示配達距離（主要距離指標） -->
-          <div class="stat-card">
-            <span class="stat-card-label" id="stat-uber-dist-label">確認済み配達距離</span>
-            <div class="stat-card-val">
-              <span id="stat-uber-dist">未記録</span>
-              <span id="stat-uber-dist-coverage" class="stat-coverage-badge"></span>
-            </div>
-          </div>
-
-          <!-- 8. 空走距離（主要距離指標：推測せず未記録/算出不可） -->
-          <div class="stat-card">
-            <span class="stat-card-label">空走距離</span>
-            <span id="stat-deadhead-dist" class="stat-card-val">算出不可</span>
-          </div>
-
-          <!-- 9. 1件あたり平均報酬 -->
-          <div class="stat-card">
-            <span class="stat-card-label">1件あたり平均報酬</span>
-            <span id="stat-avg-fee" class="stat-card-val">--</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 本日のクエスト一覧（折りたたみ式） -->
-      <section class="collapsible-section" id="section-today-quests">
-        <div class="collapsible-header" id="btn-toggle-today-quests">
-          <div class="collapsible-summary">
-            <span class="collapsible-icon">🎁</span>
-            <span class="collapsible-title">クエスト</span>
-            <span class="collapsible-badge" id="today-quests-summary-count">0件</span>
-            <span class="collapsible-amount" id="today-quests-summary-amount">¥0</span>
-          </div>
-          <span class="expand-icon" id="today-quests-expand-icon">▼</span>
-        </div>
-        <div class="collapsible-body" id="today-quests-body" style="display:none;">
-          <div id="today-quest-list" class="delivery-list">
-            <!-- JSで動的生成 -->
-          </div>
-        </div>
-      </section>
-
-      <!-- 本日の当日変動経費一覧（折りたたみ式） -->
-      <section class="collapsible-section" id="section-today-expenses">
-        <div class="collapsible-header" id="btn-toggle-today-expenses">
-          <div class="collapsible-summary">
-            <span class="collapsible-icon">🚴</span>
-            <span class="collapsible-title">当日経費</span>
-            <span class="collapsible-badge" id="today-expenses-summary-count">0件</span>
-            <span class="collapsible-amount" id="today-expenses-summary-amount" style="color:#f87171;">¥0</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 11px; color: var(--text-dim);">編集</span>
-            <span class="expand-icon" id="today-expenses-expand-icon">▼</span>
-          </div>
-        </div>
-        <div class="collapsible-body" id="today-expenses-body" style="display:none;">
-          <div id="today-expense-list" class="delivery-list">
-            <!-- JSで動的生成 -->
-          </div>
-          <div class="sessions-action-row" style="margin-top:8px;">
-            <button id="btn-open-expense-modal-from-list" class="btn-session-add" type="button">
-              <span>＋ 経費明細を追加・編集</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- 本日の配達履歴リスト（折りたたみ式） -->
-      <section class="collapsible-section" id="section-today-deliveries">
-        <div class="collapsible-header" id="btn-toggle-today-deliveries">
-          <div class="collapsible-summary">
-            <span class="collapsible-icon">📋</span>
-            <span class="collapsible-title">配達明細</span>
-            <span class="collapsible-badge" id="today-deliveries-summary-count">0件</span>
-            <span class="collapsible-amount" id="today-deliveries-summary-amount">¥0</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 11px; color: var(--text-dim);">詳細編集</span>
-            <span class="expand-icon" id="today-deliveries-expand-icon">▼</span>
-          </div>
-        </div>
-        <div class="collapsible-body" id="today-deliveries-body" style="display:none;">
+        <div id="today-history-drawer" class="today-history-drawer" style="display:none;">
           <div id="today-delivery-list" class="delivery-list">
             <!-- JSで動的生成 -->
           </div>

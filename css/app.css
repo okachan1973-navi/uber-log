@@ -221,10 +221,300 @@ body {
 }
 
 /* ==================================================
-   【今日】画面スタイル
+   【今日】画面 新設計スタイル（視認性・巨大文字最優先）
    ================================================== */
 
-/* サマリーカード */
+.today-hero-card {
+  background: linear-gradient(145deg, #1c232d 0%, #161b22 100%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.today-hero-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.today-start-time-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.today-main-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  text-align: center;
+}
+
+.today-metric-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius-md);
+  padding: 12px 6px;
+}
+
+.today-metric-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.today-metric-val-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+}
+
+.today-metric-number {
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+
+.today-metric-number.duration {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--color-uber-green);
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.today-metric-unit {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-uber-green);
+}
+
+/* 昨日との比較カード */
+.yesterday-compare-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.yesterday-compare-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.yesterday-compare-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.yesterday-compare-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.yesterday-compare-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.yesterday-compare-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.yesterday-compare-val .pace-up {
+  color: var(--color-uber-green);
+  font-weight: 800;
+}
+
+.yesterday-compare-val .pace-down {
+  color: #f87171;
+  font-weight: 800;
+}
+
+.yesterday-result-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.yesterday-result-snippet strong {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+/* 本日の確定結果カード */
+.today-settled-card {
+  background: linear-gradient(145deg, rgba(6, 193, 103, 0.06) 0%, rgba(22, 27, 34, 0.9) 100%);
+  border: 1px solid rgba(6, 193, 103, 0.3);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.today-settled-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.today-settled-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-uber-green);
+}
+
+.btn-link-edit {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.today-settled-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.settled-item {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.settled-item.highlight {
+  background: rgba(6, 193, 103, 0.12);
+  border: 1px solid rgba(6, 193, 103, 0.25);
+}
+
+.settled-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.settled-val {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-main);
+  font-variant-numeric: tabular-nums;
+}
+
+.settled-val.highlight {
+  color: var(--color-uber-green);
+  font-size: 22px;
+}
+
+.settled-val.expenses {
+  color: #f87171;
+}
+
+.today-settled-sub-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.today-settled-sub-row strong {
+  color: var(--text-main);
+}
+
+/* 未確定時の注記 */
+.today-unsettled-note {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.btn-link-simple {
+  background: transparent;
+  border: none;
+  color: #60a5fa;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* 配達履歴トグル */
+.today-history-toggle-section {
+  margin-bottom: 20px;
+}
+
+.btn-history-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-history-toggle:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.today-history-drawer {
+  margin-top: 8px;
+}
+
+/* 既存サマリーカード（後方互換） */
 .summary-hero-card {
   background: linear-gradient(145deg, #1c232d 0%, #161b22 100%);
   border: 1px solid var(--border-color);

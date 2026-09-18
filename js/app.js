@@ -344,6 +344,20 @@ function initCollapsibleSections() {
       expIcon.textContent = isHidden ? '▲' : '▼';
     });
   }
+
+  // 今日の配達明細ドロワートグル
+  const histToggle = document.getElementById('btn-toggle-today-history');
+  const histDrawer = document.getElementById('today-history-drawer');
+  const histIcon = document.getElementById('today-history-toggle-icon');
+
+  if (histToggle && histDrawer && histIcon) {
+    histToggle.addEventListener('click', () => {
+      triggerHaptic();
+      const isHidden = histDrawer.style.display === 'none';
+      histDrawer.style.display = isHidden ? 'block' : 'none';
+      histIcon.textContent = isHidden ? '▲' : '▼';
+    });
+  }
 }
 
 // 4. 今日のダッシュボード（総走行距離の手動入力）
@@ -756,6 +770,22 @@ function initSalesAndExpensesActions() {
   const openSalesBtn = document.getElementById('btn-open-sales-import');
   if (openSalesBtn) {
     openSalesBtn.addEventListener('click', () => {
+      triggerHaptic();
+      ui.openSalesImportModal();
+    });
+  }
+
+  const openSalesLink = document.getElementById('btn-open-sales-modal-link');
+  if (openSalesLink) {
+    openSalesLink.addEventListener('click', () => {
+      triggerHaptic();
+      ui.openSalesImportModal();
+    });
+  }
+
+  const openSalesUnsettled = document.getElementById('btn-open-sales-modal-from-unsettled');
+  if (openSalesUnsettled) {
+    openSalesUnsettled.addEventListener('click', () => {
       triggerHaptic();
       ui.openSalesImportModal();
     });
