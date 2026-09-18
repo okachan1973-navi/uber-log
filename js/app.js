@@ -791,6 +791,15 @@ function initSalesAndExpensesActions() {
     });
   }
 
+  const openSalesFromSettings = document.getElementById('btn-open-sales-modal-from-settings');
+  if (openSalesFromSettings) {
+    openSalesFromSettings.addEventListener('click', () => {
+      triggerHaptic();
+      ui.closeSettingsModal();
+      ui.openSalesImportModal();
+    });
+  }
+
   const closeSalesBtn = document.getElementById('btn-close-sales-import-modal');
   if (closeSalesBtn) {
     closeSalesBtn.addEventListener('click', () => ui.closeSalesImportModal());

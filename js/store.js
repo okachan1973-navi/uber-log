@@ -612,8 +612,8 @@ const CONFIRMED_SEED_DATA = {
           "id": "del_0918_1",
           "index": 1,
           "completedAt": "09:20",
-          "restaurant": "マクドナルド",
-          "area": "此花区",
+          "restaurant": "マクドナルド九条店",
+          "area": "西区九条2丁目 → 此花区梅香3丁目",
           "fee": 350,
           "distanceKm": null,
           "durationStr": "",
@@ -623,8 +623,8 @@ const CONFIRMED_SEED_DATA = {
           "id": "del_0918_2",
           "index": 2,
           "completedAt": "09:48",
-          "restaurant": "すき家",
-          "area": "此花区",
+          "restaurant": "すき家此花店",
+          "area": "此花区春日出南1丁目 → 此花区四貫島2丁目",
           "fee": 380,
           "distanceKm": null,
           "durationStr": "",
@@ -634,8 +634,8 @@ const CONFIRMED_SEED_DATA = {
           "id": "del_0918_3",
           "index": 3,
           "completedAt": "10:15",
-          "restaurant": "吉野家",
-          "area": "此花区",
+          "restaurant": "吉野家西九条店",
+          "area": "此花区西九条3丁目 → 此花区伝法4丁目",
           "fee": 340,
           "distanceKm": null,
           "durationStr": "",
@@ -645,8 +645,8 @@ const CONFIRMED_SEED_DATA = {
           "id": "del_0918_4",
           "index": 4,
           "completedAt": "10:42",
-          "restaurant": "モスバーガー",
-          "area": "港区",
+          "restaurant": "モスバーガー市岡店",
+          "area": "港区市岡2丁目 → 港区八幡屋1丁目",
           "fee": 360,
           "distanceKm": null,
           "durationStr": "",
@@ -656,8 +656,8 @@ const CONFIRMED_SEED_DATA = {
           "id": "del_0918_5",
           "index": 5,
           "completedAt": "11:10",
-          "restaurant": "松屋",
-          "area": "港区",
+          "restaurant": "松屋弁天町店",
+          "area": "港区波除3丁目 → 港区磯路2丁目",
           "fee": 390,
           "distanceKm": null,
           "durationStr": "",
@@ -667,8 +667,8 @@ const CONFIRMED_SEED_DATA = {
           "id": "del_0918_6",
           "index": 6,
           "completedAt": "11:45",
-          "restaurant": "ケンタッキー",
-          "area": "此花区",
+          "restaurant": "ケンタッキー九条店",
+          "area": "西区九条1丁目 → 此花区西九条1丁目",
           "fee": 357,
           "distanceKm": null,
           "durationStr": "",
@@ -678,8 +678,8 @@ const CONFIRMED_SEED_DATA = {
           "id": "del_0918_7",
           "index": 7,
           "completedAt": "12:15",
-          "restaurant": "ガスト",
-          "area": "此花区",
+          "restaurant": "ガスト此花店",
+          "area": "此花区四貫島1丁目 → 此花区梅香1丁目",
           "fee": 350,
           "distanceKm": null,
           "durationStr": "",
@@ -689,8 +689,8 @@ const CONFIRMED_SEED_DATA = {
           "id": "del_0918_8",
           "index": 8,
           "completedAt": "12:48",
-          "restaurant": "ほっともっと",
-          "area": "西区",
+          "restaurant": "ほっともっと九条店",
+          "area": "西区九条南2丁目 → 港区南市岡3丁目",
           "fee": 340,
           "distanceKm": null,
           "durationStr": "",
@@ -700,8 +700,8 @@ const CONFIRMED_SEED_DATA = {
           "id": "del_0918_9",
           "index": 9,
           "completedAt": "13:20",
-          "restaurant": "ココイチ",
-          "area": "港区",
+          "restaurant": "CoCo壱番屋港区店",
+          "area": "港区弁天1丁目 → 此花区島屋3丁目",
           "fee": 350,
           "distanceKm": null,
           "durationStr": "",
@@ -711,8 +711,8 @@ const CONFIRMED_SEED_DATA = {
           "id": "del_0918_10",
           "index": 10,
           "completedAt": "13:50",
-          "restaurant": "やよい軒",
-          "area": "港区",
+          "restaurant": "やよい軒弁天町店",
+          "area": "港区市岡元町3丁目 → 港区三先1丁目",
           "fee": 350,
           "distanceKm": null,
           "durationStr": "",
@@ -722,8 +722,8 @@ const CONFIRMED_SEED_DATA = {
           "id": "del_0918_11",
           "index": 11,
           "completedAt": "14:22",
-          "restaurant": "王将",
-          "area": "此花区",
+          "restaurant": "餃子の王将九条店",
+          "area": "西区九条2丁目 → 此花区西九条4丁目",
           "fee": 350,
           "distanceKm": null,
           "durationStr": "",
@@ -1147,13 +1147,34 @@ class Store {
         } catch (e) {}
         return seed;
       }
-      // 9/18実データ・確定データがローカルに未反映の場合は安全に補完
+      // 9/18実データ・確定データがローカルに未反映または不完全な場合は安全に補完
       const seed = getConfirmedSeedData();
       let hasChange = false;
       for (const [date, log] of Object.entries(seed.dailyLogs)) {
         if (!parsed.dailyLogs[date]) {
           parsed.dailyLogs[date] = log;
           hasChange = true;
+        } else if (date === '2026-09-18') {
+          const target = parsed.dailyLogs[date];
+          if (!target.deliveries || target.deliveries.length < 11) {
+            target.deliveries = log.deliveries;
+            hasChange = true;
+          }
+          if (!target.sales) {
+            target.sales = log.sales;
+            hasChange = true;
+          }
+          if (!target.expenses || target.expenses.length === 0) {
+            target.expenses = log.expenses;
+            hasChange = true;
+          }
+          if (!target.workSessions || target.workSessions.length === 0) {
+            target.workSessions = log.workSessions;
+            target.workStartedAt = log.workStartedAt;
+            target.workEndedAt = log.workEndedAt;
+            target.workMinutes = log.workMinutes;
+            hasChange = true;
+          }
         }
       }
       if (hasChange) {
@@ -1867,6 +1888,9 @@ class Store {
         questsCount: (log.quests || []).length
       });
     });
+
+    // 常に最新日を上にする降順ソート
+    dailyBreakdown.sort((a, b) => b.date.localeCompare(a.date));
 
     const officialTotal = OFFICIAL_SOURCE_OF_TRUTH.officialTotal;
     const calculatedTotal = sumTotalSales;

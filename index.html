@@ -97,28 +97,30 @@
         <!-- JSで動的にボタン生成: 開始 / 休憩・終了 / 再開 -->
       </section>
 
-      <!-- 4. 昨日との比較カード（細かな数字を並べず直感的な比較） -->
+      <!-- 4. 昨日比カード（直感的・数字重視） -->
       <section class="yesterday-compare-card" id="yesterday-compare-card">
         <div class="yesterday-compare-header">
-          <span class="yesterday-compare-title">📅 昨日との比較</span>
-          <span id="yesterday-compare-date" class="yesterday-compare-badge">9/17（木）</span>
+          <span class="yesterday-compare-title">【昨日比】</span>
         </div>
-        <div class="yesterday-compare-body">
-          <div class="yesterday-compare-row">
-            <span class="yesterday-compare-label">配達ペース</span>
-            <span id="yesterday-compare-pace" class="yesterday-compare-val">今日 0件 / 昨日 0件</span>
+        <div class="yesterday-compare-main">
+          <div class="yesterday-compare-counts">
+            <div class="compare-count-line">今日 <strong id="compare-today-count">--</strong></div>
+            <div class="compare-count-line">昨日 <strong id="compare-yesterday-count">--</strong></div>
           </div>
-          <div class="yesterday-result-row" id="yesterday-result-row">
-            <span id="yesterday-result-snippet" class="yesterday-result-snippet">昨日の確定結果: --</span>
+          <div class="yesterday-compare-diff">
+            <span id="compare-diff-badge" class="compare-diff-badge">--</span>
           </div>
+        </div>
+        <div class="yesterday-compare-sales-line" id="compare-yesterday-sales-row">
+          <span>昨日の売上</span>
+          <strong id="compare-yesterday-sales-val">--</strong>
         </div>
       </section>
 
-      <!-- 5. 本日の確定結果カード（売上確定時または稼働終了後に綺麗に表示） -->
+      <!-- 5. 本日の確定結果カード（売上確定時に綺麗に表示） -->
       <section class="today-settled-card" id="today-settled-card" style="display:none;">
         <div class="today-settled-header">
           <span class="today-settled-title">🏆 本日の確定実績</span>
-          <button id="btn-open-sales-modal-link" class="btn-link-edit" type="button">📝 売上・経費</button>
         </div>
         <div class="today-settled-grid">
           <div class="settled-item highlight">
@@ -144,22 +146,13 @@
         </div>
       </section>
 
-      <!-- 稼働中の場合の控えめな入力導線（売上未確定時のみ表示） -->
-      <div id="today-unsettled-note" class="today-unsettled-note" style="display:none;">
-        <span>※売上・経費は本日の稼働終了後にまとめて入力できます</span>
-        <button id="btn-open-sales-modal-from-unsettled" class="btn-link-simple" type="button">売上・経費を入力</button>
-      </div>
-
-      <!-- 6. 配達履歴アコーディオン（控えめな1行トグル） -->
-      <section class="today-history-toggle-section">
-        <button id="btn-toggle-today-history" class="btn-history-toggle" type="button">
-          <span id="today-history-toggle-title">📋 今日の配達明細（0件）</span>
-          <span id="today-history-toggle-icon">▼</span>
-        </button>
-        <div id="today-history-drawer" class="today-history-drawer" style="display:none;">
-          <div id="today-delivery-list" class="delivery-list">
-            <!-- JSで動的生成 -->
-          </div>
+      <!-- 6. 配達明細セクション（9月18日（11件）） -->
+      <section class="today-deliveries-section">
+        <div class="today-deliveries-header">
+          <h3 id="today-deliveries-title" class="today-deliveries-title">9月18日（11件）</h3>
+        </div>
+        <div id="today-delivery-list" class="delivery-list">
+          <!-- JSで動的生成 -->
         </div>
       </section>
 
@@ -257,7 +250,7 @@
       <!-- 実績推移テーブル -->
       <section class="recent-table-card">
         <div class="section-header">
-          <h3 class="section-title" style="font-size: 13px;">登録済み期間（9/14〜9/17）の日別実績</h3>
+          <h3 class="section-title" style="font-size: 14px;">日別実績</h3>
         </div>
         <table class="recent-table">
           <thead>
@@ -413,6 +406,17 @@
           </div>
 
           <div class="settings-group">
+            <div class="settings-group-title">Uber売上データ管理</div>
+            <div class="settings-item">
+              <div class="settings-item-info">
+                <span class="settings-item-name">Uber売上テキスト取込</span>
+                <span class="settings-item-desc">Uber Driver PC版テキストから売上・クエストを自動取込</span>
+              </div>
+              <button id="btn-open-sales-modal-from-settings" class="btn-settings" type="button">取込画面</button>
+            </div>
+          </div>
+
+          <div class="settings-group">
             <div class="settings-group-title">確定データ管理</div>
             <div class="settings-item">
               <div class="settings-item-info">
@@ -505,8 +509,8 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="modal-memo">メモ</label>
-            <input type="text" id="modal-memo" class="form-control" placeholder="例: 橋越え・階段・帰路空走">
+            <label class="form-label" for="modal-memo">メモ（任意）</label>
+            <input type="text" id="modal-memo" class="form-control" placeholder="例: 橋ルート、タワマン、入口分かりにくい 等">
           </div>
 
           <div class="modal-actions">

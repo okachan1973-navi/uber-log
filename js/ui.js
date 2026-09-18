@@ -180,7 +180,7 @@ class UI {
         const last = log.deliveries[log.deliveries.length - 1];
         undoBtn.disabled = false;
         undoBtn.style.opacity = '1';
-        undoBtn.innerHTML = `<span>↶ 直前の記録（#${last.index} ${last.completedAt}）を取消</span>`;
+        undoBtn.innerHTML = `<span>↶ 直前の記録（No.${last.index} ${last.completedAt}）を取消</span>`;
       } else {
         undoBtn.disabled = true;
         undoBtn.style.opacity = '0.35';
@@ -219,26 +219,40 @@ class UI {
       }
     }
 
-    // 6. 昨日との比較カード
+    // 6. 昨日比カード（直感的・シンプル・数字重視）
     const comp = store.getYesterdayComparison(this.currentDate);
     const compCard = document.getElementById('yesterday-compare-card');
     if (comp && compCard) {
       compCard.style.display = 'block';
-      const dateBadge = document.getElementById('yesterday-compare-date');
-      const paceEl = document.getElementById('yesterday-compare-pace');
-      const snippetEl = document.getElementById('yesterday-result-snippet');
+      const todayCountEl = document.getElementById('compare-today-count');
+      const yesterdayCountEl = document.getElementById('compare-yesterday-count');
+      const diffBadgeEl = document.getElementById('compare-diff-badge');
+      const salesValEl = document.getElementById('compare-yesterday-sales-val');
+      const salesRowEl = document.getElementById('compare-yesterday-sales-row');
 
-      if (dateBadge) dateBadge.textContent = comp.yesterdayLabel;
-      if (paceEl) {
-        const paceDiff = comp.diffCount;
-        const paceBadge = paceDiff > 0 
-          ? `<span class="pace-up">+${paceDiff}件 📈 好調</span>`
-          : (paceDiff === 0 ? '<span style="color:var(--text-muted);">同数</span>' : `<span class="pace-down">${paceDiff}件</span>`);
-        paceEl.innerHTML = `今日 ${comp.todayCount}件 ／ 昨日 ${comp.yesterdayCount}件 (${paceBadge})`;
+      if (todayCountEl) todayCountEl.textContent = `${comp.todayCount}件`;
+      if (yesterdayCountEl) yesterdayCountEl.textContent = `${comp.yesterdayCount}件`;
+
+      if (diffBadgeEl) {
+        if (comp.diffCount > 0) {
+          diffBadgeEl.textContent = `＋${comp.diffCount}件`;
+          diffBadgeEl.className = 'compare-diff-badge positive';
+        } else if (comp.diffCount === 0) {
+          diffBadgeEl.textContent = '±0件';
+          diffBadgeEl.className = 'compare-diff-badge neutral';
+        } else {
+          diffBadgeEl.textContent = `${comp.diffCount}件`;
+          diffBadgeEl.className = 'compare-diff-badge negative';
+        }
       }
-      if (snippetEl) {
-        const ySalesStr = comp.yesterdaySales !== null ? `売上 ¥${comp.yesterdaySales.toLocaleString()}` : '';
-        snippetEl.innerHTML = `昨日の確定結果: <strong>${comp.yesterdayCount}件配達</strong> ｜ <strong>${ySalesStr || '売上未登録'}</strong>`;
+
+      if (salesRowEl && salesValEl) {
+        if (comp.yesterdaySales !== null) {
+          salesRowEl.style.display = 'flex';
+          salesValEl.textContent = `${comp.yesterdaySales.toLocaleString()}円`;
+        } else {
+          salesRowEl.style.display = 'none';
+        }
       }
     } else if (compCard) {
       compCard.style.display = 'none';
@@ -246,11 +260,9 @@ class UI {
 
     // 7. 本日の確定結果カード（売上確定時のみ表示）
     const settledCard = document.getElementById('today-settled-card');
-    const unsettledNote = document.getElementById('today-unsettled-note');
 
     if (metrics.totalSales !== null) {
       if (settledCard) settledCard.style.display = 'block';
-      if (unsettledNote) unsettledNote.style.display = 'none';
 
       const pProfit = document.getElementById('settled-net-profit');
       const pNetHourly = document.getElementById('settled-net-hourly');
@@ -265,15 +277,16 @@ class UI {
       if (pExpenses) pExpenses.textContent = `-¥${(metrics.totalExpenses || 0).toLocaleString()}`;
       if (pGrossHourly) pGrossHourly.textContent = metrics.grossHourlyWage !== null ? `¥${metrics.grossHourlyWage.toLocaleString()}/h` : '--';
       if (pAvgDelivery) pAvgDelivery.textContent = metrics.avgSalesPerDelivery !== null ? `¥${metrics.avgSalesPerDelivery.toLocaleString()}/件` : '--';
-    } else {
-      if (settledCard) settledCard.style.display = 'none';
-      if (unsettledNote) unsettledNote.style.display = 'flex';
+    } else if (settledCard) {
+      settledCard.style.display = 'none';
     }
 
-    // 8. 配達履歴ドロワーのサマリー
-    const histTitle = document.getElementById('today-history-toggle-title');
-    if (histTitle) {
-      histTitle.textContent = `📋 今日の配達明細（${metrics.count}件）`;
+    // 8. 配達明細セクション見出し（例: 9月18日（11件））
+    const deliveriesTitleEl = document.getElementById('today-deliveries-title');
+    if (deliveriesTitleEl) {
+      const cleanDate = this.currentDate.replace(/\//g, '-');
+      const [y, m, d] = cleanDate.split('-').map(Number);
+      deliveriesTitleEl.textContent = `${m}月${d}日（${metrics.count}件）`;
     }
     this.renderDeliveryList(log.deliveries || []);
   }
@@ -410,12 +423,12 @@ class UI {
     });
   }
 
-  // 配達履歴リストの描画
+  // 配達一覧リストの描画（No.1〜No.11昇順、一目で分かる情報に絞り込み、タップで詳細展開）
   renderDeliveryList(deliveries) {
     const listEl = document.getElementById('today-delivery-list');
     if (!listEl) return;
 
-    if (deliveries.length === 0) {
+    if (!deliveries || deliveries.length === 0) {
       listEl.innerHTML = `
         <div class="empty-state">
           まだ配達記録がありません<br>
@@ -425,39 +438,25 @@ class UI {
       return;
     }
 
-    // 新しい順（降順）で表示
-    const sorted = [...deliveries].reverse();
+    // No.1 〜 No.11 の昇順で並べる
+    const sorted = [...deliveries].sort((a, b) => a.index - b.index);
 
     listEl.innerHTML = sorted.map(del => {
-      const hasDetails = del.restaurant || del.area || del.fee !== null || del.distanceKm || del.durationStr || del.memo;
-      const detailSnippet = [
-        del.restaurant,
-        del.area,
-        del.fee !== null ? `¥${Number(del.fee).toLocaleString()}` : '',
-        del.distanceKm ? `${del.distanceKm}km` : '',
-        del.durationStr || '',
-        del.memo
-      ].filter(Boolean).join(' ・ ');
-
       return `
         <div class="delivery-item ${del.isAvoidanceCase ? 'avoidance-case-item' : ''}" data-id="${del.id}">
-          <div class="delivery-item-left">
-            <span class="delivery-item-idx">#${del.index}</span>
-            <div>
-              <div class="delivery-item-time">${del.completedAt} ${del.fee !== null ? `<span style="color:var(--color-uber-green); font-weight:700; margin-left:6px;">¥${Number(del.fee).toLocaleString()}</span>` : ''}</div>
-              ${detailSnippet ? `<div class="delivery-item-meta">${detailSnippet}</div>` : ''}
-              ${del.isAvoidanceCase ? `<span class="badge-avoidance-case">⚠️ 原則回避の基準事例</span>` : ''}
-            </div>
+          <div class="delivery-item-header">
+            <span class="delivery-item-no">No.${del.index}</span>
+            <span class="delivery-item-time">完了 ${del.completedAt}</span>
           </div>
-          <div class="delivery-item-right">
-            <span>${hasDetails ? '詳細あり' : '詳細を入力'}</span>
-            <span>›</span>
-          </div>
+          ${del.restaurant ? `<div class="delivery-item-restaurant">${del.restaurant}</div>` : ''}
+          ${del.area ? `<div class="delivery-item-route">${del.area}</div>` : ''}
+          ${del.memo ? `<div class="delivery-item-memo">📝 ${del.memo}</div>` : ''}
+          ${del.isAvoidanceCase ? `<div class="badge-avoidance-case">⚠️ 原則回避の基準事例</div>` : ''}
         </div>
       `;
     }).join('');
 
-    // クリックイベントでモーダル展開
+    // カードタップで詳細モーダル展開
     listEl.querySelectorAll('.delivery-item').forEach(item => {
       item.addEventListener('click', () => {
         const id = item.getAttribute('data-id');
@@ -474,7 +473,7 @@ class UI {
 
     this.selectedDelivery = del;
 
-    document.getElementById('modal-title').textContent = `配達 #${del.index} の詳細`;
+    document.getElementById('modal-title').textContent = `No.${del.index} 配達詳細`;
     document.getElementById('modal-time').value = del.completedAt || '';
     document.getElementById('modal-restaurant').value = del.restaurant || '';
     document.getElementById('modal-area').value = del.area || '';
@@ -668,17 +667,23 @@ class UI {
       totalDistEl.textContent = '5.58 km (1件)';
     }
 
-    // 4日間テーブル（曜日自動判定・視覚的区別・祝日判定構造）
+    // 日別実績テーブル（常に最新日を一番上にする降順表示：9/18 → 9/17 → 9/16 → 9/15 → 9/14）
     const tableBody = document.getElementById('recent-7days-table-body');
     if (tableBody) {
-      tableBody.innerHTML = audit.dailyBreakdown.map(row => {
+      const allLogs = store.getAllDailyLogs();
+      const activeLogs = allLogs.filter(log => {
+        const m = store.getCalculatedMetrics(log);
+        return m.count > 0 || m.totalSales !== null;
+      });
+      tableBody.innerHTML = activeLogs.map(log => {
+        const m = store.getCalculatedMetrics(log);
         return `
           <tr>
-            <td><strong>${formatDateWithWeekday(row.date, true)}</strong></td>
-            <td>${row.count}件</td>
-            <td>${row.deliverySales !== null ? `¥${row.deliverySales.toLocaleString()}` : '--'}</td>
-            <td>${row.questSales !== null ? `¥${row.questSales.toLocaleString()}` : '¥0'}</td>
-            <td style="font-weight:700; color:var(--color-uber-green);">${row.dayTotal !== null ? `¥${row.dayTotal.toLocaleString()}` : '--'}</td>
+            <td><strong>${formatDateWithWeekday(log.date, false)}</strong></td>
+            <td>${m.count}件</td>
+            <td>${m.deliverySales !== null ? `¥${m.deliverySales.toLocaleString()}` : '--'}</td>
+            <td>${m.questSales !== null ? `¥${m.questSales.toLocaleString()}` : '¥0'}</td>
+            <td style="font-weight:700; color:var(--color-uber-green);">${m.totalSales !== null ? `¥${m.totalSales.toLocaleString()}` : '--'}</td>
           </tr>
         `;
       }).join('');
