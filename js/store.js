@@ -283,37 +283,203 @@ function formatMinutes(minutes) {
   return `${m}分`;
 }
 
-// クエスト二重計上検知・排除ロジック
+// クエスト二重計上検知・排除ロジック（同一時刻・同額および「クエスト」と「1回乗車クエスト」の重複排除）
 function deduplicateQuests(questList = []) {
   if (!Array.isArray(questList)) return [];
   
   const processed = [];
   const seenKeys = new Set();
+  const seenAmountPairs = new Map();
 
   questList.forEach((q) => {
     const rawTime = (q.time || '').replace(/頃/, '').trim();
     const amount = Number(q.amount) || 0;
+    const title = (q.title || '').trim();
     
-    // 同額かつ同一（または近接）時刻のキー
-    const key = `${rawTime}_${amount}`;
+    // 1. 同時刻・同額のキー
+    const timeKey = rawTime ? `${rawTime}_${amount}` : null;
+    
+    // 2. 「クエスト」と「1回乗車クエスト」の重複ペア判定
+    const isQuestVariant = /1回乗車クエスト|乗車クエスト/.test(title);
+    const isBaseQuest = /^クエスト$|^Quest$/i.test(title);
 
-    if (seenKeys.has(key)) {
-      // 二重表示と判定して除外フラグを立てる
-      processed.push({
-        ...q,
-        isDuplicateIgnored: true,
-        dedupReason: '「クエスト」と「1回乗車クエスト」等の重複表示検知により二重加算除外'
-      });
-    } else {
-      seenKeys.add(key);
-      processed.push({
-        ...q,
-        isDuplicateIgnored: false
-      });
+    let isDuplicate = false;
+    let reason = '';
+
+    if (timeKey && seenKeys.has(timeKey)) {
+      isDuplicate = true;
+      reason = '同一時刻・同額の重複検知により除外';
+    } else if (isQuestVariant && seenAmountPairs.has(amount)) {
+      isDuplicate = true;
+      reason = '「クエスト」と「1回乗車クエスト」の同額重複検知により除外';
+    } else if (isBaseQuest && seenAmountPairs.has(amount) && seenAmountPairs.get(amount).isQuestVariant) {
+      isDuplicate = true;
+      reason = '「クエスト」と「1回乗車クエスト」の同額重複検知により除外';
     }
+
+    if (timeKey) {
+      seenKeys.add(timeKey);
+    }
+    if (!seenAmountPairs.has(amount)) {
+      seenAmountPairs.set(amount, { title, isQuestVariant, isBaseQuest, time: rawTime });
+    }
+
+    processed.push({
+      ...q,
+      isDuplicateIgnored: isDuplicate,
+      dedupReason: isDuplicate ? reason : undefined
+    });
   });
 
   return processed;
+}
+
+// Uber Driver PC版売上テキスト解析関数
+function parseUberSalesText(rawText) {
+  if (!rawText || typeof rawText !== 'string') {
+    return {
+      deliverySales: 0,
+      questSales: 0,
+      adjustmentSales: 0,
+      otherSales: 0,
+      totalSales: 0,
+      deliveryCount: 0,
+      detectedQuests: [],
+      detectedAdjustments: [],
+      rawLines: []
+    };
+  }
+
+  // 全角数字・記号を半角に正規化
+  const normalized = rawText
+    .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+    .replace(/[￥]/g, '¥');
+
+  const lines = normalized
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(l => l.length > 0);
+
+  const extractAmount = (str) => {
+    if (!str) return null;
+    const clean = str.replace(/,/g, '');
+    // 1. ¥1,234 or 1,234円
+    const mWithUnit = clean.match(/[+\-]?\s*[¥￥]\s*(\d+(?:\.\d+)?)/) ||
+                      clean.match(/[+\-]?\s*(\d+(?:\.\d+)?)\s*円/);
+    if (mWithUnit) return Math.round(parseFloat(mWithUnit[1]));
+
+    // 2. 単独数値行（1回、11件等のカウントを誤検知しないよう除外）
+    if (/^\s*[+\-]?\d+(?:\.\d+)?\s*$/.test(clean.trim())) {
+      const num = parseFloat(clean.trim());
+      return isNaN(num) ? null : Math.round(num);
+    }
+    return null;
+  };
+
+  let deliveryTotal = null;
+  let detectedQuests = [];
+  let detectedAdjustments = [];
+  let otherIncome = 0;
+  let totalSales = null;
+  let deliveryCount = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const nextLine = lines[i + 1] || '';
+    const prevLine = lines[i - 1] || '';
+
+    // 配達件数: "11件" or "11 件の乗車"
+    const countMatch = line.match(/(\d+)\s*件/);
+    if (countMatch && deliveryCount === 0) {
+      deliveryCount = parseInt(countMatch[1], 10);
+    }
+
+    // 配達 / Delivery
+    if (/^(?:配達|Delivery|乗車|配達報酬)$/i.test(line) || /^(?:配達|Delivery|乗車)[:：]/i.test(line)) {
+      const amt = extractAmount(line) || extractAmount(nextLine);
+      if (amt !== null && deliveryTotal === null) {
+        deliveryTotal = amt;
+      }
+    }
+
+    // クエスト / 1回乗車クエスト
+    if (/クエスト|Quest|インセンティブ/i.test(line)) {
+      const amt = extractAmount(line) || extractAmount(nextLine);
+      if (amt !== null && amt > 0) {
+        let time = '';
+        const timeMatch = prevLine.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/) ||
+                          line.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/) ||
+                          nextLine.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/);
+        if (timeMatch) time = timeMatch[0];
+
+        detectedQuests.push({
+          id: `quest_import_${Date.now()}_${detectedQuests.length}`,
+          title: line,
+          amount: amt,
+          time: time
+        });
+      }
+    }
+
+    // 調整金 / Adjustment / 料金の調整
+    if (/調整|Adjustment/i.test(line)) {
+      const amt = extractAmount(line) || extractAmount(nextLine);
+      if (amt !== null && amt > 0) {
+        detectedAdjustments.push({
+          title: line,
+          amount: amt
+        });
+      }
+    }
+
+    // チップ / その他
+    if (/チップ|Tip/i.test(line)) {
+      const amt = extractAmount(line) || extractAmount(nextLine);
+      if (amt !== null && amt > 0) {
+        otherIncome += amt;
+      }
+    }
+
+    // 総売上 / 売上
+    if (/^(?:売上|純売上|総売上|合計|Total)$/i.test(line) || /(?:日次|本日)売上/i.test(line)) {
+      const amt = extractAmount(line) || extractAmount(nextLine);
+      if (amt !== null && totalSales === null) {
+        totalSales = amt;
+      }
+    }
+  }
+
+  // クエスト二重計上排除
+  const dedupedQuests = deduplicateQuests(detectedQuests);
+  const validQuestTotal = dedupedQuests
+    .filter(q => !q.isDuplicateIgnored)
+    .reduce((sum, q) => sum + (Number(q.amount) || 0), 0);
+
+  const adjustmentTotal = detectedAdjustments.reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
+
+  // 配達売上の補正: もし配達ラベルが見当たらず総売上がある場合
+  if (deliveryTotal === null && totalSales !== null) {
+    deliveryTotal = Math.max(0, totalSales - validQuestTotal - adjustmentTotal - otherIncome);
+  } else if (deliveryTotal === null) {
+    deliveryTotal = 0;
+  }
+
+  const calculatedTotal = deliveryTotal + validQuestTotal + adjustmentTotal + otherIncome;
+  if (totalSales === null) {
+    totalSales = calculatedTotal;
+  }
+
+  return {
+    deliverySales: deliveryTotal,
+    questSales: validQuestTotal,
+    adjustmentSales: adjustmentTotal,
+    otherSales: otherIncome,
+    totalSales: totalSales,
+    deliveryCount: deliveryCount,
+    detectedQuests: dedupedQuests,
+    detectedAdjustments,
+    rawLines: lines
+  };
 }
 
 class Store {
@@ -685,44 +851,80 @@ class Store {
     return log;
   }
 
-  // 日別実運用指標の厳密計算（推測補完を排除、複数セッション実稼働時間・実質時給対応）
+  // 日別実運用指標の厳密計算（推測補完を排除、複数セッション実稼働時間・実質時給・当日経費対応）
   getCalculatedMetrics(log) {
     const count = log.deliveries ? log.deliveries.length : 0;
     
-    // 通常配達報酬の計算（明細のfee合算、または手動値）
+    // 通常配達報酬・クエスト・調整金・その他Uber収入の計算
     let deliverySales = null;
-    if (log.deliveries && log.deliveries.length > 0) {
-      let sum = 0;
-      let hasValidFee = false;
-      log.deliveries.forEach(d => {
-        if (d.fee !== null && d.fee !== undefined && !isNaN(Number(d.fee))) {
-          sum += Number(d.fee);
-          hasValidFee = true;
-        }
-      });
-      if (hasValidFee) {
-        deliverySales = sum;
+    let questSales = null;
+    let adjustmentSales = 0;
+    let otherSales = 0;
+    let hasExplicitSales = false;
+
+    if (log.sales) {
+      if (log.sales.delivery !== undefined && log.sales.delivery !== null) {
+        deliverySales = Number(log.sales.delivery) || 0;
+        hasExplicitSales = true;
+      }
+      if (log.sales.quest !== undefined && log.sales.quest !== null) {
+        questSales = Number(log.sales.quest) || 0;
+        hasExplicitSales = true;
+      }
+      if (log.sales.adjustment !== undefined && log.sales.adjustment !== null) {
+        adjustmentSales = Number(log.sales.adjustment) || 0;
+      }
+      if (log.sales.other !== undefined && log.sales.other !== null) {
+        otherSales = Number(log.sales.other) || 0;
       }
     }
-    if (deliverySales === null && log.manualUberSales !== undefined && log.manualUberSales !== null) {
-      deliverySales = Number(log.manualUberSales);
+
+    // 明細または手動入力からのフォールバック（過去互換）
+    if (!hasExplicitSales) {
+      if (log.deliveries && log.deliveries.length > 0) {
+        let sum = 0;
+        let hasValidFee = false;
+        log.deliveries.forEach(d => {
+          if (d.fee !== null && d.fee !== undefined && !isNaN(Number(d.fee))) {
+            sum += Number(d.fee);
+            hasValidFee = true;
+          }
+        });
+        if (hasValidFee) {
+          deliverySales = sum;
+        }
+      }
+      if (deliverySales === null && log.manualUberSales !== undefined && log.manualUberSales !== null) {
+        deliverySales = Number(log.manualUberSales);
+      }
+
+      const dedupedQuests = deduplicateQuests(log.quests || []);
+      const validQuests = dedupedQuests.filter(q => !q.isDuplicateIgnored);
+      if (dedupedQuests.length > 0) {
+        questSales = validQuests.reduce((acc, q) => acc + (Number(q.amount) || 0), 0);
+      } else if (log.manualQuest !== undefined && log.manualQuest !== null) {
+        questSales = Number(log.manualQuest);
+      }
     }
 
-    // クエスト報酬の計算（二重計上を除外した有効クエスト合算、または手動値）
-    let questSales = null;
-    const dedupedQuests = deduplicateQuests(log.quests || []);
-    const validQuests = dedupedQuests.filter(q => !q.isDuplicateIgnored);
-    if (dedupedQuests.length > 0) {
-      questSales = validQuests.reduce((acc, q) => acc + (Number(q.amount) || 0), 0);
-    } else if (log.manualQuest !== undefined && log.manualQuest !== null) {
-      questSales = Number(log.manualQuest);
-    }
-
-    // 1日総売上（通常配達報酬 ＋ クエスト報酬）
+    // 1日総売上（Delivery + Quest + Adjustment + Other）
     let totalSales = null;
-    if (deliverySales !== null || questSales !== null) {
-      totalSales = (deliverySales || 0) + (questSales || 0);
+    if (deliverySales !== null || questSales !== null || adjustmentSales > 0 || otherSales > 0) {
+      totalSales = (deliverySales || 0) + (questSales || 0) + (adjustmentSales || 0) + (otherSales || 0);
     }
+
+    // 当日経費（変動費）の計算
+    const expenses = Array.isArray(log.expenses) ? log.expenses : [];
+    let totalExpenses = 0;
+    expenses.forEach(e => {
+      const amt = Number(e.amount);
+      if (!isNaN(amt) && amt > 0) {
+        totalExpenses += amt;
+      }
+    });
+
+    // 当日利益（純利益 ＝ 総売上 − 当日経費）
+    const netProfit = totalSales !== null ? (totalSales - totalExpenses) : null;
 
     // 総走行距離（確定データのみ、主要指標からは整理）
     const totalDistanceKm = (log.totalDistanceKm !== null && log.totalDistanceKm !== undefined && !isNaN(Number(log.totalDistanceKm)))
@@ -786,16 +988,27 @@ class Store {
       workMinutes = calculateMinutesBetween(log.workStartedAt, log.workEndedAt);
     }
 
-    // 売上 ÷ 実質稼働時間による実質時給（両方確定している場合のみ算出）
-    let hourlyWage = null;
-    if (totalSales !== null && workMinutes !== null && workMinutes > 0) {
-      hourlyWage = Math.round(totalSales / (workMinutes / 60));
+    const workHours = (workMinutes !== null && workMinutes > 0) ? (workMinutes / 60) : 0;
+
+    // 売上時給（総売上 ÷ 稼働時間）
+    let grossHourlyWage = null;
+    if (totalSales !== null && workHours > 0) {
+      grossHourlyWage = Math.round(totalSales / workHours);
     }
 
-    // 1件あたり平均報酬
-    let avgFeePerDelivery = null;
+    // 実質時給（当日利益 ÷ 稼働時間）
+    let netHourlyWage = null;
+    if (netProfit !== null && workHours > 0) {
+      netHourlyWage = Math.round(netProfit / workHours);
+    }
+
+    // 後方互換用 hourlyWage（実質時給を格納）
+    const hourlyWage = netHourlyWage !== null ? netHourlyWage : grossHourlyWage;
+
+    // 1件あたり平均売上
+    let avgSalesPerDelivery = null;
     if (totalSales !== null && count > 0) {
-      avgFeePerDelivery = Math.round(totalSales / count);
+      avgSalesPerDelivery = Math.round(totalSales / count);
     }
 
     // 1件あたり平均距離（後方互換用）
@@ -809,7 +1022,13 @@ class Store {
       count,
       deliverySales,
       questSales,
+      adjustmentSales,
+      otherSales,
       totalSales,
+      totalExpenses,
+      netProfit,
+      expenses,
+      vehicleType: log.vehicleType || 'レンタサイクル',
       totalDistanceKm,
       uberDeliveryDistanceKm,
       deadheadDistanceKm,
@@ -817,14 +1036,100 @@ class Store {
       distanceRecordedCount,
       isFullDistanceRecorded,
       workMinutes,
+      grossHourlyWage,
+      netHourlyWage,
       hourlyWage,
       isDurationApproximate,
       hasActiveSession,
       workSessions: log.workSessions || [],
-      avgFeePerDelivery,
+      avgSalesPerDelivery,
+      avgFeePerDelivery: avgSalesPerDelivery,
       avgDistPerDelivery,
-      quests: dedupedQuests
+      quests: deduplicateQuests(log.quests || [])
     };
+  }
+
+  // 日別売上データ（Delivery, Quest, Adjustment, Other, Total）の確定保存
+  saveDailySales(dateStr, { delivery, quest, adjustment, other, rawText }) {
+    const log = this.getDailyLog(dateStr);
+    const d = Number(delivery) || 0;
+    const q = Number(quest) || 0;
+    const a = Number(adjustment) || 0;
+    const o = Number(other) || 0;
+    const tot = d + q + a + o;
+
+    log.sales = {
+      delivery: d,
+      quest: q,
+      adjustment: a,
+      other: o,
+      total: tot,
+      rawTextSummary: rawText ? (rawText.length > 50 ? rawText.substring(0, 50) + '...' : rawText) : '',
+      updatedAt: new Date().toISOString()
+    };
+
+    this.saveToStorage(dateStr);
+    return log.sales;
+  }
+
+  // 当日経費の追加
+  addExpense(dateStr, { category, amount, memo }) {
+    const log = this.getDailyLog(dateStr);
+    if (!log.expenses) log.expenses = [];
+
+    const amt = Number(amount) || 0;
+    const expense = {
+      id: `exp_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+      category: category || 'レンタサイクル',
+      amount: amt,
+      memo: memo || '',
+      createdAt: new Date().toISOString()
+    };
+
+    log.expenses.push(expense);
+    this.saveToStorage(dateStr);
+    return expense;
+  }
+
+  // 当日経費の更新
+  updateExpense(dateStr, expenseId, { category, amount, memo }) {
+    const log = this.getDailyLog(dateStr);
+    if (!log.expenses) return null;
+
+    const idx = log.expenses.findIndex(e => e.id === expenseId);
+    if (idx !== -1) {
+      log.expenses[idx] = {
+        ...log.expenses[idx],
+        category: category !== undefined ? category : log.expenses[idx].category,
+        amount: amount !== undefined ? (Number(amount) || 0) : log.expenses[idx].amount,
+        memo: memo !== undefined ? memo : log.expenses[idx].memo
+      };
+      this.saveToStorage(dateStr);
+      return log.expenses[idx];
+    }
+    return null;
+  }
+
+  // 当日経費の削除
+  deleteExpense(dateStr, expenseId) {
+    const log = this.getDailyLog(dateStr);
+    if (!log.expenses) return null;
+
+    const idx = log.expenses.findIndex(e => e.id === expenseId);
+    if (idx !== -1) {
+      const removed = log.expenses.splice(idx, 1)[0];
+      this.saveToStorage(dateStr);
+      return removed;
+    }
+    return null;
+  }
+
+  // 移動手段/車両種別の更新
+  updateVehicleType(dateStr, vehicleType) {
+    const log = this.getDailyLog(dateStr);
+    log.vehicleType = vehicleType || 'レンタサイクル';
+    this.saveToStorage(dateStr);
+    return log.vehicleType;
   }
 
   // 地雷DBの評価ステータス更新（育てるDB: AVOID | VERIFY | OK）
@@ -1103,6 +1408,7 @@ if (typeof window !== 'undefined') {
   window.calculateMinutesBetween = calculateMinutesBetween;
   window.formatMinutes = formatMinutes;
   window.deduplicateQuests = deduplicateQuests;
+  window.parseUberSalesText = parseUberSalesText;
   window.Store = Store;
   window.store = store;
 }
@@ -1127,6 +1433,7 @@ if (typeof module !== 'undefined' && module.exports) {
     calculateMinutesBetween,
     formatMinutes,
     deduplicateQuests,
+    parseUberSalesText,
     Store,
     store
   };

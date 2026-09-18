@@ -232,6 +232,35 @@ class CloudSyncManager {
       merged.quests = rawQuests;
     }
 
+    // 4. 売上内訳のマージ（Delivery, Quest, Adjustment, Other, Total）
+    if (localLog.sales || cloudLog.sales) {
+      const ls = localLog.sales || {};
+      const cs = cloudLog.sales || {};
+      const useLocal = !cs.updatedAt || (ls.updatedAt && ls.updatedAt >= cs.updatedAt);
+      const chosen = useLocal ? ls : cs;
+      const fallback = useLocal ? cs : ls;
+      merged.sales = {
+        delivery: chosen.delivery !== undefined ? chosen.delivery : (fallback.delivery ?? 0),
+        quest: chosen.quest !== undefined ? chosen.quest : (fallback.quest ?? 0),
+        adjustment: chosen.adjustment !== undefined ? chosen.adjustment : (fallback.adjustment ?? 0),
+        other: chosen.other !== undefined ? chosen.other : (fallback.other ?? 0),
+        total: chosen.total !== undefined ? chosen.total : (fallback.total ?? 0),
+        rawTextSummary: chosen.rawTextSummary || fallback.rawTextSummary || '',
+        updatedAt: chosen.updatedAt || fallback.updatedAt || null
+      };
+    }
+
+    // 5. 当日経費明細のマージ（ID一致時はローカル優先、新規明細は全て合算）
+    const expMap = new Map();
+    (cloudLog.expenses || []).forEach(e => expMap.set(e.id, { ...e }));
+    (localLog.expenses || []).forEach(e => {
+      expMap.set(e.id, { ...(expMap.get(e.id) || {}), ...e });
+    });
+    merged.expenses = Array.from(expMap.values());
+
+    // 6. 車両/移動手段種別のマージ
+    merged.vehicleType = localLog.vehicleType || cloudLog.vehicleType || 'レンタサイクル';
+
     // 後方互換性プロパティの整合性補正
     if (window.store && typeof window.store.syncLegacyWorkInfo === 'function') {
       window.store.syncLegacyWorkInfo(merged);

@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initModalActions();
   initSettingsActions();
   initCloudSyncActions();
+  initSalesAndExpensesActions();
 
   // 初回描画
   ui.refreshAll();
@@ -327,6 +328,20 @@ function initCollapsibleSections() {
       const isHidden = delivBody.style.display === 'none';
       delivBody.style.display = isHidden ? 'block' : 'none';
       delivIcon.textContent = isHidden ? '▲' : '▼';
+    });
+  }
+
+  // 当日経費折りたたみ
+  const expToggle = document.getElementById('btn-toggle-today-expenses');
+  const expBody = document.getElementById('today-expenses-body');
+  const expIcon = document.getElementById('today-expenses-expand-icon');
+
+  if (expToggle && expBody && expIcon) {
+    expToggle.addEventListener('click', () => {
+      triggerHaptic();
+      const isHidden = expBody.style.display === 'none';
+      expBody.style.display = isHidden ? 'block' : 'none';
+      expIcon.textContent = isHidden ? '▲' : '▼';
     });
   }
 }
@@ -734,4 +749,101 @@ function initCloudSyncActions() {
   // 初期ステータス反映
   updateSettingsSyncUI();
 }
+
+// 8. 売上取込＆当日変動経費のアクション
+function initSalesAndExpensesActions() {
+  // 1. 売上取込モーダル関連
+  const openSalesBtn = document.getElementById('btn-open-sales-import');
+  if (openSalesBtn) {
+    openSalesBtn.addEventListener('click', () => {
+      triggerHaptic();
+      ui.openSalesImportModal();
+    });
+  }
+
+  const closeSalesBtn = document.getElementById('btn-close-sales-import-modal');
+  if (closeSalesBtn) {
+    closeSalesBtn.addEventListener('click', () => ui.closeSalesImportModal());
+  }
+
+  const cancelSalesBtn = document.getElementById('btn-cancel-import-sales');
+  if (cancelSalesBtn) {
+    cancelSalesBtn.addEventListener('click', () => ui.closeSalesImportModal());
+  }
+
+  const salesOverlay = document.getElementById('sales-import-modal-overlay');
+  if (salesOverlay) {
+    salesOverlay.addEventListener('click', (e) => {
+      if (e.target === salesOverlay) ui.closeSalesImportModal();
+    });
+  }
+
+  const parseSalesBtn = document.getElementById('btn-parse-sales-text');
+  if (parseSalesBtn) {
+    parseSalesBtn.addEventListener('click', () => {
+      triggerHaptic();
+      ui.handleParseSalesText();
+    });
+  }
+
+  const confirmSalesBtn = document.getElementById('btn-confirm-import-sales');
+  if (confirmSalesBtn) {
+    confirmSalesBtn.addEventListener('click', () => {
+      triggerHaptic();
+      ui.confirmImportSales();
+    });
+  }
+
+  // 2. 経費管理モーダル関連
+  const openExpBtn = document.getElementById('btn-open-expenses-modal');
+  if (openExpBtn) {
+    openExpBtn.addEventListener('click', () => {
+      triggerHaptic();
+      ui.openExpensesModal();
+    });
+  }
+
+  const openExpBtn2 = document.getElementById('btn-open-expense-modal-from-list');
+  if (openExpBtn2) {
+    openExpBtn2.addEventListener('click', () => {
+      triggerHaptic();
+      ui.openExpensesModal();
+    });
+  }
+
+  const closeExpBtn = document.getElementById('btn-close-expenses-modal');
+  if (closeExpBtn) {
+    closeExpBtn.addEventListener('click', () => ui.closeExpensesModal());
+  }
+
+  const closeExpBottomBtn = document.getElementById('btn-close-expenses-bottom');
+  if (closeExpBottomBtn) {
+    closeExpBottomBtn.addEventListener('click', () => ui.closeExpensesModal());
+  }
+
+  const expOverlay = document.getElementById('expenses-modal-overlay');
+  if (expOverlay) {
+    expOverlay.addEventListener('click', (e) => {
+      if (e.target === expOverlay) ui.closeExpensesModal();
+    });
+  }
+
+  const addExpItemBtn = document.getElementById('btn-add-expense-item');
+  if (addExpItemBtn) {
+    addExpItemBtn.addEventListener('click', () => {
+      triggerHaptic();
+      ui.handleAddExpenseItem();
+    });
+  }
+
+  const vehicleSelect = document.getElementById('expense-vehicle-type');
+  if (vehicleSelect) {
+    vehicleSelect.addEventListener('change', () => {
+      store.updateVehicleType(ui.currentDate, vehicleSelect.value);
+      ui.renderTodayView();
+      ui.showToast(`移動手段を「${vehicleSelect.value}」に更新しました`);
+    });
+  }
+}
+
 

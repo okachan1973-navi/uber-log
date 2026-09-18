@@ -80,28 +80,55 @@ body {
 }
 
 .brand-title {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: 0.5px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  color: var(--text-main);
+  white-space: nowrap;
 }
 
-.brand-badge {
-  background-color: var(--color-uber-green);
-  color: #000;
-  font-size: 11px;
+.header-center {
+  flex: 1;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.header-date-prominent {
+  font-size: 16px;
   font-weight: 800;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  text-transform: uppercase;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+}
+
+.header-sync-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+  margin-left: 2px;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+
+.header-sync-dot.syncing {
+  background-color: #60a5fa;
+  animation: syncPulse 1.5s infinite;
+}
+
+.header-sync-dot.error {
+  background-color: #f87171;
+}
+
+.header-sync-dot.offline {
+  background-color: #9ca3af;
 }
 
 .date-indicator {
@@ -376,21 +403,69 @@ body {
   transform: scale(0.98);
 }
 
-/* 稼働コントロールボタン */
+/* 勤務状態操作ボタン（配達ボタンと明確に差別化） */
 .work-control-row {
   display: grid;
   grid-template-columns: 1fr;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
+}
+
+.work-actions-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn-work-action {
+  height: 44px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.1s ease;
+  user-select: none;
+}
+
+.btn-work-action.pause {
+  background-color: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
+.btn-work-action.finish {
+  background-color: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+.btn-work-action.resume {
+  width: 100%;
+  height: 46px;
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+  font-size: 14px;
+}
+
+.btn-work-action:active {
+  transform: scale(0.98);
+  filter: brightness(0.9);
 }
 
 .btn-work-toggle {
-  height: 48px;
+  height: 46px;
   border-radius: var(--radius-md);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-card);
-  color: var(--text-main);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+  color: #93c5fd;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -400,13 +475,192 @@ body {
 }
 
 .btn-work-toggle.is-working {
-  background-color: rgba(239, 68, 68, 0.12);
+  background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.4);
   color: #ff6b6b;
 }
 
 .btn-work-toggle:active {
   transform: scale(0.98);
+}
+
+/* 本日の日次損益＆実質時給カード */
+.pnl-hero-card {
+  background: linear-gradient(145deg, #18202c 0%, #161b22 100%);
+  border: 1px solid rgba(6, 193, 103, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.pnl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.pnl-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pnl-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.pnl-vehicle-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.pnl-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-pnl-action {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card-subtle);
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.btn-pnl-action:active {
+  transform: scale(0.96);
+}
+
+.pnl-main-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 10px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  margin-bottom: 10px;
+}
+
+.pnl-stat-box.highlight .pnl-box-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.pnl-box-value {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.pnl-currency {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-uber-green);
+}
+
+.pnl-val-number {
+  font-size: 28px;
+  font-weight: 900;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+.pnl-stat-box-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 1px solid var(--border-color);
+  padding-left: 10px;
+}
+
+.pnl-sub-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.pnl-sub-label {
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.pnl-sub-value {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.pnl-rates-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.pnl-rate-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pnl-rate-card.net {
+  border-color: rgba(6, 193, 103, 0.4);
+  background: rgba(6, 193, 103, 0.06);
+}
+
+.rate-card-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rate-card-val {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-main);
+  font-variant-numeric: tabular-nums;
+}
+
+.pnl-rate-card.net .rate-card-val {
+  color: var(--color-uber-green);
+}
+
+.pnl-breakdown-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.pnl-breakdown-pill {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
 }
 
 /* 今日のダッシュボードカード */

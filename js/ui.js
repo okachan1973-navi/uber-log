@@ -305,13 +305,73 @@ class UI {
       avgFeeEl.textContent = metrics.avgFeePerDelivery !== null ? `¥${metrics.avgFeePerDelivery.toLocaleString()}` : '--';
     }
 
-    // 折りたたみヘッダーサマリー（クエスト・配達明細）のリアルタイム更新
+    // 損益・実質時給カードの更新
+    const pnlProfitEl = document.getElementById('pnl-net-profit');
+    if (pnlProfitEl) {
+      pnlProfitEl.textContent = metrics.netProfit !== null ? metrics.netProfit.toLocaleString() : '--';
+    }
+
+    const pnlTotalSalesEl = document.getElementById('pnl-total-sales');
+    if (pnlTotalSalesEl) {
+      pnlTotalSalesEl.textContent = metrics.totalSales !== null ? `¥${metrics.totalSales.toLocaleString()}` : '--';
+    }
+
+    const pnlExpensesEl = document.getElementById('pnl-total-expenses');
+    if (pnlExpensesEl) {
+      pnlExpensesEl.textContent = `¥${(metrics.totalExpenses || 0).toLocaleString()}`;
+    }
+
+    const pnlNetHourlyEl = document.getElementById('pnl-net-hourly');
+    if (pnlNetHourlyEl) {
+      pnlNetHourlyEl.textContent = metrics.netHourlyWage !== null ? `¥${metrics.netHourlyWage.toLocaleString()}/h` : '算出不可';
+    }
+
+    const pnlGrossHourlyEl = document.getElementById('pnl-gross-hourly');
+    if (pnlGrossHourlyEl) {
+      pnlGrossHourlyEl.textContent = metrics.grossHourlyWage !== null ? `¥${metrics.grossHourlyWage.toLocaleString()}/h` : '算出不可';
+    }
+
+    const pnlAvgDeliveryEl = document.getElementById('pnl-avg-delivery');
+    if (pnlAvgDeliveryEl) {
+      pnlAvgDeliveryEl.textContent = metrics.avgSalesPerDelivery !== null ? `¥${metrics.avgSalesPerDelivery.toLocaleString()}/件` : '--';
+    }
+
+    const pnlVehicleEl = document.getElementById('pnl-vehicle-badge');
+    if (pnlVehicleEl) {
+      const v = metrics.vehicleType || 'レンタサイクル';
+      pnlVehicleEl.textContent = `🚲 ${v}`;
+    }
+
+    const pnlTagsEl = document.getElementById('pnl-breakdown-tags');
+    if (pnlTagsEl) {
+      const tags = [];
+      if (metrics.deliverySales !== null) {
+        tags.push(`<span class="pnl-breakdown-pill">配達: ¥${metrics.deliverySales.toLocaleString()}</span>`);
+      }
+      if (metrics.questSales !== null && metrics.questSales > 0) {
+        tags.push(`<span class="pnl-breakdown-pill" style="color:#fbbf24;">クエスト: ¥${metrics.questSales.toLocaleString()}</span>`);
+      }
+      if (metrics.adjustmentSales > 0) {
+        tags.push(`<span class="pnl-breakdown-pill" style="color:#60a5fa;">調整金: ¥${metrics.adjustmentSales.toLocaleString()}</span>`);
+      }
+      if (metrics.otherSales > 0) {
+        tags.push(`<span class="pnl-breakdown-pill">その他: ¥${metrics.otherSales.toLocaleString()}</span>`);
+      }
+      pnlTagsEl.innerHTML = tags.join('');
+    }
+
+    // 折りたたみヘッダーサマリー（クエスト・経費・配達明細）のリアルタイム更新
     const dedupedQuests = deduplicateQuests(log.quests || []);
     const validQuests = dedupedQuests.filter(q => !q.isDuplicateIgnored);
     const questCountEl = document.getElementById('today-quests-summary-count');
     const questAmountEl = document.getElementById('today-quests-summary-amount');
     if (questCountEl) questCountEl.textContent = `${validQuests.length}件`;
     if (questAmountEl) questAmountEl.textContent = `¥${(metrics.questSales || 0).toLocaleString()}`;
+
+    const expCountEl = document.getElementById('today-expenses-summary-count');
+    const expAmountEl = document.getElementById('today-expenses-summary-amount');
+    if (expCountEl) expCountEl.textContent = `${(metrics.expenses || []).length}件`;
+    if (expAmountEl) expAmountEl.textContent = `¥${(metrics.totalExpenses || 0).toLocaleString()}`;
 
     const delivCountEl = document.getElementById('today-deliveries-summary-count');
     const delivAmountEl = document.getElementById('today-deliveries-summary-amount');
@@ -322,6 +382,9 @@ class UI {
 
     // 本日のクエストリスト
     this.renderTodayQuests(log.quests || []);
+
+    // 本日の当日変動経費リスト
+    this.renderTodayExpenses(metrics.expenses || []);
 
     // 本日の配達履歴リスト
     this.renderDeliveryList(log.deliveries || []);
@@ -410,6 +473,53 @@ class UI {
         </div>
       `;
     }).join('');
+  }
+
+  // 本日の当日変動経費明細リストの描画
+  renderTodayExpenses(expenses) {
+    const listEl = document.getElementById('today-expenses-list');
+    if (!listEl) return;
+
+    if (!expenses || expenses.length === 0) {
+      listEl.innerHTML = `
+        <div class="empty-state" style="padding:10px; font-size:12px;">
+          経費明細はありません（レンタサイクル代・駐輪代等）
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = expenses.map(exp => {
+      const categoryIcon = exp.category === 'レンタサイクル' ? '🚲' :
+                           exp.category === '駐輪' ? '🅿️' :
+                           exp.category === '交通費' ? '🚃' : '🏷️';
+      return `
+        <div class="session-item" data-id="${exp.id}">
+          <div class="session-item-left">
+            <span class="session-badge" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3);">
+              ${categoryIcon} ${exp.category}
+            </span>
+            <span class="session-time-text" style="color: var(--text-muted);">${exp.memo || 'メモなし'}</span>
+          </div>
+          <div class="session-item-right">
+            <span class="session-duration-text" style="color: #f87171; font-weight: 700;">-¥${Number(exp.amount).toLocaleString()}</span>
+            <button type="button" class="btn-expense-delete" data-id="${exp.id}" title="削除" style="background:transparent; border:none; color:var(--text-dim); cursor:pointer; font-size:14px; padding:2px 6px;">🗑️</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    listEl.querySelectorAll('.btn-expense-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        if (confirm('この経費明細を削除しますか？')) {
+          store.deleteExpense(this.currentDate, id);
+          this.showToast('経費明細を削除しました');
+          this.renderTodayView();
+        }
+      });
+    });
   }
 
   // 配達履歴リストの描画
@@ -854,6 +964,219 @@ class UI {
   closeSettingsModal() {
     const overlay = document.getElementById('settings-modal-overlay');
     if (overlay) overlay.classList.remove('active');
+  }
+
+  // 売上取込モーダルを開く
+  openSalesImportModal() {
+    const overlay = document.getElementById('sales-import-modal-overlay');
+    const rawTextEl = document.getElementById('import-sales-raw-text');
+    const previewArea = document.getElementById('import-sales-preview-area');
+    if (rawTextEl) rawTextEl.value = '';
+    if (previewArea) previewArea.style.display = 'none';
+    this.pendingSalesImport = null;
+    if (overlay) overlay.classList.add('active');
+  }
+
+  // 売上取込モーダルを閉じる
+  closeSalesImportModal() {
+    const overlay = document.getElementById('sales-import-modal-overlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  // 売上テキスト解析の実行
+  handleParseSalesText() {
+    const rawTextEl = document.getElementById('import-sales-raw-text');
+    const rawText = rawTextEl ? rawTextEl.value.trim() : '';
+    if (!rawText) {
+      this.showToast('売上テキストを貼り付けてください');
+      return;
+    }
+
+    const parsed = parseUberSalesText(rawText);
+    
+    // 入力フォームに値を反映
+    const delivEl = document.getElementById('import-sales-delivery');
+    const questEl = document.getElementById('import-sales-quest');
+    const adjEl = document.getElementById('import-sales-adjustment');
+    const otherEl = document.getElementById('import-sales-other');
+    const questNotesEl = document.getElementById('import-sales-quest-notes');
+    const totalEl = document.getElementById('import-sales-total-preview');
+    const previewArea = document.getElementById('import-sales-preview-area');
+
+    if (delivEl) delivEl.value = parsed.deliverySales;
+    if (questEl) questEl.value = parsed.questSales;
+    if (adjEl) adjEl.value = parsed.adjustmentSales;
+    if (otherEl) otherEl.value = parsed.otherSales;
+
+    if (questNotesEl) {
+      if (parsed.detectedQuests && parsed.detectedQuests.length > 0) {
+        const ignoredCount = parsed.detectedQuests.filter(q => q.isDuplicateIgnored).length;
+        const validCount = parsed.detectedQuests.length - ignoredCount;
+        let noteText = `検知: ${parsed.detectedQuests.length}件中 ${validCount}件採用`;
+        if (ignoredCount > 0) {
+          noteText += `（⚠️重複検知 ${ignoredCount}件を自動除外）`;
+        }
+        questNotesEl.textContent = noteText;
+      } else {
+        questNotesEl.textContent = '';
+      }
+    }
+
+    const updatePreviewTotal = () => {
+      const d = Number(delivEl ? delivEl.value : 0) || 0;
+      const q = Number(questEl ? questEl.value : 0) || 0;
+      const a = Number(adjEl ? adjEl.value : 0) || 0;
+      const o = Number(otherEl ? otherEl.value : 0) || 0;
+      const tot = d + q + a + o;
+      if (totalEl) totalEl.textContent = `¥${tot.toLocaleString()}`;
+    };
+
+    updatePreviewTotal();
+
+    // 変更時にリアルタイム合計更新
+    [delivEl, questEl, adjEl, otherEl].forEach(el => {
+      if (el) {
+        el.oninput = updatePreviewTotal;
+      }
+    });
+
+    if (previewArea) previewArea.style.display = 'block';
+  }
+
+  // 売上取込の確定
+  confirmImportSales() {
+    const delivEl = document.getElementById('import-sales-delivery');
+    const questEl = document.getElementById('import-sales-quest');
+    const adjEl = document.getElementById('import-sales-adjustment');
+    const otherEl = document.getElementById('import-sales-other');
+    const rawTextEl = document.getElementById('import-sales-raw-text');
+
+    const delivery = Number(delivEl ? delivEl.value : 0) || 0;
+    const quest = Number(questEl ? questEl.value : 0) || 0;
+    const adjustment = Number(adjEl ? adjEl.value : 0) || 0;
+    const other = Number(otherEl ? otherEl.value : 0) || 0;
+    const rawText = rawTextEl ? rawTextEl.value : '';
+
+    store.saveDailySales(this.currentDate, {
+      delivery,
+      quest,
+      adjustment,
+      other,
+      rawText
+    });
+
+    this.closeSalesImportModal();
+    this.showToast('売上データを確定・保存しました');
+    this.refreshAll();
+  }
+
+  // 経費管理モーダルを開く
+  openExpensesModal() {
+    const overlay = document.getElementById('expenses-modal-overlay');
+    const log = store.getDailyLog(this.currentDate);
+    
+    // 車両種別のセット
+    const vehicleEl = document.getElementById('expense-vehicle-type');
+    if (vehicleEl) {
+      vehicleEl.value = log.vehicleType || 'レンタサイクル';
+    }
+
+    this.renderExpensesModalList();
+    if (overlay) overlay.classList.add('active');
+  }
+
+  // 経費管理モーダルを閉じる
+  closeExpensesModal() {
+    const overlay = document.getElementById('expenses-modal-overlay');
+    if (overlay) overlay.classList.remove('active');
+    this.refreshAll();
+  }
+
+  // 経費モーダル内の明細一覧と合計プレビューの描画
+  renderExpensesModalList() {
+    const log = store.getDailyLog(this.currentDate);
+    const expenses = log.expenses || [];
+    const container = document.getElementById('expense-items-container');
+    const totalPreview = document.getElementById('expense-total-preview');
+
+    let total = 0;
+    expenses.forEach(e => {
+      total += Number(e.amount) || 0;
+    });
+
+    if (totalPreview) {
+      totalPreview.textContent = `¥${total.toLocaleString()}`;
+    }
+
+    if (!container) return;
+
+    if (expenses.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state" style="padding:10px; font-size:12px;">
+          まだ登録された経費はありません
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = expenses.map(exp => {
+      const categoryIcon = exp.category === 'レンタサイクル' ? '🚲' :
+                           exp.category === '駐輪' ? '🅿️' :
+                           exp.category === '交通費' ? '🚃' : '🏷️';
+      return `
+        <div class="delivery-item" style="padding:10px 12px; margin-bottom:6px;">
+          <div class="delivery-item-left" style="gap:10px;">
+            <span style="font-size:16px;">${categoryIcon}</span>
+            <div>
+              <div style="font-weight:700; font-size:14px; color:var(--text-main);">
+                ${exp.category} <span style="color:#f87171; margin-left:6px;">¥${Number(exp.amount).toLocaleString()}</span>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted);">${exp.memo || 'メモなし'}</div>
+            </div>
+          </div>
+          <button type="button" class="btn-modal-expense-del" data-id="${exp.id}" style="background:transparent; border:none; color:var(--text-dim); cursor:pointer; font-size:16px; padding:4px 8px;">🗑️</button>
+        </div>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.btn-modal-expense-del').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        store.deleteExpense(this.currentDate, id);
+        this.renderExpensesModalList();
+        this.renderTodayView();
+      });
+    });
+  }
+
+  // 経費明細の追加
+  handleAddExpenseItem() {
+    const catEl = document.getElementById('expense-category');
+    const amtEl = document.getElementById('expense-amount');
+    const memoEl = document.getElementById('expense-memo');
+
+    const category = catEl ? catEl.value : 'レンタサイクル';
+    const amount = amtEl ? amtEl.value : '';
+    const memo = memoEl ? memoEl.value.trim() : '';
+
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      this.showToast('有効な金額を入力してください');
+      return;
+    }
+
+    store.addExpense(this.currentDate, {
+      category,
+      amount: Number(amount),
+      memo
+    });
+
+    if (amtEl) amtEl.value = '';
+    if (memoEl) memoEl.value = '';
+
+    this.showToast('経費を追加しました');
+    this.renderExpensesModalList();
+    this.renderTodayView();
   }
 
   // すべての画面を最新状態に更新

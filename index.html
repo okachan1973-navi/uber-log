@@ -31,19 +31,19 @@
   <div id="toast-container" class="toast-container"></div>
 
   <div class="app-container">
-    <!-- 上部固定ヘッダー -->
+    <!-- 上部固定ヘッダー（UBER LOG & 日付最優先、不要なV1.1・同期済テキストを撤廃） -->
     <header class="top-header">
       <div class="brand-title">
         <span>UBER LOG</span>
-        <span class="brand-badge">V1.1</span>
+      </div>
+      <div class="header-center">
+        <span id="today-date-text" class="header-date-prominent">--年--月--日</span>
       </div>
       <div class="header-right">
-        <div id="sync-status-badge" class="sync-status-badge" title="クラウド同期状態">
-          <span id="sync-status-icon">☁️</span>
-          <span id="sync-status-text">未接続</span>
-        </div>
-        <div id="today-date-text" class="date-indicator">--年--月--日</div>
-        <button id="btn-open-settings" class="btn-icon-header" type="button" title="設定・データ管理" aria-label="設定">⚙️</button>
+        <button id="btn-open-settings" class="btn-icon-header" type="button" title="設定・データ管理" aria-label="設定">
+          ⚙️
+          <span id="header-sync-dot" class="header-sync-dot" title="同期状態"></span>
+        </button>
       </div>
     </header>
 
@@ -81,12 +81,12 @@
         </div>
       </section>
 
-      <!-- 最重要アクションエリア -->
+      <!-- 最重要アクションエリア（配達完了：最優先1タップ操作） -->
       <section class="action-area">
         <!-- 画面最大の1タップ完了ボタン -->
         <button id="btn-add-delivery" class="btn-big-delivery" type="button">
           <span class="btn-icon">＋</span>
-          <span>配達1件完了</span>
+          <span>配達完了</span>
         </button>
 
         <!-- 直前1件取消ボタン -->
@@ -95,12 +95,70 @@
         </button>
       </section>
 
-      <!-- 複数セッション稼働制御ボタンエリア -->
+      <!-- 勤務状態操作ボタンエリア（配達ボタンと明確に異なる視覚階層） -->
       <section class="work-control-row" id="work-control-container">
         <!-- 状況に応じてJSで動的切り替え（開始・休憩・再開・終了） -->
         <button id="btn-work-toggle" class="btn-work-toggle" type="button">
           <span>▶ 稼働開始（第1部）</span>
         </button>
+      </section>
+
+      <!-- 本日の日次損益＆実質時給カード -->
+      <section class="pnl-hero-card" id="section-today-pnl">
+        <div class="pnl-header">
+          <div class="pnl-title-group">
+            <span class="pnl-title">📊 本日の損益・時給</span>
+            <span id="pnl-vehicle-badge" class="pnl-vehicle-badge">🚲 レンタサイクル</span>
+          </div>
+          <div class="pnl-actions">
+            <button id="btn-open-sales-import" class="btn-pnl-action" type="button" title="Uber Driver PCテキスト貼付">📥 売上取込</button>
+            <button id="btn-open-expenses-modal" class="btn-pnl-action" type="button" title="当日変動経費登録">🚴 経費登録</button>
+          </div>
+        </div>
+
+        <div class="pnl-main-grid">
+          <!-- 当日利益 -->
+          <div class="pnl-stat-box highlight">
+            <span class="pnl-box-label">当日利益（純利益）</span>
+            <div class="pnl-box-value">
+              <span class="pnl-currency">¥</span>
+              <span id="pnl-net-profit" class="pnl-val-number">--</span>
+            </div>
+          </div>
+
+          <!-- 総売上 & 当日経費 -->
+          <div class="pnl-stat-box-sub">
+            <div class="pnl-sub-row">
+              <span class="pnl-sub-label">総売上:</span>
+              <span id="pnl-total-sales" class="pnl-sub-value" style="color: var(--color-uber-green);">--</span>
+            </div>
+            <div class="pnl-sub-row">
+              <span class="pnl-sub-label">当日経費:</span>
+              <span id="pnl-total-expenses" class="pnl-sub-value" style="color: #f87171;">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 時給指標行 -->
+        <div class="pnl-rates-grid">
+          <div class="pnl-rate-card net">
+            <span class="rate-card-label">実質時給（経費控除後）</span>
+            <span id="pnl-net-hourly" class="rate-card-val">算出不可</span>
+          </div>
+          <div class="pnl-rate-card gross">
+            <span class="rate-card-label">売上時給</span>
+            <span id="pnl-gross-hourly" class="rate-card-val">算出不可</span>
+          </div>
+          <div class="pnl-rate-card avg">
+            <span class="rate-card-label">1件平均売上</span>
+            <span id="pnl-avg-delivery" class="rate-card-val">--</span>
+          </div>
+        </div>
+
+        <!-- 売上内訳バッジ列 -->
+        <div id="pnl-breakdown-tags" class="pnl-breakdown-tags">
+          <!-- JSで Delivery, Quest, Adjustment を表示 -->
+        </div>
       </section>
 
       <!-- 本日の稼働セッション一覧（何部でも追加・休憩可能） -->
@@ -126,28 +184,7 @@
         </div>
       </section>
 
-      <!-- 原則回避ルール確認カード -->
-      <section class="avoidance-rules-card">
-        <div class="avoidance-header" id="btn-toggle-avoidance">
-          <div class="avoidance-title">
-            <span>⚠️ 現時点の原則回避ルール</span>
-            <span class="avoidance-badge">要確認</span>
-          </div>
-          <span class="expand-icon" id="avoidance-expand-icon">▼</span>
-        </div>
-        <div class="avoidance-body" id="avoidance-body" style="display:none;">
-          <div class="avoidance-block">
-            <div class="avoidance-block-title">【避ける方面】</div>
-            <div class="avoidance-subtext">長距離・橋越え・帰路空走多発方面</div>
-            <div class="avoidance-reason">理由：橋越え、急坂、長距離、帰還負担、空走リスク。<br><span style="color:var(--text-dim);">※絶対拒否ではなく「原則回避」。エリア内近距離高効率等は例外。</span></div>
-          </div>
-          <div class="avoidance-block" style="margin-top:8px;">
-            <div class="avoidance-block-title">【避ける施設タイプ】</div>
-            <div class="avoidance-subtext">大型タワーマンション / 大型商業施設 / 大型ホテル・観光施設</div>
-            <div class="avoidance-reason">理由：駐輪場所、入館手続き、入口探索、エレベーター待ち、館内徒歩、退出導線による時間ロス（分類情報）。</div>
-          </div>
-        </div>
-      </section>
+
 
       <!-- 今日のダッシュボードカード（実走指標：整理版） -->
       <section class="dashboard-section">
@@ -229,6 +266,32 @@
         <div class="collapsible-body" id="today-quests-body" style="display:none;">
           <div id="today-quest-list" class="delivery-list">
             <!-- JSで動的生成 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 本日の当日変動経費一覧（折りたたみ式） -->
+      <section class="collapsible-section" id="section-today-expenses">
+        <div class="collapsible-header" id="btn-toggle-today-expenses">
+          <div class="collapsible-summary">
+            <span class="collapsible-icon">🚴</span>
+            <span class="collapsible-title">当日経費</span>
+            <span class="collapsible-badge" id="today-expenses-summary-count">0件</span>
+            <span class="collapsible-amount" id="today-expenses-summary-amount" style="color:#f87171;">¥0</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 11px; color: var(--text-dim);">編集</span>
+            <span class="expand-icon" id="today-expenses-expand-icon">▼</span>
+          </div>
+        </div>
+        <div class="collapsible-body" id="today-expenses-body" style="display:none;">
+          <div id="today-expense-list" class="delivery-list">
+            <!-- JSで動的生成 -->
+          </div>
+          <div class="sessions-action-row" style="margin-top:8px;">
+            <button id="btn-open-expense-modal-from-list" class="btn-session-add" type="button">
+              <span>＋ 経費明細を追加・編集</span>
+            </button>
           </div>
         </div>
       </section>
@@ -721,6 +784,150 @@
             <button id="btn-save-config" class="btn-modal-save" type="submit">保存</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         Uber売上データ取込モーダル（テキスト解析＆二重計上防止プレビュー）
+         ========================================== -->
+    <div id="sales-import-modal-overlay" class="modal-overlay">
+      <div class="modal-content" style="max-height: 90vh;">
+        <div class="modal-header">
+          <h3 class="modal-title">📥 Uber売上データ取込</h3>
+          <button id="btn-close-sales-import-modal" class="btn-close-modal" type="button">&times;</button>
+        </div>
+
+        <div class="modal-body-scrollable" style="padding: 16px;">
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+            Uber Driver PC版の売上画面からコピーしたテキストを貼り付けてください。Delivery、クエスト、調整金、総売上を自動解析します。
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="import-sales-raw-text">売上テキスト貼付</label>
+            <textarea id="import-sales-raw-text" class="form-control" rows="5" placeholder="Uber Driver画面の売上テキストをここに貼り付け..."></textarea>
+          </div>
+
+          <button id="btn-parse-sales-text" class="btn-work-toggle" type="button" style="margin-bottom: 14px; background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: #60a5fa;">
+            <span>🔍 テキストを解析</span>
+          </button>
+
+          <!-- 解析結果確認・修正プレビューエリア（登録前に必ず確認） -->
+          <div id="import-sales-preview-area" style="display: none; border-top: 1px solid var(--border-color); padding-top: 12px;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">
+              📋 解析結果の確認・修正
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="import-sales-delivery">Delivery売上（配達報酬）(円)</label>
+              <input type="number" id="import-sales-delivery" class="form-control" inputmode="numeric">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="import-sales-quest">クエスト合計 (円)</label>
+              <input type="number" id="import-sales-quest" class="form-control" inputmode="numeric">
+              <div id="import-sales-quest-notes" style="font-size: 11px; color: var(--text-dim); margin-top: 4px;"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="import-sales-adjustment">調整金 (円)</label>
+              <input type="number" id="import-sales-adjustment" class="form-control" inputmode="numeric">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="import-sales-other">その他Uber収入 (円)</label>
+              <input type="number" id="import-sales-other" class="form-control" inputmode="numeric">
+            </div>
+
+            <!-- 総売上プレビュー -->
+            <div style="background: rgba(6, 193, 103, 0.08); border: 1px solid rgba(6, 193, 103, 0.3); border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">総売上（合算）:</span>
+              <span id="import-sales-total-preview" style="font-size: 20px; font-weight: 900; color: var(--color-uber-green);">¥0</span>
+            </div>
+
+            <div class="modal-actions">
+              <button id="btn-cancel-import-sales" class="btn-modal-delete" type="button">キャンセル</button>
+              <button id="btn-confirm-import-sales" class="btn-modal-save" type="button">✓ この内容で確定・登録</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         当日変動経費登録モーダル（レンタサイクル・駐輪・交通費等）
+         ========================================== -->
+    <div id="expenses-modal-overlay" class="modal-overlay">
+      <div class="modal-content" style="max-height: 90vh;">
+        <div class="modal-header">
+          <h3 class="modal-title">🚴 本日の変動経費管理</h3>
+          <button id="btn-close-expenses-modal" class="btn-close-modal" type="button">&times;</button>
+        </div>
+
+        <div class="modal-body-scrollable" style="padding: 16px;">
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">
+            その日のUber稼働で直接発生した変動経費（レンタサイクル、駐輪料金、交通費等）を記録します。生活費（通常の食事等）は含めません。
+          </div>
+
+          <!-- 車両・移動手段種別 -->
+          <div class="form-group">
+            <label class="form-label" for="expense-vehicle-type">本日の移動手段・車両種別</label>
+            <select id="expense-vehicle-type" class="form-control">
+              <option value="レンタサイクル">🚲 レンタサイクル</option>
+              <option value="自前自転車">🚲 自前自転車</option>
+              <option value="電動レンタル">⚡ 電動レンタル</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+
+          <!-- 登録済み経費明細リスト -->
+          <div style="font-size: 13px; font-weight: 700; margin-top: 14px; margin-bottom: 8px; color: var(--text-main);">
+            登録済み経費明細
+          </div>
+          <div id="expense-items-container" class="delivery-list" style="margin-bottom: 14px;">
+            <!-- JSで動的生成 -->
+          </div>
+
+          <!-- 新規経費入力フォーム -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">
+              ＋ 新しい経費を追加
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="expense-category">種別</label>
+              <select id="expense-category" class="form-control">
+                <option value="レンタサイクル">レンタサイクル</option>
+                <option value="駐輪">駐輪</option>
+                <option value="交通費">交通費</option>
+                <option value="その他">その他</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="expense-amount">金額 (円)</label>
+              <input type="number" id="expense-amount" class="form-control" placeholder="例: 1155" inputmode="numeric">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="expense-memo">メモ</label>
+              <input type="text" id="expense-memo" class="form-control" placeholder="例: 3時間14分48秒（第1部）">
+            </div>
+
+            <button id="btn-add-expense-item" class="btn-modal-save" type="button" style="width: 100%; height: 42px;">
+              ＋ 明細を追加
+            </button>
+          </div>
+
+          <!-- 当日経費合計プレビュー -->
+          <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">当日経費合計:</span>
+            <span id="expense-total-preview" style="font-size: 20px; font-weight: 900; color: #f87171;">¥0</span>
+          </div>
+
+          <div class="modal-actions">
+            <button id="btn-close-expenses-bottom" class="btn-modal-save" type="button" style="width: 100%;">完了</button>
+          </div>
+        </div>
       </div>
     </div>
 
