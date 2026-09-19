@@ -332,128 +332,142 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": null,
+      "totalDistanceKm": 44.41,
+      "tripsCount": 11,
+      "officialPoints": 11,
+      "deliveriesCount": 11,
       "workSessions": [],
       "deliveries": [
         {
           "id": "del_0915_1",
           "index": 1,
           "completedAt": "09:04",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド 弁天町駅前店",
+          "area": "大阪市港区弁天3丁目",
           "fee": 355,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 3.10,
+          "durationStr": "25分3秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0915_2",
           "index": 2,
           "completedAt": "09:34",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "吉野家 朝潮橋店",
+          "area": "大阪市港区弁天3丁目",
           "fee": 396,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 3.33,
+          "durationStr": "15分54秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0915_3",
           "index": 3,
           "completedAt": "10:02",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド みなと通夕凪店",
+          "area": "大阪市港区三先2丁目",
           "fee": 320,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 2.33,
+          "durationStr": "16分13秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0915_4",
           "index": 4,
           "completedAt": "10:28",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド みなと通夕凪店",
+          "area": "大阪市港区三先1丁目",
           "fee": 320,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 2.37,
+          "durationStr": "14分22秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0915_5",
           "index": 5,
           "completedAt": "10:49",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド 九条店",
+          "area": "大阪市西区千代崎1丁目",
           "fee": 416,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 4.14,
+          "durationStr": "30分22秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0915_6",
           "index": 6,
           "completedAt": "11:22",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド 弁天町駅前店",
+          "area": "大阪市港区波除2丁目",
           "fee": 474,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 3.43,
+          "durationStr": "22分8秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0915_7",
           "index": 7,
           "completedAt": "11:35",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "カリーWEST百名店2020 いずみバーグ",
+          "area": "大阪市此花区西九条1丁目",
           "fee": 455,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 4.31,
+          "durationStr": "23分25秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0915_8",
           "index": 8,
           "completedAt": "12:05",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド JR野田駅前店",
+          "area": "大阪市福島区玉川1丁目",
           "fee": 320,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 3.25,
+          "durationStr": "20分29秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0915_9",
           "index": 9,
           "completedAt": "12:22",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド 高見プラザ店",
+          "area": "大阪市此花区梅香2丁目",
           "fee": 560,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 6.12,
+          "durationStr": "35分38秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0915_10",
           "index": 10,
           "completedAt": "13:07",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド 野田阪神店",
+          "area": "大阪市福島区吉野2丁目",
           "fee": 393,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 3.40,
+          "durationStr": "19分21秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0915_11",
           "index": 11,
           "completedAt": "13:19",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "KFC うめきたグリーンプレイス店",
+          "area": "大阪市西区江戸堀1丁目",
           "fee": 723,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 8.63,
+          "durationStr": "55分44秒",
+          "points": 1,
           "memo": ""
         }
       ],
@@ -500,7 +514,7 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": 25.74,
+      "totalDistanceKm": 37.01,
       "tripsCount": 8,
       "officialPoints": 10,
       "deliveriesCount": 8,
@@ -598,7 +612,7 @@ const CONFIRMED_SEED_DATA = {
           "restaurant": "ガスト",
           "area": "大阪市西区九条2丁目",
           "fee": 1050,
-          "distanceKm": null,
+          "distanceKm": 11.27,
           "durationStr": "1時間13分",
           "points": 2,
           "memo": "2ポイント獲得。遠方の一軒家方面。1件か2件セットか未確認、報酬悪くない可能性あり【要検証】"
@@ -759,7 +773,10 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": "09:00",
       "workEndedAt": "14:30",
       "workMinutes": 330,
-      "totalDistanceKm": null,
+      "totalDistanceKm": 33.24,
+      "tripsCount": 9,
+      "officialPoints": 11,
+      "deliveriesCount": 11,
       "vehicleType": "レンタサイクル",
       "workSessions": [
         {
@@ -774,123 +791,110 @@ const CONFIRMED_SEED_DATA = {
         {
           "id": "del_0918_1",
           "index": 1,
-          "completedAt": "09:20",
-          "restaurant": "マクドナルド九条店",
-          "area": "西区九条2丁目 → 此花区梅香3丁目",
-          "fee": 350,
-          "distanceKm": null,
-          "durationStr": "",
+          "completedAt": "09:06",
+          "restaurant": "マクドナルド 九条店",
+          "area": "大阪市西区本田4丁目",
+          "fee": 320,
+          "distanceKm": 0.66,
+          "durationStr": "7分45秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0918_2",
           "index": 2,
-          "completedAt": "09:48",
-          "restaurant": "すき家此花店",
-          "area": "此花区春日出南1丁目 → 此花区四貫島2丁目",
-          "fee": 380,
-          "distanceKm": null,
-          "durationStr": "",
+          "completedAt": "09:11",
+          "restaurant": "すき家 西九条駅前店",
+          "area": "大阪市港区弁天5丁目",
+          "fee": 491,
+          "distanceKm": 6.50,
+          "durationStr": "27分6秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0918_3",
           "index": 3,
-          "completedAt": "10:15",
-          "restaurant": "吉野家西九条店",
-          "area": "此花区西九条3丁目 → 此花区伝法4丁目",
-          "fee": 340,
-          "distanceKm": null,
-          "durationStr": "",
+          "completedAt": "09:36",
+          "restaurant": "マクドナルド みなと通夕凪店",
+          "area": "大阪市港区三先2丁目",
+          "fee": 367,
+          "distanceKm": 5.71,
+          "durationStr": "22分3秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0918_4",
           "index": 4,
-          "completedAt": "10:42",
-          "restaurant": "モスバーガー市岡店",
-          "area": "港区市岡2丁目 → 港区八幡屋1丁目",
-          "fee": 360,
-          "distanceKm": null,
-          "durationStr": "",
+          "completedAt": "10:22",
+          "restaurant": "セブン-イレブン 大阪泉尾4丁目店",
+          "area": "大阪市浪速区木川1丁目",
+          "fee": 537,
+          "distanceKm": 5.07,
+          "durationStr": "29分26秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0918_5",
           "index": 5,
-          "completedAt": "11:10",
-          "restaurant": "松屋弁天町店",
-          "area": "港区波除3丁目 → 港区磯路2丁目",
-          "fee": 390,
-          "distanceKm": null,
-          "durationStr": "",
-          "memo": ""
+          "completedAt": "11:09",
+          "restaurant": "バーガーキング 九条店",
+          "area": "大阪市福島区吉野5丁目",
+          "fee": 546,
+          "distanceKm": 3.65,
+          "durationStr": "22分6秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
         },
         {
           "id": "del_0918_6",
           "index": 6,
-          "completedAt": "11:45",
-          "restaurant": "ケンタッキー九条店",
-          "area": "西区九条1丁目 → 此花区西九条1丁目",
-          "fee": 357,
-          "distanceKm": null,
-          "durationStr": "",
+          "completedAt": "11:43",
+          "restaurant": "たこ家輝 西九条店",
+          "area": "大阪市港区市岡元町2丁目",
+          "fee": 517,
+          "distanceKm": 4.23,
+          "durationStr": "22分9秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0918_7",
           "index": 7,
-          "completedAt": "12:15",
-          "restaurant": "ガスト此花店",
-          "area": "此花区四貫島1丁目 → 此花区梅香1丁目",
-          "fee": 350,
-          "distanceKm": null,
-          "durationStr": "",
+          "completedAt": "12:32",
+          "restaurant": "スシロー 辰巳橋店",
+          "area": "大阪市港区南市岡3丁目",
+          "fee": 441,
+          "distanceKm": 2.90,
+          "durationStr": "23分30秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0918_8",
           "index": 8,
-          "completedAt": "12:48",
-          "restaurant": "ほっともっと九条店",
-          "area": "西区九条南2丁目 → 港区南市岡3丁目",
-          "fee": 340,
-          "distanceKm": null,
-          "durationStr": "",
+          "completedAt": "13:02",
+          "restaurant": "【塩のおにぎり屋】PACKN-TO",
+          "area": "大阪市西区九条南",
+          "fee": 320,
+          "distanceKm": 2.06,
+          "durationStr": "12分31秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0918_9",
           "index": 9,
-          "completedAt": "13:20",
-          "restaurant": "CoCo壱番屋港区店",
-          "area": "港区弁天1丁目 → 此花区島屋3丁目",
-          "fee": 350,
-          "distanceKm": null,
-          "durationStr": "",
-          "memo": ""
-        },
-        {
-          "id": "del_0918_10",
-          "index": 10,
-          "completedAt": "13:50",
-          "restaurant": "やよい軒弁天町店",
-          "area": "港区市岡元町3丁目 → 港区三先1丁目",
-          "fee": 350,
-          "distanceKm": null,
-          "durationStr": "",
-          "memo": ""
-        },
-        {
-          "id": "del_0918_11",
-          "index": 11,
-          "completedAt": "14:22",
-          "restaurant": "餃子の王将九条店",
-          "area": "西区九条2丁目 → 此花区西九条4丁目",
-          "fee": 350,
-          "distanceKm": null,
-          "durationStr": "",
-          "memo": ""
+          "completedAt": "13:55",
+          "restaurant": "松屋 九条店",
+          "area": "大阪市西区本田2丁目",
+          "fee": 378,
+          "distanceKm": 2.46,
+          "durationStr": "20分14秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
         }
       ],
       "quests": [
@@ -1616,9 +1620,19 @@ class Store {
             target.tripsCount = log.tripsCount;
             hasChange = true;
           }
+        } else if (date === '2026-09-15') {
+          const target = parsed.dailyLogs[date];
+          if (!target.deliveries || !target.deliveries[0] || !target.deliveries[0].restaurant) {
+            target.deliveries = log.deliveries;
+            target.totalDistanceKm = log.totalDistanceKm;
+            target.officialPoints = log.officialPoints;
+            target.deliveriesCount = log.deliveriesCount;
+            target.tripsCount = log.tripsCount;
+            hasChange = true;
+          }
         } else if (date === '2026-09-16') {
           const target = parsed.dailyLogs[date];
-          if (!target.deliveries || !target.deliveries[0] || !target.deliveries[0].restaurant || !target.deliveries.some(d => d.isUncompletedOrAdjusted)) {
+          if (!target.deliveries || !target.deliveries[0] || !target.deliveries[0].restaurant || !target.deliveries.some(d => d.isUncompletedOrAdjusted) || !target.deliveries[7] || target.deliveries[7].distanceKm === null) {
             target.deliveries = log.deliveries;
             target.totalDistanceKm = log.totalDistanceKm;
             target.officialPoints = log.officialPoints;
@@ -1628,8 +1642,12 @@ class Store {
           }
         } else if (date === '2026-09-18') {
           const target = parsed.dailyLogs[date];
-          if (!target.deliveries || target.deliveries.length < 11) {
+          if (!target.deliveries || target.deliveries.length !== 9 || target.deliveries[0].completedAt !== '09:06') {
             target.deliveries = log.deliveries;
+            target.totalDistanceKm = log.totalDistanceKm;
+            target.officialPoints = log.officialPoints;
+            target.deliveriesCount = log.deliveriesCount;
+            target.tripsCount = log.tripsCount;
             hasChange = true;
           }
           if (!target.sales) {
