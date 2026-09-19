@@ -648,6 +648,9 @@ const CONFIRMED_SEED_DATA = {
       "workEndedAt": null,
       "workMinutes": null,
       "totalDistanceKm": null,
+      "tripsCount": 7,
+      "officialPoints": 7,
+      "deliveriesCount": 7,
       "workSessions": [
         {
           "id": "sess_0917_1",
@@ -1299,6 +1302,39 @@ function formatDisplayAddress(addr) {
   return String(addr).replace(/^大阪市/, '').trim();
 }
 
+// UI表示用所要時間フォーマット（内部データは変えず、表示時のみ「分・秒」をコロン形式「MM:SS」へ変換。秒は必ず2桁）
+function formatDurationColon(durationStr) {
+  if (!durationStr) return '';
+  const s = String(durationStr).trim();
+
+  // 例: 1時間13分, 4時間30分, 1時間13分20秒
+  const matchH = s.match(/^(\d+)時間(?:(\d+)分)?(?:(\d+)秒)?$/);
+  if (matchH) {
+    const h = parseInt(matchH[1], 10);
+    const m = parseInt(matchH[2] || '0', 10);
+    const sec = parseInt(matchH[3] || '0', 10);
+    const totalMinutes = h * 60 + m;
+    return `${totalMinutes}:${String(sec).padStart(2, '0')}`;
+  }
+
+  // 例: 23分26秒, 27分6秒, 25分0秒, 15分
+  const matchM = s.match(/^(\d+)分(?:(\d+)秒)?$/);
+  if (matchM) {
+    const m = parseInt(matchM[1], 10);
+    const sec = parseInt(matchM[2] || '0', 10);
+    return `${m}:${String(sec).padStart(2, '0')}`;
+  }
+
+  // 例: 0秒, 45秒
+  const matchS = s.match(/^(\d+)秒$/);
+  if (matchS) {
+    const sec = parseInt(matchS[1], 10);
+    return `0:${String(sec).padStart(2, '0')}`;
+  }
+
+  return s;
+}
+
 
 // 「YYYY/MM/DD（曜日）」形式で曜日文字にクラスを付与
 function formatDateWithWeekday(dateStr, includeYear = true) {
@@ -1662,12 +1698,18 @@ class Store {
           }
         } else if (date === '2026-09-17') {
           const target = parsed.dailyLogs[date];
-          if (!target.deliveries || target.deliveries.length < 7) {
+          const isInvalidDeliveries = !target.deliveries ||
+            target.deliveries.length !== 7 ||
+            !target.deliveries[0] || target.deliveries[0].fee !== 704 ||
+            !target.deliveries[6] || target.deliveries[6].fee !== 621 ||
+            target.deliveries.some(d => d.fee === null || d.fee === undefined);
+          const lacksCounts = !target.tripsCount || !target.deliveriesCount || !target.officialPoints;
+          if (isInvalidDeliveries || lacksCounts) {
             target.deliveries = log.deliveries;
             target.totalDistanceKm = log.totalDistanceKm;
-            target.officialPoints = log.officialPoints;
-            target.deliveriesCount = log.deliveriesCount;
-            target.tripsCount = log.tripsCount;
+            target.officialPoints = log.officialPoints || 7;
+            target.deliveriesCount = log.deliveriesCount || 7;
+            target.tripsCount = log.tripsCount || 7;
             hasChange = true;
           }
         } else if (date === '2026-09-18') {
@@ -2924,6 +2966,7 @@ if (typeof window !== 'undefined') {
   window.formatJapaneseDate = formatJapaneseDate;
   window.formatShortJapaneseDate = formatShortJapaneseDate;
   window.formatDisplayAddress = formatDisplayAddress;
+  window.formatDurationColon = formatDurationColon;
   window.calculateMinutesBetween = calculateMinutesBetween;
   window.formatMinutes = formatMinutes;
   window.deduplicateQuests = deduplicateQuests;
@@ -2951,6 +2994,7 @@ if (typeof module !== 'undefined' && module.exports) {
     formatJapaneseDate,
     formatShortJapaneseDate,
     formatDisplayAddress,
+    formatDurationColon,
     calculateMinutesBetween,
     formatMinutes,
     deduplicateQuests,

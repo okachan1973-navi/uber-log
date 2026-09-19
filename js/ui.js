@@ -580,8 +580,10 @@ class UI {
       metaParts.push(`<span class="trip-meta-num">${distStr}</span><span class="trip-meta-unit">km</span>`);
     }
     if (del.durationStr) {
-      const formattedDuration = String(del.durationStr).replace(/(\d+)/g, '<span class="trip-meta-num">$1</span>');
-      metaParts.push(formattedDuration);
+      const formattedDuration = (typeof formatDurationColon === 'function')
+        ? formatDurationColon(del.durationStr)
+        : String(del.durationStr);
+      metaParts.push(`<span class="trip-meta-duration">${formattedDuration}</span>`);
     }
     const metaLine = metaParts.join('<span class="trip-meta-sep"> / </span>');
 
@@ -692,8 +694,10 @@ class UI {
         metaParts.push(`<span class="modal-meta-num">${distStr}</span><span class="modal-meta-unit">km</span>`);
       }
       if (foundDel.durationStr) {
-        const formattedDur = String(foundDel.durationStr).replace(/(\d+)/g, '<span class="modal-meta-num">$1</span>');
-        metaParts.push(formattedDur);
+        const formattedDur = (typeof formatDurationColon === 'function')
+          ? formatDurationColon(foundDel.durationStr)
+          : String(foundDel.durationStr);
+        metaParts.push(`<span class="modal-meta-duration">${formattedDur}</span>`);
       }
       if (foundDel.fee !== null && foundDel.fee !== undefined) {
         metaParts.push(`<span class="modal-meta-fee">¥${Number(foundDel.fee).toLocaleString()}</span>`);
