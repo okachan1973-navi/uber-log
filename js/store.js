@@ -123,17 +123,17 @@ const AVOIDANCE_DATABASE = {
     },
     {
       id: 'bm_0919_fukushima_tower',
-      title: 'ローソンストア100 西区京町堀店 ➔ 福島タワー（福島6丁目）',
+      title: 'セブン-イレブン 野田阪神駅前店 ➔ 福島タワー（海老江6丁目）',
       date: '2026-09-19',
-      completedAt: '08:09',
-      pickup: 'ローソンストア100 西区京町堀店',
-      drop: '大阪市福島区福島6丁目（福島タワー）',
-      fee: 473,
-      distanceKm: 4.70,
-      durationStr: '23分26秒',
+      completedAt: '15:45',
+      pickup: 'セブン-イレブン 野田阪神駅前店',
+      drop: '大阪市福島区海老江6丁目',
+      fee: 325,
+      distanceKm: 1.54,
+      durationStr: '10分27秒',
       status: 'AVOID',
       tags: ['入館手続き', 'エレベーター', '館内徒歩', '退館導線'],
-      memo: '入館手続きが複雑・記入等が必要・上階までの導線に時間がかかる・低単価案件では割に合いにくい。【今後の回避候補・建物注意】'
+      memo: '福島タワー。入館時の手続きが複雑。記入等が必要。上階への導線も面倒。時間ロスが大きく、特に低単価案件では割に合わない。地雷／原則回避候補。'
     },
     {
       id: 'bm_0919_sushiro_shiokusa',
@@ -147,7 +147,7 @@ const AVOIDANCE_DATABASE = {
       durationStr: '31分32秒',
       status: 'VERIFY',
       tags: ['橋', '自転車移動困難', '長距離', '要ルート検証'],
-      memo: '43号線弁天町〜大正ルート（木津川・尻無川の橋梁迂回注意）。自転車では利用しにくい／通行できないルートに当たり引き返して京セラドーム方面へ戻るロスが発生した。【要ルート検証】'
+      memo: '43号線付近で自転車ルート判断を誤り、引き返しによる大きな時間ロスが発生した。正しい自転車渡河ルートについては未検証。【要ルート検証】'
     }
   ],
   customSpots: []
@@ -164,56 +164,164 @@ const AVOIDANCE_RULES = {
 const CONFIRMED_SEED_DATA = {
   "version": "1.2",
   "dailyLogs": {
+    "2026-09-10": {
+      "date": "2026-09-10",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 14.31,
+      "tripsCount": 2,
+      "officialPoints": 3,
+      "deliveriesCount": 3,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_0910_1",
+          "index": 1,
+          "completedAt": "10:12",
+          "restaurant": "【塩のおにぎり屋】PACKN-TO",
+          "area": "大阪市港区弁天1丁目",
+          "fee": 402,
+          "distanceKm": 6.07,
+          "durationStr": "41分7秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0910_2",
+          "index": 2,
+          "completedAt": "11:04",
+          "restaurant": "ケンタッキーフライドチキン イオンモール大阪ドームシティ店",
+          "area": "大阪市此花区西九条3丁目",
+          "fee": 701,
+          "distanceKm": 8.24,
+          "durationStr": "42分58秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        }
+      ],
+      "quests": []
+    },
+    "2026-09-11": {
+      "date": "2026-09-11",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 17.47,
+      "tripsCount": 4,
+      "officialPoints": 5,
+      "deliveriesCount": 5,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_0911_1",
+          "index": 1,
+          "completedAt": "09:55",
+          "restaurant": "ケーラベーカリー Kayra Bakery",
+          "area": "大阪市港区南市岡2丁目",
+          "fee": 800,
+          "distanceKm": 8.01,
+          "durationStr": "46分2秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0911_2",
+          "index": 2,
+          "completedAt": "11:01",
+          "restaurant": "セブン-イレブン 大阪川口2丁目店",
+          "area": "大阪市西区本田1丁目",
+          "fee": 363,
+          "distanceKm": 1.98,
+          "durationStr": "10分47秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0911_3",
+          "index": 3,
+          "completedAt": "11:11",
+          "restaurant": "マクドナルド JR野田駅前店",
+          "area": "大阪市福島区海老江3丁目",
+          "fee": 478,
+          "distanceKm": 4.47,
+          "durationStr": "35分29秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0911_4",
+          "index": 4,
+          "completedAt": "12:06",
+          "restaurant": "マクドナルド JR野田駅前店",
+          "area": "大阪市福島区吉野5丁目",
+          "fee": 320,
+          "distanceKm": 3.01,
+          "durationStr": "23分27秒",
+          "points": 1,
+          "memo": ""
+        }
+      ],
+      "quests": []
+    },
     "2026-09-14": {
       "date": "2026-09-14",
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": null,
+      "totalDistanceKm": 18.02,
+      "tripsCount": 4,
+      "officialPoints": 5,
+      "deliveriesCount": 4,
       "workSessions": [],
       "deliveries": [
         {
           "id": "del_0914_1",
           "index": 1,
           "completedAt": "08:54",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド 九条店",
+          "area": "大阪市西区九条南2丁目",
           "fee": 320,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 1.87,
+          "durationStr": "11分54秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0914_2",
           "index": 2,
           "completedAt": "09:08",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "ガスト 港弁天町店",
+          "area": "大阪市港区波除2丁目",
           "fee": 619,
-          "distanceKm": null,
-          "durationStr": "",
-          "memo": ""
+          "distanceKm": 6.90,
+          "durationStr": "31分18秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
         },
         {
           "id": "del_0914_3",
           "index": 3,
           "completedAt": "09:21",
-          "restaurant": "海遊館方面",
-          "area": "港線方面ホテル",
+          "restaurant": "スターバックス コーヒー 海遊館店",
+          "area": "大阪市此花区桜島3丁目",
           "fee": 1166,
-          "distanceKm": null,
-          "durationStr": "",
-          "memo": "海遊館方面→港線方面ホテル。大型施設・移動導線負担大。【要検証】"
+          "distanceKm": 4.86,
+          "durationStr": "4時間30分",
+          "points": 1,
+          "memo": "Uber公式表示値・要確認（所要時間4時間30分表示）。大型施設・移動導線負担大【要検証】",
+          "isAvoidanceCase": true
         },
         {
           "id": "del_0914_4",
           "index": 4,
           "completedAt": "09:41",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド みなと通夕凪店",
+          "area": "大阪市港区田中3丁目",
           "fee": 338,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 4.39,
+          "durationStr": "21分08秒",
+          "points": 1,
           "memo": ""
         }
       ],
@@ -392,96 +500,108 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": null,
+      "totalDistanceKm": 25.74,
+      "tripsCount": 8,
+      "officialPoints": 10,
+      "deliveriesCount": 8,
       "workSessions": [],
       "deliveries": [
         {
           "id": "del_0916_1",
           "index": 1,
           "completedAt": "09:01",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "コクミンドラッグ 西九条店",
+          "area": "大阪市港区波除4丁目",
           "fee": 606,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 3.89,
+          "durationStr": "25分0秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0916_2",
           "index": 2,
           "completedAt": "09:19",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド みなと通夕凪店",
+          "area": "大阪市港区海岸通2丁目",
           "fee": 563,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 5.91,
+          "durationStr": "33分32秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0916_3",
           "index": 3,
           "completedAt": "09:28",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "セブン-イレブン 大阪築港1丁目店",
+          "area": "大阪市港区築港2丁目",
           "fee": 320,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 1.29,
+          "durationStr": "9分34秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0916_4",
           "index": 4,
           "completedAt": "09:39",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "吉野家 朝潮橋店",
+          "area": "大阪市港区夕凪1丁目",
           "fee": 525,
-          "distanceKm": null,
-          "durationStr": "",
-          "memo": ""
+          "distanceKm": 3.96,
+          "durationStr": "24分59秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
         },
         {
           "id": "del_0916_5",
           "index": 5,
           "completedAt": "10:29",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "【もっちり玄米と低脂質チキン】とりげん食堂 弁天町店",
+          "area": "大阪市西区新町4丁目",
           "fee": 906,
-          "distanceKm": null,
-          "durationStr": "",
-          "memo": ""
+          "distanceKm": 6.78,
+          "durationStr": "42分54秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
         },
         {
           "id": "del_0916_6",
           "index": 6,
           "completedAt": "10:54",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド 南堀江関西スーパー店",
+          "area": "大阪市西区南堀江4丁目",
           "fee": 0,
           "distanceKm": null,
-          "durationStr": "",
-          "memo": "0円報酬（キャンセルまたは保障外案件）"
+          "durationStr": "0秒",
+          "points": 0,
+          "memo": "未完了／売上調整された特殊トリップ（見積もり¥481、一部配達未完了のため売上調整¥0）",
+          "isUncompletedOrAdjusted": true
         },
         {
           "id": "del_0916_7",
           "index": 7,
           "completedAt": "10:56",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド 南堀江関西スーパー店",
+          "area": "大阪市大正区泉尾1丁目",
           "fee": 432,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 3.91,
+          "durationStr": "24分26秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0916_8",
           "index": 8,
           "completedAt": "11:58",
-          "restaurant": "",
-          "area": "遠方の一軒家方面",
+          "restaurant": "ガスト",
+          "area": "大阪市西区九条2丁目",
           "fee": 1050,
           "distanceKm": null,
-          "durationStr": "",
-          "memo": "遠方の一軒家方面。1件か2件セットか未確認、報酬悪くない可能性あり【要検証】"
+          "durationStr": "1時間13分",
+          "points": 2,
+          "memo": "2ポイント獲得。遠方の一軒家方面。1件か2件セットか未確認、報酬悪くない可能性あり【要検証】"
         }
       ],
       "quests": [
@@ -829,8 +949,7 @@ const CONFIRMED_SEED_DATA = {
           "distanceKm": 4.70,
           "durationStr": "23分26秒",
           "points": 1,
-          "memo": "福島タワー（入館手続き複雑・高層階導線ロス）【原則回避・建物注意】",
-          "isAvoidanceCase": true
+          "memo": ""
         },
         {
           "id": "del_0919_2",
@@ -986,7 +1105,7 @@ const CONFIRMED_SEED_DATA = {
           "distanceKm": 6.74,
           "durationStr": "31分32秒",
           "points": 1,
-          "memo": "43号線弁天町〜大正ルート（木津川・尻無川の橋梁迂回注意）【要ルート検証】",
+          "memo": "43号線付近で自転車ルート判断を誤り、引き返しによる大きな時間ロスが発生した。正しい自転車渡河ルートについては未検証。【要ルート検証】",
           "isAvoidanceCase": true
         },
         {
@@ -1035,7 +1154,8 @@ const CONFIRMED_SEED_DATA = {
           "distanceKm": 1.54,
           "durationStr": "10分27秒",
           "points": 1,
-          "memo": ""
+          "memo": "福島タワー。入館時の手続きが複雑。記入等が必要。上階への導線も面倒。時間ロスが大きく、特に低単価案件では割に合わない。地雷／原則回避候補。",
+          "isAvoidanceCase": true
         }
       ],
       "quests": [
@@ -1486,6 +1606,26 @@ class Store {
         if (!parsed.dailyLogs[date]) {
           parsed.dailyLogs[date] = log;
           hasChange = true;
+        } else if (date === '2026-09-14') {
+          const target = parsed.dailyLogs[date];
+          if (!target.deliveries || !target.deliveries[0] || !target.deliveries[0].restaurant) {
+            target.deliveries = log.deliveries;
+            target.totalDistanceKm = log.totalDistanceKm;
+            target.officialPoints = log.officialPoints;
+            target.deliveriesCount = log.deliveriesCount;
+            target.tripsCount = log.tripsCount;
+            hasChange = true;
+          }
+        } else if (date === '2026-09-16') {
+          const target = parsed.dailyLogs[date];
+          if (!target.deliveries || !target.deliveries[0] || !target.deliveries[0].restaurant || !target.deliveries.some(d => d.isUncompletedOrAdjusted)) {
+            target.deliveries = log.deliveries;
+            target.totalDistanceKm = log.totalDistanceKm;
+            target.officialPoints = log.officialPoints;
+            target.deliveriesCount = log.deliveriesCount;
+            target.tripsCount = log.tripsCount;
+            hasChange = true;
+          }
         } else if (date === '2026-09-18') {
           const target = parsed.dailyLogs[date];
           if (!target.deliveries || target.deliveries.length < 11) {
@@ -1509,9 +1649,11 @@ class Store {
           }
         } else if (date === '2026-09-19') {
           const target = parsed.dailyLogs[date];
-          // 均等配分や仮データ（fee=340等）が含まれているか、18件の公式トリップに未更新の場合は公式実績データへ置換
+          // 均等配分や仮データ（fee=340等）が含まれているか、18件の公式トリップに未更新、または福島タワー誤紐付けが残っている場合は公式実績データへ置換
           const hasSynthetic = target.deliveries && target.deliveries.some(d => d.fee === 340 || d.completedAt === '09:15');
-          if (!target.deliveries || hasSynthetic || target.deliveries.length !== 18 || !target.tripsCount) {
+          const hasWrongFukushima = target.deliveries && target.deliveries[0] && target.deliveries[0].memo && target.deliveries[0].memo.includes('福島タワー');
+          const lacksFukushimaOn18 = target.deliveries && target.deliveries[17] && (!target.deliveries[17].memo || !target.deliveries[17].memo.includes('福島タワー'));
+          if (!target.deliveries || hasSynthetic || target.deliveries.length !== 18 || !target.tripsCount || hasWrongFukushima || lacksFukushimaOn18) {
             target.deliveries = log.deliveries;
             target.tripsCount = log.tripsCount;
             target.officialPoints = log.officialPoints;
