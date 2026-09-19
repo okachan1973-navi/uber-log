@@ -1293,6 +1293,13 @@ function formatShortJapaneseDate(dateStr, includeYear = false) {
   return `${m}月${d}日（${weekday}）`;
 }
 
+// UI表示用住所（内部データは変えず、表示時のみ「大阪市」を省略）
+function formatDisplayAddress(addr) {
+  if (!addr) return '';
+  return String(addr).replace(/^大阪市/, '').trim();
+}
+
+
 // 「YYYY/MM/DD（曜日）」形式で曜日文字にクラスを付与
 function formatDateWithWeekday(dateStr, includeYear = true) {
   if (!dateStr) return '';
@@ -2746,6 +2753,7 @@ if (typeof window !== 'undefined') {
   window.getCurrentTimeString = getCurrentTimeString;
   window.formatJapaneseDate = formatJapaneseDate;
   window.formatShortJapaneseDate = formatShortJapaneseDate;
+  window.formatDisplayAddress = formatDisplayAddress;
   window.calculateMinutesBetween = calculateMinutesBetween;
   window.formatMinutes = formatMinutes;
   window.deduplicateQuests = deduplicateQuests;
@@ -2772,6 +2780,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getCurrentTimeString,
     formatJapaneseDate,
     formatShortJapaneseDate,
+    formatDisplayAddress,
     calculateMinutesBetween,
     formatMinutes,
     deduplicateQuests,

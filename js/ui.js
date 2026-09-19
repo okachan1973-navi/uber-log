@@ -119,10 +119,12 @@ class UI {
     const isWorking = !!ongoingSession || !!(log.workStartedAt && !log.workEndedAt);
     const isPausedOrEnded = sessions.length > 0 && !ongoingSession;
 
-    // 1. ヘッダー日付
+    // 1. ヘッダー日付（簡潔表記: 9月19日（土）など）
     const dateEl = document.getElementById('today-date-text');
     if (dateEl) {
-      dateEl.textContent = formatJapaneseDate(this.currentDate);
+      dateEl.textContent = typeof formatShortJapaneseDate === 'function' 
+        ? formatShortJapaneseDate(this.currentDate, false) 
+        : formatJapaneseDate(this.currentDate);
     }
 
     // 2. 稼働ステータスバッジ
@@ -493,30 +495,7 @@ class UI {
     // No.1 〜 昇順で並べる
     const sorted = Array.from(seenIndices.values()).sort((a, b) => a.index - b.index);
 
-    listEl.innerHTML = sorted.map(del => {
-      const metaParts = [];
-      if (del.distanceKm) metaParts.push(`${del.distanceKm}km`);
-      if (del.durationStr) metaParts.push(del.durationStr);
-      if (del.points && del.points > 1) metaParts.push(`${del.points}pt`);
-      const metaLine = metaParts.join(' ・ ');
-
-      return `
-        <div class="delivery-item ${del.isAvoidanceCase ? 'avoidance-case-item' : ''}" data-id="${del.id}">
-          <div class="delivery-item-header">
-            <span class="delivery-item-no">No.${del.index}</span>
-            <div class="delivery-item-header-right">
-              ${(del.fee !== null && del.fee !== undefined) ? `<span class="delivery-item-fee">¥${Number(del.fee).toLocaleString()}</span>` : ''}
-              <span class="delivery-item-time">完了 ${del.completedAt}</span>
-            </div>
-          </div>
-          ${del.restaurant ? `<div class="delivery-item-restaurant">${del.restaurant}</div>` : ''}
-          ${del.area ? `<div class="delivery-item-route">${del.area}</div>` : ''}
-          ${metaLine ? `<div class="delivery-item-stats">${metaLine}</div>` : ''}
-          ${del.memo ? `<div class="delivery-item-memo">${del.memo}</div>` : ''}
-          ${del.isAvoidanceCase ? `<div class="badge-avoidance-case">⚠️ 原則回避の基準事例</div>` : ''}
-        </div>
-      `;
-    }).join('');
+    listEl.innerHTML = sorted.map(del => this.renderDeliveryCardHtml(del, true)).join('');
 
     // カードタップで詳細モーダル展開
     listEl.querySelectorAll('.delivery-item').forEach(item => {
@@ -525,6 +504,64 @@ class UI {
         this.openDeliveryModal(id);
       });
     });
+  }
+
+  // 1トリップ（公式明細）カードHTML生成（ピックアップ → 配達先の視覚化 & 大阪市省略 & 店舗名折り返し対応）
+  renderDeliveryCardHtml(del, isClickable = false) {
+    const formattedArea = (typeof formatDisplayAddress === 'function') 
+      ? formatDisplayAddress(del.area) 
+      : (del.area ? String(del.area).replace(/^大阪市/, '').trim() : '');
+
+    const metaParts = [];
+    if (del.distanceKm) metaParts.push(`${del.distanceKm}km`);
+    if (del.durationStr) metaParts.push(del.durationStr);
+    const metaLine = metaParts.join(' / ');
+
+    return `
+      <div class="delivery-item ${del.isAvoidanceCase ? 'avoidance-case-item' : ''}" ${isClickable ? `data-id="${del.id || ''}" style="cursor:pointer;"` : ''}>
+        <div class="delivery-item-top">
+          <div class="delivery-item-no-time">
+            <span class="delivery-item-no">#${del.index}</span>
+            <span class="delivery-item-time">${del.completedAt || ''}</span>
+          </div>
+          ${(del.fee !== null && del.fee !== undefined) ? `
+            <div class="delivery-item-fee">¥${Number(del.fee).toLocaleString()}</div>
+          ` : ''}
+        </div>
+
+        ${(del.restaurant || formattedArea) ? `
+          <div class="delivery-route-flow">
+            ${del.restaurant ? `
+              <div class="route-node route-pickup">
+                <span class="route-badge badge-pickup">ピック</span>
+                <span class="route-name">${del.restaurant}</span>
+              </div>
+            ` : ''}
+            ${(del.restaurant && formattedArea) ? `
+              <div class="route-arrow-connector">
+                <span class="route-arrow">↓</span>
+              </div>
+            ` : ''}
+            ${formattedArea ? `
+              <div class="route-node route-drop">
+                <span class="route-badge badge-drop">配達先</span>
+                <span class="route-name">${formattedArea}</span>
+              </div>
+            ` : ''}
+          </div>
+        ` : ''}
+
+        ${(metaLine || (del.points && del.points > 1)) ? `
+          <div class="delivery-item-meta-bar">
+            ${metaLine ? `<span class="trip-meta-stat">${metaLine}</span>` : ''}
+            ${(del.points && del.points > 1) ? `<span class="trip-points-pill">${del.points}pt（ダブル）</span>` : ''}
+          </div>
+        ` : ''}
+
+        ${del.memo ? `<div class="delivery-item-memo">${del.memo}</div>` : ''}
+        ${del.isAvoidanceCase ? `<div class="badge-avoidance-case">⚠️ 原則回避の基準事例</div>` : ''}
+      </div>
+    `;
   }
 
   // 配達詳細モーダルを開く
@@ -591,11 +628,25 @@ class UI {
         ? (log.deliveries || []).filter(d => d.restaurant || (d.fee !== null && d.fee !== undefined))
         : (log.deliveries || []);
 
+      // 日別詳細上部の距離・実走サマリー（「Uber中距離」を完全撤廃し重複表示を解消）
+      const distVal = metrics.totalDistanceKm !== null ? metrics.totalDistanceKm : metrics.uberDeliveryDistanceKm;
+      const distText = distVal !== null ? `${distVal}km` : '未記録';
+      const workText = metrics.workMinutes !== null ? formatMinutes(metrics.workMinutes) : '未記録';
+      const wageText = metrics.hourlyWage !== null ? `¥${metrics.hourlyWage.toLocaleString()}` : null;
+
+      const summaryParts = [
+        `走行: ${distText}`,
+        `実走: ${workText}`
+      ];
+      if (wageText) {
+        summaryParts.push(`時給: ${wageText}`);
+      }
+
       return `
         <div class="history-card" data-date="${log.date}">
           <div class="history-card-header">
             <div class="history-date-title" style="display:flex; align-items:center; gap:8px;">
-              <span>📅 ${shortDate}</span>
+              <span>${shortDate}</span>
               ${metrics.milestone ? `<span class="milestone-badge" style="font-size:11px;">${metrics.milestone}</span>` : ''}
             </div>
             <span class="expand-icon">▼</span>
@@ -625,11 +676,8 @@ class UI {
                 <span>+¥${metrics.guaranteeBonus.toLocaleString()}（当日総額: ¥${metrics.totalSalesWithBonus.toLocaleString()}）</span>
               </div>
             ` : ''}
-            <div style="font-size: 13px; color:var(--text-muted); margin-bottom:10px; line-height:1.6;">
-              走行: ${metrics.totalDistanceKm !== null ? metrics.totalDistanceKm + 'km' : '未記録'} / 
-              Uber中距離: ${metrics.uberDeliveryDistanceKm !== null ? metrics.uberDeliveryDistanceKm + 'km' : '未記録'} / 
-              実働: ${metrics.workMinutes !== null ? formatMinutes(metrics.workMinutes) : '未記録'} / 
-              時給: ${metrics.hourlyWage !== null ? '¥' + metrics.hourlyWage.toLocaleString() : '算出不可'}
+            <div class="history-day-summary-line">
+              ${summaryParts.join(' / ')}
             </div>
 
             <!-- クエスト明細（あれば） -->
@@ -650,30 +698,7 @@ class UI {
             <!-- 配達明細 -->
             <div style="font-size: 13px; font-weight:700; color:var(--text-muted); margin: 8px 0 6px 0;">${deliverySectionTitle}</div>
             <div class="delivery-list">
-              ${histDeliveries.map(d => {
-                const metaParts = [];
-                if (d.distanceKm) metaParts.push(`${d.distanceKm}km`);
-                if (d.durationStr) metaParts.push(d.durationStr);
-                if (d.points && d.points > 1) metaParts.push(`${d.points}pt`);
-                const metaLine = metaParts.join(' ・ ');
-
-                return `
-                  <div class="delivery-item" style="padding:10px 14px;">
-                    <div class="delivery-item-header">
-                      <span class="delivery-item-no" style="font-size:16px;">#${d.index}</span>
-                      <div class="delivery-item-header-right">
-                        ${d.fee !== null ? `<span class="delivery-item-fee" style="font-size:16px;">¥${Number(d.fee).toLocaleString()}</span>` : ''}
-                        <span class="delivery-item-time" style="font-size:14px;">${d.completedAt}</span>
-                      </div>
-                    </div>
-                    ${d.restaurant ? `<div class="delivery-item-restaurant" style="font-size:16px; margin-top:2px;">${d.restaurant}</div>` : ''}
-                    ${d.area ? `<div class="delivery-item-route" style="font-size:14px; margin-top:1px;">${d.area}</div>` : ''}
-                    ${metaLine ? `<div class="delivery-item-stats" style="font-size:13px; color:var(--text-dim); margin-top:2px;">${metaLine}</div>` : ''}
-                    ${d.memo ? `<div class="delivery-item-memo" style="font-size:12px; margin-top:4px;">${d.memo}</div>` : ''}
-                    ${d.isAvoidanceCase ? `<span class="badge-avoidance-case" style="font-size:10px; margin-top:4px;">⚠️ 原則回避の基準事例</span>` : ''}
-                  </div>
-                `;
-              }).join('')}
+              ${histDeliveries.map(d => this.renderDeliveryCardHtml(d, false)).join('')}
             </div>
           </div>
         </div>
@@ -865,10 +890,10 @@ class UI {
               <span class="benchmark-status-badge ${badgeClass}">${badgeText}</span>
             </div>
             <div class="benchmark-date" style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">
-              📅 ${formatDateWithWeekday(bm.date, true)} ${bm.completedAt || ''} 実走データ
+              ${formatDateWithWeekday(bm.date, true)} ${bm.completedAt || ''} 実走データ
             </div>
             <div class="benchmark-route" style="font-size:13px; font-weight:700; color:var(--text-main); margin-bottom:8px;">
-              📍 ${bm.pickup} ➔ ${bm.drop}
+              📍 ${bm.pickup} ➔ ${(typeof formatDisplayAddress === 'function') ? formatDisplayAddress(bm.drop) : bm.drop}
             </div>
             <div class="benchmark-metrics-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:6px; background:rgba(0,0,0,0.25); padding:8px 10px; border-radius:var(--radius-sm); margin-bottom:8px; text-align:center;">
               <div class="benchmark-metric-item">
