@@ -1566,6 +1566,44 @@ body {
 
 .trip-meta-stat {
   font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.trip-meta-num {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.trip-meta-unit {
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-left: 1px;
+}
+
+.trip-meta-sep {
+  color: var(--text-muted);
+  margin: 0 3px;
+}
+
+.modal-meta-num {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.modal-meta-unit {
+  color: var(--text-dim);
+  font-weight: 500;
+  margin-left: 1px;
+}
+
+.modal-meta-sep {
+  color: var(--text-dim);
+  margin: 0 4px;
+}
+
+.modal-meta-fee {
+  color: var(--color-uber-green);
+  font-weight: 700;
 }
 
 .btn-trip-map {
@@ -1576,9 +1614,9 @@ body {
   border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   cursor: pointer;
   transition: all 0.12s ease;
   user-select: none;
@@ -1587,13 +1625,39 @@ body {
 }
 
 .btn-trip-map:active {
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
   transform: scale(0.95);
 }
 
 .btn-trip-map.no-map {
   opacity: 0.45;
+  color: var(--text-muted);
+}
+
+.btn-google-maps {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  height: 38px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  background: rgba(66, 133, 244, 0.16);
+  border: 1px solid rgba(66, 133, 244, 0.5);
+  color: #60a5fa;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-google-maps:active {
+  background: rgba(66, 133, 244, 0.3);
+  color: #ffffff;
+  transform: scale(0.97);
 }
 
 .trip-points-pill {

@@ -575,9 +575,15 @@ class UI {
       : (del.area ? String(del.area).replace(/^大阪市/, '').trim() : '');
 
     const metaParts = [];
-    if (del.distanceKm) metaParts.push(`${del.distanceKm}km`);
-    if (del.durationStr) metaParts.push(del.durationStr);
-    const metaLine = metaParts.join(' / ');
+    if (del.distanceKm !== null && del.distanceKm !== undefined && del.distanceKm !== '') {
+      const distStr = (typeof del.distanceKm === 'number') ? del.distanceKm.toFixed(2) : String(del.distanceKm);
+      metaParts.push(`<span class="trip-meta-num">${distStr}</span><span class="trip-meta-unit">km</span>`);
+    }
+    if (del.durationStr) {
+      const formattedDuration = String(del.durationStr).replace(/(\d+)/g, '<span class="trip-meta-num">$1</span>');
+      metaParts.push(formattedDuration);
+    }
+    const metaLine = metaParts.join('<span class="trip-meta-sep"> / </span>');
 
     const evalData = (typeof store !== 'undefined' && store.getTripEvaluationData) 
       ? store.getTripEvaluationData(del.id) 
@@ -625,7 +631,7 @@ class UI {
           <div class="trip-stats-meta">
             ${metaLine ? `<span class="trip-meta-stat">${metaLine}</span>` : ''}
             ${(del.points && del.points > 1) ? `<span class="trip-points-pill">${del.points}pt（ダブル）</span>` : ''}
-            <button type="button" class="btn-trip-map ${hasMap ? '' : 'no-map'}" data-del-id="${del.id || ''}" title="${hasMap ? '公式実績地図を表示' : '公式地図画像は未登録です'}">🗺️ 地図</button>
+            <button type="button" class="btn-trip-map ${hasMap ? '' : 'no-map'}" data-del-id="${del.id || ''}" title="${hasMap ? '公式実績地図を表示' : '公式地図画像は未登録です'}">MAP</button>
           </div>
           <div class="trip-eval-buttons" data-del-id="${del.id || ''}">
             <button type="button" class="btn-eval btn-eval-good ${evalVal === 'OK' ? 'active' : ''}" data-val="OK" title="また受けたい・良かった" aria-label="良かった">○</button>
@@ -673,7 +679,7 @@ class UI {
     const dropEl = document.getElementById('trip-map-drop-name');
     const metaEl = document.getElementById('trip-map-meta-info');
     const imgEl = document.getElementById('trip-map-img');
-    const toggleBtn = document.getElementById('btn-toggle-map-mode');
+    const gmapsBtn = document.getElementById('btn-open-google-maps');
 
     if (foundDel) {
       if (titleEl) titleEl.textContent = `🗺️ #${foundDel.index || ''} 公式実績マップ`;
@@ -681,28 +687,46 @@ class UI {
       if (dropEl) dropEl.textContent = (typeof formatDisplayAddress === 'function') ? formatDisplayAddress(foundDel.area) : (foundDel.area || '配達先');
 
       const metaParts = [];
-      if (foundDel.distanceKm) metaParts.push(`${foundDel.distanceKm}km`);
-      if (foundDel.durationStr) metaParts.push(foundDel.durationStr);
-      if (foundDel.fee !== null && foundDel.fee !== undefined) metaParts.push(`¥${Number(foundDel.fee).toLocaleString()}`);
-      if (metaEl) metaEl.textContent = metaParts.join(' / ');
+      if (foundDel.distanceKm !== null && foundDel.distanceKm !== undefined && foundDel.distanceKm !== '') {
+        const distStr = (typeof foundDel.distanceKm === 'number') ? foundDel.distanceKm.toFixed(2) : String(foundDel.distanceKm);
+        metaParts.push(`<span class="modal-meta-num">${distStr}</span><span class="modal-meta-unit">km</span>`);
+      }
+      if (foundDel.durationStr) {
+        const formattedDur = String(foundDel.durationStr).replace(/(\d+)/g, '<span class="modal-meta-num">$1</span>');
+        metaParts.push(formattedDur);
+      }
+      if (foundDel.fee !== null && foundDel.fee !== undefined) {
+        metaParts.push(`<span class="modal-meta-fee">¥${Number(foundDel.fee).toLocaleString()}</span>`);
+      }
+      if (metaEl) {
+        metaEl.innerHTML = metaParts.join('<span class="modal-meta-sep"> / </span>');
+      }
+
+      // Google Mapsで開くリンクの安全な共通生成
+      if (gmapsBtn) {
+        const origin = (foundDel.restaurant || '').trim();
+        const destination = (foundDel.area || '').trim();
+        if (origin && destination) {
+          gmapsBtn.href = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`;
+          gmapsBtn.style.display = 'inline-flex';
+          gmapsBtn.title = `${origin} から ${destination} への経路検索を開く`;
+        } else {
+          gmapsBtn.removeAttribute('href');
+          gmapsBtn.style.display = 'none';
+        }
+      }
     } else {
       if (titleEl) titleEl.textContent = '🗺️ 公式実績マップ';
+      if (metaEl) metaEl.innerHTML = '';
+      if (gmapsBtn) {
+        gmapsBtn.removeAttribute('href');
+        gmapsBtn.style.display = 'none';
+      }
     }
 
-    let isFull = false;
     if (imgEl) {
       imgEl.src = mapInfo.map;
       imgEl.alt = `${foundDel ? foundDel.restaurant : ''} 公式地図`;
-    }
-
-    if (toggleBtn) {
-      toggleBtn.textContent = '🔍 元スクショ全体を表示';
-      toggleBtn.onclick = (e) => {
-        e.stopPropagation();
-        isFull = !isFull;
-        if (imgEl) imgEl.src = isFull ? mapInfo.full : mapInfo.map;
-        toggleBtn.textContent = isFull ? '🗺️ 切り抜き地図を表示' : '🔍 元スクショ全体を表示';
-      };
     }
 
     modalOverlay.classList.add('active');
