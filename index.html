@@ -121,7 +121,25 @@
       <section class="today-settled-card" id="today-settled-card" style="display:none;">
         <div class="today-settled-header">
           <span class="today-settled-title">🏆 本日の確定実績</span>
+          <span id="settled-milestone-badge" class="milestone-badge" style="display:none;">🎉 累計75配達達成</span>
         </div>
+
+        <!-- 新規ドライバー保証・特別収入ボックス（対象日のみ表示） -->
+        <div id="settled-guarantee-box" class="settled-guarantee-box" style="display:none;">
+          <div class="guarantee-line">
+            <span class="g-label">通常稼働収入</span>
+            <strong class="g-val" id="settled-regular-sales">--</strong>
+          </div>
+          <div class="guarantee-line bonus">
+            <span class="g-label">新規ドライバー保証</span>
+            <strong class="g-val bonus" id="settled-guarantee-bonus">--</strong>
+          </div>
+          <div class="guarantee-line total">
+            <span class="g-label">保証込み総額</span>
+            <strong class="g-val total" id="settled-total-with-bonus">--</strong>
+          </div>
+        </div>
+
         <div class="today-settled-grid">
           <div class="settled-item highlight">
             <span class="settled-label">当日利益（純利益）</span>
@@ -141,15 +159,15 @@
           </div>
         </div>
         <div class="today-settled-sub-row">
-          <span>売上時給: <strong id="settled-gross-hourly">--</strong></span>
+          <span>通常時給: <strong id="settled-gross-hourly">--</strong></span>
           <span>1件平均: <strong id="settled-avg-delivery">--</strong></span>
         </div>
       </section>
 
-      <!-- 6. 配達明細セクション（9月18日（11件）） -->
+      <!-- 6. 配達明細セクション（9月19日（23件）） -->
       <section class="today-deliveries-section">
         <div class="today-deliveries-header">
-          <h3 id="today-deliveries-title" class="today-deliveries-title">9月18日（11件）</h3>
+          <h3 id="today-deliveries-title" class="today-deliveries-title">9月19日（23件）</h3>
         </div>
         <div id="today-delivery-list" class="delivery-list">
           <!-- JSで動的生成 -->

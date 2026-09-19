@@ -106,7 +106,50 @@ const AVOIDANCE_DATABASE = {
       reason: '駐輪困難、フロント/入口探索、入館手続き、館内徒歩・退出導線ロス'
     }
   ],
-  benchmarks: [],
+  benchmarks: [
+    {
+      id: 'bm_0917_mos',
+      title: 'モスバーガー 市岡みなと通り店 ➔ 此花区島屋6丁目',
+      date: '2026-09-17',
+      completedAt: '14:04',
+      pickup: 'モスバーガー 市岡みなと通り店',
+      drop: '大阪市此花区島屋6丁目',
+      fee: 621,
+      distanceKm: 5.58,
+      durationStr: '34分36秒',
+      status: 'AVOID',
+      tags: ['橋', '自転車移動困難', '階段', '長距離', '帰路の空走'],
+      memo: '巨大な橋を越える必要あり・自転車押し階段・通常エリア外・帰路空走・体力拘束大負担。【原則回避の基準事例】'
+    },
+    {
+      id: 'bm_0919_fukushima_tower',
+      title: 'セブンイレブン野田阪神駅前店 ➔ 福島タワー',
+      date: '2026-09-19',
+      completedAt: '08:52',
+      pickup: 'セブンイレブン野田阪神駅前店',
+      drop: '福島タワー',
+      fee: 340,
+      distanceKm: null,
+      durationStr: '',
+      status: 'AVOID',
+      tags: ['入館手続き', 'エレベーター', '館内徒歩', '退館導線'],
+      memo: '入館手続きが複雑・記入等が必要・上階までの導線に時間がかかる・低単価案件では割に合いにくい。【今後の回避候補・建物注意】'
+    },
+    {
+      id: 'bm_0919_sushiro_shiokusa',
+      title: 'スシロー辰巳橋店 ➔ 浪速区塩草1丁目',
+      date: '2026-09-19',
+      completedAt: '16:55',
+      pickup: 'スシロー辰巳橋店',
+      drop: '浪速区塩草1丁目',
+      fee: 429,
+      distanceKm: 6.74,
+      durationStr: '31分32秒',
+      status: 'VERIFY',
+      tags: ['橋', '自転車移動困難', '長距離', '要ルート検証'],
+      memo: '橋・道路選択で大きなロスが発生。43号線付近まで進んだが自転車では利用しにくい／通行できないルートに当たり引き返して京セラドーム方面へ戻るロスが発生した。【要ルート検証】'
+    }
+  ],
   customSpots: []
 };
 
@@ -754,6 +797,329 @@ const CONFIRMED_SEED_DATA = {
           "memo": "レンタサイクル1日利用"
         }
       ]
+    },
+    "2026-09-19": {
+      "date": "2026-09-19",
+      "workStartedAt": "08:30",
+      "workEndedAt": "17:00",
+      "workMinutes": 510,
+      "totalDistanceKm": null,
+      "vehicleType": "レンタサイクル",
+      "milestone": "累計75配達達成",
+      "workSessions": [
+        {
+          "id": "sess_0919_1",
+          "start": "08:30",
+          "end": "17:00",
+          "isApproximate": true,
+          "note": "08:30〜17:00頃"
+        }
+      ],
+      "deliveries": [
+        {
+          "id": "del_0919_1",
+          "index": 1,
+          "completedAt": "08:52",
+          "restaurant": "セブンイレブン野田阪神駅前店",
+          "area": "福島タワー",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": "入館手続き複雑・記入必要・高層階導線ロス大【原則回避・建物注意】",
+          "isAvoidanceCase": true
+        },
+        {
+          "id": "del_0919_2",
+          "index": 2,
+          "completedAt": "09:15",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_3",
+          "index": 3,
+          "completedAt": "09:38",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_4",
+          "index": 4,
+          "completedAt": "10:02",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_5",
+          "index": 5,
+          "completedAt": "10:25",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_6",
+          "index": 6,
+          "completedAt": "10:48",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_7",
+          "index": 7,
+          "completedAt": "11:10",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_8",
+          "index": 8,
+          "completedAt": "11:35",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_9",
+          "index": 9,
+          "completedAt": "11:55",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_10",
+          "index": 10,
+          "completedAt": "12:12",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_11",
+          "index": 11,
+          "completedAt": "12:30",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_12",
+          "index": 12,
+          "completedAt": "12:48",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_13",
+          "index": 13,
+          "completedAt": "13:08",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_14",
+          "index": 14,
+          "completedAt": "13:28",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_15",
+          "index": 15,
+          "completedAt": "13:50",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_16",
+          "index": 16,
+          "completedAt": "14:15",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_17",
+          "index": 17,
+          "completedAt": "14:40",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_18",
+          "index": 18,
+          "completedAt": "15:05",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_19",
+          "index": 19,
+          "completedAt": "15:28",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_20",
+          "index": 20,
+          "completedAt": "15:52",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_21",
+          "index": 21,
+          "completedAt": "16:15",
+          "restaurant": "",
+          "area": "",
+          "fee": 340,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_22",
+          "index": 22,
+          "completedAt": "16:35",
+          "restaurant": "",
+          "area": "",
+          "fee": 339,
+          "distanceKm": null,
+          "durationStr": "",
+          "memo": ""
+        },
+        {
+          "id": "del_0919_23",
+          "index": 23,
+          "completedAt": "16:55",
+          "restaurant": "スシロー辰巳橋店",
+          "area": "浪速区塩草1丁目",
+          "fee": 429,
+          "distanceKm": 6.74,
+          "durationStr": "31分32秒",
+          "memo": "43号線付近渡河不可・京セラドーム方面引返しロス【要ルート検証】",
+          "isAvoidanceCase": true
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_0919_1",
+          "time": "11:44",
+          "title": "クエスト",
+          "amount": 125,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0919_2",
+          "time": "11:58",
+          "title": "クエスト",
+          "amount": 145,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0919_3",
+          "time": "12:28",
+          "title": "クエスト",
+          "amount": 180,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0919_4",
+          "time": "12:34",
+          "title": "クエスト",
+          "amount": 210,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0919_5",
+          "time": "12:54",
+          "title": "クエスト",
+          "amount": 290,
+          "isDuplicateIgnored": false
+        }
+      ],
+      "sales": {
+        "delivery": 7908,
+        "quest": 950,
+        "adjustment": 0,
+        "other": 0,
+        "regularTotal": 8858,
+        "guaranteeBonus": 12132,
+        "guaranteeBonusNote": "新規ドライバー保証（累計75配達達成: 保証額42,525円 - 対象売上30,393円）",
+        "total": 20990
+      },
+      "expenses": []
     }
   }
 };
@@ -1173,6 +1539,31 @@ class Store {
             target.workStartedAt = log.workStartedAt;
             target.workEndedAt = log.workEndedAt;
             target.workMinutes = log.workMinutes;
+            hasChange = true;
+          }
+        } else if (date === '2026-09-19') {
+          const target = parsed.dailyLogs[date];
+          if (!target.deliveries || target.deliveries.length < 23) {
+            target.deliveries = log.deliveries;
+            hasChange = true;
+          }
+          if (!target.sales || !target.sales.guaranteeBonus) {
+            target.sales = log.sales;
+            hasChange = true;
+          }
+          if (!target.quests || target.quests.length < 5) {
+            target.quests = log.quests;
+            hasChange = true;
+          }
+          if (!target.workSessions || target.workSessions.length === 0) {
+            target.workSessions = log.workSessions;
+            target.workStartedAt = log.workStartedAt;
+            target.workEndedAt = log.workEndedAt;
+            target.workMinutes = log.workMinutes;
+            hasChange = true;
+          }
+          if (!target.milestone) {
+            target.milestone = log.milestone;
             hasChange = true;
           }
         }
@@ -1620,11 +2011,17 @@ class Store {
       }
     }
 
-    // 1日総売上（Delivery + Quest + Adjustment + Other）
+    // 1日総売上（通常稼働分: Delivery + Quest + Adjustment + Other）
     let totalSales = null;
     if (deliverySales !== null || questSales !== null || adjustmentSales > 0 || otherSales > 0) {
       totalSales = (deliverySales || 0) + (questSales || 0) + (adjustmentSales || 0) + (otherSales || 0);
     }
+
+    // 新規ドライバー保証・特別収入（通常時給・平均単価等の稼働効率指標には混ぜない）
+    const guaranteeBonus = (log.sales && log.sales.guaranteeBonus) ? Number(log.sales.guaranteeBonus) : (Number(log.guaranteeBonus) || 0);
+    const guaranteeBonusNote = (log.sales && log.sales.guaranteeBonusNote) ? log.sales.guaranteeBonusNote : (log.guaranteeBonusNote || '');
+    const totalSalesWithBonus = totalSales !== null ? (totalSales + guaranteeBonus) : null;
+    const milestone = log.milestone || (guaranteeBonus > 0 ? '累計75配達達成' : null);
 
     // 当日経費（変動費）の計算
     const expenses = Array.isArray(log.expenses) ? log.expenses : [];
@@ -1636,8 +2033,9 @@ class Store {
       }
     });
 
-    // 当日利益（純利益 ＝ 総売上 − 当日経費）
+    // 当日利益（純利益 ＝ 通常総売上 − 当日経費）
     const netProfit = totalSales !== null ? (totalSales - totalExpenses) : null;
+    const netProfitWithBonus = totalSalesWithBonus !== null ? (totalSalesWithBonus - totalExpenses) : null;
 
     // 総走行距離（確定データのみ、主要指標からは整理）
     const totalDistanceKm = (log.totalDistanceKm !== null && log.totalDistanceKm !== undefined && !isNaN(Number(log.totalDistanceKm)))
@@ -1752,6 +2150,11 @@ class Store {
       grossHourlyWage,
       netHourlyWage,
       hourlyWage,
+      guaranteeBonus,
+      guaranteeBonusNote,
+      totalSalesWithBonus,
+      netProfitWithBonus,
+      milestone,
       isDurationApproximate,
       hasActiveSession,
       workSessions: log.workSessions || [],

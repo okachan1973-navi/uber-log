@@ -261,8 +261,35 @@ class UI {
     // 7. 本日の確定結果カード（売上確定時のみ表示）
     const settledCard = document.getElementById('today-settled-card');
 
-    if (metrics.totalSales !== null) {
+    if (metrics.totalSales !== null || (metrics.totalSalesWithBonus !== null && metrics.totalSalesWithBonus > 0)) {
       if (settledCard) settledCard.style.display = 'block';
+
+      // マイルストーンバッジ（累計75配達達成等）
+      const milestoneBadge = document.getElementById('settled-milestone-badge');
+      if (milestoneBadge) {
+        if (metrics.milestone) {
+          milestoneBadge.textContent = `🎉 ${metrics.milestone}`;
+          milestoneBadge.style.display = 'inline-block';
+        } else {
+          milestoneBadge.style.display = 'none';
+        }
+      }
+
+      // 新規ドライバー保証・特別収入ボックス
+      const guaranteeBox = document.getElementById('settled-guarantee-box');
+      if (guaranteeBox) {
+        if (metrics.guaranteeBonus > 0) {
+          guaranteeBox.style.display = 'block';
+          const regSalesEl = document.getElementById('settled-regular-sales');
+          const bonusEl = document.getElementById('settled-guarantee-bonus');
+          const totWithBonusEl = document.getElementById('settled-total-with-bonus');
+          if (regSalesEl) regSalesEl.textContent = `¥${(metrics.totalSales || 0).toLocaleString()}`;
+          if (bonusEl) bonusEl.textContent = `+¥${metrics.guaranteeBonus.toLocaleString()}`;
+          if (totWithBonusEl) totWithBonusEl.textContent = `¥${(metrics.totalSalesWithBonus || 0).toLocaleString()}`;
+        } else {
+          guaranteeBox.style.display = 'none';
+        }
+      }
 
       const pProfit = document.getElementById('settled-net-profit');
       const pNetHourly = document.getElementById('settled-net-hourly');
@@ -273,7 +300,7 @@ class UI {
 
       if (pProfit) pProfit.textContent = `¥${(metrics.netProfit || 0).toLocaleString()}`;
       if (pNetHourly) pNetHourly.textContent = metrics.netHourlyWage !== null ? `¥${metrics.netHourlyWage.toLocaleString()}/h` : '--';
-      if (pSales) pSales.textContent = `¥${metrics.totalSales.toLocaleString()}`;
+      if (pSales) pSales.textContent = `¥${(metrics.totalSales || 0).toLocaleString()}`;
       if (pExpenses) pExpenses.textContent = `-¥${(metrics.totalExpenses || 0).toLocaleString()}`;
       if (pGrossHourly) pGrossHourly.textContent = metrics.grossHourlyWage !== null ? `¥${metrics.grossHourlyWage.toLocaleString()}/h` : '--';
       if (pAvgDelivery) pAvgDelivery.textContent = metrics.avgSalesPerDelivery !== null ? `¥${metrics.avgSalesPerDelivery.toLocaleString()}/件` : '--';
@@ -518,8 +545,9 @@ class UI {
       return `
         <div class="history-card" data-date="${log.date}">
           <div class="history-card-header">
-            <div class="history-date-title">
+            <div class="history-date-title" style="display:flex; align-items:center; gap:6px;">
               <span>📅 ${formatJapaneseDate(log.date)}</span>
+              ${metrics.milestone ? `<span class="milestone-badge" style="font-size:10px;">🎉 ${metrics.milestone}</span>` : ''}
             </div>
             <span class="expand-icon">▼</span>
           </div>
@@ -542,6 +570,12 @@ class UI {
             </div>
           </div>
           <div class="history-deliveries-detail">
+            ${metrics.guaranteeBonus > 0 ? `
+              <div style="background:rgba(234,179,8,0.1); border:1px solid rgba(234,179,8,0.3); border-radius:4px; padding:6px 10px; margin-bottom:8px; font-size:12px; color:#fbbf24; font-weight:700; display:flex; justify-content:space-between;">
+                <span>🌟 新規ドライバー保証（特別収入）</span>
+                <span>+¥${metrics.guaranteeBonus.toLocaleString()}（当日総額: ¥${metrics.totalSalesWithBonus.toLocaleString()}）</span>
+              </div>
+            ` : ''}
             <div style="font-size: 12px; color:var(--text-muted); margin-bottom:8px; line-height:1.5;">
               走行: ${metrics.totalDistanceKm !== null ? metrics.totalDistanceKm + 'km' : '未記録'} / 
               Uber中距離: ${metrics.uberDeliveryDistanceKm !== null ? metrics.uberDeliveryDistanceKm + 'km' : '未記録'} / 
@@ -683,7 +717,7 @@ class UI {
             <td>${m.count}件</td>
             <td>${m.deliverySales !== null ? `¥${m.deliverySales.toLocaleString()}` : '--'}</td>
             <td>${m.questSales !== null ? `¥${m.questSales.toLocaleString()}` : '¥0'}</td>
-            <td style="font-weight:700; color:var(--color-uber-green);">${m.totalSales !== null ? `¥${m.totalSales.toLocaleString()}` : '--'}</td>
+            <td style="font-weight:700; color:var(--color-uber-green);">${m.totalSales !== null ? `¥${m.totalSales.toLocaleString()}` : '--'}${m.guaranteeBonus > 0 ? `<div style="font-size:10px; color:#fbbf24; font-weight:normal; margin-top:2px;">*保証込 ¥${m.totalSalesWithBonus.toLocaleString()}</div>` : ''}</td>
           </tr>
         `;
       }).join('');

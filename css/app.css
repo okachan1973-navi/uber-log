@@ -489,6 +489,69 @@ body {
   color: var(--text-main);
 }
 
+/* 新規ドライバー保証・特別収入ボックス & マイルストーンバッジ */
+.milestone-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(234, 179, 8, 0.1) 100%);
+  border: 1px solid rgba(234, 179, 8, 0.5);
+  color: #fbbf24;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.settled-guarantee-box {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.guarantee-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 3px 0;
+}
+
+.guarantee-line strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-main);
+  font-variant-numeric: tabular-nums;
+}
+
+.guarantee-line.bonus .g-label {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.guarantee-line.bonus strong {
+  color: #fbbf24;
+  font-size: 15px;
+}
+
+.guarantee-line.total {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 4px;
+  padding-top: 6px;
+}
+
+.guarantee-line.total .g-label {
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.guarantee-line.total strong {
+  font-size: 18px;
+  color: var(--color-uber-green);
+}
+
 /* 未確定時の注記 */
 .today-unsettled-note {
   display: flex;
