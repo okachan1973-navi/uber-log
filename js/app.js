@@ -447,6 +447,23 @@ function initSettingsActions() {
     });
   }
 
+  // 最新版に更新（キャッシュ強制クリア＆再読込）
+  const forceReloadBtn = document.getElementById('btn-force-reload');
+  if (forceReloadBtn) {
+    forceReloadBtn.addEventListener('click', () => {
+      triggerHaptic();
+      ui.showToast('最新アセットを再読込中...');
+      setTimeout(() => {
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => caches.delete(name));
+          });
+        }
+        window.location.reload(true);
+      }, 300);
+    });
+  }
+
   // JSONバックアップ（エクスポート）
   const exportBtn = document.getElementById('btn-export-data');
   if (exportBtn) {

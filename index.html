@@ -22,8 +22,13 @@
     }
   </script>
 
+  <!-- キャッシュ制御（PWA/モバイル実機での即時反映対策） -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <!-- スタイルシート -->
-  <link rel="stylesheet" href="css/app.css?v=20260920_v6">
+  <link rel="stylesheet" href="css/app.css?v=20260920_v7">
 </head>
 <body>
 
@@ -467,6 +472,17 @@
           </div>
 
           <div class="settings-group">
+            <div class="settings-group-title">アプリ情報・更新</div>
+            <div class="settings-item">
+              <div class="settings-item-info">
+                <span class="settings-item-name">最新版に更新</span>
+                <span class="settings-item-desc">サーバーから最新アセットを再読込</span>
+              </div>
+              <button id="btn-force-reload" class="btn-settings" type="button">再読み込み</button>
+            </div>
+          </div>
+
+          <div class="settings-group">
             <div class="settings-group-title" style="color:var(--color-danger-red);">危険な操作</div>
             <div class="settings-item">
               <div class="settings-item-info">
@@ -829,8 +845,13 @@
             <img id="trip-map-img" src="" alt="Uber公式地図" style="width: 100%; height: auto; display: block;">
           </div>
 
+          <!-- 地図・ルート一口メモ入力欄（建物名・配達経験は保存可、個人情報自動転記厳禁） -->
+          <div class="trip-map-memo-box" style="margin-top: 10px;">
+            <input type="text" id="trip-map-memo-input" class="trip-map-memo-input" placeholder="ルートメモ（例: 安治川トンネル、橋で大迂回、入口裏手）" maxlength="60" autocomplete="off">
+          </div>
+
           <!-- フッター操作エリア -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 10px;">
             <a id="btn-open-google-maps" href="#" target="_blank" rel="noopener noreferrer" class="btn-google-maps">
               Google Mapsで開く
             </a>
@@ -848,12 +869,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- アプリスクリプト（順次読込） -->
-  <script src="js/supabase-config.js?v=20260920_v6"></script>
-  <script src="js/supabase-client.js?v=20260920_v6"></script>
-  <script src="js/trip-maps.js?v=20260920_v6"></script>
-  <script src="js/store.js?v=20260920_v6"></script>
-  <script src="js/cloud-sync.js?v=20260920_v6"></script>
-  <script src="js/ui.js?v=20260920_v6"></script>
-  <script src="js/app.js?v=20260920_v6"></script>
+  <script src="js/supabase-config.js?v=20260920_v7"></script>
+  <script src="js/supabase-client.js?v=20260920_v7"></script>
+  <script src="js/trip-maps.js?v=20260920_v7"></script>
+  <script src="js/store.js?v=20260920_v7"></script>
+  <script src="js/cloud-sync.js?v=20260920_v7"></script>
+  <script src="js/ui.js?v=20260920_v7"></script>
+  <script src="js/app.js?v=20260920_v7"></script>
 </body>
 </html>

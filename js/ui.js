@@ -596,10 +596,10 @@ class UI {
     const hasMap = Boolean(typeof TRIP_MAP_CATALOG !== 'undefined' && TRIP_MAP_CATALOG[del.id]);
 
     return `
-      <div class="delivery-item ${del.isAvoidanceCase ? 'avoidance-case-item' : ''}" ${isClickable ? `data-id="${del.id || ''}" style="cursor:pointer;"` : ''}>
+      <div class="delivery-item" ${isClickable ? `data-id="${del.id || ''}" style="cursor:pointer;"` : ''}>
         <div class="delivery-item-top">
           <div class="delivery-item-no-time">
-            <span class="delivery-item-no">#${del.index}</span>
+            <span class="delivery-item-no">No.${del.index}</span>
             <span class="delivery-item-time">${del.completedAt || ''}</span>
           </div>
           ${(del.fee !== null && del.fee !== undefined) ? `
@@ -645,9 +645,6 @@ class UI {
         <div class="trip-eval-reason-box" id="eval-box-${del.id || ''}" style="${evalVal ? '' : 'display:none;'}">
           <input type="text" class="input-eval-reason ${evalVal === 'AVOID' ? 'avoid-focus' : ''}" data-del-id="${del.id || ''}" placeholder="${evalVal === 'OK' ? '○の理由（例: 店も配達先も楽、高単価）' : (evalVal === 'AVOID' ? '×の理由（例: 入館ロス、大迂回、トンネル）' : '評価の理由を入力')}" value="${evalReason}" maxlength="100">
         </div>
-
-        ${del.memo ? `<div class="delivery-item-memo">${del.memo}</div>` : ''}
-        ${del.isAvoidanceCase ? `<div class="badge-avoidance-case">⚠️ 原則回避の基準事例</div>` : ''}
       </div>
     `;
   }
@@ -683,10 +680,25 @@ class UI {
     const imgEl = document.getElementById('trip-map-img');
     const gmapsBtn = document.getElementById('btn-open-google-maps');
 
+    const memoInput = document.getElementById('trip-map-memo-input');
+
     if (foundDel) {
-      if (titleEl) titleEl.textContent = `🗺️ #${foundDel.index || ''} 公式実績マップ`;
+      if (titleEl) titleEl.textContent = `🗺️ No.${foundDel.index || ''} 公式実績マップ`;
       if (pickupEl) pickupEl.textContent = foundDel.restaurant || '店舗名不明';
       if (dropEl) dropEl.textContent = (typeof formatDisplayAddress === 'function') ? formatDisplayAddress(foundDel.area) : (foundDel.area || '配達先');
+
+      if (memoInput) {
+        memoInput.value = (typeof store !== 'undefined' && store.getTripMapMemo)
+          ? store.getTripMapMemo(deliveryId)
+          : '';
+        memoInput.oninput = (e) => {
+          if (typeof store !== 'undefined' && store.setTripMapMemo) {
+            store.setTripMapMemo(deliveryId, e.target.value);
+          }
+        };
+        memoInput.onclick = (e) => e.stopPropagation();
+        memoInput.onkeydown = (e) => e.stopPropagation();
+      }
 
       const metaParts = [];
       if (foundDel.distanceKm !== null && foundDel.distanceKm !== undefined && foundDel.distanceKm !== '') {
@@ -722,6 +734,10 @@ class UI {
     } else {
       if (titleEl) titleEl.textContent = '🗺️ 公式実績マップ';
       if (metaEl) metaEl.innerHTML = '';
+      if (memoInput) {
+        memoInput.value = '';
+        memoInput.oninput = null;
+      }
       if (gmapsBtn) {
         gmapsBtn.removeAttribute('href');
         gmapsBtn.style.display = 'none';

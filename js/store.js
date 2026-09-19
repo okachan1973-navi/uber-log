@@ -1802,6 +1802,27 @@ class Store {
         }
       } catch (e) {}
 
+      // MAP一口メモデータの復元（公式実績とは完全分離。個人情報自動転記厳禁）
+      try {
+        if (typeof localStorage !== 'undefined') {
+          const rawMemos = localStorage.getItem('uber_log_trip_map_memos');
+          if (rawMemos) {
+            const memosMap = JSON.parse(rawMemos);
+            if (memosMap && typeof memosMap === 'object') {
+              Object.values(parsed.dailyLogs).forEach(plog => {
+                if (plog.deliveries) {
+                  plog.deliveries.forEach(pd => {
+                    if (memosMap[pd.id] !== undefined) {
+                      pd.mapMemo = String(memosMap[pd.id]);
+                    }
+                  });
+                }
+              });
+            }
+          }
+        }
+      } catch (e) {}
+
       if (hasChange && typeof localStorage !== 'undefined') {
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
@@ -1958,6 +1979,70 @@ class Store {
   getTripEvaluation(deliveryId) {
     const data = this.getTripEvaluationData(deliveryId);
     return data ? data.evaluation : null;
+  }
+
+  // MAP一口メモの保存（地図・ルート・建物名・入口等の本人経験記録。公式データ・○×評価とは完全分離。個人情報自動転記厳禁）
+  setTripMapMemo(deliveryId, memoText) {
+    if (!deliveryId) return '';
+    const cleanMemo = typeof memoText === 'string' ? memoText : '';
+
+    try {
+      if (typeof localStorage !== 'undefined') {
+        let memosMap = {};
+        const raw = localStorage.getItem('uber_log_trip_map_memos');
+        if (raw) {
+          try { memosMap = JSON.parse(raw) || {}; } catch (e) {}
+        }
+        if (cleanMemo.trim()) {
+          memosMap[deliveryId] = cleanMemo;
+        } else {
+          delete memosMap[deliveryId];
+        }
+        localStorage.setItem('uber_log_trip_map_memos', JSON.stringify(memosMap));
+      }
+    } catch (e) {
+      console.warn('UBER_LOG: Failed to save map memo to localStorage', e);
+    }
+
+    const allLogs = this.state && this.state.dailyLogs ? Object.values(this.state.dailyLogs) : [];
+    for (const log of allLogs) {
+      if (log.deliveries) {
+        const d = log.deliveries.find(item => item.id === deliveryId);
+        if (d) {
+          d.mapMemo = cleanMemo;
+          break;
+        }
+      }
+    }
+
+    return cleanMemo;
+  }
+
+  // MAP一口メモの取得
+  getTripMapMemo(deliveryId) {
+    if (!deliveryId) return '';
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('uber_log_trip_map_memos');
+        if (raw) {
+          const memosMap = JSON.parse(raw);
+          if (memosMap && memosMap[deliveryId] !== undefined) {
+            return String(memosMap[deliveryId]);
+          }
+        }
+      }
+    } catch (e) {}
+
+    const allLogs = this.state && this.state.dailyLogs ? Object.values(this.state.dailyLogs) : [];
+    for (const log of allLogs) {
+      if (log.deliveries) {
+        const d = log.deliveries.find(item => item.id === deliveryId);
+        if (d && d.mapMemo) {
+          return String(d.mapMemo);
+        }
+      }
+    }
+    return '';
   }
 
   // 指定日のログを取得（存在しなければ初期化して返す）
