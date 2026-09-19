@@ -1660,6 +1660,16 @@ class Store {
             target.tripsCount = log.tripsCount;
             hasChange = true;
           }
+        } else if (date === '2026-09-17') {
+          const target = parsed.dailyLogs[date];
+          if (!target.deliveries || target.deliveries.length < 7) {
+            target.deliveries = log.deliveries;
+            target.totalDistanceKm = log.totalDistanceKm;
+            target.officialPoints = log.officialPoints;
+            target.deliveriesCount = log.deliveriesCount;
+            target.tripsCount = log.tripsCount;
+            hasChange = true;
+          }
         } else if (date === '2026-09-18') {
           const target = parsed.dailyLogs[date];
           if (!target.deliveries || target.deliveries.length !== 9 || target.deliveries[0].completedAt !== '09:06') {
@@ -1749,6 +1759,12 @@ class Store {
           }
         }
       } catch (e) {}
+
+      if (hasChange && typeof localStorage !== 'undefined') {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+        } catch (e) {}
+      }
 
       return parsed;
     } catch (e) {
