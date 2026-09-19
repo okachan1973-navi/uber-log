@@ -495,19 +495,43 @@ class UI {
     // No.1 〜 昇順で並べる
     const sorted = Array.from(seenIndices.values()).sort((a, b) => a.index - b.index);
 
-    listEl.innerHTML = sorted.map(del => this.renderDeliveryCardHtml(del, true)).join('');
+    listEl.innerHTML = sorted.map(del => this.renderDeliveryCardHtml(del, true, this.currentDate)).join('');
 
     // カードタップで詳細モーダル展開
     listEl.querySelectorAll('.delivery-item').forEach(item => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-eval') || e.target.closest('.trip-eval-buttons')) return;
         const id = item.getAttribute('data-id');
         this.openDeliveryModal(id);
       });
     });
+
+    // ○／×評価ボタンイベント
+    listEl.querySelectorAll('.btn-eval').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const evalGroup = btn.closest('.trip-eval-buttons');
+        if (!evalGroup) return;
+        const delId = evalGroup.getAttribute('data-del-id');
+        const val = btn.getAttribute('data-val');
+        const isCurrentlyActive = btn.classList.contains('active');
+        const newVal = isCurrentlyActive ? null : val;
+
+        store.setTripEvaluation(delId, newVal);
+
+        evalGroup.querySelectorAll('.btn-eval').forEach(b => b.classList.remove('active'));
+        if (newVal) {
+          btn.classList.add('active');
+          this.showToast(newVal === 'OK' ? '評価「○」を保存しました' : '評価「×」を保存しました');
+        } else {
+          this.showToast('評価を解除しました');
+        }
+      });
+    });
   }
 
-  // 1トリップ（公式明細）カードHTML生成（ピックアップ → 配達先の視覚化 & 大阪市省略 & 店舗名折り返し対応）
-  renderDeliveryCardHtml(del, isClickable = false) {
+  // 1トリップ（公式明細）カードHTML生成（引/配の視覚化 & 大阪市省略 & ○/×評価対応）
+  renderDeliveryCardHtml(del, isClickable = false, logDate = '') {
     const formattedArea = (typeof formatDisplayAddress === 'function') 
       ? formatDisplayAddress(del.area) 
       : (del.area ? String(del.area).replace(/^大阪市/, '').trim() : '');
@@ -516,6 +540,8 @@ class UI {
     if (del.distanceKm) metaParts.push(`${del.distanceKm}km`);
     if (del.durationStr) metaParts.push(del.durationStr);
     const metaLine = metaParts.join(' / ');
+
+    const evalVal = del.evaluation || (typeof store !== 'undefined' && store.getTripEvaluation ? store.getTripEvaluation(del.id) : null);
 
     return `
       <div class="delivery-item ${del.isAvoidanceCase ? 'avoidance-case-item' : ''}" ${isClickable ? `data-id="${del.id || ''}" style="cursor:pointer;"` : ''}>
@@ -533,7 +559,7 @@ class UI {
           <div class="delivery-route-flow">
             ${del.restaurant ? `
               <div class="route-node route-pickup">
-                <span class="route-badge badge-pickup">ピック</span>
+                <span class="route-badge badge-pickup">引</span>
                 <span class="route-name">${del.restaurant}</span>
               </div>
             ` : ''}
@@ -544,19 +570,23 @@ class UI {
             ` : ''}
             ${formattedArea ? `
               <div class="route-node route-drop">
-                <span class="route-badge badge-drop">配達先</span>
+                <span class="route-badge badge-drop">配</span>
                 <span class="route-name">${formattedArea}</span>
               </div>
             ` : ''}
           </div>
         ` : ''}
 
-        ${(metaLine || (del.points && del.points > 1)) ? `
-          <div class="delivery-item-meta-bar">
+        <div class="trip-footer-row">
+          <div class="trip-stats-meta">
             ${metaLine ? `<span class="trip-meta-stat">${metaLine}</span>` : ''}
             ${(del.points && del.points > 1) ? `<span class="trip-points-pill">${del.points}pt（ダブル）</span>` : ''}
           </div>
-        ` : ''}
+          <div class="trip-eval-buttons" data-del-id="${del.id || ''}">
+            <button type="button" class="btn-eval btn-eval-good ${evalVal === 'OK' ? 'active' : ''}" data-val="OK" title="また受けたい・良かった" aria-label="良かった">○</button>
+            <button type="button" class="btn-eval btn-eval-avoid ${evalVal === 'AVOID' ? 'active' : ''}" data-val="AVOID" title="避けたい・地雷だった" aria-label="避けたい">×</button>
+          </div>
+        </div>
 
         ${del.memo ? `<div class="delivery-item-memo">${del.memo}</div>` : ''}
         ${del.isAvoidanceCase ? `<div class="badge-avoidance-case">⚠️ 原則回避の基準事例</div>` : ''}
@@ -671,34 +701,40 @@ class UI {
           </div>
           <div class="history-deliveries-detail">
             ${metrics.guaranteeBonus > 0 ? `
-              <div style="background:rgba(234,179,8,0.1); border:1px solid rgba(234,179,8,0.3); border-radius:6px; padding:8px 12px; margin-bottom:10px; font-size:13px; color:#fbbf24; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
-                <span>新規ドライバー保証（特別収入）</span>
-                <span>+¥${metrics.guaranteeBonus.toLocaleString()}（当日総額: ¥${metrics.totalSalesWithBonus.toLocaleString()}）</span>
+              <div class="history-bonus-badge">
+                <div class="bonus-badge-left">
+                  <span class="bonus-badge-title">ボーナス</span>
+                  <span class="bonus-badge-sub">（新規保証）</span>
+                </div>
+                <div class="bonus-badge-right">
+                  <span class="bonus-badge-amount">+¥${metrics.guaranteeBonus.toLocaleString()}</span>
+                  <span class="bonus-badge-total">（総額 ¥${metrics.totalSalesWithBonus.toLocaleString()}）</span>
+                </div>
               </div>
             ` : ''}
-            <div class="history-day-summary-line">
-              ${summaryParts.join(' / ')}
+            <div class="history-metrics-strip">
+              <div class="h-metric-item">
+                <span class="h-metric-lbl">走行</span>
+                <span class="h-metric-num">${distText}</span>
+              </div>
+              <span class="h-metric-divider">/</span>
+              <div class="h-metric-item">
+                <span class="h-metric-lbl">実走</span>
+                <span class="h-metric-num">${workText}</span>
+              </div>
+              ${wageText ? `
+                <span class="h-metric-divider">/</span>
+                <div class="h-metric-item">
+                  <span class="h-metric-lbl">時給</span>
+                  <span class="h-metric-num">${wageText}</span>
+                </div>
+              ` : ''}
             </div>
 
-            <!-- クエスト明細（あれば） -->
-            ${(log.quests && log.quests.length > 0) ? `
-              <div style="font-size: 13px; font-weight:700; color:var(--text-muted); margin: 8px 0 6px 0;">クエスト明細（${log.quests.length}件）</div>
-              <div class="delivery-list" style="margin-bottom:10px;">
-                ${log.quests.map(q => `
-                  <div class="quest-item ${q.isDuplicateIgnored ? 'duplicate-ignored' : ''}" style="padding:8px 12px;">
-                    <div style="font-size:14px; font-weight:600;">${q.time} ${q.title} ${q.isDuplicateIgnored ? '<span class="quest-ignored-badge">重複除外</span>' : ''}</div>
-                    <div style="font-weight:700; font-size:14px; color:${q.isDuplicateIgnored ? 'var(--text-dim)' : 'var(--color-uber-green)'};">
-                      ${q.isDuplicateIgnored ? `<s>¥${q.amount}</s>` : `+¥${q.amount}`}
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-
             <!-- 配達明細 -->
-            <div style="font-size: 13px; font-weight:700; color:var(--text-muted); margin: 8px 0 6px 0;">${deliverySectionTitle}</div>
+            <div class="history-deliveries-section-title">${deliverySectionTitle}</div>
             <div class="delivery-list">
-              ${histDeliveries.map(d => this.renderDeliveryCardHtml(d, false)).join('')}
+              ${histDeliveries.map(d => this.renderDeliveryCardHtml(d, false, log.date)).join('')}
             </div>
           </div>
         </div>
@@ -713,6 +749,29 @@ class UI {
         const icon = card.querySelector('.expand-icon');
         if (icon) {
           icon.textContent = card.classList.contains('expanded') ? '▲' : '▼';
+        }
+      });
+    });
+
+    // ○／×評価ボタンイベント
+    container.querySelectorAll('.btn-eval').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const evalGroup = btn.closest('.trip-eval-buttons');
+        if (!evalGroup) return;
+        const delId = evalGroup.getAttribute('data-del-id');
+        const val = btn.getAttribute('data-val');
+        const isCurrentlyActive = btn.classList.contains('active');
+        const newVal = isCurrentlyActive ? null : val;
+
+        store.setTripEvaluation(delId, newVal);
+
+        evalGroup.querySelectorAll('.btn-eval').forEach(b => b.classList.remove('active'));
+        if (newVal) {
+          btn.classList.add('active');
+          this.showToast(newVal === 'OK' ? '評価「○」を保存しました' : '評価「×」を保存しました');
+        } else {
+          this.showToast('評価を解除しました');
         }
       });
     });

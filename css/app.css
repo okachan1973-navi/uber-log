@@ -1341,11 +1341,95 @@ body {
   gap: 10px;
 }
 
-.history-day-summary-line {
+.history-bonus-badge {
+  background-color: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bonus-badge-left {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.bonus-badge-title {
   font-size: 13px;
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+.bonus-badge-sub {
+  font-size: 11px;
   color: var(--text-muted);
+}
+
+.bonus-badge-right {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.bonus-badge-amount {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fbbf24;
+  font-variant-numeric: tabular-nums;
+}
+
+.bonus-badge-total {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.history-metrics-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
   margin-bottom: 12px;
-  line-height: 1.6;
+}
+
+.h-metric-item {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.h-metric-lbl {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.h-metric-num {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.2px;
+}
+
+.h-metric-divider {
+  color: var(--border-color);
+  font-size: 12px;
+}
+
+.history-deliveries-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 12px 0 8px 0;
+  letter-spacing: 0.2px;
 }
 
 .delivery-item {
@@ -1382,9 +1466,9 @@ body {
 }
 
 .delivery-item-no {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
 }
 
 .delivery-item-time {
@@ -1416,11 +1500,15 @@ body {
 
 .route-badge {
   flex-shrink: 0;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 6px;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
   border-radius: 4px;
-  line-height: 1.3;
+  line-height: 1;
   margin-top: 2px;
 }
 
@@ -1448,7 +1536,7 @@ body {
 .route-arrow-connector {
   display: flex;
   align-items: center;
-  padding-left: 14px;
+  padding-left: 10px;
   margin: -2px 0;
 }
 
@@ -1458,7 +1546,14 @@ body {
   line-height: 1;
 }
 
-.delivery-item-meta-bar {
+.trip-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.trip-stats-meta {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1466,7 +1561,6 @@ body {
   font-size: 13px;
   color: var(--text-muted);
   font-weight: 600;
-  padding-top: 2px;
 }
 
 .trip-meta-stat {
@@ -1481,6 +1575,51 @@ body {
   border: 1px solid rgba(245, 158, 11, 0.35);
   padding: 1px 6px;
   border-radius: 4px;
+}
+
+.trip-eval-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.btn-eval {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-eval:active {
+  transform: scale(0.92);
+}
+
+.btn-eval-good.active {
+  background: rgba(6, 193, 103, 0.25);
+  border-color: var(--color-uber-green);
+  color: var(--color-uber-green);
+  font-weight: 800;
+  box-shadow: 0 0 6px rgba(6, 193, 103, 0.3);
+}
+
+.btn-eval-avoid.active {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: var(--color-danger-red);
+  color: var(--color-danger-red);
+  font-weight: 800;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.3);
 }
 
 .delivery-item-memo {
