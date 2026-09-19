@@ -1722,7 +1722,7 @@ class Store {
           }
         }
       }
-      // ○／×体験評価データの復元（公式実績は不変、別フィールドとして保持）
+      // ○／×体験評価・理由メモデータの復元（公式実績は不変、別フィールドとして保持）
       try {
         if (typeof localStorage !== 'undefined') {
           const rawEvals = localStorage.getItem('uber_log_trip_evaluations');
@@ -1732,8 +1732,15 @@ class Store {
               Object.values(parsed.dailyLogs).forEach(plog => {
                 if (plog.deliveries) {
                   plog.deliveries.forEach(pd => {
-                    if (evalsMap[pd.id]) {
-                      pd.evaluation = evalsMap[pd.id];
+                    const entry = evalsMap[pd.id];
+                    if (entry) {
+                      if (typeof entry === 'string') {
+                        pd.evaluation = entry;
+                        pd.evaluationReason = '';
+                      } else if (typeof entry === 'object') {
+                        pd.evaluation = entry.evaluation || null;
+                        pd.evaluationReason = entry.reason || '';
+                      }
                     }
                   });
                 }
@@ -1764,11 +1771,12 @@ class Store {
     }
   }
 
-  // ○／×体験評価の登録・変更・解除（公式実績本体は不変、体験評価として別管理）
+  // ○／×体験評価の登録・変更・解除（公式実績本体は不変、解除時も理由は保持して誤操作復元を可能にする）
   setTripEvaluation(deliveryId, evaluation) {
     if (!deliveryId) return null;
     const cleanEval = (evaluation === 'OK' || evaluation === 'AVOID') ? evaluation : null;
 
+    let prevReason = '';
     try {
       if (typeof localStorage !== 'undefined') {
         let evalsMap = {};
@@ -1776,16 +1784,24 @@ class Store {
         if (raw) {
           try { evalsMap = JSON.parse(raw) || {}; } catch (e) {}
         }
-        if (cleanEval) {
-          evalsMap[deliveryId] = cleanEval;
-        } else {
-          delete evalsMap[deliveryId];
+        const existing = evalsMap[deliveryId];
+        if (typeof existing === 'string') {
+          prevReason = '';
+        } else if (existing && typeof existing === 'object') {
+          prevReason = existing.reason || '';
         }
+
+        // 保存用オブジェクトの構築（解除時も誤操作保護のためreasonは保持）
+        evalsMap[deliveryId] = {
+          evaluation: cleanEval,
+          reason: prevReason,
+          updatedAt: new Date().toISOString()
+        };
         localStorage.setItem('uber_log_trip_evaluations', JSON.stringify(evalsMap));
       }
     } catch (e) {}
 
-    // 現在のstate内のdelivery.evaluationを更新
+    // 現在のstate内のdelivery.evaluationを更新（既存のevaluationReasonは保持）
     let changedDate = null;
     const allLogs = this.state && this.state.dailyLogs ? Object.entries(this.state.dailyLogs) : [];
     for (const [date, log] of allLogs) {
@@ -1793,6 +1809,9 @@ class Store {
         const d = log.deliveries.find(item => item.id === deliveryId);
         if (d) {
           d.evaluation = cleanEval;
+          if (prevReason && !d.evaluationReason) {
+            d.evaluationReason = prevReason;
+          }
           changedDate = date;
           break;
         }
@@ -1803,15 +1822,64 @@ class Store {
     return cleanEval;
   }
 
-  // ○／×体験評価の取得
-  getTripEvaluation(deliveryId) {
-    if (!deliveryId) return null;
+  // ○／×評価理由の一言メモ保存（利用者が明示的に編集した時のみ更新、既存詳細メモとは完全分離）
+  setTripEvaluationReason(deliveryId, reasonText) {
+    if (!deliveryId) return '';
+    const cleanReason = typeof reasonText === 'string' ? reasonText : '';
+
+    try {
+      if (typeof localStorage !== 'undefined') {
+        let evalsMap = {};
+        const raw = localStorage.getItem('uber_log_trip_evaluations');
+        if (raw) {
+          try { evalsMap = JSON.parse(raw) || {}; } catch (e) {}
+        }
+        const existing = evalsMap[deliveryId];
+        const curEval = typeof existing === 'string' ? existing : (existing && existing.evaluation ? existing.evaluation : null);
+
+        evalsMap[deliveryId] = {
+          evaluation: curEval,
+          reason: cleanReason,
+          updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem('uber_log_trip_evaluations', JSON.stringify(evalsMap));
+      }
+    } catch (e) {}
+
+    // 現在のstate内のdelivery.evaluationReasonを更新
+    let changedDate = null;
+    const allLogs = this.state && this.state.dailyLogs ? Object.entries(this.state.dailyLogs) : [];
+    for (const [date, log] of allLogs) {
+      if (log.deliveries) {
+        const d = log.deliveries.find(item => item.id === deliveryId);
+        if (d) {
+          d.evaluationReason = cleanReason;
+          changedDate = date;
+          break;
+        }
+      }
+    }
+
+    this.saveToStorage(changedDate);
+    return cleanReason;
+  }
+
+  // ○／×体験評価および理由メモの取得
+  getTripEvaluationData(deliveryId) {
+    if (!deliveryId) return { evaluation: null, reason: '' };
     try {
       if (typeof localStorage !== 'undefined') {
         const raw = localStorage.getItem('uber_log_trip_evaluations');
         if (raw) {
           const evalsMap = JSON.parse(raw);
-          if (evalsMap && evalsMap[deliveryId]) return evalsMap[deliveryId];
+          if (evalsMap && evalsMap[deliveryId]) {
+            const item = evalsMap[deliveryId];
+            if (typeof item === 'string') {
+              return { evaluation: item, reason: '' };
+            } else if (typeof item === 'object') {
+              return { evaluation: item.evaluation || null, reason: item.reason || '' };
+            }
+          }
         }
       }
     } catch (e) {}
@@ -1820,10 +1888,18 @@ class Store {
     for (const log of allLogs) {
       if (log.deliveries) {
         const d = log.deliveries.find(item => item.id === deliveryId);
-        if (d && d.evaluation) return d.evaluation;
+        if (d) {
+          return { evaluation: d.evaluation || null, reason: d.evaluationReason || '' };
+        }
       }
     }
-    return null;
+    return { evaluation: null, reason: '' };
+  }
+
+  // ○／×体験評価の取得（従来の互換性維持）
+  getTripEvaluation(deliveryId) {
+    const data = this.getTripEvaluationData(deliveryId);
+    return data ? data.evaluation : null;
   }
 
   // 指定日のログを取得（存在しなければ初期化して返す）

@@ -500,7 +500,7 @@ class UI {
     // カードタップで詳細モーダル展開
     listEl.querySelectorAll('.delivery-item').forEach(item => {
       item.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-eval') || e.target.closest('.trip-eval-buttons')) return;
+        if (e.target.closest('.btn-eval') || e.target.closest('.trip-eval-buttons') || e.target.closest('.btn-trip-map') || e.target.closest('.trip-eval-reason-box')) return;
         const id = item.getAttribute('data-id');
         this.openDeliveryModal(id);
       });
@@ -520,17 +520,55 @@ class UI {
         store.setTripEvaluation(delId, newVal);
 
         evalGroup.querySelectorAll('.btn-eval').forEach(b => b.classList.remove('active'));
+        const evalBox = listEl.querySelector(`#eval-box-${delId}`);
+        const reasonInput = evalBox ? evalBox.querySelector('.input-eval-reason') : null;
+
         if (newVal) {
           btn.classList.add('active');
+          if (evalBox) {
+            evalBox.style.display = 'block';
+            if (reasonInput) {
+              reasonInput.placeholder = newVal === 'OK' ? '○の理由（例: 店も配達先も楽、高単価）' : '×の理由（例: 入館ロス、大迂回、トンネル）';
+              if (newVal === 'AVOID') {
+                reasonInput.classList.add('avoid-focus');
+              } else {
+                reasonInput.classList.remove('avoid-focus');
+              }
+            }
+          }
           this.showToast(newVal === 'OK' ? '評価「○」を保存しました' : '評価「×」を保存しました');
         } else {
+          if (evalBox) {
+            evalBox.style.display = 'none';
+          }
           this.showToast('評価を解除しました');
         }
       });
     });
+
+    // 評価理由メモ入力イベント
+    listEl.querySelectorAll('.input-eval-reason').forEach(input => {
+      input.addEventListener('click', (e) => e.stopPropagation());
+      input.addEventListener('input', (e) => {
+        e.stopPropagation();
+        const delId = input.getAttribute('data-del-id');
+        if (delId && typeof store !== 'undefined' && store.setTripEvaluationReason) {
+          store.setTripEvaluationReason(delId, input.value);
+        }
+      });
+    });
+
+    // 地図ボタンイベント
+    listEl.querySelectorAll('.btn-trip-map').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const delId = btn.getAttribute('data-del-id');
+        this.openTripMapModal(delId);
+      });
+    });
   }
 
-  // 1トリップ（公式明細）カードHTML生成（引/配の視覚化 & 大阪市省略 & ○/×評価対応）
+  // 1トリップ（公式明細）カードHTML生成（引/配の視覚化 & 大阪市省略 & ○/×評価 & 理由メモ & 地図対応）
   renderDeliveryCardHtml(del, isClickable = false, logDate = '') {
     const formattedArea = (typeof formatDisplayAddress === 'function') 
       ? formatDisplayAddress(del.area) 
@@ -541,7 +579,13 @@ class UI {
     if (del.durationStr) metaParts.push(del.durationStr);
     const metaLine = metaParts.join(' / ');
 
-    const evalVal = del.evaluation || (typeof store !== 'undefined' && store.getTripEvaluation ? store.getTripEvaluation(del.id) : null);
+    const evalData = (typeof store !== 'undefined' && store.getTripEvaluationData) 
+      ? store.getTripEvaluationData(del.id) 
+      : { evaluation: del.evaluation || null, reason: del.evaluationReason || '' };
+    const evalVal = evalData.evaluation;
+    const evalReason = (evalData.reason || del.evaluationReason || '').replace(/"/g, '&quot;');
+
+    const hasMap = Boolean(typeof TRIP_MAP_CATALOG !== 'undefined' && TRIP_MAP_CATALOG[del.id]);
 
     return `
       <div class="delivery-item ${del.isAvoidanceCase ? 'avoidance-case-item' : ''}" ${isClickable ? `data-id="${del.id || ''}" style="cursor:pointer;"` : ''}>
@@ -581,6 +625,7 @@ class UI {
           <div class="trip-stats-meta">
             ${metaLine ? `<span class="trip-meta-stat">${metaLine}</span>` : ''}
             ${(del.points && del.points > 1) ? `<span class="trip-points-pill">${del.points}pt（ダブル）</span>` : ''}
+            <button type="button" class="btn-trip-map ${hasMap ? '' : 'no-map'}" data-del-id="${del.id || ''}" title="${hasMap ? '公式実績地図を表示' : '公式地図画像は未登録です'}">🗺️ 地図</button>
           </div>
           <div class="trip-eval-buttons" data-del-id="${del.id || ''}">
             <button type="button" class="btn-eval btn-eval-good ${evalVal === 'OK' ? 'active' : ''}" data-val="OK" title="また受けたい・良かった" aria-label="良かった">○</button>
@@ -588,10 +633,88 @@ class UI {
           </div>
         </div>
 
+        <!-- ○／×評価理由の一言メモ入力欄（○または×選択時のみ表示、未評価時は非表示） -->
+        <div class="trip-eval-reason-box" id="eval-box-${del.id || ''}" style="${evalVal ? '' : 'display:none;'}">
+          <input type="text" class="input-eval-reason ${evalVal === 'AVOID' ? 'avoid-focus' : ''}" data-del-id="${del.id || ''}" placeholder="${evalVal === 'OK' ? '○の理由（例: 店も配達先も楽、高単価）' : (evalVal === 'AVOID' ? '×の理由（例: 入館ロス、大迂回、トンネル）' : '評価の理由を入力')}" value="${evalReason}" maxlength="100">
+        </div>
+
         ${del.memo ? `<div class="delivery-item-memo">${del.memo}</div>` : ''}
         ${del.isAvoidanceCase ? `<div class="badge-avoidance-case">⚠️ 原則回避の基準事例</div>` : ''}
       </div>
     `;
+  }
+
+  // 公式トリップ地図モーダルを開く
+  openTripMapModal(deliveryId) {
+    if (!deliveryId) return;
+    const modalOverlay = document.getElementById('trip-map-modal-overlay');
+    if (!modalOverlay) return;
+
+    const mapInfo = (typeof TRIP_MAP_CATALOG !== 'undefined') ? TRIP_MAP_CATALOG[deliveryId] : null;
+    if (!mapInfo) {
+      this.showToast('このトリップの公式地図画像は未登録です（架空地図の生成は行いません）');
+      return;
+    }
+
+    let foundDel = null;
+    const allLogs = (typeof store !== 'undefined' && store.state && store.state.dailyLogs) ? Object.values(store.state.dailyLogs) : [];
+    for (const log of allLogs) {
+      if (log.deliveries) {
+        const d = log.deliveries.find(item => item.id === deliveryId);
+        if (d) {
+          foundDel = d;
+          break;
+        }
+      }
+    }
+
+    const titleEl = document.getElementById('trip-map-title');
+    const pickupEl = document.getElementById('trip-map-pickup-name');
+    const dropEl = document.getElementById('trip-map-drop-name');
+    const metaEl = document.getElementById('trip-map-meta-info');
+    const imgEl = document.getElementById('trip-map-img');
+    const toggleBtn = document.getElementById('btn-toggle-map-mode');
+
+    if (foundDel) {
+      if (titleEl) titleEl.textContent = `🗺️ #${foundDel.index || ''} 公式実績マップ`;
+      if (pickupEl) pickupEl.textContent = foundDel.restaurant || '店舗名不明';
+      if (dropEl) dropEl.textContent = (typeof formatDisplayAddress === 'function') ? formatDisplayAddress(foundDel.area) : (foundDel.area || '配達先');
+
+      const metaParts = [];
+      if (foundDel.distanceKm) metaParts.push(`${foundDel.distanceKm}km`);
+      if (foundDel.durationStr) metaParts.push(foundDel.durationStr);
+      if (foundDel.fee !== null && foundDel.fee !== undefined) metaParts.push(`¥${Number(foundDel.fee).toLocaleString()}`);
+      if (metaEl) metaEl.textContent = metaParts.join(' / ');
+    } else {
+      if (titleEl) titleEl.textContent = '🗺️ 公式実績マップ';
+    }
+
+    let isFull = false;
+    if (imgEl) {
+      imgEl.src = mapInfo.map;
+      imgEl.alt = `${foundDel ? foundDel.restaurant : ''} 公式地図`;
+    }
+
+    if (toggleBtn) {
+      toggleBtn.textContent = '🔍 元スクショ全体を表示';
+      toggleBtn.onclick = (e) => {
+        e.stopPropagation();
+        isFull = !isFull;
+        if (imgEl) imgEl.src = isFull ? mapInfo.full : mapInfo.map;
+        toggleBtn.textContent = isFull ? '🗺️ 切り抜き地図を表示' : '🔍 元スクショ全体を表示';
+      };
+    }
+
+    modalOverlay.classList.add('active');
+
+    const closeBtn = document.getElementById('btn-close-trip-map-modal');
+    const dismissBtn = document.getElementById('btn-dismiss-trip-map');
+    const closeModal = () => modalOverlay.classList.remove('active');
+    if (closeBtn) closeBtn.onclick = closeModal;
+    if (dismissBtn) dismissBtn.onclick = closeModal;
+    modalOverlay.onclick = (e) => {
+      if (e.target === modalOverlay) closeModal();
+    };
   }
 
   // 配達詳細モーダルを開く
@@ -767,12 +890,50 @@ class UI {
         store.setTripEvaluation(delId, newVal);
 
         evalGroup.querySelectorAll('.btn-eval').forEach(b => b.classList.remove('active'));
+        const evalBox = container.querySelector(`#eval-box-${delId}`);
+        const reasonInput = evalBox ? evalBox.querySelector('.input-eval-reason') : null;
+
         if (newVal) {
           btn.classList.add('active');
+          if (evalBox) {
+            evalBox.style.display = 'block';
+            if (reasonInput) {
+              reasonInput.placeholder = newVal === 'OK' ? '○の理由（例: 店も配達先も楽、高単価）' : '×の理由（例: 入館ロス、大迂回、トンネル）';
+              if (newVal === 'AVOID') {
+                reasonInput.classList.add('avoid-focus');
+              } else {
+                reasonInput.classList.remove('avoid-focus');
+              }
+            }
+          }
           this.showToast(newVal === 'OK' ? '評価「○」を保存しました' : '評価「×」を保存しました');
         } else {
+          if (evalBox) {
+            evalBox.style.display = 'none';
+          }
           this.showToast('評価を解除しました');
         }
+      });
+    });
+
+    // 評価理由メモ入力イベント
+    container.querySelectorAll('.input-eval-reason').forEach(input => {
+      input.addEventListener('click', (e) => e.stopPropagation());
+      input.addEventListener('input', (e) => {
+        e.stopPropagation();
+        const delId = input.getAttribute('data-del-id');
+        if (delId && typeof store !== 'undefined' && store.setTripEvaluationReason) {
+          store.setTripEvaluationReason(delId, input.value);
+        }
+      });
+    });
+
+    // 地図ボタンイベント
+    container.querySelectorAll('.btn-trip-map').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const delId = btn.getAttribute('data-del-id');
+        this.openTripMapModal(delId);
       });
     });
   }
