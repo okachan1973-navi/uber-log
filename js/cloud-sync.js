@@ -166,6 +166,17 @@ class CloudSyncManager {
       manualQuest: localLog.manualQuest !== null && localLog.manualQuest !== undefined
         ? localLog.manualQuest
         : (cloudLog.manualQuest ?? null),
+      deliveriesCount: (localLog.deliveriesCount !== undefined && localLog.deliveriesCount !== null)
+        ? localLog.deliveriesCount
+        : (cloudLog.deliveriesCount ?? null),
+      tripsCount: (localLog.tripsCount !== undefined && localLog.tripsCount !== null)
+        ? localLog.tripsCount
+        : (cloudLog.tripsCount ?? null),
+      officialPoints: (localLog.officialPoints !== undefined && localLog.officialPoints !== null)
+        ? localLog.officialPoints
+        : (cloudLog.officialPoints ?? null),
+      milestone: localLog.milestone || cloudLog.milestone || null,
+      vehicleType: localLog.vehicleType || cloudLog.vehicleType || 'レンタサイクル',
       workSessions: [],
       deliveries: [],
       quests: []
@@ -193,10 +204,33 @@ class CloudSyncManager {
     });
     merged.workSessions = Array.from(sessionMap.values()).sort((a, b) => (a.start || '').localeCompare(b.start || ''));
 
-    // 2. 配達明細のマージ（配達件数の消失を絶対阻止）
+    // 2. 配達明細のマージ（配達件数の消失を絶対阻止、確定済み公式実績日は手動空ログとの混在を防止）
+    const localDels = localLog.deliveries || [];
+    const cloudDels = cloudLog.deliveries || [];
+
+    // 公式実績トリップ（店舗名または確定報酬あり）の存在チェック
+    const localHasOfficial = localDels.some(d => d.restaurant || (d.fee !== null && d.fee !== undefined));
+    const cloudHasOfficial = cloudDels.some(d => d.restaurant || (d.fee !== null && d.fee !== undefined));
+
+    // 片方が公式実績トリップを持ち、もう片方が手動仮記録（店舗空かつ報酬null）のみ、あるいは旧手動ログ残骸の場合の分離
+    let filteredCloudDels = cloudDels;
+    let filteredLocalDels = localDels;
+
+    if (localHasOfficial && !cloudHasOfficial) {
+      // ローカルが公式トリップを持ち、クラウドが手動仮記録のみの場合はローカル公式を最優先
+      filteredCloudDels = [];
+    } else if (!localHasOfficial && cloudHasOfficial) {
+      // クラウドが公式トリップを持ち、ローカルが手動仮記録のみの場合はクラウド公式を最優先
+      filteredLocalDels = [];
+    } else if (localHasOfficial && cloudHasOfficial) {
+      // 双方に公式データがある場合、混入した手動空タップ（店舗空・報酬null・タイムスタンプID）を排除
+      filteredCloudDels = cloudDels.filter(d => d.restaurant || (d.fee !== null && d.fee !== undefined));
+      filteredLocalDels = localDels.filter(d => d.restaurant || (d.fee !== null && d.fee !== undefined));
+    }
+
     const deliveryMap = new Map();
-    (cloudLog.deliveries || []).forEach(d => deliveryMap.set(d.id, { ...d }));
-    (localLog.deliveries || []).forEach(localD => {
+    filteredCloudDels.forEach(d => deliveryMap.set(d.id, { ...d }));
+    filteredLocalDels.forEach(localD => {
       if (deliveryMap.has(localD.id)) {
         const cloudD = deliveryMap.get(localD.id);
         deliveryMap.set(localD.id, {
@@ -226,7 +260,7 @@ class CloudSyncManager {
       questMap.set(localQ.id, { ...(questMap.get(localQ.id) || {}), ...localQ });
     });
     const rawQuests = Array.from(questMap.values());
-    if (typeof window.deduplicateQuests === 'function') {
+    if (typeof window !== 'undefined' && typeof window.deduplicateQuests === 'function') {
       merged.quests = window.deduplicateQuests(rawQuests);
     } else {
       merged.quests = rawQuests;
@@ -262,7 +296,7 @@ class CloudSyncManager {
     merged.vehicleType = localLog.vehicleType || cloudLog.vehicleType || 'レンタサイクル';
 
     // 後方互換性プロパティの整合性補正
-    if (window.store && typeof window.store.syncLegacyWorkInfo === 'function') {
+    if (typeof window !== 'undefined' && window.store && typeof window.store.syncLegacyWorkInfo === 'function') {
       window.store.syncLegacyWorkInfo(merged);
     }
 

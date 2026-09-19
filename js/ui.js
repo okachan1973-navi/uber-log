@@ -308,12 +308,17 @@ class UI {
       settledCard.style.display = 'none';
     }
 
-    // 8. 配達明細セクション見出し（例: 9月18日（11件））
+    // 8. 配達明細セクション見出し（例: 9月19日（23件 / 18トリップ））
     const deliveriesTitleEl = document.getElementById('today-deliveries-title');
     if (deliveriesTitleEl) {
       const cleanDate = this.currentDate.replace(/\//g, '-');
       const [y, m, d] = cleanDate.split('-').map(Number);
-      deliveriesTitleEl.textContent = `${m}月${d}日（${metrics.count}件）`;
+      const trips = metrics.tripsCount || (log.deliveries ? log.deliveries.length : metrics.count);
+      if (trips && trips !== metrics.count) {
+        deliveriesTitleEl.textContent = `${m}月${d}日（${metrics.count}件 / ${trips}トリップ）`;
+      } else {
+        deliveriesTitleEl.textContent = `${m}月${d}日（${metrics.count}件）`;
+      }
     }
     this.renderDeliveryList(log.deliveries || []);
   }
@@ -450,7 +455,7 @@ class UI {
     });
   }
 
-  // 配達一覧リストの描画（No.1〜No.11昇順、一目で分かる情報に絞り込み、タップで詳細展開）
+  // 配達一覧リストの描画（1公式トリップ＝1明細カード、一目で分かる情報に絞り込み、タップで詳細展開）
   renderDeliveryList(deliveries) {
     const listEl = document.getElementById('today-delivery-list');
     if (!listEl) return;
@@ -465,19 +470,49 @@ class UI {
       return;
     }
 
-    // No.1 〜 No.11 の昇順で並べる
-    const sorted = [...deliveries].sort((a, b) => a.index - b.index);
+    // 公式実績（店舗名または確定報酬あり）が存在する場合、手動仮ログ（店舗空かつ報酬null）を除外して重複・空カードを完全排除
+    const hasOfficial = deliveries.some(d => d.restaurant || (d.fee !== null && d.fee !== undefined));
+    const targetDeliveries = hasOfficial
+      ? deliveries.filter(d => d.restaurant || (d.fee !== null && d.fee !== undefined))
+      : deliveries;
+
+    // 重複indexを排除（同一indexが存在する場合はより詳細な公式データを優先）
+    const seenIndices = new Map();
+    targetDeliveries.forEach(d => {
+      const idx = d.index || 0;
+      if (!seenIndices.has(idx)) {
+        seenIndices.set(idx, d);
+      } else {
+        const existing = seenIndices.get(idx);
+        if ((!existing.restaurant && d.restaurant) || (existing.fee === null && d.fee !== null)) {
+          seenIndices.set(idx, d);
+        }
+      }
+    });
+
+    // No.1 〜 昇順で並べる
+    const sorted = Array.from(seenIndices.values()).sort((a, b) => a.index - b.index);
 
     listEl.innerHTML = sorted.map(del => {
+      const metaParts = [];
+      if (del.distanceKm) metaParts.push(`${del.distanceKm}km`);
+      if (del.durationStr) metaParts.push(del.durationStr);
+      if (del.points && del.points > 1) metaParts.push(`${del.points}pt`);
+      const metaLine = metaParts.join(' ・ ');
+
       return `
         <div class="delivery-item ${del.isAvoidanceCase ? 'avoidance-case-item' : ''}" data-id="${del.id}">
           <div class="delivery-item-header">
             <span class="delivery-item-no">No.${del.index}</span>
-            <span class="delivery-item-time">完了 ${del.completedAt}</span>
+            <div class="delivery-item-header-right">
+              ${(del.fee !== null && del.fee !== undefined) ? `<span class="delivery-item-fee">¥${Number(del.fee).toLocaleString()}</span>` : ''}
+              <span class="delivery-item-time">完了 ${del.completedAt}</span>
+            </div>
           </div>
           ${del.restaurant ? `<div class="delivery-item-restaurant">${del.restaurant}</div>` : ''}
           ${del.area ? `<div class="delivery-item-route">${del.area}</div>` : ''}
-          ${del.memo ? `<div class="delivery-item-memo">📝 ${del.memo}</div>` : ''}
+          ${metaLine ? `<div class="delivery-item-stats">${metaLine}</div>` : ''}
+          ${del.memo ? `<div class="delivery-item-memo">${del.memo}</div>` : ''}
           ${del.isAvoidanceCase ? `<div class="badge-avoidance-case">⚠️ 原則回避の基準事例</div>` : ''}
         </div>
       `;
@@ -541,13 +576,27 @@ class UI {
 
     container.innerHTML = activeLogs.map(log => {
       const metrics = store.getCalculatedMetrics(log);
+      const shortDate = typeof formatShortJapaneseDate === 'function' 
+        ? formatShortJapaneseDate(log.date, false) 
+        : formatJapaneseDate(log.date);
+
+      const tripCount = log.tripsCount || (log.deliveries ? log.deliveries.length : metrics.count);
+      const deliverySectionTitle = (tripCount !== metrics.count)
+        ? `配達明細（全${tripCount}トリップ / ${metrics.count}件）`
+        : `配達明細（全${metrics.count}件）`;
+
+      // 公式トリップが存在する場合は手動空タップ残骸を非表示
+      const hasOfficial = (log.deliveries || []).some(d => d.restaurant || (d.fee !== null && d.fee !== undefined));
+      const histDeliveries = hasOfficial
+        ? (log.deliveries || []).filter(d => d.restaurant || (d.fee !== null && d.fee !== undefined))
+        : (log.deliveries || []);
 
       return `
         <div class="history-card" data-date="${log.date}">
           <div class="history-card-header">
-            <div class="history-date-title" style="display:flex; align-items:center; gap:6px;">
-              <span>📅 ${formatJapaneseDate(log.date)}</span>
-              ${metrics.milestone ? `<span class="milestone-badge" style="font-size:10px;">🎉 ${metrics.milestone}</span>` : ''}
+            <div class="history-date-title" style="display:flex; align-items:center; gap:8px;">
+              <span>📅 ${shortDate}</span>
+              ${metrics.milestone ? `<span class="milestone-badge" style="font-size:11px;">${metrics.milestone}</span>` : ''}
             </div>
             <span class="expand-icon">▼</span>
           </div>
@@ -571,12 +620,12 @@ class UI {
           </div>
           <div class="history-deliveries-detail">
             ${metrics.guaranteeBonus > 0 ? `
-              <div style="background:rgba(234,179,8,0.1); border:1px solid rgba(234,179,8,0.3); border-radius:4px; padding:6px 10px; margin-bottom:8px; font-size:12px; color:#fbbf24; font-weight:700; display:flex; justify-content:space-between;">
-                <span>🌟 新規ドライバー保証（特別収入）</span>
+              <div style="background:rgba(234,179,8,0.1); border:1px solid rgba(234,179,8,0.3); border-radius:6px; padding:8px 12px; margin-bottom:10px; font-size:13px; color:#fbbf24; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+                <span>新規ドライバー保証（特別収入）</span>
                 <span>+¥${metrics.guaranteeBonus.toLocaleString()}（当日総額: ¥${metrics.totalSalesWithBonus.toLocaleString()}）</span>
               </div>
             ` : ''}
-            <div style="font-size: 12px; color:var(--text-muted); margin-bottom:8px; line-height:1.5;">
+            <div style="font-size: 13px; color:var(--text-muted); margin-bottom:10px; line-height:1.6;">
               走行: ${metrics.totalDistanceKm !== null ? metrics.totalDistanceKm + 'km' : '未記録'} / 
               Uber中距離: ${metrics.uberDeliveryDistanceKm !== null ? metrics.uberDeliveryDistanceKm + 'km' : '未記録'} / 
               実働: ${metrics.workMinutes !== null ? formatMinutes(metrics.workMinutes) : '未記録'} / 
@@ -585,12 +634,12 @@ class UI {
 
             <!-- クエスト明細（あれば） -->
             ${(log.quests && log.quests.length > 0) ? `
-              <div style="font-size: 12px; font-weight:700; color:var(--text-muted); margin: 6px 0 4px 0;">🎁 クエスト明細（${log.quests.length}件）</div>
-              <div class="delivery-list" style="margin-bottom:8px;">
+              <div style="font-size: 13px; font-weight:700; color:var(--text-muted); margin: 8px 0 6px 0;">クエスト明細（${log.quests.length}件）</div>
+              <div class="delivery-list" style="margin-bottom:10px;">
                 ${log.quests.map(q => `
-                  <div class="quest-item ${q.isDuplicateIgnored ? 'duplicate-ignored' : ''}" style="padding:6px 10px;">
-                    <div style="font-size:13px;">${q.time} ${q.title} ${q.isDuplicateIgnored ? '<span class="quest-ignored-badge">重複除外</span>' : ''}</div>
-                    <div style="font-weight:700; font-size:13px; color:${q.isDuplicateIgnored ? 'var(--text-dim)' : 'var(--color-uber-green)'};">
+                  <div class="quest-item ${q.isDuplicateIgnored ? 'duplicate-ignored' : ''}" style="padding:8px 12px;">
+                    <div style="font-size:14px; font-weight:600;">${q.time} ${q.title} ${q.isDuplicateIgnored ? '<span class="quest-ignored-badge">重複除外</span>' : ''}</div>
+                    <div style="font-weight:700; font-size:14px; color:${q.isDuplicateIgnored ? 'var(--text-dim)' : 'var(--color-uber-green)'};">
                       ${q.isDuplicateIgnored ? `<s>¥${q.amount}</s>` : `+¥${q.amount}`}
                     </div>
                   </div>
@@ -599,25 +648,32 @@ class UI {
             ` : ''}
 
             <!-- 配達明細 -->
-            <div style="font-size: 12px; font-weight:700; color:var(--text-muted); margin: 6px 0 4px 0;">📋 配達明細（全${metrics.count}件）</div>
+            <div style="font-size: 13px; font-weight:700; color:var(--text-muted); margin: 8px 0 6px 0;">${deliverySectionTitle}</div>
             <div class="delivery-list">
-              ${(log.deliveries || []).map(d => `
-                <div class="delivery-item" style="padding:8px 12px;">
-                  <div class="delivery-item-left">
-                    <span class="delivery-item-idx" style="font-size:14px;">#${d.index}</span>
-                    <div>
-                      <span class="delivery-item-time" style="font-size:14px;">${d.completedAt}</span>
-                      ${d.fee !== null ? `<span style="font-weight:700; color:var(--color-uber-green); margin-left:6px;">¥${d.fee.toLocaleString()}</span>` : ''}
-                      ${(d.restaurant || d.area || d.distanceKm || d.durationStr || d.memo) ? `
-                        <div class="delivery-item-meta" style="font-size:12px;">
-                          ${[d.restaurant, d.area, d.distanceKm ? `${d.distanceKm}km` : '', d.durationStr || '', d.memo].filter(Boolean).join(' ・ ')}
-                        </div>
-                      ` : ''}
-                      ${d.isAvoidanceCase ? `<span class="badge-avoidance-case" style="font-size:9px;">⚠️ 原則回避の基準事例</span>` : ''}
+              ${histDeliveries.map(d => {
+                const metaParts = [];
+                if (d.distanceKm) metaParts.push(`${d.distanceKm}km`);
+                if (d.durationStr) metaParts.push(d.durationStr);
+                if (d.points && d.points > 1) metaParts.push(`${d.points}pt`);
+                const metaLine = metaParts.join(' ・ ');
+
+                return `
+                  <div class="delivery-item" style="padding:10px 14px;">
+                    <div class="delivery-item-header">
+                      <span class="delivery-item-no" style="font-size:16px;">#${d.index}</span>
+                      <div class="delivery-item-header-right">
+                        ${d.fee !== null ? `<span class="delivery-item-fee" style="font-size:16px;">¥${Number(d.fee).toLocaleString()}</span>` : ''}
+                        <span class="delivery-item-time" style="font-size:14px;">${d.completedAt}</span>
+                      </div>
                     </div>
+                    ${d.restaurant ? `<div class="delivery-item-restaurant" style="font-size:16px; margin-top:2px;">${d.restaurant}</div>` : ''}
+                    ${d.area ? `<div class="delivery-item-route" style="font-size:14px; margin-top:1px;">${d.area}</div>` : ''}
+                    ${metaLine ? `<div class="delivery-item-stats" style="font-size:13px; color:var(--text-dim); margin-top:2px;">${metaLine}</div>` : ''}
+                    ${d.memo ? `<div class="delivery-item-memo" style="font-size:12px; margin-top:4px;">${d.memo}</div>` : ''}
+                    ${d.isAvoidanceCase ? `<span class="badge-avoidance-case" style="font-size:10px; margin-top:4px;">⚠️ 原則回避の基準事例</span>` : ''}
                   </div>
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             </div>
           </div>
         </div>
@@ -679,8 +735,17 @@ class UI {
     const monthValEl = document.getElementById('month-sales-val');
     if (monthValEl) monthValEl.textContent = `¥${rev.thisMonth.sales.toLocaleString()}`;
 
+    const monthNoteEl = document.getElementById('month-sales-note');
+    if (monthNoteEl) monthNoteEl.textContent = rev.thisMonth.note;
+
+    const cumPeriodEl = document.getElementById('cumulative-sales-period');
+    if (cumPeriodEl) cumPeriodEl.textContent = rev.registeredTotal.periodLabel;
+
     const cumValEl = document.getElementById('cumulative-sales-val');
     if (cumValEl) cumValEl.textContent = `¥${rev.registeredTotal.sales.toLocaleString()}`;
+
+    const cumNoteEl = document.getElementById('cumulative-sales-note');
+    if (cumNoteEl) cumNoteEl.textContent = rev.registeredTotal.note;
 
     // パフォーマンス指標
     const totalDelEl = document.getElementById('analytics-total-deliveries');
@@ -698,7 +763,7 @@ class UI {
 
     const totalDistEl = document.getElementById('analytics-total-distance');
     if (totalDistEl) {
-      totalDistEl.textContent = '5.58 km (1件)';
+      totalDistEl.textContent = analytics.totalDistanceSum !== null ? `${analytics.totalDistanceSum.toFixed(1)} km` : '--';
     }
 
     // 日別実績テーブル（常に最新日を一番上にする降順表示：9/18 → 9/17 → 9/16 → 9/15 → 9/14）

@@ -1167,10 +1167,10 @@ body {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 12px 14px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   cursor: pointer;
   transition: background-color 0.1s ease, transform 0.05s ease;
 }
@@ -1186,10 +1186,23 @@ body {
   align-items: center;
 }
 
+.delivery-item-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .delivery-item-no {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 800;
   color: var(--color-uber-green);
+}
+
+.delivery-item-fee {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--color-uber-green);
+  font-variant-numeric: tabular-nums;
 }
 
 .delivery-item-time {
@@ -1200,27 +1213,34 @@ body {
 }
 
 .delivery-item-restaurant {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--text-main);
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .delivery-item-route {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.delivery-item-stats {
+  font-size: 13px;
+  color: var(--text-dim);
   line-height: 1.3;
 }
 
 .delivery-item-memo {
-  font-size: 12px;
+  font-size: 13px;
   color: #fbbf24;
   background: rgba(245, 158, 11, 0.08);
-  padding: 3px 8px;
+  padding: 4px 8px;
   border-radius: 4px;
   margin-top: 2px;
   display: inline-block;
   align-self: flex-start;
+  line-height: 1.4;
 }
 
 .empty-state {
@@ -1251,7 +1271,7 @@ body {
 }
 
 .history-card-header {
-  padding: 14px 16px;
+  padding: 16px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1264,7 +1284,7 @@ body {
 }
 
 .history-date-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
   color: var(--text-main);
   display: flex;
@@ -1275,7 +1295,7 @@ body {
 .history-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  padding: 12px 16px;
+  padding: 14px 16px;
   background-color: rgba(0, 0, 0, 0.2);
   border-top: 1px solid var(--border-color);
   gap: 8px;
@@ -1288,13 +1308,13 @@ body {
 }
 
 .h-stat-label {
-  font-size: 11px;
-  color: var(--text-dim);
+  font-size: 12px;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
 .h-stat-val {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 800;
   color: var(--text-main);
   margin-top: 2px;
@@ -1303,7 +1323,7 @@ body {
 
 .history-deliveries-detail {
   display: none;
-  padding: 12px 16px;
+  padding: 14px 16px;
   border-top: 1px solid var(--border-color);
   background-color: #0e1217;
 }

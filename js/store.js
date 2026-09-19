@@ -1280,6 +1280,19 @@ function formatJapaneseDate(dateStr) {
   return `${y}年${m}月${d}日（${info ? info.weekdayChar : ''}）`;
 }
 
+// 簡潔な日付表記（例: 年自明時 9月19日（土）、年要時 2026/9/19（土））
+function formatShortJapaneseDate(dateStr, includeYear = false) {
+  if (!dateStr) return '';
+  const cleanStr = dateStr.replace(/\//g, '-');
+  const [y, m, d] = cleanStr.split('-').map(Number);
+  const info = getDayOfWeekInfo(cleanStr);
+  const weekday = info ? info.weekdayChar : '';
+  if (includeYear) {
+    return `${y}/${m}/${d}（${weekday}）`;
+  }
+  return `${m}月${d}日（${weekday}）`;
+}
+
 // 「YYYY/MM/DD（曜日）」形式で曜日文字にクラスを付与
 function formatDateWithWeekday(dateStr, includeYear = true) {
   if (!dateStr) return '';
@@ -1667,11 +1680,13 @@ class Store {
           }
         } else if (date === '2026-09-19') {
           const target = parsed.dailyLogs[date];
-          // 均等配分や仮データ（fee=340等）が含まれているか、18件の公式トリップに未更新、または福島タワー誤紐付けが残っている場合は公式実績データへ置換
+          // 均等配分や仮データ（fee=340等）、手動空タップ残骸（41件混在等）、または18件の公式トリップ未更新・不一致時は公式実績データへ置換
           const hasSynthetic = target.deliveries && target.deliveries.some(d => d.fee === 340 || d.completedAt === '09:15');
           const hasWrongFukushima = target.deliveries && target.deliveries[0] && target.deliveries[0].memo && target.deliveries[0].memo.includes('福島タワー');
           const lacksFukushimaOn18 = target.deliveries && target.deliveries[17] && (!target.deliveries[17].memo || !target.deliveries[17].memo.includes('福島タワー'));
-          if (!target.deliveries || hasSynthetic || target.deliveries.length !== 18 || !target.tripsCount || hasWrongFukushima || lacksFukushimaOn18) {
+          const hasEmptyManualTaps = target.deliveries && target.deliveries.some(d => !d.restaurant && (d.fee === null || d.fee === undefined));
+          const isNot18Trips = !target.deliveries || target.deliveries.length !== 18;
+          if (isNot18Trips || hasSynthetic || hasEmptyManualTaps || !target.tripsCount || hasWrongFukushima || lacksFukushimaOn18 || target.deliveriesCount !== 23) {
             target.deliveries = log.deliveries;
             target.tripsCount = log.tripsCount;
             target.officialPoints = log.officialPoints;
@@ -2092,6 +2107,9 @@ class Store {
     const count = (log.deliveriesCount !== undefined && log.deliveriesCount !== null)
       ? log.deliveriesCount
       : (log.deliveries ? log.deliveries.length : 0);
+    const tripsCount = (log.tripsCount !== undefined && log.tripsCount !== null)
+      ? log.tripsCount
+      : (log.deliveries ? log.deliveries.length : 0);
     
     // 通常配達報酬・クエスト・調整金・その他Uber収入の計算
     let deliverySales = null;
@@ -2265,6 +2283,7 @@ class Store {
     return {
       date: log.date,
       count,
+      tripsCount,
       deliverySales,
       questSales,
       adjustmentSales,
@@ -2474,8 +2493,37 @@ class Store {
     });
 
     let prevWeekComparison = null;
+    // 今週の確定売上集計（当週の全登録日を動的に集計）
+    const weekRange = getWeekRange(dateStr);
+    const weekLogs = allLogs.filter(l => l.date >= weekRange.startStr && l.date <= weekRange.endStr);
+
+    let weekCalculatedSales = 0;
+    let weekDeliverySales = 0;
+    let weekQuestSales = 0;
+    let weekAdjustmentSales = 0;
+    let weekDeliveriesCount = 0;
+    let weekTripsCount = 0;
+    let weekGuaranteeBonus = 0;
+
+    weekLogs.forEach(l => {
+      const m = this.getCalculatedMetrics(l);
+      if (m.count > 0 || m.totalSales !== null) {
+        weekDeliverySales += (m.deliverySales || 0);
+        weekQuestSales += (m.questSales || 0);
+        weekAdjustmentSales += (m.adjustmentSales || 0);
+        weekCalculatedSales += (m.totalSales || 0);
+        weekDeliveriesCount += m.count;
+        weekTripsCount += (l.tripsCount || (l.deliveries ? l.deliveries.length : 0));
+        weekGuaranteeBonus += (m.guaranteeBonus || 0);
+      }
+    });
+
+    // 9/14〜9/17の正本差額（+4円）を正本基準として保持
+    const officialDiff = audit.diff || 0;
+    const weekOfficialSales = weekCalculatedSales - officialDiff;
+
     if (hasPrevWeekData) {
-      const diff = audit.officialTotal - prevWeekSalesSum;
+      const diff = weekOfficialSales - prevWeekSalesSum;
       prevWeekComparison = {
         hasComparison: true,
         diffAmount: diff,
@@ -2491,46 +2539,85 @@ class Store {
       };
     }
 
-    // 今週の売上（2026-09-14〜2026-09-20）
+    // 今週の売上（26/9/14～9/20）
+    const [wsY, wsM, wsD] = weekRange.startStr.split('-').map(Number);
+    const [weY, weM, weD] = weekRange.endStr.split('-').map(Number);
+    const cleanWeekPeriod = `${String(wsY).slice(2)}/${wsM}/${wsD}～${weM}/${weD}`;
+
     const thisWeek = {
       label: '今週の売上',
-      periodLabel: '2026/09/14（月）〜 09/20（日）',
-      startDate: '2026-09-14',
-      endDate: '2026-09-20',
-      officialSales: audit.officialTotal,     // 17,080円
-      calculatedSales: audit.calculatedTotal, // 17,084円
-      deliverySales: audit.totalDeliverySales, // 15,184円
-      questSales: audit.totalQuestSales,       // 1,900円
-      deliveriesCount: audit.totalDeliveries, // 30件
+      periodLabel: cleanWeekPeriod,
+      startDate: weekRange.startStr,
+      endDate: weekRange.endStr,
+      officialSales: weekOfficialSales,
+      calculatedSales: weekCalculatedSales,
+      deliverySales: weekDeliverySales,
+      questSales: weekQuestSales,
+      adjustmentSales: weekAdjustmentSales,
+      deliveriesCount: weekDeliveriesCount,
+      tripsCount: weekTripsCount,
+      guaranteeBonus: weekGuaranteeBonus,
       note: '次回振込対象・当週確定売上（公式正本）',
-      prevWeekComparison // 先週比較データ
+      prevWeekComparison
     };
 
-    // 今月の売上（登録済み期間を明記）
+    // 今月の売上（当月の全登録日を動的に集計）
+    const currentMonthPrefix = dateStr.substring(0, 7);
+    const monthLogs = allLogs.filter(l => l.date.startsWith(currentMonthPrefix));
+    let monthSales = 0;
+    let monthDeliveriesCount = 0;
+    monthLogs.forEach(l => {
+      const m = this.getCalculatedMetrics(l);
+      if (m.count > 0 || m.totalSales !== null) {
+        monthSales += (m.totalSales || 0);
+        monthDeliveriesCount += m.count;
+      }
+    });
+
     const thisMonth = {
       label: '今月の売上',
-      periodLabel: '2026年9月（9/14〜9/17 登録分）',
-      sales: audit.officialTotal,
-      deliveriesCount: audit.totalDeliveries,
-      note: '※9月度 登録済み期間の集計'
+      periodLabel: `26/9月`,
+      sales: monthSales - officialDiff,
+      calculatedSales: monthSales,
+      deliveriesCount: monthDeliveriesCount,
+      note: `※9月度 登録分（全${monthDeliveriesCount}件）`
     };
 
-    // 登録済み累計売上（開始以来全期間と誤認させない表記）
+    // 登録済み累計売上（全登録日を動的に集計）
+    let cumSales = 0;
+    let cumDeliveriesCount = 0;
+    let earliestDate = dateStr;
+    let latestDate = dateStr;
+
+    allLogs.forEach(l => {
+      const m = this.getCalculatedMetrics(l);
+      if (m.count > 0 || m.totalSales !== null) {
+        cumSales += (m.totalSales || 0);
+        cumDeliveriesCount += m.count;
+        if (l.date < earliestDate) earliestDate = l.date;
+        if (l.date > latestDate) latestDate = l.date;
+      }
+    });
+
+    const [eY, eM, eD] = earliestDate.split('-').map(Number);
+    const [lY, lM, lD] = latestDate.split('-').map(Number);
+    const cleanCumPeriod = `${String(eY).slice(2)}/${eM}/${eD}～${lM}/${lD}`;
+
     const registeredTotal = {
       label: '登録済み累計売上',
-      periodLabel: '2026/09/14 ～ 09/17（登録分）',
-      sales: audit.officialTotal,
-      calculatedSales: audit.calculatedTotal,
-      deliveriesCount: audit.totalDeliveries,
-      note: '※アプリ内登録データのみの累計（全期間確定値ではありません）'
+      periodLabel: cleanCumPeriod,
+      sales: cumSales - officialDiff,
+      calculatedSales: cumSales,
+      deliveriesCount: cumDeliveriesCount,
+      note: `※${cleanCumPeriod} 登録データ累計（全${cumDeliveriesCount}件）`
     };
 
     const auditFootnote = {
-      diff: audit.diff, // +4
-      officialTotal: audit.officialTotal,
-      calculatedTotal: audit.calculatedTotal,
-      text: `明細との差額: +${audit.diff}円（未照合）`,
-      subText: `公式正本: ¥${audit.officialTotal.toLocaleString()} / 分析用明細集計: ¥${audit.calculatedTotal.toLocaleString()}`
+      diff: officialDiff,
+      officialTotal: weekOfficialSales,
+      calculatedTotal: weekCalculatedSales,
+      text: `明細との差額: +${officialDiff}円（9/14〜9/17未照合分）`,
+      subText: `公式正本: ¥${weekOfficialSales.toLocaleString()} / 明細集計: ¥${weekCalculatedSales.toLocaleString()}`
     };
 
     return {
@@ -2658,6 +2745,7 @@ if (typeof window !== 'undefined') {
   window.getTodayDateString = getTodayDateString;
   window.getCurrentTimeString = getCurrentTimeString;
   window.formatJapaneseDate = formatJapaneseDate;
+  window.formatShortJapaneseDate = formatShortJapaneseDate;
   window.calculateMinutesBetween = calculateMinutesBetween;
   window.formatMinutes = formatMinutes;
   window.deduplicateQuests = deduplicateQuests;
@@ -2683,6 +2771,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getTodayDateString,
     getCurrentTimeString,
     formatJapaneseDate,
+    formatShortJapaneseDate,
     calculateMinutesBetween,
     formatMinutes,
     deduplicateQuests,
