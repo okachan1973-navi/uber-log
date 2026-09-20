@@ -2650,7 +2650,7 @@ class Store {
     // 総実移動距離（将来用: Uber表示配達距離 + 空走距離）
     const totalActualDistanceKm = uberDeliveryDistanceKm !== null ? uberDeliveryDistanceKm : null;
 
-    // 実走時間（全公式トリップの所要時間を秒単位で厳密合算。手動セッション由来は完全排除）
+    // 配達時間（その日の全Uber公式トリップの所要時間を秒単位で厳密合算。手動セッション由来は完全排除）
     let workSeconds = null;
     let workMinutes = null;
     let isFullTripDurationRecorded = false;
@@ -2678,21 +2678,27 @@ class Store {
       }
     }
 
-    // 基本時給（売上 ÷ 実走時間。秒単位の正確な時間を使用）
-    let grossHourlyWage = null;
-    if (totalSales !== null && workSeconds !== null && workSeconds > 0) {
-      const exactHours = workSeconds / 3600;
-      grossHourlyWage = Math.round(totalSales / exactHours);
+    // 時給計算対象売上（通常報酬 ＋ 通常クエスト ＋ 売上調整金。新規保証・特別報奨等の特別収入は除外。経費も引かない）
+    let hourlyBaseSales = null;
+    if (deliverySales !== null || questSales !== null || adjustmentSales > 0) {
+      hourlyBaseSales = (deliverySales || 0) + (questSales || 0) + (adjustmentSales || 0);
     }
 
-    // 経費後時給（利益 ÷ 実走時間。秒単位の正確な時間を使用）
+    // 基本時給（通常稼働売上 ÷ 配達時間。秒単位の正確な時間を使用）
+    let grossHourlyWage = null;
+    if (hourlyBaseSales !== null && workSeconds !== null && workSeconds > 0) {
+      const exactHours = workSeconds / 3600;
+      grossHourlyWage = Math.round(hourlyBaseSales / exactHours);
+    }
+
+    // 経費後時給（利益 ÷ 配達時間。秒単位の正確な時間を使用。参考値）
     let netHourlyWage = null;
     if (netProfit !== null && workSeconds !== null && workSeconds > 0) {
       const exactHours = workSeconds / 3600;
       netHourlyWage = Math.round(netProfit / exactHours);
     }
 
-    // 基本表示の「時給」は売上 ÷ 実走時間（grossHourlyWage）に統一
+    // 基本表示の「時給」は通常稼働時給（grossHourlyWage）に統一
     const hourlyWage = grossHourlyWage;
 
     // 1件あたり平均売上

@@ -912,7 +912,7 @@ class UI {
                 </div>
                 <span class="h-metric-divider">/</span>
                 <div class="h-metric-item">
-                  <span class="h-metric-lbl">実走</span>
+                  <span class="h-metric-lbl">配達時間</span>
                   <span class="h-metric-num">${workText}</span>
                 </div>
                 ${wageText ? `
