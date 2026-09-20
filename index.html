@@ -313,13 +313,21 @@
         </div>
       </section>
 
-      <!-- 2. 中段：今月の実績（セクション統一・6指標スマート配置） -->
-      <section class="month-performance-section">
-        <div class="analytics-sub-header">
-          <h3 class="analytics-sub-title">今月の実績</h3>
-          <span class="analytics-sub-period" id="month-sales-period">26/9月度</span>
+      <!-- 2. 中段：今月の実績（オレンジ枠・売上利益看板＋8指標グリッド） -->
+      <section class="month-performance-card" id="analytics-month-card">
+        <div class="month-card-header">
+          <h3 class="month-card-title">今月の実績</h3>
+          <span class="month-card-period" id="month-sales-period">2026年9月</span>
         </div>
-        <div class="analytics-hero-grid month-stats-grid">
+
+        <div class="month-hero-amount-row">
+          <span class="month-hero-currency">¥</span>
+          <span class="month-hero-val" id="month-profit-val">43,398</span>
+          <span class="month-profit-label">売上利益</span>
+        </div>
+
+        <div class="month-stats-grid">
+          <!-- 1段目: 売上 / 配達件数 -->
           <div class="stat-card">
             <span class="stat-card-label">売上</span>
             <span id="month-sales-val" class="stat-card-val">¥46,905</span>
@@ -328,6 +336,7 @@
             <span class="stat-card-label">配達件数</span>
             <span id="analytics-total-deliveries" class="stat-card-val">72件</span>
           </div>
+          <!-- 2段目: 平均日給 / 平均単価 -->
           <div class="stat-card">
             <span class="stat-card-label">平均日給</span>
             <span id="analytics-avg-daily" class="stat-card-val">¥4,347</span>
@@ -336,6 +345,7 @@
             <span class="stat-card-label">平均単価</span>
             <span id="analytics-avg-per-delivery" class="stat-card-val">¥483</span>
           </div>
+          <!-- 3段目: 配達時間 / 配達距離 -->
           <div class="stat-card">
             <span class="stat-card-label">配達時間</span>
             <span id="analytics-total-duration" class="stat-card-val">29時間26分</span>
@@ -343,6 +353,15 @@
           <div class="stat-card">
             <span class="stat-card-label">配達距離</span>
             <span id="analytics-total-distance" class="stat-card-val">261 km</span>
+          </div>
+          <!-- 4段目: バイクシェア / 必要経費 -->
+          <div class="stat-card">
+            <span class="stat-card-label">バイクシェア</span>
+            <span id="month-bikeshare-val" class="stat-card-val">¥3,507</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card-label">必要経費</span>
+            <span id="month-expenses-val" class="stat-card-val">¥0</span>
           </div>
         </div>
       </section>

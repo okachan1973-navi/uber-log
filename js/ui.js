@@ -1243,9 +1243,15 @@ class UI {
     const weekCountEl = document.getElementById('week-delivery-count');
     if (weekCountEl) weekCountEl.textContent = `${rev.thisWeek.deliveriesCount}件`;
 
-    // 2. 今月の実績（6指標）
+    // 2. 今月の実績（オレンジ枠・売上利益看板 ＆ 8指標グリッド）
     const monthPeriodEl = document.getElementById('month-sales-period');
     if (monthPeriodEl) monthPeriodEl.textContent = rev.thisMonth.periodLabel;
+
+    const monthProfitEl = document.getElementById('month-profit-val');
+    if (monthProfitEl) {
+      const profit = (rev.thisMonth.salesProfit !== undefined) ? rev.thisMonth.salesProfit : (analytics.totalSalesSum - (rev.thisMonth.bikeExpenses || 3507));
+      monthProfitEl.textContent = profit.toLocaleString();
+    }
 
     const monthValEl = document.getElementById('month-sales-val');
     if (monthValEl) monthValEl.textContent = `¥${rev.thisMonth.sales.toLocaleString()}`;
@@ -1271,6 +1277,18 @@ class UI {
     const totalDistEl = document.getElementById('analytics-total-distance');
     if (totalDistEl) {
       totalDistEl.textContent = analytics.totalDistanceSum !== null ? `${Math.round(analytics.totalDistanceSum)} km` : '--';
+    }
+
+    const monthBikeEl = document.getElementById('month-bikeshare-val');
+    if (monthBikeEl) {
+      const bike = (rev.thisMonth.bikeExpenses !== undefined) ? rev.thisMonth.bikeExpenses : 3507;
+      monthBikeEl.textContent = `¥${bike.toLocaleString()}`;
+    }
+
+    const monthExpensesEl = document.getElementById('month-expenses-val');
+    if (monthExpensesEl) {
+      const exp = (rev.thisMonth.otherExpenses !== undefined) ? rev.thisMonth.otherExpenses : 0;
+      monthExpensesEl.textContent = `¥${exp.toLocaleString()}`;
     }
 
     // 3. 日別比較テーブル（5項目：日付 / 件数 / 通常売上 / 配達時間 / 時給［10円丸め］）

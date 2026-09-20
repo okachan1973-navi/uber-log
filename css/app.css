@@ -3057,28 +3057,76 @@ body {
 }
 
 /* 今月の実績セクション（6指標スマートグリッド・対角配置＋数値約1.3倍・売上強調廃止・統一デザイン） */
+/* ==================================================
+   【分析タブ】今月の実績カード（オレンジ枠・売上利益看板＋8指標グリッド）
+   ================================================== */
+.month-performance-card,
 .month-performance-section {
+  background: linear-gradient(145deg, #1c1510, #161b22);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: var(--radius-lg);
+  padding: 16px;
   margin-bottom: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
+.month-card-header,
 .analytics-sub-header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 8px;
+  align-items: center;
+  margin-bottom: 6px;
 }
 
+.month-card-title,
 .analytics-sub-title {
   font-size: 13px;
   font-weight: 800;
-  color: var(--text-muted);
+  color: #fbbf24;
   letter-spacing: 0.3px;
+  margin: 0;
 }
 
+.month-card-period,
 .analytics-sub-period {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--text-dim);
+  color: var(--text-muted);
+}
+
+.month-hero-amount-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 2px 0 12px 0;
+  flex-wrap: wrap;
+}
+
+.month-hero-currency {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+.month-hero-val {
+  font-size: 38px;
+  font-weight: 900;
+  color: #fbbf24;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.month-profit-label {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+  align-self: center;
+  color: #fbbf24;
+  background-color: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.4);
 }
 
 .month-stats-grid {

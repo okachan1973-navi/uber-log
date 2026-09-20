@@ -3325,26 +3325,45 @@ class Store {
       prevWeekComparison
     };
 
-    // 今月の売上（当月の全登録日を動的に集計）
+    // 今月の実績（当月の全登録日を動的に集計）
     const currentMonthPrefix = dateStr.substring(0, 7);
     const monthLogs = allLogs.filter(l => l.date.startsWith(currentMonthPrefix));
     let monthSales = 0;
     let monthDeliveriesCount = 0;
+    let monthBikeExpenses = 0;
     monthLogs.forEach(l => {
       const m = this.getCalculatedMetrics(l);
       if (m.count > 0 || m.totalSales !== null) {
         monthSales += (m.totalSales || 0);
         monthDeliveriesCount += m.count;
       }
+      if (Array.isArray(l.expenses)) {
+        l.expenses.forEach(e => {
+          const cat = (e.category || '').trim();
+          const amt = Number(e.amount);
+          if (!isNaN(amt) && amt > 0) {
+            if (!cat || cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike')) {
+              monthBikeExpenses += amt;
+            }
+          }
+        });
+      }
     });
 
+    const monthSalesProfit = monthSales - monthBikeExpenses;
+    const [mY, mM] = currentMonthPrefix.split('-').map(Number);
+    const cleanMonthPeriod = `${mY}年${mM}月`;
+
     const thisMonth = {
-      label: '今月の売上',
-      periodLabel: `26/9月`,
+      label: '今月の実績',
+      periodLabel: cleanMonthPeriod,
       sales: monthSales,
+      salesProfit: monthSalesProfit,
       calculatedSales: monthSales,
+      bikeExpenses: monthBikeExpenses,
+      otherExpenses: 0,
       deliveriesCount: monthDeliveriesCount,
-      note: `※9月度 登録分（全${monthDeliveriesCount}件）`
+      note: `※${mM}月度 登録分（全${monthDeliveriesCount}件）`
     };
 
     // 登録済み累計売上（全登録日を動的に集計）
