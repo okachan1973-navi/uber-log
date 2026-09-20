@@ -145,8 +145,14 @@
         </div>
         <div class="yesterday-compare-main">
           <div class="yesterday-compare-counts">
-            <div class="compare-count-line">今日 <strong id="compare-today-count">--</strong></div>
-            <div class="compare-count-line">昨日 <strong id="compare-yesterday-count">--</strong></div>
+            <div class="compare-count-line">
+              <span class="compare-label">今日</span>
+              <span class="compare-num-wrap"><strong id="compare-today-count">0</strong><span class="compare-unit">件</span></span>
+            </div>
+            <div class="compare-count-line">
+              <span class="compare-label">昨日</span>
+              <span class="compare-num-wrap"><strong id="compare-yesterday-count">23</strong><span class="compare-unit">件</span></span>
+            </div>
           </div>
           <div class="yesterday-compare-diff">
             <span id="compare-diff-badge" class="compare-diff-badge">--</span>
@@ -288,9 +294,9 @@
           <span class="analytics-sub-period" id="month-sales-period">26/9月度</span>
         </div>
         <div class="analytics-hero-grid month-stats-grid">
-          <div class="stat-card highlight">
+          <div class="stat-card">
             <span class="stat-card-label">売上</span>
-            <span id="month-sales-val" class="stat-card-val" style="color:var(--color-uber-green);">¥46,905</span>
+            <span id="month-sales-val" class="stat-card-val">¥46,905</span>
           </div>
           <div class="stat-card">
             <span class="stat-card-label">配達件数</span>

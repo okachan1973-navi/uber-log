@@ -334,20 +334,44 @@ body {
 .yesterday-compare-counts {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .compare-count-line {
-  font-size: 16px;
+  display: flex;
+  align-items: baseline;
+  font-size: 15px;
   color: var(--text-muted);
   font-weight: 600;
 }
 
+.compare-count-line .compare-label {
+  width: 38px;
+  flex-shrink: 0;
+}
+
+.compare-count-line .compare-num-wrap {
+  display: inline-flex;
+  align-items: baseline;
+}
+
 .compare-count-line strong {
-  font-size: 18px;
+  display: inline-block;
+  min-width: 28px;
+  text-align: right;
+  font-size: 22px; /* 現在18pxから拡大して視認性向上 */
   font-weight: 800;
   color: var(--text-main);
-  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+  margin-left: 0;
+  margin-right: 3px;
+  line-height: 1.1;
+}
+
+.compare-count-line .compare-unit {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .yesterday-compare-diff {
@@ -385,15 +409,17 @@ body {
   padding-top: 8px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
+  align-items: baseline;
+  font-size: 14px;
   color: var(--text-muted);
 }
 
 .yesterday-compare-sales-line strong {
   color: var(--text-main);
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 18px; /* 現在14pxの約1.3倍 */
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3px;
 }
 
 .yesterday-result-snippet strong {
@@ -784,11 +810,33 @@ body {
   transform: scale(0.98);
 }
 
-/* 勤務状態操作ボタン（配達ボタンと明確に差別化） */
+/* 勤務状態操作ボタン（配達ボタンと明確に差別化しつつ押しやすい全幅配置） */
 .work-control-row {
-  display: grid;
-  grid-template-columns: 1fr;
+  width: 100%;
   margin-bottom: 16px;
+}
+
+.btn-work-start-full {
+  width: 100%;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  background: rgba(6, 193, 103, 0.14);
+  border: 1.5px solid rgba(6, 193, 103, 0.45);
+  color: var(--color-uber-green);
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.08s ease, filter 0.08s ease, background 0.1s ease;
+  user-select: none;
+}
+
+.btn-work-start-full:active {
+  transform: scale(0.97);
+  background: rgba(6, 193, 103, 0.22);
 }
 
 .work-actions-group {
@@ -2791,7 +2839,7 @@ body {
   margin-left: 2px;
 }
 
-/* 今週の売上内訳グリッド（5項目） */
+/* 今週の売上内訳グリッド（5項目・対角配置＋数値約1.3倍拡大） */
 .week-breakdown-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2804,9 +2852,11 @@ body {
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-sm);
-  padding: 8px 10px;
+  padding: 7px 10px 6px 10px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  min-height: 56px;
 }
 
 .week-breakdown-item.full-width {
@@ -2814,13 +2864,16 @@ body {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  min-height: auto;
+  padding: 8px 12px;
 }
 
 .breakdown-label {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-muted);
-  margin-bottom: 2px;
+  text-align: left;
+  line-height: 1.2;
 }
 
 .week-breakdown-item.full-width .breakdown-label {
@@ -2828,10 +2881,18 @@ body {
 }
 
 .breakdown-val {
-  font-size: 16px;
+  font-size: 21px; /* 現在16pxの約1.3倍 */
   font-weight: 800;
   color: var(--text-main);
   font-variant-numeric: tabular-nums;
+  text-align: right;
+  line-height: 1.15;
+  margin-top: 4px;
+}
+
+.week-breakdown-item.full-width .breakdown-val {
+  font-size: 20px;
+  margin-top: 0;
 }
 
 .breakdown-val.val-bonus {
@@ -2842,7 +2903,7 @@ body {
   color: #38bdf8;
 }
 
-/* 今月の実績セクション（6指標スマートグリッド） */
+/* 今月の実績セクション（6指標スマートグリッド・対角配置＋数値約1.3倍・売上強調廃止・統一デザイン） */
 .month-performance-section {
   margin-bottom: 14px;
 }
@@ -2871,6 +2932,38 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+}
+
+.month-stats-grid .stat-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 7px 10px 6px 10px;
+  min-height: 58px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.month-stats-grid .stat-card-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: left;
+  line-height: 1.2;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.month-stats-grid .stat-card-val {
+  font-size: 22px; /* 視認性1.3倍と375px幅での収まりを両立 */
+  font-weight: 800;
+  color: var(--text-main);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  justify-content: flex-end;
+  line-height: 1.15;
+  margin-top: 4px;
 }
 
 /* 日別比較テーブル（5項目コンパクト高視認レイアウト） */

@@ -1,9 +1,9 @@
 /**
  * UBER LOG - Service Worker (Auto-Update & Offline Resilience)
- * Version: 20260920_v17
+ * Version: 20260920_v18
  */
 
-const SW_VERSION = '20260920_v17';
+const SW_VERSION = '20260920_v18';
 const CACHE_NAME = 'uber-log-' + SW_VERSION;
 
 // インストール時に待機せず即座にアクティブ化

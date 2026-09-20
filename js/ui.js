@@ -214,7 +214,7 @@ class UI {
         `;
       } else {
         controlContainer.innerHTML = `
-          <button id="btn-work-start" class="btn-big-delivery" type="button" style="height:48px; font-size:16px; background:rgba(6,193,103,0.15); border:1px solid rgba(6,193,103,0.4); color:var(--color-uber-green); box-shadow:none;">
+          <button id="btn-work-start" class="btn-work-start-full" type="button">
             <span>▶ 稼働開始</span>
           </button>
         `;
@@ -232,8 +232,8 @@ class UI {
       const salesValEl = document.getElementById('compare-yesterday-sales-val');
       const salesRowEl = document.getElementById('compare-yesterday-sales-row');
 
-      if (todayCountEl) todayCountEl.textContent = `${comp.todayCount}件`;
-      if (yesterdayCountEl) yesterdayCountEl.textContent = `${comp.yesterdayCount}件`;
+      if (todayCountEl) todayCountEl.textContent = `${comp.todayCount}`;
+      if (yesterdayCountEl) yesterdayCountEl.textContent = `${comp.yesterdayCount}`;
 
       if (diffBadgeEl) {
         if (comp.diffCount > 0) {
@@ -251,7 +251,7 @@ class UI {
       if (salesRowEl && salesValEl) {
         if (comp.yesterdaySales !== null) {
           salesRowEl.style.display = 'flex';
-          salesValEl.textContent = `${comp.yesterdaySales.toLocaleString()}円`;
+          salesValEl.textContent = `¥${comp.yesterdaySales.toLocaleString()}`;
         } else {
           salesRowEl.style.display = 'none';
         }
