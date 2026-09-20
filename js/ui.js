@@ -810,9 +810,16 @@ class UI {
 
     container.innerHTML = activeLogs.map(log => {
       const metrics = store.getCalculatedMetrics(log);
-      const shortDate = typeof formatShortJapaneseDate === 'function' 
-        ? formatShortJapaneseDate(log.date, false) 
-        : formatJapaneseDate(log.date);
+      const dateHtml = (typeof formatDateWithColoredWeekday === 'function') 
+        ? formatDateWithColoredWeekday(log.date, false) 
+        : ((typeof formatShortJapaneseDate === 'function') ? formatShortJapaneseDate(log.date, false) : formatJapaneseDate(log.date));
+
+      const dayAttrs = (typeof store !== 'undefined' && store.getDayAttributes)
+        ? store.getDayAttributes(log.date)
+        : [];
+      const dayAttrsHtml = dayAttrs.map(attr => `
+        <span class="day-attr-badge ${attr.className}" title="${attr.fullName}">${attr.label}</span>
+      `).join('');
 
       const tripCount = log.tripsCount || (log.deliveries ? log.deliveries.length : metrics.count);
       const deliverySectionTitle = (tripCount !== metrics.count)
@@ -825,97 +832,121 @@ class UI {
         ? (log.deliveries || []).filter(d => d.restaurant || (d.fee !== null && d.fee !== undefined))
         : (log.deliveries || []);
 
-      // 日別詳細上部の距離・実走サマリー（「Uber中距離」を完全撤廃し重複表示を解消）
+      // 日別詳細上部の距離・実走サマリー
       const distVal = metrics.totalDistanceKm !== null ? metrics.totalDistanceKm : metrics.uberDeliveryDistanceKm;
       const distText = distVal !== null ? `${distVal}km` : '未記録';
       const workText = metrics.workMinutes !== null ? formatMinutes(metrics.workMinutes) : '未記録';
       const wageText = metrics.hourlyWage !== null ? `¥${metrics.hourlyWage.toLocaleString()}` : null;
 
-      const summaryParts = [
-        `走行: ${distText}`,
-        `実走: ${workText}`
-      ];
-      if (wageText) {
-        summaryParts.push(`時給: ${wageText}`);
-      }
-
       return `
         <div class="history-card" data-date="${log.date}">
+          <!-- 日付バー（閉じた状態ではこのバーのみ表示） -->
           <div class="history-card-header">
-            <div class="history-date-title" style="display:flex; align-items:center; gap:8px;">
-              <span>${shortDate}</span>
-              ${metrics.milestone ? `<span class="milestone-badge" style="font-size:11px;">${metrics.milestone}</span>` : ''}
+            <div class="history-date-title">
+              ${dateHtml}
             </div>
-            <span class="expand-icon">▼</span>
-          </div>
-          <div class="history-stats-grid">
-            <div class="h-stat-col">
-              <span class="h-stat-label">配達</span>
-              <span class="h-stat-val">${metrics.count}件</span>
-            </div>
-            <div class="h-stat-col">
-              <span class="h-stat-label">日計</span>
-              <span class="h-stat-val" style="color:var(--color-uber-green);">${metrics.totalSales !== null ? `¥${metrics.totalSales.toLocaleString()}` : '--'}</span>
-            </div>
-            <div class="h-stat-col">
-              <span class="h-stat-label">通常報酬</span>
-              <span class="h-stat-val">${metrics.deliverySales !== null ? `¥${metrics.deliverySales.toLocaleString()}` : '--'}</span>
-            </div>
-            <div class="h-stat-col">
-              <span class="h-stat-label">クエスト</span>
-              <span class="h-stat-val">${metrics.questSales !== null ? `¥${metrics.questSales.toLocaleString()}` : '¥0'}</span>
+            <div class="history-header-right">
+              ${dayAttrsHtml ? `<div class="day-attributes">${dayAttrsHtml}</div>` : ''}
+              <span class="expand-icon">▼</span>
             </div>
           </div>
-          <div class="history-deliveries-detail">
-            ${metrics.guaranteeBonus > 0 ? `
-              <div class="history-bonus-badge">
-                <div class="bonus-badge-left">
-                  <span class="bonus-badge-title">ボーナス</span>
-                  <span class="bonus-badge-sub">（新規保証）</span>
-                </div>
-                <div class="bonus-badge-right">
-                  <span class="bonus-badge-amount">+¥${metrics.guaranteeBonus.toLocaleString()}</span>
-                  <span class="bonus-badge-total">（総額 ¥${metrics.totalSalesWithBonus.toLocaleString()}）</span>
-                </div>
+
+          <!-- 展開内部（タップ時のみ展開表示） -->
+          <div class="history-card-body">
+            <div class="history-stats-grid">
+              <div class="h-stat-col">
+                <span class="h-stat-label">配達</span>
+                <span class="h-stat-val">${metrics.count}件</span>
               </div>
-            ` : ''}
-            <div class="history-metrics-strip">
-              <div class="h-metric-item">
-                <span class="h-metric-lbl">走行</span>
-                <span class="h-metric-num">${distText}</span>
+              <div class="h-stat-col">
+                <span class="h-stat-label">日計</span>
+                <span class="h-stat-val" style="color:var(--color-uber-green);">${metrics.totalSales !== null ? `¥${metrics.totalSales.toLocaleString()}` : '--'}</span>
               </div>
-              <span class="h-metric-divider">/</span>
-              <div class="h-metric-item">
-                <span class="h-metric-lbl">実走</span>
-                <span class="h-metric-num">${workText}</span>
+              <div class="h-stat-col">
+                <span class="h-stat-label">通常報酬</span>
+                <span class="h-stat-val">${metrics.deliverySales !== null ? `¥${metrics.deliverySales.toLocaleString()}` : '--'}</span>
               </div>
-              ${wageText ? `
-                <span class="h-metric-divider">/</span>
-                <div class="h-metric-item">
-                  <span class="h-metric-lbl">時給</span>
-                  <span class="h-metric-num">${wageText}</span>
-                </div>
-              ` : ''}
+              <div class="h-stat-col">
+                <span class="h-stat-label">クエスト</span>
+                <span class="h-stat-val">${metrics.questSales !== null ? `¥${metrics.questSales.toLocaleString()}` : '¥0'}</span>
+              </div>
             </div>
 
-            <!-- 配達明細 -->
-            <div class="history-deliveries-section-title">${deliverySectionTitle}</div>
-            <div class="delivery-list">
-              ${histDeliveries.map(d => this.renderDeliveryCardHtml(d, false, log.date)).join('')}
+            ${metrics.adjustmentSales > 0 ? `
+              <div class="history-extra-row">
+                <span class="history-extra-label">調整金</span>
+                <span class="history-extra-val" style="color:var(--color-uber-green);">+¥${metrics.adjustmentSales.toLocaleString()}</span>
+              </div>
+            ` : ''}
+
+            ${metrics.totalExpenses > 0 ? `
+              <div class="history-extra-row">
+                <span class="history-extra-label">費用（${(log.expenses && log.expenses[0] && log.expenses[0].category) || '経費'}）</span>
+                <span class="history-extra-val" style="color:#f87171;">-¥${metrics.totalExpenses.toLocaleString()}</span>
+              </div>
+            ` : ''}
+
+            ${metrics.guaranteeBonus > 0 ? `
+              <div class="history-bonus-banner">
+                <div class="bonus-banner-header">
+                  <span class="day-attr-badge attr-bonus" style="width:20px; height:20px; font-size:11px;">賞</span>
+                  <span class="bonus-banner-title">特別収入（新規保証）</span>
+                  ${metrics.milestone ? `<span class="bonus-banner-milestone">${metrics.milestone}</span>` : ''}
+                </div>
+                <div class="bonus-banner-amount">+¥${metrics.guaranteeBonus.toLocaleString()}</div>
+                <div class="bonus-banner-note">通常報酬 ¥${(metrics.deliverySales || 0).toLocaleString()} ＋ クエスト ¥${(metrics.questSales || 0).toLocaleString()} との総額: <strong style="color:var(--color-uber-green);">¥${metrics.totalSalesWithBonus.toLocaleString()}</strong></div>
+              </div>
+            ` : ''}
+
+            <div class="history-deliveries-detail">
+              <div class="history-metrics-strip">
+                <div class="h-metric-item">
+                  <span class="h-metric-lbl">走行</span>
+                  <span class="h-metric-num">${distText}</span>
+                </div>
+                <span class="h-metric-divider">/</span>
+                <div class="h-metric-item">
+                  <span class="h-metric-lbl">実走</span>
+                  <span class="h-metric-num">${workText}</span>
+                </div>
+                ${wageText ? `
+                  <span class="h-metric-divider">/</span>
+                  <div class="h-metric-item">
+                    <span class="h-metric-lbl">時給</span>
+                    <span class="h-metric-num">${wageText}</span>
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- 配達明細 -->
+              <div class="history-deliveries-section-title">${deliverySectionTitle}</div>
+              <div class="delivery-list">
+                ${histDeliveries.map(d => this.renderDeliveryCardHtml(d, false, log.date)).join('')}
+              </div>
             </div>
           </div>
         </div>
       `;
     }).join('');
 
-    // アコーディオン展開イベント
+    // single-open アコーディオン展開イベント（常に最大1日だけ展開）
     container.querySelectorAll('.history-card-header').forEach(header => {
       header.addEventListener('click', () => {
         const card = header.closest('.history-card');
-        card.classList.toggle('expanded');
-        const icon = card.querySelector('.expand-icon');
-        if (icon) {
-          icon.textContent = card.classList.contains('expanded') ? '▲' : '▼';
+        const isCurrentlyExpanded = card.classList.contains('expanded');
+
+        // 他の展開中カードをすべて閉じる
+        container.querySelectorAll('.history-card.expanded').forEach(otherCard => {
+          otherCard.classList.remove('expanded');
+          const otherIcon = otherCard.querySelector('.expand-icon');
+          if (otherIcon) otherIcon.textContent = '▼';
+        });
+
+        // 閉じていたカードをタップした場合は展開する（既に開いていた場合は閉じたまま）
+        if (!isCurrentlyExpanded) {
+          card.classList.add('expanded');
+          const icon = card.querySelector('.expand-icon');
+          if (icon) icon.textContent = '▲';
         }
       });
     });

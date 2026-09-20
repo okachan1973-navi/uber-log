@@ -1236,10 +1236,11 @@ function getCurrentTimeString(d = new Date()) {
   return `${hours}:${minutes}`;
 }
 
-// 日本の祝日データ（将来の祝日判定拡張用辞書。データがない日は推測判定しない）
+// 日本の祝日データ（2026年9月周辺の確実な国民の祝日を安全に内包。外部API依存なし）
 const JAPAN_HOLIDAYS = {
-  // 'YYYY-MM-DD': '祝日名'
-  // 例: '2026-09-21': '敬老の日', '2026-09-22': '国民の休日', '2026-09-23': '秋分の日'
+  '2026-09-21': '敬老の日',
+  '2026-09-22': '国民の休日',
+  '2026-09-23': '秋分の日'
 };
 
 // 曜日・祝日判定ヘルパー
@@ -1295,6 +1296,46 @@ function formatShortJapaneseDate(dateStr, includeYear = false) {
   }
   return `${m}月${d}日（${weekday}）`;
 }
+
+// 曜日色分け付きの簡潔な日本語日付HTML（例: 9月19日<span class="date-weekday weekday-sat">（土）</span>）
+function formatDateWithColoredWeekday(dateStr, includeYear = false) {
+  if (!dateStr) return '';
+  const cleanStr = dateStr.replace(/\//g, '-');
+  const [y, m, d] = cleanStr.split('-').map(Number);
+  const info = getDayOfWeekInfo(cleanStr);
+  const weekdayChar = info ? info.weekdayChar : '';
+  
+  let colorClass = 'weekday-normal';
+  if (info) {
+    if (info.isSaturday) colorClass = 'weekday-sat';
+    else if (info.isSunday) colorClass = 'weekday-sun';
+    else if (info.isHoliday) colorClass = 'weekday-holiday';
+  }
+
+  const weekdayHtml = `<span class="date-weekday ${colorClass}">（${weekdayChar}）</span>`;
+  if (includeYear) {
+    return `${y}/${m}/${d}${weekdayHtml}`;
+  }
+  return `${m}月${d}日${weekdayHtml}`;
+}
+
+// 日別属性の定義辞書（将来の属性拡張に対応するメタデータ設計）
+const DAY_ATTRIBUTE_DEFINITIONS = {
+  bike_share: {
+    key: 'bike_share',
+    label: 'B',
+    fullName: 'バイクシェア利用',
+    className: 'attr-bike',
+    description: 'ドコモ・バイクシェア等の電動アシスト自転車を利用して稼働した日'
+  },
+  special_bonus: {
+    key: 'special_bonus',
+    label: '賞',
+    fullName: '特別保証・ボーナス',
+    className: 'attr-bonus',
+    description: '通常報酬や通常クエストとは別の特別保証・ボーナスが発生した日'
+  }
+};
 
 // UI表示用住所（内部データは変えず、表示時のみ「大阪市」を省略）
 function formatDisplayAddress(addr) {
@@ -2043,6 +2084,29 @@ class Store {
       }
     }
     return '';
+  }
+
+  // 日別属性の判定（将来の属性拡張に対応する構造化メタデータ）
+  getDayAttributes(dateStr) {
+    if (!dateStr) return [];
+    const attrs = [];
+    const log = this.state && this.state.dailyLogs ? this.state.dailyLogs[dateStr] : null;
+
+    // 1. バイクシェア属性 (B)
+    // 対象日: 2026-09-18, 2026-09-19、または vehicleType === 'レンタサイクル'
+    const hasBikeExpense = log && Array.isArray(log.expenses) && log.expenses.some(e => e.category === 'レンタサイクル');
+    if (dateStr === '2026-09-18' || dateStr === '2026-09-19' || (log && log.vehicleType === 'レンタサイクル') || hasBikeExpense) {
+      attrs.push(DAY_ATTRIBUTE_DEFINITIONS.bike_share);
+    }
+
+    // 2. 特別保証・ボーナス属性 (賞)
+    // 対象日: 2026-09-19、または guaranteeBonus > 0 の日
+    const metrics = log ? this.getCalculatedMetrics(log) : null;
+    if (dateStr === '2026-09-19' || (metrics && metrics.guaranteeBonus > 0)) {
+      attrs.push(DAY_ATTRIBUTE_DEFINITIONS.special_bonus);
+    }
+
+    return attrs;
   }
 
   // 指定日のログを取得（存在しなければ初期化して返す）
@@ -3050,6 +3114,8 @@ if (typeof window !== 'undefined') {
   window.getCurrentTimeString = getCurrentTimeString;
   window.formatJapaneseDate = formatJapaneseDate;
   window.formatShortJapaneseDate = formatShortJapaneseDate;
+  window.formatDateWithColoredWeekday = formatDateWithColoredWeekday;
+  window.DAY_ATTRIBUTE_DEFINITIONS = DAY_ATTRIBUTE_DEFINITIONS;
   window.formatDisplayAddress = formatDisplayAddress;
   window.formatDurationColon = formatDurationColon;
   window.calculateMinutesBetween = calculateMinutesBetween;
@@ -3078,6 +3144,8 @@ if (typeof module !== 'undefined' && module.exports) {
     getCurrentTimeString,
     formatJapaneseDate,
     formatShortJapaneseDate,
+    formatDateWithColoredWeekday,
+    DAY_ATTRIBUTE_DEFINITIONS,
     formatDisplayAddress,
     formatDurationColon,
     calculateMinutesBetween,

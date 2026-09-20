@@ -1259,7 +1259,7 @@ body {
 .history-date-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .history-card {
@@ -1268,15 +1268,24 @@ body {
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease;
+}
+
+.history-card.expanded {
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .history-card-header {
-  padding: 16px 18px;
+  padding: 12px 16px;
+  min-height: 48px;
+  box-sizing: border-box;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
   background-color: var(--bg-card);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .history-card-header:active {
@@ -1284,21 +1293,100 @@ body {
 }
 
 .history-date-title {
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text-main);
   display: flex;
   align-items: center;
-  gap: 8px;
+  letter-spacing: -0.2px;
+}
+
+/* 曜日の色分け */
+.date-weekday {
+  font-weight: 700;
+  margin-left: 2px;
+}
+.date-weekday.weekday-normal {
+  color: var(--text-muted);
+}
+.date-weekday.weekday-sat {
+  color: #38bdf8; /* 土曜日: 青 */
+}
+.date-weekday.weekday-sun,
+.date-weekday.weekday-holiday {
+  color: #ff453a; /* 日曜・祝日: 赤 */
+}
+
+/* 日別属性コンテナ & バッジ */
+.history-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.day-attributes {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.day-attr-badge {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 4px;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+/* B (バイクシェア利用日: 赤系四角) */
+.day-attr-badge.attr-bike {
+  background-color: rgba(255, 69, 58, 0.18);
+  color: #ff453a;
+  border: 1px solid rgba(255, 69, 58, 0.45);
+}
+
+/* 賞 (特別保証・ボーナス発生日: オレンジ系四角) */
+.day-attr-badge.attr-bonus {
+  background-color: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+}
+
+.expand-icon {
+  font-size: 11px;
+  color: var(--text-dim);
+  width: 14px;
+  text-align: center;
+}
+
+.history-card.expanded .expand-icon {
+  color: var(--text-main);
+}
+
+/* 展開内部ボディ */
+.history-card-body {
+  display: none;
+  border-top: 1px solid var(--border-color);
+  background-color: #0e1217;
+}
+
+.history-card.expanded .history-card-body {
+  display: block;
 }
 
 .history-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  padding: 14px 16px;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid var(--border-color);
-  gap: 8px;
+  padding: 12px 14px;
+  background-color: rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 6px;
   text-align: center;
 }
 
@@ -1308,28 +1396,82 @@ body {
 }
 
 .h-stat-label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
   font-weight: 600;
 }
 
 .h-stat-val {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--text-main);
   margin-top: 2px;
   font-variant-numeric: tabular-nums;
 }
 
-.history-deliveries-detail {
-  display: none;
-  padding: 14px 16px;
-  border-top: 1px solid var(--border-color);
-  background-color: #0e1217;
+/* 展開内特別保証バナー */
+.history-bonus-banner {
+  margin: 10px 14px 6px;
+  padding: 10px 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: var(--radius-sm);
 }
 
-.history-card.expanded .history-deliveries-detail {
-  display: block;
+.bonus-banner-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.bonus-banner-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.bonus-banner-milestone {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.bonus-banner-amount {
+  font-size: 17px;
+  font-weight: 800;
+  color: #fbbf24;
+  font-variant-numeric: tabular-nums;
+}
+
+.bonus-banner-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* 費用・調整金の展開内小行 */
+.history-extra-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+}
+
+.history-extra-label {
+  color: var(--text-muted);
+}
+
+.history-extra-val {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.history-deliveries-detail {
+  padding: 12px 14px;
 }
 
 /* ==================================================
