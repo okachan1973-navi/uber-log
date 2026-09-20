@@ -13,7 +13,7 @@
   <meta name="theme-color" content="#0a0d12">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0d12'/><circle cx='50' cy='50' r='36' fill='%2306C167'/><text x='50' y='60' font-size='34' font-weight='900' fill='%23000' text-anchor='middle'>U</text></svg>">
   <script>
-    window.UBER_LOG_APP_VERSION = '20260920_v13';
+    window.UBER_LOG_APP_VERSION = '20260920_v14';
 
     // file:// 起動時のCORSブロックを回避し、HTTP/HTTPS環境でのみPWAマニフェストおよびService Workerを読み込む
     if (window.location.protocol.startsWith('http')) {
@@ -25,7 +25,7 @@
       // Service Workerの登録と更新監視（PWA自動更新コア）
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js?v=20260920_v13', { scope: './' })
+          navigator.serviceWorker.register('./sw.js?v=20260920_v14', { scope: './' })
             .then((reg) => {
               // 起動時にサーバー上の最新Service Workerの有無をチェック
               reg.update();
@@ -64,7 +64,7 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- スタイルシート -->
-  <link rel="stylesheet" href="css/app.css?v=20260920_v13">
+  <link rel="stylesheet" href="css/app.css?v=20260920_v14">
 </head>
 <body>
 
@@ -237,79 +237,83 @@
         <h2 class="section-title">📈 売上・配達効率分析</h2>
       </div>
 
-      <!-- 最重要：今週の売上ヒーローカード -->
+      <!-- 1. 最上部カード：今週の売上（簡潔・最重要） -->
       <section class="week-sales-hero-card" id="analytics-week-hero">
         <div class="week-hero-header">
-          <div class="week-hero-tag">今週の売上（最重要）</div>
+          <div class="week-hero-title">今週の売上</div>
           <div class="week-hero-period" id="week-sales-period">26/9/14～9/20</div>
         </div>
+
         <div class="week-hero-amount-row">
           <span class="week-hero-currency">¥</span>
-          <span class="week-hero-val" id="week-sales-val">31,005</span>
-          <span id="week-prev-diff" class="week-prev-diff no-data">先週比：比較データ未登録</span>
+          <span class="week-hero-val" id="week-sales-val">43,137</span>
+          <span id="week-prev-diff" class="week-prev-diff">先週比 +¥40,073</span>
         </div>
-        <div class="week-hero-subtext">次回振込対象・当週確定売上（公式正本）</div>
-        <div class="week-hero-stats-row">
-          <div class="week-stat-item">
-            <span class="week-stat-label">配達報酬</span>
-            <span class="week-stat-val" id="week-delivery-sales">¥27,009</span>
+
+        <!-- 次回振込予定（日曜日締め・銀行営業日判定） -->
+        <div class="week-hero-payout-row">
+          <span class="payout-label">次回振込予定</span>
+          <span class="payout-date" id="week-payout-date">9月24日</span>
+        </div>
+
+        <!-- 今週の売上内訳（5項目・大きな金額） -->
+        <div class="week-breakdown-grid">
+          <div class="week-breakdown-item">
+            <span class="breakdown-label">配達報酬</span>
+            <span class="breakdown-val" id="week-delivery-sales">¥27,009</span>
           </div>
-          <div class="week-stat-item">
-            <span class="week-stat-label">クエスト報酬</span>
-            <span class="week-stat-val" id="week-quest-sales">¥3,800</span>
+          <div class="week-breakdown-item">
+            <span class="breakdown-label">クエスト</span>
+            <span class="breakdown-val" id="week-quest-sales">¥3,800</span>
           </div>
-          <div class="week-stat-item">
-            <span class="week-stat-label">配達件数</span>
-            <span class="week-stat-val" id="week-delivery-count">64件</span>
+          <div class="week-breakdown-item">
+            <span class="breakdown-label">特別ボーナス</span>
+            <span class="breakdown-val val-bonus" id="week-bonus-sales">¥12,132</span>
+          </div>
+          <div class="week-breakdown-item">
+            <span class="breakdown-label">その他</span>
+            <span class="breakdown-val val-adj" id="week-other-sales">+¥200</span>
+          </div>
+          <div class="week-breakdown-item full-width">
+            <span class="breakdown-label">配達件数</span>
+            <span class="breakdown-val" id="week-delivery-count">64件</span>
           </div>
         </div>
       </section>
 
-      <!-- サブ売上カード（今月 ＆ 登録済み累計） -->
-      <section class="period-sales-grid">
-        <div class="period-card">
-          <div class="period-card-header">
-            <span class="period-card-title">今月の売上</span>
-            <span class="period-card-badge" id="month-sales-period">26/9月</span>
-          </div>
-          <div class="period-card-amount" id="month-sales-val">¥34,069</div>
-          <div class="period-card-note" id="month-sales-note">※9月度 登録分（全72件）</div>
+      <!-- 2. 中段：今月の売上（全幅カード・大きな金額・注記削減） -->
+      <section class="month-sales-card">
+        <div class="month-sales-info">
+          <span class="month-sales-label">今月の売上</span>
+          <span class="month-sales-period" id="month-sales-period">26/9月度</span>
         </div>
-
-        <div class="period-card">
-          <div class="period-card-header">
-            <span class="period-card-title">登録済み累計売上</span>
-            <span class="period-card-badge" id="cumulative-sales-period">26/9/10～9/20</span>
-          </div>
-          <div class="period-card-amount" id="cumulative-sales-val">¥34,069</div>
-          <div class="period-card-note" id="cumulative-sales-note">※26/9/10～9/20 登録データ累計（全72件）</div>
-        </div>
+        <div class="month-sales-amount" id="month-sales-val">¥46,201</div>
       </section>
 
-      <!-- パフォーマンス分析指標 -->
+      <!-- 3. 中段：パフォーマンス指標（2×2グリッド・ラベル短く・数字大きく） -->
       <section class="analytics-hero-grid">
         <div class="stat-card">
-          <span class="stat-card-label">累計配達件数</span>
-          <span id="analytics-total-deliveries" class="stat-card-val">30件</span>
+          <span class="stat-card-label">累計配達</span>
+          <span id="analytics-total-deliveries" class="stat-card-val">72件</span>
         </div>
         <div class="stat-card">
-          <span class="stat-card-label">平均日給（稼働日）</span>
-          <span id="analytics-avg-daily" class="stat-card-val">¥4,270</span>
+          <span class="stat-card-label">平均日給</span>
+          <span id="analytics-avg-daily" class="stat-card-val">¥4,259</span>
         </div>
         <div class="stat-card">
           <span class="stat-card-label">平均1件単価</span>
-          <span id="analytics-avg-per-delivery" class="stat-card-val">¥569</span>
+          <span id="analytics-avg-per-delivery" class="stat-card-val">¥473</span>
         </div>
         <div class="stat-card">
-          <span class="stat-card-label">確認済み配達距離</span>
-          <span id="analytics-total-distance" class="stat-card-val">5.58 km (1件)</span>
+          <span class="stat-card-label">配達距離</span>
+          <span id="analytics-total-distance" class="stat-card-val">261.2 km</span>
         </div>
       </section>
 
-      <!-- 実績推移テーブル -->
+      <!-- 4. 下段：日別実績（簡易一覧） -->
       <section class="recent-table-card">
-        <div class="section-header">
-          <h3 class="section-title" style="font-size: 14px;">日別実績</h3>
+        <div class="recent-table-header">
+          <h3 class="recent-table-title">日別実績</h3>
         </div>
         <table class="recent-table">
           <thead>
@@ -326,11 +330,6 @@
           </tbody>
         </table>
       </section>
-
-      <!-- 目立たない控えめな監査注記フッター（黄色警告バナーから移行） -->
-      <div id="analytics-audit-footer" class="audit-discreet-footer">
-        <!-- JSで動的生成 -->
-      </div>
     </main>
 
     <!-- ==========================================
@@ -512,7 +511,7 @@
             <div class="settings-item">
               <div class="settings-item-info">
                 <span class="settings-item-name">アプリバージョン</span>
-                <span class="settings-item-desc" id="settings-app-version-desc">v20260920_v13（通常は自動更新されます）</span>
+                <span class="settings-item-desc" id="settings-app-version-desc">v20260920_v14（通常は自動更新されます）</span>
               </div>
               <button id="btn-force-reload" class="btn-settings" type="button" title="自動更新が反映されない場合の予備復旧ボタン">強制再読込</button>
             </div>
@@ -905,12 +904,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- アプリスクリプト（順次読込） -->
-  <script src="js/supabase-config.js?v=20260920_v13"></script>
-  <script src="js/supabase-client.js?v=20260920_v13"></script>
-  <script src="js/trip-maps.js?v=20260920_v13"></script>
-  <script src="js/store.js?v=20260920_v13"></script>
-  <script src="js/cloud-sync.js?v=20260920_v13"></script>
-  <script src="js/ui.js?v=20260920_v13"></script>
-  <script src="js/app.js?v=20260920_v13"></script>
+  <script src="js/supabase-config.js?v=20260920_v14"></script>
+  <script src="js/supabase-client.js?v=20260920_v14"></script>
+  <script src="js/trip-maps.js?v=20260920_v14"></script>
+  <script src="js/store.js?v=20260920_v14"></script>
+  <script src="js/cloud-sync.js?v=20260920_v14"></script>
+  <script src="js/ui.js?v=20260920_v14"></script>
+  <script src="js/app.js?v=20260920_v14"></script>
 </body>
 </html>

@@ -1333,6 +1333,33 @@ function formatDateWithColoredWeekday(dateStr, includeYear = false) {
   return `${m}月${d}日${weekdayHtml}`;
 }
 
+// 次回振込予定日（日曜日締め -> 翌火曜日。銀行営業日でない場合は次の営業日へ順次繰り越し）
+function getNextPayoutDate(weekEndDateStr) {
+  if (!weekEndDateStr) return '';
+  const cleanStr = weekEndDateStr.replace(/\//g, '-');
+  const [y, m, d] = cleanStr.split('-').map(Number);
+  const dateObj = new Date(y, m - 1, d);
+  // 日曜日締めから火曜日（2日後）へ
+  dateObj.setDate(dateObj.getDate() + 2);
+
+  // 銀行休業日（土曜・日曜・祝日）の場合は営業日まで順次繰越
+  for (let i = 0; i < 14; i++) {
+    const day = dateObj.getDay();
+    const curY = dateObj.getFullYear();
+    const curM = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const curD = String(dateObj.getDate()).padStart(2, '0');
+    const isoStr = `${curY}-${curM}-${curD}`;
+    const isWeekend = day === 0 || day === 6;
+    const isHoliday = !!(typeof JAPAN_HOLIDAYS !== 'undefined' && JAPAN_HOLIDAYS[isoStr]);
+
+    if (!isWeekend && !isHoliday) {
+      return `${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+    }
+    dateObj.setDate(dateObj.getDate() + 1);
+  }
+  return '';
+}
+
 // 日別属性の定義辞書（将来の属性拡張に対応するメタデータ設計）
 const DAY_ATTRIBUTE_DEFINITIONS = {
   bike_share: {
@@ -3029,9 +3056,13 @@ class Store {
       deliverySales: weekDeliverySales,
       questSales: weekQuestSales,
       adjustmentSales: weekAdjustmentSales,
+      otherSales: weekAdjustmentSales,
       deliveriesCount: weekDeliveriesCount,
+      deliveryCount: weekDeliveriesCount,
       tripsCount: weekTripsCount,
       guaranteeBonus: weekGuaranteeBonus,
+      bonusSales: weekGuaranteeBonus,
+      payoutDateText: getNextPayoutDate(weekRange.endStr),
       note: '次回振込対象・当週確定売上（公式正本）',
       prevWeekComparison
     };
@@ -3109,6 +3140,7 @@ class Store {
     
     let totalDeliveries = 0;
     let totalSalesSum = 0;
+    let totalRegularSalesSum = 0; // 通常稼働売上（大型特別ボーナス除外）
     let totalMinutesSum = 0;
     let totalDistanceSum = 0;
     let activeDaysCount = 0;
@@ -3122,6 +3154,10 @@ class Store {
         if (metrics.totalSales !== null) {
           totalSalesSum += metrics.totalSales;
         }
+        // 通常稼働売上（通常報酬 ＋ 通常クエスト ＋ 通常の売上調整金等。新規保証等の大型特別ボーナスは除外）
+        const reg = (metrics.deliverySales || 0) + (metrics.questSales || 0) + (metrics.adjustmentSales || 0);
+        totalRegularSalesSum += reg;
+
         if (metrics.workMinutes) {
           totalMinutesSum += metrics.workMinutes;
         }
@@ -3131,9 +3167,11 @@ class Store {
       }
     });
 
-    const avgDailyEarnings = activeDaysCount > 0 ? Math.round(totalSalesSum / activeDaysCount) : null;
-    const avgHourlyWage = totalMinutesSum > 0 ? Math.round(totalSalesSum / (totalMinutesSum / 60)) : null;
-    const avgPerDelivery = totalDeliveries > 0 ? Math.round(totalSalesSum / totalDeliveries) : null;
+    // 平均日給: 通常稼働売上 ÷ 稼働日数（特別ボーナス除外）
+    const avgDailyEarnings = activeDaysCount > 0 ? Math.round(totalRegularSalesSum / activeDaysCount) : null;
+    const avgHourlyWage = totalMinutesSum > 0 ? Math.round(totalRegularSalesSum / (totalMinutesSum / 60)) : null;
+    // 平均1件単価: 通常稼働売上 ÷ 配達件数（特別ボーナス除外）
+    const avgPerDelivery = totalDeliveries > 0 ? Math.round(totalRegularSalesSum / totalDeliveries) : null;
 
     const recent7Days = allLogs.slice(0, 7).map(log => {
       const metrics = this.getCalculatedMetrics(log);
@@ -3142,6 +3180,8 @@ class Store {
         formattedDate: log.date.substring(5).replace('-', '/'),
         count: metrics.count,
         totalSales: metrics.totalSales,
+        deliverySales: metrics.deliverySales,
+        questSales: metrics.questSales,
         hourlyWage: metrics.hourlyWage,
         distance: metrics.totalDistanceKm
       };
@@ -3150,6 +3190,8 @@ class Store {
     return {
       totalDeliveries,
       totalSalesSum,
+      totalRegularSalesSum,
+      activeDaysCount,
       avgDailyEarnings,
       avgHourlyWage,
       avgPerDelivery,
@@ -3231,6 +3273,7 @@ if (typeof window !== 'undefined') {
   window.formatMinutes = formatMinutes;
   window.deduplicateQuests = deduplicateQuests;
   window.parseUberSalesText = parseUberSalesText;
+  window.getNextPayoutDate = getNextPayoutDate;
   window.Store = Store;
   window.store = store;
 }
@@ -3254,6 +3297,7 @@ if (typeof module !== 'undefined' && module.exports) {
     formatJapaneseDate,
     formatShortJapaneseDate,
     formatDateWithColoredWeekday,
+    getNextPayoutDate,
     DAY_ATTRIBUTE_DEFINITIONS,
     DAY_ATTRIBUTE_PRIORITY,
     formatDisplayAddress,

@@ -1068,13 +1068,12 @@ class UI {
     });
   }
 
-  // 「分析」画面の描画（今週の売上最重要・目立たない灰色監査フッター）
+  // 「分析」画面の描画（スマホ最優先の簡略化・大型表示・指標整理）
   renderAnalyticsView() {
     const rev = store.getRevenueSummary();
-    const audit = store.getSourceOfTruthAudit();
     const analytics = store.getAnalytics();
 
-    // 今週の売上ヒーロー（最重要）
+    // 1. 今週の売上（最重要）
     const weekPeriodEl = document.getElementById('week-sales-period');
     if (weekPeriodEl) weekPeriodEl.textContent = rev.thisWeek.periodLabel;
 
@@ -1094,35 +1093,44 @@ class UI {
       }
     }
 
+    // 次回振込予定（日曜日締め・銀行営業日判定）
+    const weekPayoutEl = document.getElementById('week-payout-date');
+    if (weekPayoutEl) {
+      weekPayoutEl.textContent = rev.thisWeek.payoutDateText || '--';
+    }
+
+    // 今週の売上内訳（5項目）
     const weekDelSalesEl = document.getElementById('week-delivery-sales');
     if (weekDelSalesEl) weekDelSalesEl.textContent = `¥${rev.thisWeek.deliverySales.toLocaleString()}`;
 
     const weekQuestSalesEl = document.getElementById('week-quest-sales');
     if (weekQuestSalesEl) weekQuestSalesEl.textContent = `¥${rev.thisWeek.questSales.toLocaleString()}`;
 
+    const weekBonusSalesEl = document.getElementById('week-bonus-sales');
+    if (weekBonusSalesEl) {
+      const bonus = rev.thisWeek.guaranteeBonus || 0;
+      weekBonusSalesEl.textContent = `¥${bonus.toLocaleString()}`;
+    }
+
+    const weekOtherSalesEl = document.getElementById('week-other-sales');
+    if (weekOtherSalesEl) {
+      const other = rev.thisWeek.otherSales || 0;
+      weekOtherSalesEl.textContent = (other !== 0) 
+        ? `${other > 0 ? '+' : ''}¥${other.toLocaleString()}` 
+        : '¥0';
+    }
+
     const weekCountEl = document.getElementById('week-delivery-count');
     if (weekCountEl) weekCountEl.textContent = `${rev.thisWeek.deliveriesCount}件`;
 
-    // サブ売上カード（今月・登録済み累計）
+    // 2. 今月の売上（全幅カード）
     const monthPeriodEl = document.getElementById('month-sales-period');
     if (monthPeriodEl) monthPeriodEl.textContent = rev.thisMonth.periodLabel;
 
     const monthValEl = document.getElementById('month-sales-val');
     if (monthValEl) monthValEl.textContent = `¥${rev.thisMonth.sales.toLocaleString()}`;
 
-    const monthNoteEl = document.getElementById('month-sales-note');
-    if (monthNoteEl) monthNoteEl.textContent = rev.thisMonth.note;
-
-    const cumPeriodEl = document.getElementById('cumulative-sales-period');
-    if (cumPeriodEl) cumPeriodEl.textContent = rev.registeredTotal.periodLabel;
-
-    const cumValEl = document.getElementById('cumulative-sales-val');
-    if (cumValEl) cumValEl.textContent = `¥${rev.registeredTotal.sales.toLocaleString()}`;
-
-    const cumNoteEl = document.getElementById('cumulative-sales-note');
-    if (cumNoteEl) cumNoteEl.textContent = rev.registeredTotal.note;
-
-    // パフォーマンス指標
+    // 3. パフォーマンス指標（2×2グリッド、特別ボーナス除外で実稼働を正確に反映）
     const totalDelEl = document.getElementById('analytics-total-deliveries');
     if (totalDelEl) totalDelEl.textContent = `${analytics.totalDeliveries}件`;
 
@@ -1141,7 +1149,7 @@ class UI {
       totalDistEl.textContent = analytics.totalDistanceSum !== null ? `${analytics.totalDistanceSum.toFixed(1)} km` : '--';
     }
 
-    // 日別実績テーブル（常に最新日を一番上にする降順表示：9/18 → 9/17 → 9/16 → 9/15 → 9/14）
+    // 4. 日別実績テーブル（降順簡易一覧）
     const tableBody = document.getElementById('recent-7days-table-body');
     if (tableBody) {
       const allLogs = store.getAllDailyLogs();
@@ -1153,23 +1161,14 @@ class UI {
         const m = store.getCalculatedMetrics(log);
         return `
           <tr>
-            <td><strong>${formatDateWithWeekday(log.date, false)}</strong></td>
+            <td><strong>${(typeof formatDateWithWeekday === 'function') ? formatDateWithWeekday(log.date, false) : log.date}</strong></td>
             <td>${m.count}件</td>
             <td>${m.deliverySales !== null ? `¥${m.deliverySales.toLocaleString()}` : '--'}</td>
             <td>${m.questSales !== null ? `¥${m.questSales.toLocaleString()}` : '¥0'}</td>
-            <td style="font-weight:700; color:var(--color-uber-green);">${m.totalSales !== null ? `¥${m.totalSales.toLocaleString()}` : '--'}${m.guaranteeBonus > 0 ? `<div style="font-size:10px; color:#fbbf24; font-weight:normal; margin-top:2px;">*保証込 ¥${m.totalSalesWithBonus.toLocaleString()}</div>` : ''}</td>
+            <td style="font-weight:700; color:var(--color-uber-green);">${m.totalSales !== null ? `¥${m.totalSales.toLocaleString()}` : '--'}</td>
           </tr>
         `;
       }).join('');
-    }
-
-    // 目立たない控えめな灰色監査フッター
-    const footerEl = document.getElementById('analytics-audit-footer');
-    if (footerEl) {
-      footerEl.innerHTML = `
-        <div class="audit-discreet-text">${rev.auditFootnote.text}</div>
-        <div class="audit-discreet-sub">${rev.auditFootnote.subText}</div>
-      `;
     }
   }
 

@@ -2676,7 +2676,7 @@ body {
 }
 
 /* ==================================================
-   【分析タブ】今週売上ヒーロー ＆ 期間別売上 ＆ 控えめ監査フッター
+   【分析タブ】今週売上ヒーロー ＆ 今月売上 ＆ 指標グリッド
    ================================================== */
 .week-sales-hero-card {
   background: linear-gradient(145deg, #13241b, #161b22);
@@ -2691,17 +2691,14 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
-.week-hero-tag {
-  background-color: var(--color-uber-green);
-  color: #000;
-  font-size: 11px;
+.week-hero-title {
+  font-size: 13px;
   font-weight: 800;
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
-  letter-spacing: 0.5px;
+  color: var(--color-uber-green);
+  letter-spacing: 0.3px;
 }
 
 .week-hero-period {
@@ -2714,7 +2711,7 @@ body {
   display: flex;
   align-items: baseline;
   gap: 4px;
-  margin: 4px 0 2px 0;
+  margin: 2px 0 6px 0;
   flex-wrap: wrap;
 }
 
@@ -2730,6 +2727,7 @@ body {
   color: var(--color-uber-green);
   letter-spacing: -1px;
   font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 .week-prev-diff {
@@ -2763,10 +2761,29 @@ body {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-.week-hero-subtext {
-  font-size: 12px;
-  color: var(--text-muted);
+/* 次回振込予定行 */
+.week-hero-payout-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
   margin-bottom: 12px;
+}
+
+.payout-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.payout-date {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.2px;
 }
 
 /* 曜日・祝日表記スタイル */
@@ -2787,104 +2804,102 @@ body {
   font-weight: 700;
 }
 
-.week-hero-stats-row {
-  display: flex;
-  justify-content: space-between;
+/* 今週の売上内訳グリッド（5項目） */
+.week-breakdown-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.week-stat-item {
+.week-breakdown-item {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
 }
 
-.week-stat-label {
+.week-breakdown-item.full-width {
+  grid-column: span 2;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.breakdown-label {
   font-size: 11px;
+  font-weight: 600;
   color: var(--text-muted);
   margin-bottom: 2px;
 }
 
-.week-stat-val {
-  font-size: 14px;
-  font-weight: 700;
+.week-breakdown-item.full-width .breakdown-label {
+  margin-bottom: 0;
+}
+
+.breakdown-val {
+  font-size: 16px;
+  font-weight: 800;
   color: var(--text-main);
   font-variant-numeric: tabular-nums;
 }
 
-/* サブ売上カード（今月・登録済み累計） */
-.period-sales-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 14px;
+.breakdown-val.val-bonus {
+  color: #fbbf24;
 }
 
-.period-card {
+.breakdown-val.val-adj {
+  color: #38bdf8;
+}
+
+/* 今月の売上カード（全幅） */
+.month-sales-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-}
-
-.period-card-header {
+  padding: 14px 16px;
+  margin-bottom: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
 }
 
-.period-card-title {
-  font-size: 12px;
+.month-sales-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.month-sales-label {
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-muted);
 }
 
-.period-card-badge {
-  font-size: 10px;
-  background-color: rgba(255, 255, 255, 0.08);
-  color: var(--text-muted);
-  padding: 1px 6px;
-  border-radius: 4px;
+.month-sales-period {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-dim);
 }
 
-.period-card-amount {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--text-main);
-  margin: 4px 0 2px 0;
+.month-sales-amount {
+  font-size: 26px;
+  font-weight: 900;
+  color: #fff;
   font-variant-numeric: tabular-nums;
 }
 
-.period-card-note {
-  font-size: 10px;
-  color: var(--text-dim);
-  line-height: 1.3;
+.recent-table-header {
+  margin-bottom: 6px;
 }
 
-/* 目立たない控えめな灰色監査フッター */
-.audit-discreet-footer {
-  margin-top: 18px;
-  margin-bottom: 10px;
-  padding: 10px 12px;
-  background-color: rgba(255, 255, 255, 0.02);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-sm);
-  text-align: center;
-}
-
-.audit-discreet-text {
-  font-size: 12px;
-  color: var(--text-dim);
-  font-weight: 500;
-}
-
-.audit-discreet-sub {
-  font-size: 11px;
-  color: #4a515c;
-  margin-top: 2px;
+.recent-table-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-main);
 }
 
 /* ==================================================

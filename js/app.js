@@ -546,7 +546,7 @@ function initAppUpdateChecker() {
       });
       if (!res.ok) return;
       const data = await res.json();
-      const currentVer = window.UBER_LOG_APP_VERSION || '20260920_v13';
+      const currentVer = window.UBER_LOG_APP_VERSION || '20260920_v14';
       if (data && data.version && data.version !== currentVer) {
         console.log(`[PWA] Newer version detected: ${data.version} (current: ${currentVer})`);
 
