@@ -1276,13 +1276,13 @@ body {
 }
 
 .history-card-header {
-  padding: 10px 16px 10px;
-  min-height: 60px;
+  padding: 11px 14px;
+  min-height: 48px;
   box-sizing: border-box;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   cursor: pointer;
   background-color: var(--bg-card);
   user-select: none;
@@ -1293,49 +1293,39 @@ body {
   background-color: var(--bg-card-subtle);
 }
 
-.history-header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.history-header-sub {
+.history-header-left {
   display: flex;
   align-items: baseline;
-  gap: 16px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.h-sub-item {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.h-sub-val {
-  font-size: 14px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-.h-sub-val.val-sales {
-  color: var(--color-uber-green);
-}
-
-.h-sub-val.val-profit {
-  color: #ffffff;
+  gap: 8px;
+  min-width: 0;
+  flex-shrink: 0;
 }
 
 .history-date-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-main);
   display: flex;
   align-items: center;
   letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.history-profit-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.history-profit-item .h-sub-val.val-profit {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
 }
 
 /* 曜日の色分け */
@@ -1358,13 +1348,14 @@ body {
 .history-header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .day-attributes {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .day-attr-badge {
@@ -1400,6 +1391,19 @@ body {
   background-color: rgba(245, 158, 11, 0.18);
   color: #fbbf24;
   border: 1px solid rgba(245, 158, 11, 0.45);
+}
+
+/* +N (集約バッジ: グレー系枠線) */
+.day-attr-badge.attr-more {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  min-width: 22px;
+  width: auto;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .expand-icon {
@@ -1527,50 +1531,86 @@ body {
   gap: 10px;
 }
 
-.history-bonus-badge {
-  background-color: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
-  margin-bottom: 10px;
+/* ==================================================
+   【追加収支カード（特別収入・売上調整金・バイクシェア利用）】
+   基本メトリクス（走行/配達時間/時給）の下、配達明細の上に配置
+   ================================================== */
+.history-additional-balances {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.balance-card {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  box-sizing: border-box;
 }
 
-.bonus-badge-left {
+.balance-card-left {
   display: flex;
-  align-items: baseline;
-  gap: 4px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
-.bonus-badge-title {
+.balance-card-left .day-attr-badge {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.balance-card-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.balance-card-title {
   font-size: 13px;
-  font-weight: 800;
-  color: #fbbf24;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-.bonus-badge-sub {
+.balance-card-sub {
   font-size: 11px;
-  color: var(--text-muted);
+  font-weight: 500;
+  opacity: 0.85;
 }
 
-.bonus-badge-right {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.bonus-badge-amount {
+.balance-card-amount {
   font-size: 15px;
   font-weight: 800;
-  color: #fbbf24;
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
-.bonus-badge-total {
-  font-size: 11px;
-  color: var(--text-dim);
+/* 賞: 特別収入カード (オレンジ系) */
+.balance-card.card-bonus {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+/* 調: 売上調整金カード (青系) */
+.balance-card.card-adjustment {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+}
+
+/* B: バイクシェア利用カード (赤系) */
+.balance-card.card-bike {
+  background: rgba(255, 69, 58, 0.1);
+  border-color: rgba(255, 69, 58, 0.35);
+  color: #ff453a;
 }
 
 .history-metrics-strip {

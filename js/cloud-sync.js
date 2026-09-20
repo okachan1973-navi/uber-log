@@ -176,7 +176,7 @@ class CloudSyncManager {
         ? localLog.officialPoints
         : (cloudLog.officialPoints ?? null),
       milestone: localLog.milestone || cloudLog.milestone || null,
-      vehicleType: localLog.vehicleType || cloudLog.vehicleType || 'レンタサイクル',
+      vehicleType: localLog.vehicleType || cloudLog.vehicleType || null,
       workSessions: [],
       deliveries: [],
       quests: []
@@ -293,7 +293,7 @@ class CloudSyncManager {
     merged.expenses = Array.from(expMap.values());
 
     // 6. 車両/移動手段種別のマージ
-    merged.vehicleType = localLog.vehicleType || cloudLog.vehicleType || 'レンタサイクル';
+    merged.vehicleType = localLog.vehicleType || cloudLog.vehicleType || null;
 
     // 後方互換性プロパティの整合性補正
     if (typeof window !== 'undefined' && window.store && typeof window.store.syncLegacyWorkInfo === 'function') {

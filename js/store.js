@@ -915,7 +915,7 @@ const CONFIRMED_SEED_DATA = {
           "isDuplicateIgnored": false
         }
       ],
-      "vehicleType": "レンタバイク",
+      "vehicleType": "バイクシェア利用",
       "sales": {
         "delivery": 3917,
         "quest": 950,
@@ -926,9 +926,9 @@ const CONFIRMED_SEED_DATA = {
       "expenses": [
         {
           "id": "exp_0918_1",
-          "category": "レンタバイク",
+          "category": "バイクシェア利用",
           "amount": 1980,
-          "memo": "レンタバイク1日利用"
+          "memo": "ドコモ・バイクシェア1日パス"
         }
       ]
     },
@@ -938,7 +938,7 @@ const CONFIRMED_SEED_DATA = {
       "workEndedAt": "17:00",
       "workMinutes": 510,
       "totalDistanceKm": 68.2,
-      "vehicleType": "レンタバイク",
+      "vehicleType": "バイクシェア利用",
       "milestone": "累計75配達達成",
       "tripsCount": 18,
       "officialPoints": 22,
@@ -1222,7 +1222,7 @@ const CONFIRMED_SEED_DATA = {
       "expenses": [
         {
           "id": "exp_0919_1",
-          "category": "レンタバイク",
+          "category": "バイクシェア利用",
           "amount": 1527,
           "memo": "ドコモ・バイクシェア1日パス"
         }
@@ -1355,8 +1355,18 @@ const DAY_ATTRIBUTE_DEFINITIONS = {
     fullName: '特別保証・ボーナス',
     className: 'attr-bonus',
     description: '通常報酬や通常クエストとは別の特別保証・ボーナスが発生した日'
+  },
+  more: {
+    key: 'more',
+    label: '+N',
+    fullName: '追加属性',
+    className: 'attr-more',
+    description: '横幅制約により集約された追加属性'
   }
 };
+
+// 属性表示の固定優先順位（B -> 調 -> 賞 の定義順）
+const DAY_ATTRIBUTE_PRIORITY = ['bike_share', 'adjustment', 'special_bonus'];
 
 // 所要時間文字列を秒単位の数値に正確にパース（公式トリップ所要時間の厳密合算用）
 function parseDurationToSeconds(durationStr) {
@@ -1816,9 +1826,9 @@ class Store {
             target.sales = log.sales;
             hasChange = true;
           }
-          if (!target.expenses || target.expenses.length === 0 || target.expenses[0].category !== 'レンタバイク') {
+          if (!target.expenses || target.expenses.length === 0 || target.expenses[0].category !== 'バイクシェア利用') {
             target.expenses = log.expenses;
-            target.vehicleType = 'レンタバイク';
+            target.vehicleType = 'バイクシェア利用';
             hasChange = true;
           }
           if (!target.workSessions || target.workSessions.length === 0) {
@@ -1848,9 +1858,9 @@ class Store {
             target.sales = log.sales;
             hasChange = true;
           }
-          if (!target.expenses || target.expenses.length === 0 || target.expenses[0].category !== 'レンタバイク') {
+          if (!target.expenses || target.expenses.length === 0 || target.expenses[0].category !== 'バイクシェア利用') {
             target.expenses = log.expenses;
-            target.vehicleType = 'レンタバイク';
+            target.vehicleType = 'バイクシェア利用';
             hasChange = true;
           }
           if (!target.quests || target.quests.length < 5) {
@@ -1867,6 +1877,19 @@ class Store {
           if (!target.milestone) {
             target.milestone = log.milestone;
             hasChange = true;
+          }
+        } else {
+          // 9/18, 9/19 以外の過去日（9/10〜9/17等）から誤ったバイクシェア/レンタサイクル情報を完全排除
+          const target = parsed.dailyLogs[date];
+          if (target) {
+            if (target.vehicleType === 'レンタサイクル' || target.vehicleType === 'レンタバイク' || target.vehicleType === 'バイクシェア利用') {
+              delete target.vehicleType;
+              hasChange = true;
+            }
+            if (Array.isArray(target.expenses) && target.expenses.some(e => e.category === 'レンタバイク' || e.category === 'レンタサイクル' || e.category === 'バイクシェア利用')) {
+              target.expenses = target.expenses.filter(e => e.category !== 'レンタバイク' && e.category !== 'レンタサイクル' && e.category !== 'バイクシェア利用');
+              hasChange = true;
+            }
           }
         }
       }
@@ -2148,9 +2171,19 @@ class Store {
     const log = this.state && this.state.dailyLogs ? this.state.dailyLogs[dateStr] : null;
 
     // 1. バイクシェア属性 (B)
-    // 対象日: 2026-09-18, 2026-09-19、または vehicleType === 'レンタバイク' / 'レンタサイクル'
-    const hasBikeExpense = log && Array.isArray(log.expenses) && log.expenses.some(e => e.category === 'レンタバイク' || e.category === 'レンタサイクル');
-    if (dateStr === '2026-09-18' || dateStr === '2026-09-19' || (log && (log.vehicleType === 'レンタバイク' || log.vehicleType === 'レンタサイクル')) || hasBikeExpense) {
+    // 正式定義: 「その日にバイクシェアを実際に利用したことが確認済み」
+    // 自転車配達・推測・過去日パターン・単なるvehicleTypeフラグ等での付与は厳禁。
+    // 判定基準:
+    //  - その日のexpensesに「バイクシェア利用」「レンタバイク」「レンタサイクル」カテゴリの確認済み支出（amount > 0）が存在すること
+    //  - または確認済み確定日（2026-09-18, 2026-09-19）
+    const hasConfirmedBikeExpense = log && Array.isArray(log.expenses) && log.expenses.some(e => {
+      const cat = (e.category || '').trim();
+      const amt = Number(e.amount);
+      return (cat === 'バイクシェア利用' || cat === 'レンタバイク' || cat === 'レンタサイクル') && !isNaN(amt) && amt > 0;
+    });
+    const isConfirmedBikeDate = (dateStr === '2026-09-18' || dateStr === '2026-09-19');
+
+    if (hasConfirmedBikeExpense || isConfirmedBikeDate) {
       attrs.push(DAY_ATTRIBUTE_DEFINITIONS.bike_share);
     }
 
@@ -2162,10 +2195,18 @@ class Store {
     }
 
     // 3. 特別保証・ボーナス属性 (賞)
-    // 対象日: 2026-09-19、または guaranteeBonus > 0 の日
-    if (dateStr === '2026-09-19' || (metrics && metrics.guaranteeBonus > 0)) {
+    // 対象日: guaranteeBonus > 0 の日（例: 2026-09-19）
+    if ((metrics && metrics.guaranteeBonus > 0) || (log && log.sales && log.sales.guaranteeBonus > 0) || dateStr === '2026-09-19') {
       attrs.push(DAY_ATTRIBUTE_DEFINITIONS.special_bonus);
     }
+
+    // 定義された優先順位に従って固定ソート（B -> 調 -> 賞）
+    const priority = (typeof DAY_ATTRIBUTE_PRIORITY !== 'undefined') ? DAY_ATTRIBUTE_PRIORITY : ['bike_share', 'adjustment', 'special_bonus'];
+    attrs.sort((a, b) => {
+      const idxA = priority.indexOf(a.key);
+      const idxB = priority.indexOf(b.key);
+      return (idxA !== -1 ? idxA : 999) - (idxB !== -1 ? idxB : 999);
+    });
 
     return attrs;
   }
@@ -2725,7 +2766,7 @@ class Store {
       totalExpenses,
       netProfit,
       expenses,
-      vehicleType: log.vehicleType || 'レンタサイクル',
+      vehicleType: log.vehicleType || null,
       totalDistanceKm,
       uberDeliveryDistanceKm,
       deadheadDistanceKm,
@@ -2830,7 +2871,7 @@ class Store {
   // 移動手段/車両種別の更新
   updateVehicleType(dateStr, vehicleType) {
     const log = this.getDailyLog(dateStr);
-    log.vehicleType = vehicleType || 'レンタサイクル';
+    log.vehicleType = vehicleType || null;
     this.saveToStorage(dateStr);
     return log.vehicleType;
   }
@@ -3182,6 +3223,7 @@ if (typeof window !== 'undefined') {
   window.formatShortJapaneseDate = formatShortJapaneseDate;
   window.formatDateWithColoredWeekday = formatDateWithColoredWeekday;
   window.DAY_ATTRIBUTE_DEFINITIONS = DAY_ATTRIBUTE_DEFINITIONS;
+  window.DAY_ATTRIBUTE_PRIORITY = DAY_ATTRIBUTE_PRIORITY;
   window.formatDisplayAddress = formatDisplayAddress;
   window.formatDurationColon = formatDurationColon;
   window.parseDurationToSeconds = parseDurationToSeconds;
@@ -3213,6 +3255,7 @@ if (typeof module !== 'undefined' && module.exports) {
     formatShortJapaneseDate,
     formatDateWithColoredWeekday,
     DAY_ATTRIBUTE_DEFINITIONS,
+    DAY_ATTRIBUTE_PRIORITY,
     formatDisplayAddress,
     formatDurationColon,
     parseDurationToSeconds,
