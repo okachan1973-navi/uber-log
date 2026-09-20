@@ -868,18 +868,18 @@ class UI {
         ? formatDateWithColoredWeekday(log.date, false) 
         : ((typeof formatShortJapaneseDate === 'function') ? formatShortJapaneseDate(log.date, false) : formatJapaneseDate(log.date));
 
-      // 日別属性の取得と「+N」集約ロジック（2個までは個別表示、3個以上は先頭2個 + [+N] 集約）
+      // 日別属性の取得と「+N」集約ロジック（3個までは個別表示、4個以上は先頭3個 + [+N] 集約）
       const dayAttrs = (typeof store !== 'undefined' && store.getDayAttributes)
         ? store.getDayAttributes(log.date)
         : [];
 
       let visibleAttrs = [];
       let hiddenCount = 0;
-      if (dayAttrs.length <= 2) {
+      if (dayAttrs.length <= 3) {
         visibleAttrs = dayAttrs;
       } else {
-        visibleAttrs = dayAttrs.slice(0, 2);
-        hiddenCount = dayAttrs.length - 2;
+        visibleAttrs = dayAttrs.slice(0, 3);
+        hiddenCount = dayAttrs.length - 3;
       }
 
       let dayAttrsHtml = visibleAttrs.map(attr => `
@@ -887,7 +887,7 @@ class UI {
       `).join('');
 
       if (hiddenCount > 0) {
-        const hiddenNames = dayAttrs.slice(2).map(a => a.fullName).join(', ');
+        const hiddenNames = dayAttrs.slice(3).map(a => a.fullName).join(', ');
         dayAttrsHtml += `
           <span class="day-attr-badge attr-more" title="他${hiddenCount}件: ${hiddenNames}">+${hiddenCount}</span>
         `;
