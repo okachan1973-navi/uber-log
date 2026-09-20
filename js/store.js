@@ -3190,26 +3190,49 @@ class Store {
   getRevenueSummary(dateStr = getTodayDateString()) {
     const audit = this.getSourceOfTruthAudit();
     
-    // 先週の確定売上集計（先週比較用：推測・捏造せずデータ存在時のみ比較）
+    // 先週の確定売上利益集計（先週比較用：推測・捏造せずデータ存在時のみ比較）
     const prevWeekRange = getPreviousWeekRange(dateStr);
     const allLogs = this.getAllDailyLogs();
     const prevLogs = allLogs.filter(l => l.date >= prevWeekRange.startStr && l.date <= prevWeekRange.endStr);
 
     let hasPrevWeekData = false;
-    let prevWeekSalesSum = 0;
+    let prevWeekDeliverySales = 0;
+    let prevWeekQuestSales = 0;
+    let prevWeekGuaranteeBonus = 0;
+    let prevWeekOtherSales = 0;
+    let prevWeekBikeExpenses = 0;
     let prevWeekDeliveriesCount = 0;
 
     prevLogs.forEach(l => {
       const m = this.getCalculatedMetrics(l);
-      if (m.count > 0 || m.totalSales !== null) {
+      if (m.count > 0 || m.totalSales !== null || m.totalExpenses > 0) {
         hasPrevWeekData = true;
-        prevWeekSalesSum += (m.totalSales || 0);
+        prevWeekDeliverySales += (m.deliverySales || 0);
+        prevWeekQuestSales += (m.questSales || 0);
+        prevWeekGuaranteeBonus += (m.guaranteeBonus || 0);
+        prevWeekOtherSales += ((m.adjustmentSales || 0) + (m.otherSales || 0));
+
+        let logBike = 0;
+        if (Array.isArray(l.expenses)) {
+          l.expenses.forEach(e => {
+            const cat = (e.category || '').trim();
+            const amt = Number(e.amount);
+            if (!isNaN(amt) && amt > 0) {
+              if (!cat || cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike')) {
+                logBike += amt;
+              }
+            }
+          });
+        }
+        prevWeekBikeExpenses += logBike;
         prevWeekDeliveriesCount += m.count;
       }
     });
 
+    const prevWeekSalesProfit = prevWeekDeliverySales + prevWeekQuestSales + prevWeekGuaranteeBonus + prevWeekOtherSales - prevWeekBikeExpenses;
+
     let prevWeekComparison = null;
-    // 今週の確定売上集計（当週の全登録日を動的に集計）
+    // 今週の確定売上利益集計（当週の全登録日を動的に集計）
     const weekRange = getWeekRange(dateStr);
     const weekLogs = allLogs.filter(l => l.date >= weekRange.startStr && l.date <= weekRange.endStr);
 
@@ -3217,28 +3240,48 @@ class Store {
     let weekDeliverySales = 0;
     let weekQuestSales = 0;
     let weekAdjustmentSales = 0;
+    let weekOtherSales = 0;
+    let weekGuaranteeBonus = 0;
+    let weekBikeExpenses = 0;
     let weekDeliveriesCount = 0;
     let weekTripsCount = 0;
-    let weekGuaranteeBonus = 0;
 
     weekLogs.forEach(l => {
       const m = this.getCalculatedMetrics(l);
-      if (m.count > 0 || m.totalSales !== null) {
+      if (m.count > 0 || m.totalSales !== null || m.totalExpenses > 0) {
         weekDeliverySales += (m.deliverySales || 0);
         weekQuestSales += (m.questSales || 0);
         weekAdjustmentSales += (m.adjustmentSales || 0);
+        weekOtherSales += ((m.adjustmentSales || 0) + (m.otherSales || 0));
         weekCalculatedSales += (m.totalSales || 0);
         weekDeliveriesCount += m.count;
         weekTripsCount += (l.tripsCount || (l.deliveries ? l.deliveries.length : 0));
         weekGuaranteeBonus += (m.guaranteeBonus || 0);
+
+        let logBike = 0;
+        if (Array.isArray(l.expenses)) {
+          l.expenses.forEach(e => {
+            const cat = (e.category || '').trim();
+            const amt = Number(e.amount);
+            if (!isNaN(amt) && amt > 0) {
+              if (!cat || cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike')) {
+                logBike += amt;
+              }
+            }
+          });
+        }
+        weekBikeExpenses += logBike;
       }
     });
 
-    // 機械的な4円減算（audit.diff）を廃止し、内訳の数学的合計（¥43,141）と完全一致させる
+    // 機械的な4円減算（audit.diff）を廃止し、内訳の数学的合計（¥43,141）と完全一致させる公式売上
     const weekOfficialSales = weekCalculatedSales;
 
+    // 「今週の売上利益」＝ 配達報酬 ＋ クエスト ＋ 特別ボーナス ＋ その他 － Bike経費
+    const weekSalesProfit = weekDeliverySales + weekQuestSales + weekGuaranteeBonus + weekOtherSales - weekBikeExpenses;
+
     if (hasPrevWeekData) {
-      const diff = weekOfficialSales - prevWeekSalesSum;
+      const diff = weekSalesProfit - prevWeekSalesProfit;
       prevWeekComparison = {
         hasComparison: true,
         diffAmount: diff,
@@ -3254,29 +3297,31 @@ class Store {
       };
     }
 
-    // 今週の売上（26/9/14～9/20）
+    // 今週の売上利益（26/9/14～9/20）
     const [wsY, wsM, wsD] = weekRange.startStr.split('-').map(Number);
     const [weY, weM, weD] = weekRange.endStr.split('-').map(Number);
     const cleanWeekPeriod = `${String(wsY).slice(2)}/${wsM}/${wsD}～${weM}/${weD}`;
 
     const thisWeek = {
-      label: '今週の売上',
+      label: '今週の売上利益',
       periodLabel: cleanWeekPeriod,
       startDate: weekRange.startStr,
       endDate: weekRange.endStr,
+      salesProfit: weekSalesProfit,
       officialSales: weekOfficialSales,
       calculatedSales: weekCalculatedSales,
       deliverySales: weekDeliverySales,
       questSales: weekQuestSales,
-      adjustmentSales: weekAdjustmentSales,
-      otherSales: weekAdjustmentSales,
+      adjustmentSales: weekOtherSales,
+      otherSales: weekOtherSales,
+      bikeExpenses: weekBikeExpenses,
       deliveriesCount: weekDeliveriesCount,
       deliveryCount: weekDeliveriesCount,
       tripsCount: weekTripsCount,
       guaranteeBonus: weekGuaranteeBonus,
       bonusSales: weekGuaranteeBonus,
       payoutDateText: getNextPayoutDate(weekRange.endStr),
-      note: '次回振込対象・当週確定売上（公式正本）',
+      note: '次回振込対象・当週確定売上利益',
       prevWeekComparison
     };
 

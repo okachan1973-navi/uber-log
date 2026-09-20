@@ -1174,23 +1174,28 @@ class UI {
     const rev = store.getRevenueSummary();
     const analytics = store.getAnalytics();
 
-    // 1. 今週の売上（最重要）
+    // 1. 今週の売上利益（最重要）
     const weekPeriodEl = document.getElementById('week-sales-period');
     if (weekPeriodEl) weekPeriodEl.textContent = rev.thisWeek.periodLabel;
 
     const weekValEl = document.getElementById('week-sales-val');
-    if (weekValEl) weekValEl.textContent = rev.thisWeek.officialSales.toLocaleString();
+    if (weekValEl) {
+      const val = (rev.thisWeek.salesProfit !== undefined) ? rev.thisWeek.salesProfit : rev.thisWeek.calculatedSales;
+      weekValEl.textContent = (val < 0) ? `-${Math.abs(val).toLocaleString()}` : val.toLocaleString();
+    }
 
     // 先週比の表示（控えめなバッジ、先週データ不足時は推測せず「比較データ未登録」）
     const prevDiffEl = document.getElementById('week-prev-diff');
     if (prevDiffEl) {
-      if (rev.thisWeek.prevWeekComparison) {
+      if (rev.thisWeek.prevWeekComparison && rev.thisWeek.prevWeekComparison.hasComparison) {
         const comp = rev.thisWeek.prevWeekComparison;
         prevDiffEl.textContent = comp.displayText;
         prevDiffEl.className = `week-prev-diff ${comp.status}`;
         prevDiffEl.style.display = 'inline-block';
       } else {
-        prevDiffEl.style.display = 'none';
+        prevDiffEl.textContent = (rev.thisWeek.prevWeekComparison ? rev.thisWeek.prevWeekComparison.displayText : '先週比：比較データ未登録');
+        prevDiffEl.className = 'week-prev-diff no-data';
+        prevDiffEl.style.display = 'inline-block';
       }
     }
 
@@ -1200,7 +1205,7 @@ class UI {
       weekPayoutEl.textContent = rev.thisWeek.payoutDateText || '--';
     }
 
-    // 今週の売上内訳（5項目）
+    // 今週の売上利益内訳（6項目・2列×3段）
     const weekDelSalesEl = document.getElementById('week-delivery-sales');
     if (weekDelSalesEl) weekDelSalesEl.textContent = `¥${rev.thisWeek.deliverySales.toLocaleString()}`;
 
@@ -1216,9 +1221,23 @@ class UI {
     const weekOtherSalesEl = document.getElementById('week-other-sales');
     if (weekOtherSalesEl) {
       const other = rev.thisWeek.otherSales || 0;
-      weekOtherSalesEl.textContent = (other !== 0) 
-        ? `${other > 0 ? '+' : ''}¥${other.toLocaleString()}` 
-        : '¥0';
+      if (other > 0) {
+        weekOtherSalesEl.textContent = `+¥${other.toLocaleString()}`;
+        weekOtherSalesEl.className = 'breakdown-val val-adj';
+      } else if (other < 0) {
+        weekOtherSalesEl.textContent = `-¥${Math.abs(other).toLocaleString()}`;
+        weekOtherSalesEl.className = 'breakdown-val val-bike';
+      } else {
+        weekOtherSalesEl.textContent = '¥0';
+        weekOtherSalesEl.className = 'breakdown-val';
+      }
+    }
+
+    const weekBikeEl = document.getElementById('week-bike-expenses');
+    if (weekBikeEl) {
+      const bike = rev.thisWeek.bikeExpenses || 0;
+      weekBikeEl.textContent = (bike > 0) ? `-¥${bike.toLocaleString()}` : '¥0';
+      weekBikeEl.className = 'breakdown-val val-bike';
     }
 
     const weekCountEl = document.getElementById('week-delivery-count');

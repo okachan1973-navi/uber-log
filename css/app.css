@@ -3006,7 +3006,7 @@ body {
   margin-left: 2px;
 }
 
-/* 今週の売上内訳グリッド（5項目・対角配置＋数値約1.3倍拡大） */
+/* 今週の売上利益内訳グリッド（6項目・2列×3段・対角配置＋数値約1.3倍拡大） */
 .week-breakdown-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3026,25 +3026,12 @@ body {
   min-height: 56px;
 }
 
-.week-breakdown-item.full-width {
-  grid-column: span 2;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  min-height: auto;
-  padding: 8px 12px;
-}
-
 .breakdown-label {
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
   text-align: left;
   line-height: 1.2;
-}
-
-.week-breakdown-item.full-width .breakdown-label {
-  margin-bottom: 0;
 }
 
 .breakdown-val {
@@ -3057,17 +3044,16 @@ body {
   margin-top: 4px;
 }
 
-.week-breakdown-item.full-width .breakdown-val {
-  font-size: 20px;
-  margin-top: 0;
-}
-
 .breakdown-val.val-bonus {
   color: #fbbf24;
 }
 
 .breakdown-val.val-adj {
   color: #38bdf8;
+}
+
+.breakdown-val.val-bike {
+  color: #ff453a;
 }
 
 /* 今月の実績セクション（6指標スマートグリッド・対角配置＋数値約1.3倍・売上強調廃止・統一デザイン） */
