@@ -1348,7 +1348,7 @@ function formatShortJapaneseDate(dateStr, includeYear = false) {
   return `${m}月${d}日（${weekday}）`;
 }
 
-// 曜日色分け付きの簡潔な日本語日付HTML（例: 9月19日<span class="date-weekday weekday-sat">（土）</span>）
+// 日本語日付HTML（曜日表記（土）（日）は維持、文字色は通常の日付色に統一）
 function formatDateWithColoredWeekday(dateStr, includeYear = false) {
   if (!dateStr) return '';
   const cleanStr = dateStr.replace(/\//g, '-');
@@ -1356,12 +1356,8 @@ function formatDateWithColoredWeekday(dateStr, includeYear = false) {
   const info = getDayOfWeekInfo(cleanStr);
   const weekdayChar = info ? info.weekdayChar : '';
   
-  let colorClass = 'weekday-normal';
-  if (info) {
-    if (info.isSaturday) colorClass = 'weekday-sat';
-    else if (info.isSunday) colorClass = 'weekday-sun';
-    else if (info.isHoliday) colorClass = 'weekday-holiday';
-  }
+  // 土日祝の色分けを廃止し、通常の日付色（weekday-normal）へ統一
+  const colorClass = 'weekday-normal';
 
   const weekdayHtml = `<span class="date-weekday ${colorClass}">（${weekdayChar}）</span>`;
   if (includeYear) {
@@ -1390,7 +1386,8 @@ function getNextPayoutDate(weekEndDateStr) {
     const isHoliday = !!(typeof JAPAN_HOLIDAYS !== 'undefined' && JAPAN_HOLIDAYS[isoStr]);
 
     if (!isWeekend && !isHoliday) {
-      return `${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+      const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+      return `${dateObj.getMonth() + 1}月${dateObj.getDate()}日（${weekdays[day]}）`;
     }
     dateObj.setDate(dateObj.getDate() + 1);
   }
@@ -1930,7 +1927,7 @@ class Store {
             target.totalDistanceKm = log.totalDistanceKm;
             hasChange = true;
           }
-          if (!target.sales || !target.sales.guaranteeBonus) {
+          if (!target.sales || target.sales.guaranteeBonus !== 12132 || target.sales.total !== 20990) {
             target.sales = log.sales;
             hasChange = true;
           }
@@ -2872,13 +2869,17 @@ class Store {
   }
 
   // 日別売上データ（Delivery, Quest, Adjustment, Other, Total）の確定保存
-  saveDailySales(dateStr, { delivery, quest, adjustment, other, rawText }) {
+  saveDailySales(dateStr, { delivery, quest, adjustment, other, rawText, guaranteeBonus, guaranteeBonusNote }) {
     const log = this.getDailyLog(dateStr);
     const d = Number(delivery) || 0;
     const q = Number(quest) || 0;
     const a = Number(adjustment) || 0;
     const o = Number(other) || 0;
-    const tot = d + q + a + o;
+    const existingBonus = log.sales ? (log.sales.guaranteeBonus || 0) : (log.guaranteeBonus || 0);
+    const existingBonusNote = log.sales ? (log.sales.guaranteeBonusNote || '') : (log.guaranteeBonusNote || '');
+    const finalBonus = guaranteeBonus !== undefined ? Number(guaranteeBonus) : existingBonus;
+    const finalBonusNote = guaranteeBonusNote !== undefined ? guaranteeBonusNote : existingBonusNote;
+    const tot = d + q + a + o + finalBonus;
 
     log.sales = {
       delivery: d,
@@ -2886,6 +2887,8 @@ class Store {
       adjustment: a,
       other: o,
       total: tot,
+      guaranteeBonus: finalBonus,
+      guaranteeBonusNote: finalBonusNote,
       rawTextSummary: rawText ? (rawText.length > 50 ? rawText.substring(0, 50) + '...' : rawText) : '',
       updatedAt: new Date().toISOString()
     };
@@ -3071,9 +3074,8 @@ class Store {
       }
     });
 
-    // 9/14〜9/17の正本差額（+4円）を正本基準として保持
-    const officialDiff = audit.diff || 0;
-    const weekOfficialSales = weekCalculatedSales - officialDiff;
+    // 機械的な4円減算（audit.diff）を廃止し、内訳の数学的合計（¥43,141）と完全一致させる
+    const weekOfficialSales = weekCalculatedSales;
 
     if (hasPrevWeekData) {
       const diff = weekOfficialSales - prevWeekSalesSum;
@@ -3134,7 +3136,7 @@ class Store {
     const thisMonth = {
       label: '今月の売上',
       periodLabel: `26/9月`,
-      sales: monthSales - officialDiff,
+      sales: monthSales,
       calculatedSales: monthSales,
       deliveriesCount: monthDeliveriesCount,
       note: `※9月度 登録分（全${monthDeliveriesCount}件）`
@@ -3163,18 +3165,21 @@ class Store {
     const registeredTotal = {
       label: '登録済み累計売上',
       periodLabel: cleanCumPeriod,
-      sales: cumSales - officialDiff,
+      sales: cumSales,
       calculatedSales: cumSales,
       deliveriesCount: cumDeliveriesCount,
       note: `※${cleanCumPeriod} 登録データ累計（全${cumDeliveriesCount}件）`
     };
 
+    // 公式週明細（¥43,461）とUBER_LOG正式データ集計（¥43,141）の未解決差額は¥320
+    const officialWeekStatement = 43461;
+    const unresolvedDiff = officialWeekStatement - weekOfficialSales;
     const auditFootnote = {
-      diff: officialDiff,
-      officialTotal: weekOfficialSales,
-      calculatedTotal: weekCalculatedSales,
-      text: `明細との差額: +${officialDiff}円（9/14〜9/17未照合分）`,
-      subText: `公式正本: ¥${weekOfficialSales.toLocaleString()} / 明細集計: ¥${weekCalculatedSales.toLocaleString()}`
+      diff: unresolvedDiff,
+      officialTotal: officialWeekStatement,
+      calculatedTotal: weekOfficialSales,
+      text: `公式週明細との未解決差額: ¥${unresolvedDiff}（推測補正なし）`,
+      subText: `公式週明細: ¥${officialWeekStatement.toLocaleString()} / 日別集計: ¥${weekOfficialSales.toLocaleString()}`
     };
 
     return {

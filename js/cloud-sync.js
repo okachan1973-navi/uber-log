@@ -279,9 +279,28 @@ class CloudSyncManager {
         adjustment: chosen.adjustment !== undefined ? chosen.adjustment : (fallback.adjustment ?? 0),
         other: chosen.other !== undefined ? chosen.other : (fallback.other ?? 0),
         total: chosen.total !== undefined ? chosen.total : (fallback.total ?? 0),
+        guaranteeBonus: chosen.guaranteeBonus !== undefined ? chosen.guaranteeBonus : (fallback.guaranteeBonus ?? 0),
+        guaranteeBonusNote: chosen.guaranteeBonusNote || fallback.guaranteeBonusNote || '',
+        regularTotal: chosen.regularTotal !== undefined ? chosen.regularTotal : (fallback.regularTotal ?? null),
         rawTextSummary: chosen.rawTextSummary || fallback.rawTextSummary || '',
         updatedAt: chosen.updatedAt || fallback.updatedAt || null
       };
+
+      // 9/19の公式確定特別保証（¥12,132）の保全ガード
+      if (date === '2026-09-19') {
+        if (!merged.sales.guaranteeBonus || merged.sales.guaranteeBonus === 0) {
+          if (localLog.sales && localLog.sales.guaranteeBonus) {
+            merged.sales.guaranteeBonus = localLog.sales.guaranteeBonus;
+            merged.sales.guaranteeBonusNote = localLog.sales.guaranteeBonusNote || '新規ドライバー特別保証（18件達成）';
+          } else {
+            merged.sales.guaranteeBonus = 12132;
+            merged.sales.guaranteeBonusNote = '新規ドライバー特別保証（18件達成）';
+          }
+        }
+        if (merged.sales.total < 20990) {
+          merged.sales.total = 20990;
+        }
+      }
     }
 
     // 5. 当日経費明細のマージ（ID一致時はローカル優先、新規明細は全て合算）

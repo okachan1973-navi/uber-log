@@ -1150,7 +1150,7 @@ class UI {
 
     const totalDistEl = document.getElementById('analytics-total-distance');
     if (totalDistEl) {
-      totalDistEl.textContent = analytics.totalDistanceSum !== null ? `${analytics.totalDistanceSum.toFixed(1)} km` : '--';
+      totalDistEl.textContent = analytics.totalDistanceSum !== null ? `${Math.round(analytics.totalDistanceSum)} km` : '--';
     }
 
     // 3. 日別比較テーブル（5項目：日付 / 件数 / 通常売上 / 配達時間 / 時給［10円丸め］）
@@ -1160,12 +1160,8 @@ class UI {
       comparisonBody.innerHTML = compData.map(d => {
         const info = (typeof getDayOfWeekInfo === 'function') ? getDayOfWeekInfo(d.date) : null;
         const weekdayChar = info ? info.weekdayChar : '';
-        let colorClass = 'weekday-normal';
-        if (info) {
-          if (info.isSaturday) colorClass = 'weekday-sat';
-          else if (info.isSunday) colorClass = 'weekday-sun';
-          else if (info.isHoliday) colorClass = 'weekday-holiday';
-        }
+        // 土日祝の色分けを廃止し、通常の日付色へ統一
+        const colorClass = 'weekday-normal';
         const dateHtml = `${d.shortDate}<span class="date-weekday ${colorClass}">（${weekdayChar}）</span>`;
         const wageStr = (d.hourlyWage !== null) ? `¥${d.hourlyWage.toLocaleString()}` : '--';
         const salesStr = (d.regularSales !== null && d.regularSales !== undefined) ? `¥${d.regularSales.toLocaleString()}` : '--';

@@ -1328,20 +1328,15 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* 曜日の色分け */
-.date-weekday {
-  font-weight: 700;
-  margin-left: 2px;
-}
-.date-weekday.weekday-normal {
-  color: var(--text-muted);
-}
-.date-weekday.weekday-sat {
-  color: #38bdf8; /* 土曜日: 青 */
-}
+/* 曜日表記の通常色への統一（土日祝の色分け強調を廃止） */
+.date-weekday,
+.date-weekday.weekday-normal,
+.date-weekday.weekday-sat,
 .date-weekday.weekday-sun,
 .date-weekday.weekday-holiday {
-  color: #ff453a; /* 日曜・祝日: 赤 */
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-left: 2px;
 }
 
 /* 日別属性コンテナ & バッジ */
@@ -2786,22 +2781,14 @@ body {
   letter-spacing: 0.2px;
 }
 
-/* 曜日・祝日表記スタイル */
-.weekday-text {
+/* 曜日・祝日表記スタイル（土日祝の色分け強調を廃止し通常色に統一） */
+.weekday-text,
+.weekday-text.sat,
+.weekday-text.sun-hol {
   color: var(--text-muted);
   font-size: 0.9em;
   font-weight: 600;
   margin-left: 2px;
-}
-
-.weekday-text.sat {
-  color: #38bdf8; /* 明るい青系 */
-  font-weight: 700;
-}
-
-.weekday-text.sun-hol {
-  color: #fb7185; /* 明るい赤〜ピンク系 */
-  font-weight: 700;
 }
 
 /* 今週の売上内訳グリッド（5項目） */
