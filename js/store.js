@@ -43,6 +43,16 @@ function roundToTimeStep(timeStr, stepMinutes = WORK_TIME_STEP_MINUTES) {
   return `${String(rh).padStart(2, '0')}:${String(rm).padStart(2, '0')}`;
 }
 
+// 今週のクエスト定義（期間・目標件数設定。将来のクエスト差し替えに柔軟対応）
+const CURRENT_WEEK_QUEST = {
+  id: 'quest_20260921_0925',
+  title: '今週のクエスト',
+  targetCount: 80,
+  startAt: '2026-09-21T04:00:00+09:00',
+  endAt: '2026-09-25T04:00:00+09:00',
+  deadlineText: '9/25（金）4:00まで'
+};
+
 // 公式正本売上（2026-09-14 ～ 2026-09-17）
 const OFFICIAL_SOURCE_OF_TRUTH = {
   period: '2026-09-14 ～ 2026-09-17',
@@ -2237,6 +2247,156 @@ class Store {
     return '';
   }
 
+  // 履歴画面: 配達明細の表示順ソート順序を取得（'newest' | 'oldest'）
+  // 初期値: 'newest'（直近の配達を先頭に表示）
+  getHistorySortOrder() {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const val = localStorage.getItem('uber_log_history_sort_order');
+        if (val === 'oldest') return 'oldest';
+      }
+    } catch (e) {}
+    return 'newest';
+  }
+
+  // 履歴画面: 配達明細の表示順ソート順序を端末内に保存
+  setHistorySortOrder(order) {
+    const val = (order === 'oldest') ? 'oldest' : 'newest';
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('uber_log_history_sort_order', val);
+      }
+    } catch (e) {}
+    return val;
+  }
+
+  // 今週のクエスト設定オブジェクトを取得
+  getCurrentWeekQuest() {
+    return CURRENT_WEEK_QUEST;
+  }
+
+  // 指定日時がクエスト期間内（2026-09-21 04:00 〜 2026-09-25 04:00）か判定
+  isDateTimeInQuestPeriod(dateStr, timeStr, quest = CURRENT_WEEK_QUEST) {
+    if (!dateStr) return false;
+    const cleanDate = String(dateStr).replace(/\//g, '-');
+    const cleanTime = (timeStr && timeStr.length >= 5) ? timeStr.slice(0, 5) : '12:00';
+    const isoStr = `${cleanDate}T${cleanTime}:00+09:00`;
+    const t = new Date(isoStr).getTime();
+    const start = new Date(quest.startAt).getTime();
+    const end = new Date(quest.endAt).getTime();
+    return t >= start && t < end;
+  }
+
+  // 今週のクエスト進捗データを取得（累積進捗・残り件数・達成率）
+  getQuestProgress(quest = CURRENT_WEEK_QUEST) {
+    let logDeliveriesCount = 0;
+    const startMs = new Date(quest.startAt).getTime();
+    const endMs = new Date(quest.endAt).getTime();
+
+    // 期間内の全日次ログから実配達件数を集計
+    if (this.state && this.state.dailyLogs) {
+      Object.values(this.state.dailyLogs).forEach(log => {
+        if (log.deliveries && Array.isArray(log.deliveries)) {
+          log.deliveries.forEach(del => {
+            const dStr = (del.date || log.date || '').replace(/\//g, '-');
+            const tStr = (del.completedAt && del.completedAt.length >= 5) ? del.completedAt.slice(0, 5) : '12:00';
+            const tMs = new Date(`${dStr}T${tStr}:00+09:00`).getTime();
+            if (tMs >= startMs && tMs < endMs) {
+              logDeliveriesCount++;
+            }
+          });
+        }
+      });
+    }
+
+    // 端末保存の累積カウンター確認
+    let manualAdjust = 0;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem(`uber_log_quest_${quest.id}`);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (typeof parsed.manualAdjust === 'number') {
+            manualAdjust = parsed.manualAdjust;
+          }
+        }
+      }
+    } catch (e) {}
+
+    const currentCount = Math.max(0, logDeliveriesCount + manualAdjust);
+    const nowMs = Date.now();
+    const isStarted = nowMs >= startMs;
+    const isEnded = nowMs >= endMs;
+    const isAchieved = currentCount >= quest.targetCount;
+    const remainingCount = Math.max(0, quest.targetCount - currentCount);
+    const percentage = Math.min(100, Math.round((currentCount / quest.targetCount) * 100));
+
+    return {
+      questId: quest.id,
+      title: quest.title,
+      targetCount: quest.targetCount,
+      currentCount,
+      remainingCount,
+      percentage,
+      deadlineText: quest.deadlineText,
+      startAt: quest.startAt,
+      endAt: quest.endAt,
+      isStarted,
+      isEnded,
+      isAchieved
+    };
+  }
+
+  // クエスト手動調整オフセットを保存
+  saveQuestProgress(questId, manualAdjust) {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(`uber_log_quest_${questId}`, JSON.stringify({
+          questId,
+          manualAdjust,
+          updatedAt: new Date().toISOString()
+        }));
+      }
+    } catch (e) {}
+  }
+
+  // クエスト進捗手動設定
+  setQuestProgressCount(count, quest = CURRENT_WEEK_QUEST) {
+    const targetCount = Math.max(0, Number(count) || 0);
+    let logDeliveriesCount = 0;
+    const startMs = new Date(quest.startAt).getTime();
+    const endMs = new Date(quest.endAt).getTime();
+    if (this.state && this.state.dailyLogs) {
+      Object.values(this.state.dailyLogs).forEach(log => {
+        if (log.deliveries && Array.isArray(log.deliveries)) {
+          log.deliveries.forEach(del => {
+            const dStr = (del.date || log.date || '').replace(/\//g, '-');
+            const tStr = (del.completedAt && del.completedAt.length >= 5) ? del.completedAt.slice(0, 5) : '12:00';
+            const tMs = new Date(`${dStr}T${tStr}:00+09:00`).getTime();
+            if (tMs >= startMs && tMs < endMs) {
+              logDeliveriesCount++;
+            }
+          });
+        }
+      });
+    }
+    const manualAdjust = targetCount - logDeliveriesCount;
+    this.saveQuestProgress(quest.id, manualAdjust);
+    return targetCount;
+  }
+
+  // クエスト進捗をインクリメント（＋1）
+  incrementQuestProgress(quest = CURRENT_WEEK_QUEST) {
+    const progress = this.getQuestProgress(quest);
+    return this.setQuestProgressCount(progress.currentCount + 1, quest);
+  }
+
+  // クエスト進捗をデクリメント（－1、0未満にはしない）
+  decrementQuestProgress(quest = CURRENT_WEEK_QUEST) {
+    const progress = this.getQuestProgress(quest);
+    return this.setQuestProgressCount(Math.max(0, progress.currentCount - 1), quest);
+  }
+
   // 日別属性の判定（将来の属性拡張に対応する構造化メタデータ）
   getDayAttributes(dateStr) {
     if (!dateStr) return [];
@@ -3372,6 +3532,7 @@ if (typeof window !== 'undefined') {
   window.deduplicateQuests = deduplicateQuests;
   window.parseUberSalesText = parseUberSalesText;
   window.getNextPayoutDate = getNextPayoutDate;
+  window.CURRENT_WEEK_QUEST = CURRENT_WEEK_QUEST;
   window.Store = Store;
   window.store = store;
 }
@@ -3381,6 +3542,7 @@ if (typeof module !== 'undefined' && module.exports) {
     WORK_TIME_STEP_MINUTES,
     getTimeOptions,
     roundToTimeStep,
+    CURRENT_WEEK_QUEST,
     OFFICIAL_SOURCE_OF_TRUTH,
     AVOIDANCE_DATABASE,
     AVOIDANCE_RULES,

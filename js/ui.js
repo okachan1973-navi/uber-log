@@ -260,6 +260,9 @@ class UI {
       compCard.style.display = 'none';
     }
 
+    // 6.5 今週のクエスト進捗カード
+    this.renderWeekQuestCard();
+
     // 7. 本日の確定結果カード（売上確定時のみ表示）
     const settledCard = document.getElementById('today-settled-card');
 
@@ -323,6 +326,57 @@ class UI {
       }
     }
     this.renderDeliveryList(log.deliveries || []);
+  }
+
+  // 今週のクエスト進捗カードの描画（月曜朝4:00〜金曜朝4:00、目標80件）
+  renderWeekQuestCard() {
+    const card = document.getElementById('week-quest-card');
+    if (!card) return;
+
+    if (typeof store === 'undefined' || typeof store.getQuestProgress !== 'function') return;
+
+    const progress = store.getQuestProgress();
+    const remLabelEl = document.getElementById('week-quest-remaining-label');
+    const remNumEl = document.getElementById('week-quest-remaining-num');
+    const remUnitEl = document.getElementById('week-quest-remaining-unit');
+    const ratioEl = document.getElementById('week-quest-progress-ratio');
+    const pctEl = document.getElementById('week-quest-progress-pct');
+    const barEl = document.getElementById('week-quest-bar');
+    const deadlineEl = document.getElementById('week-quest-deadline');
+
+    // スタイルクラスリセット
+    card.classList.remove('is-achieved', 'is-ended');
+
+    if (deadlineEl) {
+      deadlineEl.textContent = progress.isEnded ? '受付終了' : progress.deadlineText;
+    }
+
+    if (barEl) {
+      barEl.style.width = `${progress.percentage}%`;
+    }
+
+    if (pctEl) {
+      pctEl.textContent = `${progress.percentage}%`;
+    }
+
+    if (progress.isAchieved) {
+      card.classList.add('is-achieved');
+      if (remLabelEl) remLabelEl.textContent = '🎉';
+      if (remNumEl) remNumEl.textContent = '目標達成';
+      if (remUnitEl) remUnitEl.textContent = '！';
+      if (ratioEl) ratioEl.textContent = `達成 ${progress.currentCount} / ${progress.targetCount}件`;
+    } else if (progress.isEnded) {
+      card.classList.add('is-ended');
+      if (remLabelEl) remLabelEl.textContent = '期間';
+      if (remNumEl) remNumEl.textContent = '終了';
+      if (remUnitEl) remUnitEl.textContent = '';
+      if (ratioEl) ratioEl.textContent = `終了 ${progress.currentCount} / ${progress.targetCount}件`;
+    } else {
+      if (remLabelEl) remLabelEl.textContent = 'あと';
+      if (remNumEl) remNumEl.textContent = `${progress.remainingCount}`;
+      if (remUnitEl) remUnitEl.textContent = '件';
+      if (ratioEl) ratioEl.textContent = `${progress.currentCount} / ${progress.targetCount}件`;
+    }
   }
 
   // 稼働セッション明細リストの描画
@@ -790,7 +844,7 @@ class UI {
   }
 
   // 「履歴」画面の描画
-  renderHistoryView() {
+  renderHistoryView(expandedDate = null) {
     const container = document.getElementById('history-list-container');
     if (!container) return;
 
@@ -849,6 +903,18 @@ class UI {
       const histDeliveries = hasOfficial
         ? (log.deliveries || []).filter(d => d.restaurant || (d.fee !== null && d.fee !== undefined))
         : (log.deliveries || []);
+
+      // 配達明細の表示順ソート（初期値: 新しい順）
+      const sortOrder = (typeof store !== 'undefined' && store.getHistorySortOrder)
+        ? store.getHistorySortOrder()
+        : 'newest';
+      const isNewest = sortOrder === 'newest';
+
+      const sortedDeliveries = [...histDeliveries].sort((a, b) => {
+        const idxA = (a.index !== undefined && a.index !== null) ? Number(a.index) : 0;
+        const idxB = (b.index !== undefined && b.index !== null) ? Number(b.index) : 0;
+        return isNewest ? (idxB - idxA) : (idxA - idxB);
+      });
 
       // 日別詳細上部の距離・配達時間・時給サマリー
       const distVal = metrics.totalDistanceKm !== null ? metrics.totalDistanceKm : metrics.uberDeliveryDistanceKm;
@@ -973,10 +1039,15 @@ class UI {
                 </div>
               ` : ''}
 
-              <!-- ④ 配達明細 -->
-              <div class="history-deliveries-section-title">${deliverySectionTitle}</div>
+              <!-- ④ 配達明細ヘッダー行（見出し ＋ ソート切替ボタン） -->
+              <div class="history-deliveries-header-row">
+                <div class="history-deliveries-section-title">${deliverySectionTitle}</div>
+                <button type="button" class="btn-history-sort-toggle" data-date="${log.date}" title="配達明細の表示順を切り替えます">
+                  <span>${isNewest ? '新しい順 ▼' : '古い順 ▼'}</span>
+                </button>
+              </div>
               <div class="delivery-list">
-                ${histDeliveries.map(d => this.renderDeliveryCardHtml(d, false, log.date)).join('')}
+                ${sortedDeliveries.map(d => this.renderDeliveryCardHtml(d, false, log.date)).join('')}
               </div>
             </div>
           </div>
@@ -1066,6 +1137,36 @@ class UI {
         this.openTripMapModal(delId);
       });
     });
+
+    // 配達明細ソート切替イベント（新しい順 ▼ ⇔ 古い順 ▼）
+    container.querySelectorAll('.btn-history-sort-toggle').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const currentOrder = (typeof store !== 'undefined' && store.getHistorySortOrder)
+          ? store.getHistorySortOrder()
+          : 'newest';
+        const nextOrder = currentOrder === 'newest' ? 'oldest' : 'newest';
+        if (typeof store !== 'undefined' && store.setHistorySortOrder) {
+          store.setHistorySortOrder(nextOrder);
+        }
+
+        // 現在開いている履歴カードの日付を保持したまま再描画
+        const expandedCard = btn.closest('.history-card.expanded');
+        const activeDate = expandedCard ? expandedCard.getAttribute('data-date') : btn.getAttribute('data-date');
+        this.renderHistoryView(activeDate);
+        this.showToast(nextOrder === 'newest' ? '新しい順（直近が先頭）に並び替えました' : '古い順（朝から順）に並び替えました');
+      });
+    });
+
+    // 指定日カードを展開復元
+    if (expandedDate) {
+      const targetCard = container.querySelector(`.history-card[data-date="${expandedDate}"]`);
+      if (targetCard) {
+        targetCard.classList.add('expanded');
+        const icon = targetCard.querySelector('.expand-icon');
+        if (icon) icon.textContent = '▲';
+      }
+    }
   }
 
   // 「分析」画面の描画（スマホ最優先の簡略化・大型表示・指標整理）
