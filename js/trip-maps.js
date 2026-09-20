@@ -412,6 +412,18 @@ const TRIP_MAP_CATALOG = {
     ],
     "origFile": "スクリーンショット 2026-09-19 175711.png"
   },
+  "del_0919_19": {
+    "map": "assets/maps/map_del_0919_19.png",
+    "full": "assets/maps/full_del_0919_19.png",
+    "cropped": true,
+    "box": [
+      13,
+      167,
+      433,
+      400
+    ],
+    "origFile": "スクリーンショット 2026-09-21 071211.png"
+  },
   "del_0918_1": {
     "map": "assets/maps/map_del_0918_1.png",
     "full": "assets/maps/full_del_0918_1.png",

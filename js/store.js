@@ -984,11 +984,11 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": "08:30",
       "workEndedAt": "17:00",
       "workMinutes": 510,
-      "totalDistanceKm": 68.2,
+      "totalDistanceKm": 70.18,
       "vehicleType": "バイクシェア利用",
       "milestone": "累計75配達達成",
-      "tripsCount": 18,
-      "officialPoints": 22,
+      "tripsCount": 19,
+      "officialPoints": 23,
       "deliveriesCount": 23,
       "workSessions": [
         {
@@ -1109,8 +1109,20 @@ const CONFIRMED_SEED_DATA = {
           "memo": ""
         },
         {
-          "id": "del_0919_10",
+          "id": "del_0919_19",
           "index": 10,
+          "completedAt": "11:44",
+          "restaurant": "スシロー 辰巳橋店",
+          "area": "大阪市西区本田2丁目",
+          "fee": 320,
+          "distanceKm": 1.98,
+          "durationStr": "13分34秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0919_10",
+          "index": 11,
           "completedAt": "12:04",
           "restaurant": "マクドナルド 弁天町駅前店",
           "area": "大阪市港区弁天5丁目",
@@ -1122,7 +1134,7 @@ const CONFIRMED_SEED_DATA = {
         },
         {
           "id": "del_0919_11",
-          "index": 11,
+          "index": 12,
           "completedAt": "12:43",
           "restaurant": "スターバックス コーヒー JR弁天町駅店",
           "area": "大阪市港区弁天3丁目",
@@ -1134,7 +1146,7 @@ const CONFIRMED_SEED_DATA = {
         },
         {
           "id": "del_0919_12",
-          "index": 12,
+          "index": 13,
           "completedAt": "12:56",
           "restaurant": "マクドナルド 弁天町駅前店",
           "area": "大阪市港区市岡元町3丁目",
@@ -1146,7 +1158,7 @@ const CONFIRMED_SEED_DATA = {
         },
         {
           "id": "del_0919_13",
-          "index": 13,
+          "index": 14,
           "completedAt": "13:05",
           "restaurant": "カレーハウスCoCo壱番屋 港区弁天町店",
           "area": "大阪市港区弁天5丁目",
@@ -1158,7 +1170,7 @@ const CONFIRMED_SEED_DATA = {
         },
         {
           "id": "del_0919_14",
-          "index": 14,
+          "index": 15,
           "completedAt": "13:49",
           "restaurant": "スシロー 辰巳橋店",
           "area": "大阪市浪速区塩草1丁目",
@@ -1171,7 +1183,7 @@ const CONFIRMED_SEED_DATA = {
         },
         {
           "id": "del_0919_15",
-          "index": 15,
+          "index": 16,
           "completedAt": "14:18",
           "restaurant": "韓国屋台momoチキン 大正店",
           "area": "大阪市福島区大開4丁目",
@@ -1183,7 +1195,7 @@ const CONFIRMED_SEED_DATA = {
         },
         {
           "id": "del_0919_16",
-          "index": 16,
+          "index": 17,
           "completedAt": "15:03",
           "restaurant": "セブン-イレブン 大阪玉川2丁目店",
           "area": "大阪市福島区福島4丁目",
@@ -1195,7 +1207,7 @@ const CONFIRMED_SEED_DATA = {
         },
         {
           "id": "del_0919_17",
-          "index": 17,
+          "index": 18,
           "completedAt": "15:37",
           "restaurant": "ミスタードーナツ 福島大開ショップ",
           "area": "大阪市福島区海老江6丁目",
@@ -1207,7 +1219,7 @@ const CONFIRMED_SEED_DATA = {
         },
         {
           "id": "del_0919_18",
-          "index": 18,
+          "index": 19,
           "completedAt": "15:45",
           "restaurant": "セブン-イレブン 野田阪神駅前店",
           "area": "大阪市福島区海老江6丁目",
@@ -1257,14 +1269,14 @@ const CONFIRMED_SEED_DATA = {
         }
       ],
       "sales": {
-        "delivery": 7908,
+        "delivery": 8228,
         "quest": 950,
         "adjustment": 0,
         "other": 0,
-        "regularTotal": 8858,
+        "regularTotal": 9178,
         "guaranteeBonus": 12132,
         "guaranteeBonusNote": "新規ドライバー保証（累計75配達達成: 保証額42,525円 - 対象売上30,393円）",
-        "total": 20990
+        "total": 21310
       },
       "expenses": [
         {
@@ -1923,13 +1935,13 @@ class Store {
           }
         } else if (date === '2026-09-19') {
           const target = parsed.dailyLogs[date];
-          // 均等配分や仮データ（fee=340等）、手動空タップ残骸（41件混在等）、または18件の公式トリップ未更新・不一致時は公式実績データへ置換
+          // 均等配分や仮データ（fee=340等）、手動空タップ残骸（41件混在等）、または19件の公式トリップ未更新・不一致時は公式実績データへ置換
           const hasSynthetic = target.deliveries && target.deliveries.some(d => d.fee === 340 || d.completedAt === '09:15');
           const hasWrongFukushima = target.deliveries && target.deliveries[0] && target.deliveries[0].memo && target.deliveries[0].memo.includes('福島タワー');
-          const lacksFukushimaOn18 = target.deliveries && target.deliveries[17] && (!target.deliveries[17].memo || !target.deliveries[17].memo.includes('福島タワー'));
+          const lacksFukushimaOn18 = target.deliveries && target.deliveries[target.deliveries.length - 1] && (!target.deliveries[target.deliveries.length - 1].memo || !target.deliveries[target.deliveries.length - 1].memo.includes('福島タワー'));
           const hasEmptyManualTaps = target.deliveries && target.deliveries.some(d => !d.restaurant && (d.fee === null || d.fee === undefined));
-          const isNot18Trips = !target.deliveries || target.deliveries.length !== 18;
-          if (isNot18Trips || hasSynthetic || hasEmptyManualTaps || !target.tripsCount || hasWrongFukushima || lacksFukushimaOn18 || target.deliveriesCount !== 23) {
+          const isNot19Trips = !target.deliveries || target.deliveries.length !== 19;
+          if (isNot19Trips || hasSynthetic || hasEmptyManualTaps || !target.tripsCount || hasWrongFukushima || lacksFukushimaOn18 || target.deliveriesCount !== 23) {
             target.deliveries = log.deliveries;
             target.tripsCount = log.tripsCount;
             target.officialPoints = log.officialPoints;
@@ -1937,7 +1949,7 @@ class Store {
             target.totalDistanceKm = log.totalDistanceKm;
             hasChange = true;
           }
-          if (!target.sales || target.sales.guaranteeBonus !== 12132 || target.sales.total !== 20990) {
+          if (!target.sales || target.sales.guaranteeBonus !== 12132 || target.sales.total !== 21310) {
             target.sales = log.sales;
             hasChange = true;
           }
@@ -3274,7 +3286,7 @@ class Store {
       }
     });
 
-    // 機械的な4円減算（audit.diff）を廃止し、内訳の数学的合計（¥43,141）と完全一致させる公式売上
+    // 内訳の数学的合計（¥43,461）と完全一致させる公式売上
     const weekOfficialSales = weekCalculatedSales;
 
     // 「今週の売上利益」＝ 配達報酬 ＋ クエスト ＋ 特別ボーナス ＋ その他 － Bike経費
@@ -3395,14 +3407,14 @@ class Store {
       note: `※${cleanCumPeriod} 登録データ累計（全${cumDeliveriesCount}件）`
     };
 
-    // 公式週明細（¥43,461）とUBER_LOG正式データ集計（¥43,141）の未解決差額は¥320
+    // 公式週明細（¥43,461）とUBER_LOG正式データ集計（¥43,461）は完全一致（差額解消済み）
     const officialWeekStatement = 43461;
     const unresolvedDiff = officialWeekStatement - weekOfficialSales;
     const auditFootnote = {
       diff: unresolvedDiff,
       officialTotal: officialWeekStatement,
       calculatedTotal: weekOfficialSales,
-      text: `公式週明細との未解決差額: ¥${unresolvedDiff}（推測補正なし）`,
+      text: unresolvedDiff === 0 ? '公式週明細と完全一致（差額解消済み）' : `公式週明細との未解決差額: ¥${unresolvedDiff}（推測補正なし）`,
       subText: `公式週明細: ¥${officialWeekStatement.toLocaleString()} / 日別集計: ¥${weekOfficialSales.toLocaleString()}`
     };
 

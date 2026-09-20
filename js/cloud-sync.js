@@ -297,8 +297,8 @@ class CloudSyncManager {
             merged.sales.guaranteeBonusNote = '新規ドライバー特別保証（18件達成）';
           }
         }
-        if (merged.sales.total < 20990) {
-          merged.sales.total = 20990;
+        if (merged.sales.total < 21310) {
+          merged.sales.total = 21310;
         }
       }
     }
