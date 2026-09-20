@@ -1,5 +1,201 @@
 // UBER_LOG 公式トリップ地図画像カタログ
 const TRIP_MAP_CATALOG = {
+  "del_0910_1": {
+    "map": "assets/maps/map_del_0910_1.png",
+    "full": "assets/maps/full_del_0910_1.png",
+    "cropped": true,
+    "box": [18, 169, 438, 402],
+    "origFile": "スクリーンショット 2026-09-15 080236.png"
+  },
+  "del_0910_2": {
+    "map": "assets/maps/map_del_0910_2.png",
+    "full": "assets/maps/full_del_0910_2.png",
+    "cropped": true,
+    "box": [42, 174, 462, 407],
+    "origFile": "スクリーンショット 2026-09-15 075843.png"
+  },
+  "del_0911_1": {
+    "map": "assets/maps/map_del_0911_1.png",
+    "full": "assets/maps/full_del_0911_1.png",
+    "cropped": true,
+    "box": [27, 160, 447, 393],
+    "origFile": "スクリーンショット 2026-09-15 075930.png"
+  },
+  "del_0911_2": {
+    "map": "assets/maps/map_del_0911_2.png",
+    "full": "assets/maps/full_del_0911_2.png",
+    "cropped": true,
+    "box": [37, 170, 457, 403],
+    "origFile": "スクリーンショット 2026-09-15 075947.png"
+  },
+  "del_0911_3": {
+    "map": "assets/maps/map_del_0911_3.png",
+    "full": "assets/maps/full_del_0911_3.png",
+    "cropped": true,
+    "box": [19, 164, 439, 397],
+    "origFile": "スクリーンショット 2026-09-15 080000.png"
+  },
+  "del_0911_4": {
+    "map": "assets/maps/map_del_0911_4.png",
+    "full": "assets/maps/full_del_0911_4.png",
+    "cropped": true,
+    "box": [9, 167, 429, 400],
+    "origFile": "スクリーンショット 2026-09-15 080029.png"
+  },
+  "del_0914_1": {
+    "map": "assets/maps/map_del_0914_1.png",
+    "full": "assets/maps/full_del_0914_1.png",
+    "cropped": true,
+    "box": [43, 165, 463, 398],
+    "origFile": "スクリーンショット 2026-09-15 052317.png"
+  },
+  "del_0914_2": {
+    "map": "assets/maps/map_del_0914_2.png",
+    "full": "assets/maps/full_del_0914_2.png",
+    "cropped": true,
+    "box": [18, 172, 438, 405],
+    "origFile": "スクリーンショット 2026-09-15 052345.png"
+  },
+  "del_0914_3": {
+    "map": "assets/maps/map_del_0914_3.png",
+    "full": "assets/maps/full_del_0914_3.png",
+    "cropped": true,
+    "box": [9, 160, 429, 393],
+    "origFile": "スクリーンショット 2026-09-15 052414.png"
+  },
+  "del_0914_4": {
+    "map": "assets/maps/map_del_0914_4.png",
+    "full": "assets/maps/full_del_0914_4.png",
+    "cropped": true,
+    "box": [7, 168, 427, 401],
+    "origFile": "スクリーンショット 2026-09-15 052425.png"
+  },
+  "del_0915_1": {
+    "map": "assets/maps/map_del_0915_1.png",
+    "full": "assets/maps/full_del_0915_1.png",
+    "cropped": true,
+    "box": [17, 168, 437, 401],
+    "origFile": "スクリーンショット 2026-09-15 144803.png"
+  },
+  "del_0915_2": {
+    "map": "assets/maps/map_del_0915_2.png",
+    "full": "assets/maps/full_del_0915_2.png",
+    "cropped": true,
+    "box": [13, 166, 433, 399],
+    "origFile": "スクリーンショット 2026-09-15 144821.png"
+  },
+  "del_0915_3": {
+    "map": "assets/maps/map_del_0915_3.png",
+    "full": "assets/maps/full_del_0915_3.png",
+    "cropped": true,
+    "box": [13, 160, 433, 393],
+    "origFile": "スクリーンショット 2026-09-15 145110.png"
+  },
+  "del_0915_4": {
+    "map": "assets/maps/map_del_0915_4.png",
+    "full": "assets/maps/full_del_0915_4.png",
+    "cropped": true,
+    "box": [16, 170, 436, 403],
+    "origFile": "スクリーンショット 2026-09-15 144910.png"
+  },
+  "del_0915_5": {
+    "map": "assets/maps/map_del_0915_5.png",
+    "full": "assets/maps/full_del_0915_5.png",
+    "cropped": true,
+    "box": [41, 170, 461, 403],
+    "origFile": "スクリーンショット 2026-09-15 144931.png"
+  },
+  "del_0915_6": {
+    "map": "assets/maps/map_del_0915_6.png",
+    "full": "assets/maps/full_del_0915_6.png",
+    "cropped": true,
+    "box": [18, 163, 438, 396],
+    "origFile": "スクリーンショット 2026-09-15 145204.png"
+  },
+  "del_0915_7": {
+    "map": "assets/maps/map_del_0915_7.png",
+    "full": "assets/maps/full_del_0915_7.png",
+    "cropped": true,
+    "box": [24, 172, 444, 405],
+    "origFile": "スクリーンショット 2026-09-15 145221.png"
+  },
+  "del_0915_8": {
+    "map": "assets/maps/map_del_0915_8.png",
+    "full": "assets/maps/full_del_0915_8.png",
+    "cropped": true,
+    "box": [8, 160, 428, 393],
+    "origFile": "スクリーンショット 2026-09-15 145236.png"
+  },
+  "del_0915_9": {
+    "map": "assets/maps/map_del_0915_9.png",
+    "full": "assets/maps/full_del_0915_9.png",
+    "cropped": true,
+    "box": [7, 162, 427, 395],
+    "origFile": "スクリーンショット 2026-09-15 145302.png"
+  },
+  "del_0915_10": {
+    "map": "assets/maps/map_del_0915_10.png",
+    "full": "assets/maps/full_del_0915_10.png",
+    "cropped": true,
+    "box": [20, 165, 440, 398],
+    "origFile": "スクリーンショット 2026-09-15 145328.png"
+  },
+  "del_0915_11": {
+    "map": "assets/maps/map_del_0915_11.png",
+    "full": "assets/maps/full_del_0915_11.png",
+    "cropped": true,
+    "box": [6, 168, 426, 401],
+    "origFile": "スクリーンショット 2026-09-15 145408.png"
+  },
+  "del_0916_1": {
+    "map": "assets/maps/map_del_0916_1.png",
+    "full": "assets/maps/full_del_0916_1.png",
+    "cropped": true,
+    "box": [28, 175, 448, 408],
+    "origFile": "スクリーンショット 2026-09-16 133937.png"
+  },
+  "del_0916_2": {
+    "map": "assets/maps/map_del_0916_2.png",
+    "full": "assets/maps/full_del_0916_2.png",
+    "cropped": true,
+    "box": [25, 172, 445, 405],
+    "origFile": "スクリーンショット 2026-09-16 133949.png"
+  },
+  "del_0916_3": {
+    "map": "assets/maps/map_del_0916_3.png",
+    "full": "assets/maps/full_del_0916_3.png",
+    "cropped": true,
+    "box": [29, 177, 449, 410],
+    "origFile": "スクリーンショット 2026-09-16 134000.png"
+  },
+  "del_0916_4": {
+    "map": "assets/maps/map_del_0916_4.png",
+    "full": "assets/maps/full_del_0916_4.png",
+    "cropped": true,
+    "box": [14, 181, 434, 414],
+    "origFile": "スクリーンショット 2026-09-16 134013.png"
+  },
+  "del_0916_5": {
+    "map": "assets/maps/map_del_0916_5.png",
+    "full": "assets/maps/full_del_0916_5.png",
+    "cropped": true,
+    "box": [8, 159, 428, 392],
+    "origFile": "スクリーンショット 2026-09-16 134028.png"
+  },
+  "del_0916_6": {
+    "map": "assets/maps/map_del_0916_6.png",
+    "full": "assets/maps/full_del_0916_6.png",
+    "cropped": true,
+    "box": [16, 215, 436, 448],
+    "origFile": "スクリーンショット 2026-09-16 134050.png"
+  },
+  "del_0916_7": {
+    "map": "assets/maps/map_del_0916_7.png",
+    "full": "assets/maps/full_del_0916_7.png",
+    "cropped": true,
+    "box": [35, 167, 455, 400],
+    "origFile": "スクリーンショット 2026-09-16 134110.png"
+  },
   "del_0919_1": {
     "map": "assets/maps/map_del_0919_1.png",
     "full": "assets/maps/full_del_0919_1.png",
