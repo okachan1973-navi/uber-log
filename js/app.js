@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSettingsActions();
   initCloudSyncActions();
   initSalesAndExpensesActions();
+  initAppUpdateChecker();
 
   // 初回描画
   ui.refreshAll();
@@ -447,18 +448,36 @@ function initSettingsActions() {
     });
   }
 
-  // 最新版に更新（キャッシュ強制クリア＆再読込）
+  // 予備・復旧用：最新版への強制再読込ボタン（キャッシュ＆SW強制クリア）
   const forceReloadBtn = document.getElementById('btn-force-reload');
   if (forceReloadBtn) {
-    forceReloadBtn.addEventListener('click', () => {
+    forceReloadBtn.addEventListener('click', async () => {
       triggerHaptic();
-      ui.showToast('最新アセットを再読込中...');
-      setTimeout(() => {
-        if ('caches' in window) {
-          caches.keys().then(names => {
-            names.forEach(name => caches.delete(name));
-          });
+      ui.showToast('最新版へ更新中...');
+
+      try {
+        // 1. Service Workerの強制更新
+        if ('serviceWorker' in navigator) {
+          const reg = await navigator.serviceWorker.getRegistration();
+          if (reg) {
+            await reg.update();
+            if (reg.waiting) {
+              reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+          }
         }
+        // 2. 古いCacheStorageを全削除（※localStorageの本人入力データは一切消しません）
+        if ('caches' in window) {
+          const names = await caches.keys();
+          await Promise.all(names.map(name => caches.delete(name)));
+        }
+        // 3. セッションストレージ初期化
+        sessionStorage.clear();
+      } catch (e) {
+        console.warn('Cache clear error:', e);
+      }
+
+      setTimeout(() => {
         window.location.reload(true);
       }, 300);
     });
@@ -513,6 +532,57 @@ function initSettingsActions() {
       }
     });
   }
+}
+
+// 6.5. アプリ更新チェック機能（フォアグラウンド復帰時・定期チェック）
+function initAppUpdateChecker() {
+  const checkVersion = async () => {
+    if (!navigator.onLine || !window.location.protocol.startsWith('http')) return;
+    try {
+      // タイムスタンプパラメータでCDN・ブラウザキャッシュを確実にバイパス
+      const res = await fetch('version.json?_cb=' + Date.now(), {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const currentVer = window.UBER_LOG_APP_VERSION || '20260920_v8';
+      if (data && data.version && data.version !== currentVer) {
+        console.log(`[PWA] Newer version detected: ${data.version} (current: ${currentVer})`);
+
+        // 同一バージョンでの再読込ループ防止ガード（sessionStorage）
+        const reloadKey = 'uber_log_reload_attempt_' + data.version;
+        if (sessionStorage.getItem(reloadKey)) {
+          return;
+        }
+        sessionStorage.setItem(reloadKey, '1');
+
+        // Service Workerの強制更新をトリガー
+        if ('serviceWorker' in navigator) {
+          const reg = await navigator.serviceWorker.getRegistration();
+          if (reg) await reg.update();
+        }
+
+        // 自動再読込を実行
+        window.location.reload();
+      }
+    } catch (e) {
+      // オフライン・通信エラー時は静かに無視（ユーザー操作を妨げない）
+    }
+  };
+
+  // 1. 初回起動時のチェック（安定後に実行）
+  setTimeout(checkVersion, 1500);
+
+  // 2. iOSでバックグラウンドからフォアグラウンドへ復帰した時にチェック
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkVersion();
+    }
+  });
+
+  // 3. オンライン復帰時のチェック
+  window.addEventListener('online', checkVersion);
 }
 
 // 7. クラウド同期（Supabase）アクション

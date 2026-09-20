@@ -3,6 +3,7 @@
   "short_name": "UBER LOG",
   "description": "Uber Eats 配達中の実績を1タップで記録できる軽量モバイルダッシュボード",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0a0d12",
   "theme_color": "#0a0d12",
