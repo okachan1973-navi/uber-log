@@ -814,7 +814,7 @@ class UI {
         ? formatDateWithColoredWeekday(log.date, false) 
         : ((typeof formatShortJapaneseDate === 'function') ? formatShortJapaneseDate(log.date, false) : formatJapaneseDate(log.date));
 
-      // 日別属性の取得と「+N」集約ロジック（最大2個まで個別表示、3個以上は先頭2個 + [+N] に集約）
+      // 日別属性の取得と「+N」集約ロジック（2個までは個別表示、3個以上は先頭2個 + [+N] 集約）
       const dayAttrs = (typeof store !== 'undefined' && store.getDayAttributes)
         ? store.getDayAttributes(log.date)
         : [];

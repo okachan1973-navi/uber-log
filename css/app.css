@@ -1276,7 +1276,7 @@ body {
 }
 
 .history-card-header {
-  padding: 11px 14px;
+  padding: 10px 12px;
   min-height: 48px;
   box-sizing: border-box;
   display: flex;
@@ -1296,18 +1296,18 @@ body {
 .history-header-left {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   flex-shrink: 0;
 }
 
 .history-date-title {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-main);
   display: flex;
   align-items: center;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.3px;
   white-space: nowrap;
 }
 
@@ -1315,14 +1315,14 @@ body {
   display: inline-flex;
   align-items: baseline;
   gap: 3px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
 }
 
 .history-profit-item .h-sub-val.val-profit {
-  font-size: 14px;
+  font-size: 17.5px;
   font-weight: 800;
   color: #ffffff;
   font-variant-numeric: tabular-nums;
@@ -1348,24 +1348,24 @@ body {
 .history-header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .day-attributes {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .day-attr-badge {
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   border-radius: 4px;
   line-height: 1;
@@ -1398,9 +1398,10 @@ body {
   background-color: rgba(255, 255, 255, 0.08);
   color: var(--text-muted);
   border: 1px solid rgba(255, 255, 255, 0.22);
-  min-width: 22px;
+  min-width: 20px;
+  height: 20px;
   width: auto;
-  padding: 0 4px;
+  padding: 0 3px;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: -0.5px;
