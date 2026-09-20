@@ -200,7 +200,22 @@ const CONFIRMED_SEED_DATA = {
           "memo": "ダブル配達（2件完了/2pt）"
         }
       ],
-      "quests": []
+      "quests": [
+        {
+          "id": "quest_0910_1",
+          "time": "10:15",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0910_2",
+          "time": "11:05",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false
+        }
+      ]
     },
     "2026-09-11": {
       "date": "2026-09-11",
@@ -262,7 +277,29 @@ const CONFIRMED_SEED_DATA = {
           "memo": ""
         }
       ],
-      "quests": []
+      "quests": [
+        {
+          "id": "quest_0911_1",
+          "time": "10:00",
+          "title": "クエスト",
+          "amount": 125,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0911_2",
+          "time": "11:15",
+          "title": "クエスト",
+          "amount": 145,
+          "isDuplicateIgnored": false
+        },
+        {
+          "id": "quest_0911_3",
+          "time": "12:10",
+          "title": "クエスト",
+          "amount": 180,
+          "isDuplicateIgnored": false
+        }
+      ]
     },
     "2026-09-14": {
       "date": "2026-09-14",
@@ -1792,6 +1829,18 @@ class Store {
         if (!parsed.dailyLogs[date]) {
           parsed.dailyLogs[date] = log;
           hasChange = true;
+        } else if (date === '2026-09-10') {
+          const target = parsed.dailyLogs[date];
+          if (!target.quests || target.quests.length < 2 || !target.quests.some(q => q.amount === 100)) {
+            target.quests = log.quests;
+            hasChange = true;
+          }
+        } else if (date === '2026-09-11') {
+          const target = parsed.dailyLogs[date];
+          if (!target.quests || target.quests.length < 3 || !target.quests.some(q => q.amount === 125)) {
+            target.quests = log.quests;
+            hasChange = true;
+          }
         } else if (date === '2026-09-14') {
           const target = parsed.dailyLogs[date];
           if (!target.deliveries || !target.deliveries[0] || !target.deliveries[0].restaurant) {
@@ -2789,6 +2838,8 @@ class Store {
       questSales,
       adjustmentSales,
       otherSales,
+      regularSales: hourlyBaseSales,
+      hourlyBaseSales,
       totalSales,
       totalExpenses,
       netProfit,
@@ -3142,6 +3193,7 @@ class Store {
     let totalSalesSum = 0;
     let totalRegularSalesSum = 0; // 通常稼働売上（大型特別ボーナス除外）
     let totalMinutesSum = 0;
+    let totalSecondsSum = 0; // 全公式トリップ所要時間秒数合計
     let totalDistanceSum = 0;
     let activeDaysCount = 0;
 
@@ -3161,6 +3213,9 @@ class Store {
         if (metrics.workMinutes) {
           totalMinutesSum += metrics.workMinutes;
         }
+        if (metrics.workSeconds) {
+          totalSecondsSum += metrics.workSeconds;
+        }
         if (metrics.totalDistanceKm) {
           totalDistanceSum += metrics.totalDistanceKm;
         }
@@ -3173,16 +3228,51 @@ class Store {
     // 平均1件単価: 通常稼働売上 ÷ 配達件数（特別ボーナス除外）
     const avgPerDelivery = totalDeliveries > 0 ? Math.round(totalRegularSalesSum / totalDeliveries) : null;
 
-    const recent7Days = allLogs.slice(0, 7).map(log => {
+    // 配達時間テキスト（全期間の公式トリップ所要時間合計、秒省略「xx時間xx分」）
+    const totalDurationText = totalSecondsSum > 0
+      ? `${Math.floor(totalSecondsSum / 3600)}時間${Math.floor((totalSecondsSum % 3600) / 60)}分`
+      : '0時間0分';
+
+    // 日別比較用データ（全稼働日、降順、10円単位四捨五入時給）
+    const dailyComparison = allLogs.filter(log => {
+      const m = this.getCalculatedMetrics(log);
+      return m.count > 0 || log.workStartedAt || m.totalSales !== null;
+    }).map(log => {
       const metrics = this.getCalculatedMetrics(log);
+      const regSales = metrics.regularSales !== undefined ? metrics.regularSales : ((metrics.deliverySales || 0) + (metrics.questSales || 0) + (metrics.adjustmentSales || 0));
+      
+      // 時給: 通常売上 ÷ 配達時間（秒単位高精度計算）。一覧表示では10円単位に四捨五入
+      let roundedHourly = null;
+      if (metrics.hourlyWage !== null) {
+        roundedHourly = Math.round(metrics.hourlyWage / 10) * 10;
+      }
+
+      // 配達時間（秒省略「○時間○分」）
+      let durationText = '未記録';
+      if (metrics.workSeconds !== null && metrics.workSeconds > 0) {
+        const h = Math.floor(metrics.workSeconds / 3600);
+        const m = Math.floor((metrics.workSeconds % 3600) / 60);
+        durationText = `${h}時間${m}分`;
+      } else if (metrics.workMinutes !== null && metrics.workMinutes > 0) {
+        durationText = formatMinutes(metrics.workMinutes);
+      }
+
+      // 日付フォーマット
+      const [y, mon, d] = log.date.split('-');
+      const shortDate = `${Number(mon)}/${Number(d)}`;
+
       return {
         date: log.date,
-        formattedDate: log.date.substring(5).replace('-', '/'),
+        shortDate,
         count: metrics.count,
+        regularSales: regSales,
+        workSeconds: metrics.workSeconds,
+        durationText,
+        hourlyWage: roundedHourly,
+        exactHourlyWage: metrics.hourlyWage,
         totalSales: metrics.totalSales,
         deliverySales: metrics.deliverySales,
         questSales: metrics.questSales,
-        hourlyWage: metrics.hourlyWage,
         distance: metrics.totalDistanceKm
       };
     });
@@ -3196,7 +3286,10 @@ class Store {
       avgHourlyWage,
       avgPerDelivery,
       totalDistanceSum: totalDistanceSum > 0 ? Number(totalDistanceSum.toFixed(1)) : null,
-      recent7Days
+      totalSecondsSum,
+      totalDurationText,
+      dailyComparison,
+      recent7Days: dailyComparison.slice(0, 7)
     };
   }
 

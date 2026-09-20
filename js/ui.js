@@ -907,18 +907,18 @@ class UI {
 
       return `
         <div class="history-card" data-date="${log.date}">
-          <!-- 日付バー（完全1行構成: 日付＋利益 / 属性＋▼） -->
+          <!-- 日付バー（新1行構成: 日付＋属性 / 可変余白 / 利益＋▼） -->
           <div class="history-card-header">
             <div class="history-header-left">
               <div class="history-date-title">
                 ${dateHtml}
               </div>
+              ${dayAttrsHtml ? `<div class="day-attributes">${dayAttrsHtml}</div>` : ''}
+            </div>
+            <div class="history-header-right">
               <div class="history-profit-item">
                 利益 <span class="h-sub-val val-profit">${metrics.netProfit !== null ? `¥${metrics.netProfit.toLocaleString()}` : '--'}</span>
               </div>
-            </div>
-            <div class="history-header-right">
-              ${dayAttrsHtml ? `<div class="day-attributes">${dayAttrsHtml}</div>` : ''}
               <span class="expand-icon">▼</span>
             </div>
           </div>
@@ -1123,14 +1123,13 @@ class UI {
     const weekCountEl = document.getElementById('week-delivery-count');
     if (weekCountEl) weekCountEl.textContent = `${rev.thisWeek.deliveriesCount}件`;
 
-    // 2. 今月の売上（全幅カード）
+    // 2. 今月の実績（6指標）
     const monthPeriodEl = document.getElementById('month-sales-period');
     if (monthPeriodEl) monthPeriodEl.textContent = rev.thisMonth.periodLabel;
 
     const monthValEl = document.getElementById('month-sales-val');
     if (monthValEl) monthValEl.textContent = `¥${rev.thisMonth.sales.toLocaleString()}`;
 
-    // 3. パフォーマンス指標（2×2グリッド、特別ボーナス除外で実稼働を正確に反映）
     const totalDelEl = document.getElementById('analytics-total-deliveries');
     if (totalDelEl) totalDelEl.textContent = `${analytics.totalDeliveries}件`;
 
@@ -1144,28 +1143,40 @@ class UI {
       avgPerDelEl.textContent = analytics.avgPerDelivery !== null ? `¥${analytics.avgPerDelivery.toLocaleString()}` : '--';
     }
 
+    const totalDurEl = document.getElementById('analytics-total-duration');
+    if (totalDurEl) {
+      totalDurEl.textContent = analytics.totalDurationText || '--';
+    }
+
     const totalDistEl = document.getElementById('analytics-total-distance');
     if (totalDistEl) {
       totalDistEl.textContent = analytics.totalDistanceSum !== null ? `${analytics.totalDistanceSum.toFixed(1)} km` : '--';
     }
 
-    // 4. 日別実績テーブル（降順簡易一覧）
-    const tableBody = document.getElementById('recent-7days-table-body');
-    if (tableBody) {
-      const allLogs = store.getAllDailyLogs();
-      const activeLogs = allLogs.filter(log => {
-        const m = store.getCalculatedMetrics(log);
-        return m.count > 0 || m.totalSales !== null;
-      });
-      tableBody.innerHTML = activeLogs.map(log => {
-        const m = store.getCalculatedMetrics(log);
+    // 3. 日別比較テーブル（5項目：日付 / 件数 / 通常売上 / 配達時間 / 時給［10円丸め］）
+    const comparisonBody = document.getElementById('analytics-daily-comparison-body') || document.getElementById('recent-7days-table-body');
+    if (comparisonBody) {
+      const compData = analytics.dailyComparison || [];
+      comparisonBody.innerHTML = compData.map(d => {
+        const info = (typeof getDayOfWeekInfo === 'function') ? getDayOfWeekInfo(d.date) : null;
+        const weekdayChar = info ? info.weekdayChar : '';
+        let colorClass = 'weekday-normal';
+        if (info) {
+          if (info.isSaturday) colorClass = 'weekday-sat';
+          else if (info.isSunday) colorClass = 'weekday-sun';
+          else if (info.isHoliday) colorClass = 'weekday-holiday';
+        }
+        const dateHtml = `${d.shortDate}<span class="date-weekday ${colorClass}">（${weekdayChar}）</span>`;
+        const wageStr = (d.hourlyWage !== null) ? `¥${d.hourlyWage.toLocaleString()}` : '--';
+        const salesStr = (d.regularSales !== null && d.regularSales !== undefined) ? `¥${d.regularSales.toLocaleString()}` : '--';
+
         return `
           <tr>
-            <td><strong>${(typeof formatDateWithWeekday === 'function') ? formatDateWithWeekday(log.date, false) : log.date}</strong></td>
-            <td>${m.count}件</td>
-            <td>${m.deliverySales !== null ? `¥${m.deliverySales.toLocaleString()}` : '--'}</td>
-            <td>${m.questSales !== null ? `¥${m.questSales.toLocaleString()}` : '¥0'}</td>
-            <td style="font-weight:700; color:var(--color-uber-green);">${m.totalSales !== null ? `¥${m.totalSales.toLocaleString()}` : '--'}</td>
+            <td class="col-date">${dateHtml}</td>
+            <td class="col-count">${d.count}件</td>
+            <td class="col-sales">${salesStr}</td>
+            <td class="col-duration">${d.durationText}</td>
+            <td class="col-wage">${wageStr}</td>
           </tr>
         `;
       }).join('');

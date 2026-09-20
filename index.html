@@ -13,7 +13,7 @@
   <meta name="theme-color" content="#0a0d12">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0d12'/><circle cx='50' cy='50' r='36' fill='%2306C167'/><text x='50' y='60' font-size='34' font-weight='900' fill='%23000' text-anchor='middle'>U</text></svg>">
   <script>
-    window.UBER_LOG_APP_VERSION = '20260920_v14';
+    window.UBER_LOG_APP_VERSION = '20260920_v15';
 
     // file:// 起動時のCORSブロックを回避し、HTTP/HTTPS環境でのみPWAマニフェストおよびService Workerを読み込む
     if (window.location.protocol.startsWith('http')) {
@@ -25,7 +25,7 @@
       // Service Workerの登録と更新監視（PWA自動更新コア）
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js?v=20260920_v14', { scope: './' })
+          navigator.serviceWorker.register('./sw.js?v=20260920_v15', { scope: './' })
             .then((reg) => {
               // 起動時にサーバー上の最新Service Workerの有無をチェック
               reg.update();
@@ -64,7 +64,7 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- スタイルシート -->
-  <link rel="stylesheet" href="css/app.css?v=20260920_v14">
+  <link rel="stylesheet" href="css/app.css?v=20260920_v15">
 </head>
 <body>
 
@@ -281,51 +281,56 @@
         </div>
       </section>
 
-      <!-- 2. 中段：今月の売上（全幅カード・大きな金額・注記削減） -->
-      <section class="month-sales-card">
-        <div class="month-sales-info">
-          <span class="month-sales-label">今月の売上</span>
-          <span class="month-sales-period" id="month-sales-period">26/9月度</span>
+      <!-- 2. 中段：今月の実績（セクション統一・6指標スマート配置） -->
+      <section class="month-performance-section">
+        <div class="analytics-sub-header">
+          <h3 class="analytics-sub-title">今月の実績</h3>
+          <span class="analytics-sub-period" id="month-sales-period">26/9月度</span>
         </div>
-        <div class="month-sales-amount" id="month-sales-val">¥46,201</div>
+        <div class="analytics-hero-grid month-stats-grid">
+          <div class="stat-card highlight">
+            <span class="stat-card-label">売上</span>
+            <span id="month-sales-val" class="stat-card-val" style="color:var(--color-uber-green);">¥46,901</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card-label">配達</span>
+            <span id="analytics-total-deliveries" class="stat-card-val">72件</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card-label">平均日給</span>
+            <span id="analytics-avg-daily" class="stat-card-val">¥4,347</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card-label">平均1件単価</span>
+            <span id="analytics-avg-per-delivery" class="stat-card-val">¥483</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card-label">配達時間</span>
+            <span id="analytics-total-duration" class="stat-card-val">29時間26分</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card-label">配達距離</span>
+            <span id="analytics-total-distance" class="stat-card-val">261.2 km</span>
+          </div>
+        </div>
       </section>
 
-      <!-- 3. 中段：パフォーマンス指標（2×2グリッド・ラベル短く・数字大きく） -->
-      <section class="analytics-hero-grid">
-        <div class="stat-card">
-          <span class="stat-card-label">累計配達</span>
-          <span id="analytics-total-deliveries" class="stat-card-val">72件</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-card-label">平均日給</span>
-          <span id="analytics-avg-daily" class="stat-card-val">¥4,259</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-card-label">平均1件単価</span>
-          <span id="analytics-avg-per-delivery" class="stat-card-val">¥473</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-card-label">配達距離</span>
-          <span id="analytics-total-distance" class="stat-card-val">261.2 km</span>
-        </div>
-      </section>
-
-      <!-- 4. 下段：日別実績（簡易一覧） -->
+      <!-- 3. 下段：日別比較（5項目：日付 / 件数 / 通常売上 / 配達時間 / 時給） -->
       <section class="recent-table-card">
         <div class="recent-table-header">
-          <h3 class="recent-table-title">日別実績</h3>
+          <h3 class="recent-table-title">日別比較</h3>
         </div>
-        <table class="recent-table">
+        <table class="recent-table comparison-table">
           <thead>
             <tr>
-              <th>日付</th>
-              <th>件数</th>
-              <th>通常報酬</th>
-              <th>クエスト</th>
-              <th>日計</th>
+              <th class="col-date">日付</th>
+              <th class="col-count">件数</th>
+              <th class="col-sales">通常売上</th>
+              <th class="col-duration">配達時間</th>
+              <th class="col-wage">時給</th>
             </tr>
           </thead>
-          <tbody id="recent-7days-table-body">
+          <tbody id="analytics-daily-comparison-body">
             <!-- JSで動的生成 -->
           </tbody>
         </table>
@@ -511,7 +516,7 @@
             <div class="settings-item">
               <div class="settings-item-info">
                 <span class="settings-item-name">アプリバージョン</span>
-                <span class="settings-item-desc" id="settings-app-version-desc">v20260920_v14（通常は自動更新されます）</span>
+                <span class="settings-item-desc" id="settings-app-version-desc">v20260920_v15（通常は自動更新されます）</span>
               </div>
               <button id="btn-force-reload" class="btn-settings" type="button" title="自動更新が反映されない場合の予備復旧ボタン">強制再読込</button>
             </div>
@@ -904,12 +909,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- アプリスクリプト（順次読込） -->
-  <script src="js/supabase-config.js?v=20260920_v14"></script>
-  <script src="js/supabase-client.js?v=20260920_v14"></script>
-  <script src="js/trip-maps.js?v=20260920_v14"></script>
-  <script src="js/store.js?v=20260920_v14"></script>
-  <script src="js/cloud-sync.js?v=20260920_v14"></script>
-  <script src="js/ui.js?v=20260920_v14"></script>
-  <script src="js/app.js?v=20260920_v14"></script>
+  <script src="js/supabase-config.js?v=20260920_v15"></script>
+  <script src="js/supabase-client.js?v=20260920_v15"></script>
+  <script src="js/trip-maps.js?v=20260920_v15"></script>
+  <script src="js/store.js?v=20260920_v15"></script>
+  <script src="js/cloud-sync.js?v=20260920_v15"></script>
+  <script src="js/ui.js?v=20260920_v15"></script>
+  <script src="js/app.js?v=20260920_v15"></script>
 </body>
 </html>
