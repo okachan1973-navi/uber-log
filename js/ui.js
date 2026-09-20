@@ -840,14 +840,20 @@ class UI {
 
       return `
         <div class="history-card" data-date="${log.date}">
-          <!-- 日付バー（閉じた状態ではこのバーのみ表示） -->
+          <!-- 日付バー（2段構成: 日付+属性 / 売上+利益） -->
           <div class="history-card-header">
-            <div class="history-date-title">
-              ${dateHtml}
+            <div class="history-header-top">
+              <div class="history-date-title">
+                ${dateHtml}
+              </div>
+              <div class="history-header-right">
+                ${dayAttrsHtml ? `<div class="day-attributes">${dayAttrsHtml}</div>` : ''}
+                <span class="expand-icon">▼</span>
+              </div>
             </div>
-            <div class="history-header-right">
-              ${dayAttrsHtml ? `<div class="day-attributes">${dayAttrsHtml}</div>` : ''}
-              <span class="expand-icon">▼</span>
+            <div class="history-header-sub">
+              <span class="h-sub-item">売上 <span class="h-sub-val val-sales">${metrics.totalSales !== null ? `¥${metrics.totalSales.toLocaleString()}` : '--'}</span></span>
+              <span class="h-sub-item">利益 <span class="h-sub-val val-profit">${metrics.netProfit !== null ? `¥${metrics.netProfit.toLocaleString()}` : '--'}</span></span>
             </div>
           </div>
 
@@ -859,7 +865,7 @@ class UI {
                 <span class="h-stat-val">${metrics.count}件</span>
               </div>
               <div class="h-stat-col">
-                <span class="h-stat-label">日計</span>
+                <span class="h-stat-label">売上</span>
                 <span class="h-stat-val" style="color:var(--color-uber-green);">${metrics.totalSales !== null ? `¥${metrics.totalSales.toLocaleString()}` : '--'}</span>
               </div>
               <div class="h-stat-col">
@@ -881,7 +887,7 @@ class UI {
 
             ${metrics.totalExpenses > 0 ? `
               <div class="history-extra-row">
-                <span class="history-extra-label">費用（${(log.expenses && log.expenses[0] && log.expenses[0].category) || '経費'}）</span>
+                <span class="history-extra-label">${(log.expenses && log.expenses[0] && log.expenses[0].category) || 'レンタバイク'}</span>
                 <span class="history-extra-val" style="color:#f87171;">-¥${metrics.totalExpenses.toLocaleString()}</span>
               </div>
             ` : ''}
@@ -894,7 +900,7 @@ class UI {
                   ${metrics.milestone ? `<span class="bonus-banner-milestone">${metrics.milestone}</span>` : ''}
                 </div>
                 <div class="bonus-banner-amount">+¥${metrics.guaranteeBonus.toLocaleString()}</div>
-                <div class="bonus-banner-note">通常報酬 ¥${(metrics.deliverySales || 0).toLocaleString()} ＋ クエスト ¥${(metrics.questSales || 0).toLocaleString()} との総額: <strong style="color:var(--color-uber-green);">¥${metrics.totalSalesWithBonus.toLocaleString()}</strong></div>
+                <div class="bonus-banner-note">通常報酬 ¥${(metrics.deliverySales || 0).toLocaleString()} ＋ クエスト ¥${(metrics.questSales || 0).toLocaleString()} との売上総額: <strong style="color:var(--color-uber-green);">¥${metrics.totalSales.toLocaleString()}</strong></div>
               </div>
             ` : ''}
 

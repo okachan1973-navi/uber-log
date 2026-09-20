@@ -1276,12 +1276,13 @@ body {
 }
 
 .history-card-header {
-  padding: 12px 16px;
-  min-height: 48px;
+  padding: 10px 16px 10px;
+  min-height: 60px;
   box-sizing: border-box;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
   cursor: pointer;
   background-color: var(--bg-card);
   user-select: none;
@@ -1290,6 +1291,42 @@ body {
 
 .history-card-header:active {
   background-color: var(--bg-card-subtle);
+}
+
+.history-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.history-header-sub {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.h-sub-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.h-sub-val {
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.h-sub-val.val-sales {
+  color: var(--color-uber-green);
+}
+
+.h-sub-val.val-profit {
+  color: #ffffff;
 }
 
 .history-date-title {
@@ -1349,6 +1386,13 @@ body {
   background-color: rgba(255, 69, 58, 0.18);
   color: #ff453a;
   border: 1px solid rgba(255, 69, 58, 0.45);
+}
+
+/* 調 (売上調整金発生日: 青系四角) */
+.day-attr-badge.attr-adjustment {
+  background-color: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.45);
 }
 
 /* 賞 (特別保証・ボーナス発生日: オレンジ系四角) */

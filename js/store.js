@@ -647,84 +647,82 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": "09:00",
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": null,
+      "totalDistanceKm": 28.55,
       "tripsCount": 7,
       "officialPoints": 7,
       "deliveriesCount": 7,
-      "workSessions": [
-        {
-          "id": "sess_0917_1",
-          "start": "09:00",
-          "end": null,
-          "isApproximate": true,
-          "note": "第1部（09:00頃開始。休憩・第2部は未確定・推測なし）"
-        }
-      ],
+      "workSessions": [],
       "deliveries": [
         {
           "id": "del_0917_1",
           "index": 1,
           "completedAt": "08:56",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "魚屋のおむすび丸徳 sakanaya omusubi marutoku",
+          "area": "大阪市北区中津1丁目",
           "fee": 704,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 6.57,
+          "durationStr": "35分31秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0917_2",
           "index": 2,
           "completedAt": "10:10",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "7-Eleven 大阪福島西通店",
+          "area": "大阪市福島区福島3丁目",
           "fee": 511,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 3.14,
+          "durationStr": "16分59秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0917_3",
           "index": 3,
           "completedAt": "10:40",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド 四ツ橋店",
+          "area": "大阪市西区南堀江1丁目",
           "fee": 419,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 2.95,
+          "durationStr": "17分19秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0917_4",
           "index": 4,
           "completedAt": "10:57",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "スシロー スシロー辰巳橋店",
+          "area": "大阪市西区北堀江3丁目",
           "fee": 644,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 4.86,
+          "durationStr": "24分07秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0917_5",
           "index": 5,
           "completedAt": "11:33",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "マクドナルド 九条店",
+          "area": "大阪市港区南市岡1丁目",
           "fee": 388,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 3.07,
+          "durationStr": "18分59秒",
+          "points": 1,
           "memo": ""
         },
         {
           "id": "del_0917_6",
           "index": 6,
           "completedAt": "12:00",
-          "restaurant": "",
-          "area": "",
+          "restaurant": "ローソン 港区南市岡一丁目",
+          "area": "大阪市港区南市岡3丁目",
           "fee": 320,
-          "distanceKm": null,
-          "durationStr": "",
+          "distanceKm": 2.38,
+          "durationStr": "09分05秒",
+          "points": 1,
           "memo": ""
         },
         {
@@ -736,6 +734,7 @@ const CONFIRMED_SEED_DATA = {
           "fee": 621,
           "distanceKm": 5.58,
           "durationStr": "34分36秒",
+          "points": 1,
           "memo": "巨大な橋を越える必要あり・自転車押し階段・通常エリア外・帰路空走・体力拘束大負担。【原則回避の基準事例】",
           "isAvoidanceCase": true
         }
@@ -769,7 +768,14 @@ const CONFIRMED_SEED_DATA = {
           "amount": 200,
           "isDuplicateIgnored": false
         }
-      ]
+      ],
+      "sales": {
+        "delivery": 3607,
+        "quest": 600,
+        "adjustment": 0,
+        "other": 0,
+        "total": 4207
+      }
     },
     "2026-09-18": {
       "date": "2026-09-18",
@@ -909,6 +915,7 @@ const CONFIRMED_SEED_DATA = {
           "isDuplicateIgnored": false
         }
       ],
+      "vehicleType": "レンタバイク",
       "sales": {
         "delivery": 3917,
         "quest": 950,
@@ -919,9 +926,9 @@ const CONFIRMED_SEED_DATA = {
       "expenses": [
         {
           "id": "exp_0918_1",
-          "category": "レンタサイクル",
+          "category": "レンタバイク",
           "amount": 1980,
-          "memo": "レンタサイクル1日利用"
+          "memo": "レンタバイク1日利用"
         }
       ]
     },
@@ -931,7 +938,7 @@ const CONFIRMED_SEED_DATA = {
       "workEndedAt": "17:00",
       "workMinutes": 510,
       "totalDistanceKm": 68.2,
-      "vehicleType": "レンタサイクル",
+      "vehicleType": "レンタバイク",
       "milestone": "累計75配達達成",
       "tripsCount": 18,
       "officialPoints": 22,
@@ -1212,7 +1219,14 @@ const CONFIRMED_SEED_DATA = {
         "guaranteeBonusNote": "新規ドライバー保証（累計75配達達成: 保証額42,525円 - 対象売上30,393円）",
         "total": 20990
       },
-      "expenses": []
+      "expenses": [
+        {
+          "id": "exp_0919_1",
+          "category": "レンタバイク",
+          "amount": 1527,
+          "memo": "ドコモ・バイクシェア1日パス"
+        }
+      ]
     }
   }
 };
@@ -1328,6 +1342,13 @@ const DAY_ATTRIBUTE_DEFINITIONS = {
     className: 'attr-bike',
     description: 'ドコモ・バイクシェア等の電動アシスト自転車を利用して稼働した日'
   },
+  adjustment: {
+    key: 'adjustment',
+    label: '調',
+    fullName: '売上調整金',
+    className: 'attr-adjustment',
+    description: '基本報酬や通常クエストとは別に調整金が付与された日'
+  },
   special_bonus: {
     key: 'special_bonus',
     label: '賞',
@@ -1336,6 +1357,33 @@ const DAY_ATTRIBUTE_DEFINITIONS = {
     description: '通常報酬や通常クエストとは別の特別保証・ボーナスが発生した日'
   }
 };
+
+// 所要時間文字列を秒単位の数値に正確にパース（公式トリップ所要時間の厳密合算用）
+function parseDurationToSeconds(durationStr) {
+  if (!durationStr || typeof durationStr !== 'string') return 0;
+  const s = durationStr.trim();
+  if (!s || s === '0秒') return 0;
+
+  let totalSeconds = 0;
+  const hourMatch = s.match(/(\d+)\s*時間/);
+  const minMatch = s.match(/(\d+)\s*分/);
+  const secMatch = s.match(/(\d+)\s*秒/);
+
+  if (hourMatch) totalSeconds += parseInt(hourMatch[1], 10) * 3600;
+  if (minMatch) totalSeconds += parseInt(minMatch[1], 10) * 60;
+  if (secMatch) totalSeconds += parseInt(secMatch[1], 10);
+
+  if (!hourMatch && !minMatch && !secMatch && s.includes(':')) {
+    const parts = s.split(':').map(Number);
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+      totalSeconds = parts[0] * 60 + parts[1];
+    } else if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+      totalSeconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+    }
+  }
+
+  return totalSeconds;
+}
 
 // UI表示用住所（内部データは変えず、表示時のみ「大阪市」を省略）
 function formatDisplayAddress(addr) {
@@ -1739,18 +1787,19 @@ class Store {
           }
         } else if (date === '2026-09-17') {
           const target = parsed.dailyLogs[date];
-          const isInvalidDeliveries = !target.deliveries ||
+          const lacksDetails = !target.deliveries ||
             target.deliveries.length !== 7 ||
-            !target.deliveries[0] || target.deliveries[0].fee !== 704 ||
-            !target.deliveries[6] || target.deliveries[6].fee !== 621 ||
-            target.deliveries.some(d => d.fee === null || d.fee === undefined);
+            !target.deliveries[0] || !target.deliveries[0].restaurant ||
+            !target.deliveries[0].durationStr ||
+            target.totalDistanceKm !== 28.55;
           const lacksCounts = !target.tripsCount || !target.deliveriesCount || !target.officialPoints;
-          if (isInvalidDeliveries || lacksCounts) {
+          if (lacksDetails || lacksCounts) {
             target.deliveries = log.deliveries;
             target.totalDistanceKm = log.totalDistanceKm;
             target.officialPoints = log.officialPoints || 7;
             target.deliveriesCount = log.deliveriesCount || 7;
             target.tripsCount = log.tripsCount || 7;
+            target.sales = log.sales;
             hasChange = true;
           }
         } else if (date === '2026-09-18') {
@@ -1767,8 +1816,9 @@ class Store {
             target.sales = log.sales;
             hasChange = true;
           }
-          if (!target.expenses || target.expenses.length === 0) {
+          if (!target.expenses || target.expenses.length === 0 || target.expenses[0].category !== 'レンタバイク') {
             target.expenses = log.expenses;
+            target.vehicleType = 'レンタバイク';
             hasChange = true;
           }
           if (!target.workSessions || target.workSessions.length === 0) {
@@ -1796,6 +1846,11 @@ class Store {
           }
           if (!target.sales || !target.sales.guaranteeBonus) {
             target.sales = log.sales;
+            hasChange = true;
+          }
+          if (!target.expenses || target.expenses.length === 0 || target.expenses[0].category !== 'レンタバイク') {
+            target.expenses = log.expenses;
+            target.vehicleType = 'レンタバイク';
             hasChange = true;
           }
           if (!target.quests || target.quests.length < 5) {
@@ -2093,15 +2148,21 @@ class Store {
     const log = this.state && this.state.dailyLogs ? this.state.dailyLogs[dateStr] : null;
 
     // 1. バイクシェア属性 (B)
-    // 対象日: 2026-09-18, 2026-09-19、または vehicleType === 'レンタサイクル'
-    const hasBikeExpense = log && Array.isArray(log.expenses) && log.expenses.some(e => e.category === 'レンタサイクル');
-    if (dateStr === '2026-09-18' || dateStr === '2026-09-19' || (log && log.vehicleType === 'レンタサイクル') || hasBikeExpense) {
+    // 対象日: 2026-09-18, 2026-09-19、または vehicleType === 'レンタバイク' / 'レンタサイクル'
+    const hasBikeExpense = log && Array.isArray(log.expenses) && log.expenses.some(e => e.category === 'レンタバイク' || e.category === 'レンタサイクル');
+    if (dateStr === '2026-09-18' || dateStr === '2026-09-19' || (log && (log.vehicleType === 'レンタバイク' || log.vehicleType === 'レンタサイクル')) || hasBikeExpense) {
       attrs.push(DAY_ATTRIBUTE_DEFINITIONS.bike_share);
     }
 
-    // 2. 特別保証・ボーナス属性 (賞)
-    // 対象日: 2026-09-19、または guaranteeBonus > 0 の日
+    // 2. 調整金属性 (調)
+    // 対象日: 調整金（adjustmentSales）が存在する日（例: 2026-09-18）
     const metrics = log ? this.getCalculatedMetrics(log) : null;
+    if (metrics && metrics.adjustmentSales > 0) {
+      attrs.push(DAY_ATTRIBUTE_DEFINITIONS.adjustment);
+    }
+
+    // 3. 特別保証・ボーナス属性 (賞)
+    // 対象日: 2026-09-19、または guaranteeBonus > 0 の日
     if (dateStr === '2026-09-19' || (metrics && metrics.guaranteeBonus > 0)) {
       attrs.push(DAY_ATTRIBUTE_DEFINITIONS.special_bonus);
     }
@@ -2531,19 +2592,20 @@ class Store {
       }
     }
 
-    // 1日総売上（通常稼働分: Delivery + Quest + Adjustment + Other）
-    let totalSales = null;
-    if (deliverySales !== null || questSales !== null || adjustmentSales > 0 || otherSales > 0) {
-      totalSales = (deliverySales || 0) + (questSales || 0) + (adjustmentSales || 0) + (otherSales || 0);
-    }
-
-    // 新規ドライバー保証・特別収入（通常時給・平均単価等の稼働効率指標には混ぜない）
+    // 新規ドライバー保証・特別収入
     const guaranteeBonus = (log.sales && log.sales.guaranteeBonus) ? Number(log.sales.guaranteeBonus) : (Number(log.guaranteeBonus) || 0);
     const guaranteeBonusNote = (log.sales && log.sales.guaranteeBonusNote) ? log.sales.guaranteeBonusNote : (log.guaranteeBonusNote || '');
-    const totalSalesWithBonus = totalSales !== null ? (totalSales + guaranteeBonus) : null;
+
+    // 1日総売上（通常稼働分 ＋ 特別保証ボーナス等すべての確認済みUber総収入）
+    let totalSales = null;
+    if (deliverySales !== null || questSales !== null || adjustmentSales > 0 || otherSales > 0 || guaranteeBonus > 0) {
+      totalSales = (deliverySales || 0) + (questSales || 0) + (adjustmentSales || 0) + (otherSales || 0) + (guaranteeBonus || 0);
+    }
+
+    const totalSalesWithBonus = totalSales;
     const milestone = log.milestone || (guaranteeBonus > 0 ? '累計75配達達成' : null);
 
-    // 当日経費（変動費）の計算
+    // 当日経費（直接経費: レンタバイク代等）の計算
     const expenses = Array.isArray(log.expenses) ? log.expenses : [];
     let totalExpenses = 0;
     expenses.forEach(e => {
@@ -2553,9 +2615,9 @@ class Store {
       }
     });
 
-    // 当日利益（純利益 ＝ 通常総売上 − 当日経費）
+    // 当日利益（売上 − 確認済み直接経費）
     const netProfit = totalSales !== null ? (totalSales - totalExpenses) : null;
-    const netProfitWithBonus = totalSalesWithBonus !== null ? (totalSalesWithBonus - totalExpenses) : null;
+    const netProfitWithBonus = netProfit;
 
     // 総走行距離（確定データのみ、主要指標からは整理）
     const totalDistanceKm = (log.totalDistanceKm !== null && log.totalDistanceKm !== undefined && !isNaN(Number(log.totalDistanceKm)))
@@ -2588,53 +2650,50 @@ class Store {
     // 総実移動距離（将来用: Uber表示配達距離 + 空走距離）
     const totalActualDistanceKm = uberDeliveryDistanceKm !== null ? uberDeliveryDistanceKm : null;
 
-    // 実質稼働時間（全workSessionの end - start の合計分。休憩時間は完全除外）
+    // 実走時間（全公式トリップの所要時間を秒単位で厳密合算。手動セッション由来は完全排除）
+    let workSeconds = null;
     let workMinutes = null;
-    let isDurationApproximate = false;
-    let hasActiveSession = false;
+    let isFullTripDurationRecorded = false;
 
-    if (log.workSessions && log.workSessions.length > 0) {
-      let totalMins = 0;
-      let hasCompletedSession = false;
+    if (log.deliveries && log.deliveries.length > 0) {
+      let totalSec = 0;
+      let validCount = 0;
 
-      log.workSessions.forEach(s => {
-        if (s.isApproximate) {
-          isDurationApproximate = true;
-        }
-        if (s.start && s.end) {
-          const m = calculateMinutesBetween(s.start, s.end);
-          totalMins += m;
-          hasCompletedSession = true;
-        } else if (s.start && !s.end) {
-          hasActiveSession = true;
+      log.deliveries.forEach(d => {
+        if (d.durationStr && d.durationStr.trim() !== '') {
+          totalSec += parseDurationToSeconds(d.durationStr);
+          validCount++;
+        } else if (d.durationMinutes !== null && d.durationMinutes !== undefined && !isNaN(Number(d.durationMinutes))) {
+          totalSec += Math.round(Number(d.durationMinutes) * 60);
+          validCount++;
         }
       });
 
-      if (hasCompletedSession) {
-        workMinutes = totalMins;
+      // 全公式トリップの所要時間が揃っている場合のみ確定
+      if (validCount === log.deliveries.length && validCount > 0) {
+        workSeconds = totalSec;
+        // 表示用は秒を省略（例: 2時間36分36秒 -> 2時間36分）
+        workMinutes = Math.floor(totalSec / 60);
+        isFullTripDurationRecorded = true;
       }
-    } else if (log.workMinutes && log.workMinutes > 0) {
-      workMinutes = log.workMinutes;
-    } else if (log.workStartedAt && log.workEndedAt) {
-      workMinutes = calculateMinutesBetween(log.workStartedAt, log.workEndedAt);
     }
 
-    const workHours = (workMinutes !== null && workMinutes > 0) ? (workMinutes / 60) : 0;
-
-    // 売上時給（総売上 ÷ 稼働時間）
+    // 基本時給（売上 ÷ 実走時間。秒単位の正確な時間を使用）
     let grossHourlyWage = null;
-    if (totalSales !== null && workHours > 0) {
-      grossHourlyWage = Math.round(totalSales / workHours);
+    if (totalSales !== null && workSeconds !== null && workSeconds > 0) {
+      const exactHours = workSeconds / 3600;
+      grossHourlyWage = Math.round(totalSales / exactHours);
     }
 
-    // 実質時給（当日利益 ÷ 稼働時間）
+    // 経費後時給（利益 ÷ 実走時間。秒単位の正確な時間を使用）
     let netHourlyWage = null;
-    if (netProfit !== null && workHours > 0) {
-      netHourlyWage = Math.round(netProfit / workHours);
+    if (netProfit !== null && workSeconds !== null && workSeconds > 0) {
+      const exactHours = workSeconds / 3600;
+      netHourlyWage = Math.round(netProfit / exactHours);
     }
 
-    // 後方互換用 hourlyWage（実質時給を格納）
-    const hourlyWage = netHourlyWage !== null ? netHourlyWage : grossHourlyWage;
+    // 基本表示の「時給」は売上 ÷ 実走時間（grossHourlyWage）に統一
+    const hourlyWage = grossHourlyWage;
 
     // 1件あたり平均売上
     let avgSalesPerDelivery = null;
@@ -2668,6 +2727,7 @@ class Store {
       distanceRecordedCount,
       isFullDistanceRecorded,
       workMinutes,
+      workSeconds,
       grossHourlyWage,
       netHourlyWage,
       hourlyWage,
@@ -2676,8 +2736,8 @@ class Store {
       totalSalesWithBonus,
       netProfitWithBonus,
       milestone,
-      isDurationApproximate,
-      hasActiveSession,
+      isDurationApproximate: Boolean(log.workSessions && log.workSessions.some(s => s.isApproximate)),
+      hasActiveSession: Boolean(log.workSessions && log.workSessions.some(s => s.start && !s.end)),
       workSessions: log.workSessions || [],
       avgSalesPerDelivery,
       avgFeePerDelivery: avgSalesPerDelivery,
@@ -3118,6 +3178,7 @@ if (typeof window !== 'undefined') {
   window.DAY_ATTRIBUTE_DEFINITIONS = DAY_ATTRIBUTE_DEFINITIONS;
   window.formatDisplayAddress = formatDisplayAddress;
   window.formatDurationColon = formatDurationColon;
+  window.parseDurationToSeconds = parseDurationToSeconds;
   window.calculateMinutesBetween = calculateMinutesBetween;
   window.formatMinutes = formatMinutes;
   window.deduplicateQuests = deduplicateQuests;
@@ -3148,6 +3209,7 @@ if (typeof module !== 'undefined' && module.exports) {
     DAY_ATTRIBUTE_DEFINITIONS,
     formatDisplayAddress,
     formatDurationColon,
+    parseDurationToSeconds,
     calculateMinutesBetween,
     formatMinutes,
     deduplicateQuests,
