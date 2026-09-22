@@ -3777,18 +3777,20 @@ select.expense-form-control {
 
 .expense-item-actions {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   justify-content: flex-end;
 }
 
+/* 誤タップ防止のため、指で押せる高さ（36px）と十分な間隔を確保 */
 .expense-action-btn {
   background: transparent;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 4px 14px;
+  min-height: 36px;
+  padding: 6px 18px;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
 }

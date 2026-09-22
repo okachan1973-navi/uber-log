@@ -347,6 +347,16 @@ class UI {
     this.renderExpenseList();
   }
 
+  // 自由入力テキストのHTMLエスケープ（内容欄の記号でレイアウトが壊れるのを防止）
+  escapeExpenseText(text) {
+    return String(text == null ? '' : text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   // 登録済み経費リストの描画（直近14日分、日付降順）
   renderExpenseList() {
     const container = document.getElementById('expense-list-container');
@@ -376,11 +386,11 @@ class UI {
         <div class="expense-list-item" data-expense-id="${exp.id}" data-expense-date="${exp.dateStr}">
           <div class="expense-item-top">
             <span class="expense-item-date-type">
-              ${dateLabel}<span class="expense-type-badge ${badgeClass}">${typeLabel}</span>
+              ${dateLabel}<span class="expense-type-badge ${badgeClass}">${this.escapeExpenseText(typeLabel)}</span>
             </span>
             <span class="expense-item-amount">¥${amt.toLocaleString()}</span>
           </div>
-          <div class="expense-item-content">${exp.memo || '（メモなし）'}</div>
+          <div class="expense-item-content">${exp.memo ? this.escapeExpenseText(exp.memo) : '（メモなし）'}</div>
           <div class="expense-item-actions">
             <button type="button" class="expense-action-btn edit" data-id="${exp.id}" data-date="${exp.dateStr}">修正</button>
             <button type="button" class="expense-action-btn delete" data-id="${exp.id}" data-date="${exp.dateStr}">削除</button>
@@ -444,7 +454,7 @@ class UI {
         </div>
         <div class="expense-form-group">
           <label class="expense-form-label">内容</label>
-          <input type="text" class="expense-form-control edit-content" value="${exp.memo || ''}" maxlength="60">
+          <input type="text" class="expense-form-control edit-content" value="${this.escapeExpenseText(exp.memo || '')}" maxlength="60">
         </div>
         <div class="expense-form-group">
           <label class="expense-form-label">金額</label>
@@ -471,11 +481,16 @@ class UI {
         this.showToast('金額を正しく入力してください');
         return;
       }
+      if (newDate > getTodayDateString()) {
+        this.showToast('未来の日付は登録できません');
+        return;
+      }
 
       if (newDate !== dateStr) {
-        // 日付変更の場合：旧日付から削除→新日付に追加
+        // 日付変更の場合：旧日付から削除→新日付へ同一IDのまま移動（同期時の重複防止）
         store.deleteExpense(dateStr, expenseId);
         store.addExpense(newDate, {
+          id: expenseId,
           category: newType,
           amount: newAmount,
           memo: newContent
@@ -523,6 +538,10 @@ class UI {
       }
       if (!amount || amount <= 0 || isNaN(amount)) {
         this.showToast('金額を正しく入力してください');
+        return;
+      }
+      if (dateStr > getTodayDateString()) {
+        this.showToast('未来の日付は登録できません');
         return;
       }
 

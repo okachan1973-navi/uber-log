@@ -53,6 +53,10 @@ const CURRENT_WEEK_QUEST = {
   deadlineText: '9/25（金）4:00まで'
 };
 
+// 公式確定実績の取り込み世代。端末に残る旧クエスト手動オフセットが公式件数と
+// 二重計上になるのを防ぐため、この値が一致する保存データのみ手動補正を採用する。
+const QUEST_OFFICIAL_BASELINE = '20260922_official';
+
 // 公式正本売上（2026-09-14 ～ 2026-09-17）
 const OFFICIAL_SOURCE_OF_TRUTH = {
   period: '2026-09-14 ～ 2026-09-17',
@@ -1286,6 +1290,394 @@ const CONFIRMED_SEED_DATA = {
           "memo": "ドコモ・バイクシェア1日パス"
         }
       ]
+    },
+    "2026-09-21": {
+      "date": "2026-09-21",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 27.92,
+      "vehicleType": "バイクシェア利用",
+      "tripsCount": 7,
+      "officialPoints": 10,
+      "deliveriesCount": 10,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_0921_1",
+          "index": 1,
+          "completedAt": "07:54",
+          "restaurant": "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo〜お持帰り専門店〜",
+          "area": "大阪市大正区三軒家東2丁目",
+          "fee": 345,
+          "distanceKm": 3.30,
+          "durationStr": "18分48秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0921_2",
+          "index": 2,
+          "completedAt": "09:06",
+          "restaurant": "【もったりアサイーボウル】YoruAsa/ヨルアサ",
+          "area": "大阪市大正区南恩加島2丁目",
+          "fee": 643,
+          "distanceKm": 5.28,
+          "durationStr": "31分21秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0921_3",
+          "index": 3,
+          "completedAt": "10:41",
+          "restaurant": "マクドナルド 大正店",
+          "area": "大阪市大正区平尾2丁目",
+          "fee": 320,
+          "distanceKm": 2.16,
+          "durationStr": "14分22秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0921_4",
+          "index": 4,
+          "completedAt": "11:23",
+          "restaurant": "マクドナルド 大正店",
+          "area": "大阪市大正区北村1丁目",
+          "fee": 320,
+          "distanceKm": 1.21,
+          "durationStr": "11分34秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0921_5",
+          "index": 5,
+          "completedAt": "11:41",
+          "restaurant": "【カラダが喜ぶオムライスCafe】Egg House〜大正店〜",
+          "area": "大阪市西区靱本町3丁目",
+          "fee": 890,
+          "distanceKm": 7.39,
+          "durationStr": "39分00秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0921_6",
+          "index": 6,
+          "completedAt": "12:16",
+          "restaurant": "マクドナルド 南堀江関西スーパー店",
+          "area": "大阪市西区新町4丁目",
+          "fee": 603,
+          "distanceKm": 5.15,
+          "durationStr": "32分19秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0921_7",
+          "index": 7,
+          "completedAt": "12:48",
+          "restaurant": "マクドナルド 四ツ橋店",
+          "area": "大阪市西区新町3丁目",
+          "fee": 369,
+          "distanceKm": 3.43,
+          "durationStr": "21分23秒",
+          "points": 1,
+          "memo": ""
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_0921_1",
+          "time": "13:10",
+          "title": "クエスト",
+          "amount": 800,
+          "isDuplicateIgnored": false,
+          "note": "公式画面は「クエスト ¥800」「6回乗車クエスト ¥800」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        }
+      ],
+      "sales": {
+        "delivery": 3490,
+        "quest": 800,
+        "adjustment": 0,
+        "other": 0,
+        "total": 4290
+      },
+      "expenses": [
+        {
+          "id": "exp_0921_1",
+          "category": "バイクシェア利用",
+          "amount": 1527,
+          "memo": "ドコモ・バイクシェア1日パス"
+        }
+      ]
+    },
+    "2026-09-22": {
+      "date": "2026-09-22",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 67.13,
+      "vehicleType": "バイクシェア利用",
+      "tripsCount": 18,
+      "officialPoints": 25,
+      "deliveriesCount": 25,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_0922_1",
+          "index": 1,
+          "completedAt": "08:21",
+          "restaurant": "マクドナルド ＪＲ野田駅前店",
+          "area": "大阪市西区江之子島2丁目",
+          "fee": 466,
+          "distanceKm": 4.44,
+          "durationStr": "25分56秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0922_2",
+          "index": 2,
+          "completedAt": "08:44",
+          "restaurant": "珈琲とフレンチトースト MUC COFFEE ROASTERS うつぼ公園店",
+          "area": "大阪市 新町1丁目",
+          "fee": 514,
+          "distanceKm": 4.26,
+          "durationStr": "28分21秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）／公式配達先表記: 1-chōme Osaka Osaka Shinmachi Japón"
+        },
+        {
+          "id": "del_0922_3",
+          "index": 3,
+          "completedAt": "09:22",
+          "restaurant": "my bowl Kitahorie マイボウル 北堀江店",
+          "area": "大阪市浪速区敷津東2丁目",
+          "fee": 398,
+          "distanceKm": 3.48,
+          "durationStr": "18分00秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0922_4",
+          "index": 4,
+          "completedAt": "09:58",
+          "restaurant": "ローソン 大阪ドームシティ",
+          "area": "大阪市大正区三軒家西3丁目",
+          "fee": 651,
+          "distanceKm": 4.86,
+          "durationStr": "29分10秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0922_5",
+          "index": 5,
+          "completedAt": "10:28",
+          "restaurant": "京都北白川ラーメン魁力屋 イオンモール大阪ドームシティ店",
+          "area": "大阪市西区九条2丁目",
+          "fee": 432,
+          "distanceKm": 4.62,
+          "durationStr": "24分14秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0922_6",
+          "index": 6,
+          "completedAt": "10:50",
+          "restaurant": "マクドナルド 九条店",
+          "area": "大阪市西区本田1丁目",
+          "fee": 370,
+          "baseFee": 320,
+          "tip": 50,
+          "distanceKm": 1.85,
+          "durationStr": "13分14秒",
+          "points": 1,
+          "memo": "最終売上¥370（基本料金¥320＋チップ¥50）"
+        },
+        {
+          "id": "del_0922_7",
+          "index": 7,
+          "completedAt": "12:31",
+          "restaurant": "松のや 九条店",
+          "area": "大阪市港区市岡元町1丁目",
+          "fee": 350,
+          "distanceKm": 4.14,
+          "durationStr": "24分01秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0922_8",
+          "index": 8,
+          "completedAt": "12:53",
+          "restaurant": "松のや 九条店",
+          "area": "大阪市西区本田1丁目",
+          "fee": 607,
+          "distanceKm": 6.81,
+          "durationStr": "52分31秒",
+          "points": 3,
+          "memo": "トリプル配達（3件完了/3pt）"
+        },
+        {
+          "id": "del_0922_9",
+          "index": 9,
+          "completedAt": "14:07",
+          "restaurant": "餃子の王将 大阪九条",
+          "area": "大阪市此花区春日出南2丁目",
+          "fee": 576,
+          "distanceKm": 3.86,
+          "durationStr": "29分39秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0922_10",
+          "index": 10,
+          "completedAt": "14:48",
+          "restaurant": "スターバックス コーヒー JR弁天町駅店",
+          "area": "大阪市西区九条南2丁目",
+          "fee": 331,
+          "distanceKm": 2.69,
+          "durationStr": "17分27秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0922_11",
+          "index": 11,
+          "completedAt": "15:02",
+          "restaurant": "たこ家 輝 西九条店",
+          "area": "大阪市港区市岡1丁目",
+          "fee": 835,
+          "distanceKm": 7.32,
+          "durationStr": "43分58秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0922_12",
+          "index": 12,
+          "completedAt": "15:42",
+          "restaurant": "ローソン 夕凪二丁目",
+          "area": "大阪市港区夕凪1丁目",
+          "fee": 320,
+          "distanceKm": 2.48,
+          "durationStr": "17分43秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0922_13",
+          "index": 13,
+          "completedAt": "16:21",
+          "restaurant": "オリジナルガパオライス アロイ・ガパオ 大阪西店",
+          "area": "大阪市此花区伝法6丁目",
+          "fee": 489,
+          "distanceKm": 3.81,
+          "durationStr": "23分23秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0922_14",
+          "index": 14,
+          "completedAt": "17:07",
+          "restaurant": "マクドナルド 阪神西九条駅前店",
+          "area": "大阪市西区本田1丁目",
+          "fee": 399,
+          "distanceKm": 2.61,
+          "durationStr": "21分25秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0922_15",
+          "index": 15,
+          "completedAt": "17:48",
+          "restaurant": "ピザハット 大阪ナインモール九条店",
+          "area": "大阪市西区本田2丁目",
+          "fee": 320,
+          "distanceKm": 2.22,
+          "durationStr": "13分11秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0922_16",
+          "index": 16,
+          "completedAt": "18:21",
+          "restaurant": "串カツ田中 大正店",
+          "area": "大阪市大正区泉尾1丁目",
+          "fee": 389,
+          "distanceKm": 2.37,
+          "durationStr": "16分13秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0922_17",
+          "index": 17,
+          "completedAt": "19:04",
+          "restaurant": "ケンタッキーフライドチキン イオンモール大阪ドームシティ店",
+          "area": "大阪市西区北堀江4丁目",
+          "fee": 320,
+          "distanceKm": 2.24,
+          "durationStr": "14分49秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0922_18",
+          "index": 18,
+          "completedAt": "19:48",
+          "restaurant": "ケンタッキーフライドチキン イオンモール大阪ドームシティ店",
+          "area": "大阪市西区西本町2丁目",
+          "fee": 483,
+          "distanceKm": 3.07,
+          "durationStr": "21分05秒",
+          "points": 1,
+          "memo": ""
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_0922_1",
+          "time": "14:29",
+          "title": "クエスト",
+          "amount": 800,
+          "isDuplicateIgnored": false,
+          "note": "公式画面は「クエスト ¥800」「6回乗車クエスト ¥800」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0922_2",
+          "time": "20:09",
+          "title": "クエスト",
+          "amount": 800,
+          "isDuplicateIgnored": false,
+          "note": "公式画面は「クエスト ¥800」「6回乗車クエスト ¥800」の2表示だが同一報酬のため1件のみ計上（二重計上防止）。15:00の「3回乗車クエスト ¥0」は報酬0のため売上非加算"
+        }
+      ],
+      "sales": {
+        "delivery": 8250,
+        "quest": 1600,
+        "adjustment": 0,
+        "other": 0,
+        "total": 9850
+      },
+      "expenses": [
+        {
+          "id": "exp_0922_1",
+          "category": "バイクシェア利用",
+          "amount": 1527,
+          "memo": "ドコモ・バイクシェア1日パス"
+        }
+      ]
     }
   }
 };
@@ -1973,6 +2365,53 @@ class Store {
             target.milestone = log.milestone;
             hasChange = true;
           }
+        } else if (date === '2026-09-21' || date === '2026-09-22') {
+          // 9/21・9/22 公式確定実績（Uber公式スクリーンショット照合済み）の安全な取り込み。
+          // 端末に残る手動タップ記録は削除せず manualTapsArchive へ退避してから公式トリップへ置換する。
+          const target = parsed.dailyLogs[date];
+          const hasOfficialTrips = Array.isArray(target.deliveries) &&
+            target.deliveries.some(d => d.restaurant || (d.fee !== null && d.fee !== undefined));
+          const isNotOfficialSet = !Array.isArray(target.deliveries) ||
+            target.deliveries.length !== log.deliveries.length ||
+            !hasOfficialTrips;
+
+          if (isNotOfficialSet) {
+            const manualTaps = (target.deliveries || []).filter(d => !d.restaurant && (d.fee === null || d.fee === undefined));
+            if (manualTaps.length > 0) {
+              const archive = Array.isArray(target.manualTapsArchive) ? target.manualTapsArchive : [];
+              const archivedIds = new Set(archive.map(d => d.id));
+              manualTaps.forEach(d => {
+                if (!archivedIds.has(d.id)) archive.push(d);
+              });
+              target.manualTapsArchive = archive;
+            }
+            target.deliveries = log.deliveries;
+            target.tripsCount = log.tripsCount;
+            target.officialPoints = log.officialPoints;
+            target.deliveriesCount = log.deliveriesCount;
+            target.totalDistanceKm = log.totalDistanceKm;
+            hasChange = true;
+          }
+          if (!target.sales || !target.sales.delivery) {
+            target.sales = log.sales;
+            hasChange = true;
+          }
+          if (!target.quests || target.quests.length === 0) {
+            target.quests = log.quests;
+            hasChange = true;
+          }
+          // Bike経費（¥1,527）はユーザー削除済み（tombstone）の場合は復活させない
+          const bikeExpenseId = log.expenses[0].id;
+          const isDeletedByUser = Array.isArray(target.deletedExpenseIds) && target.deletedExpenseIds.includes(bikeExpenseId);
+          const hasBikeExpense = Array.isArray(target.expenses) && target.expenses.some(e => {
+            const cat = (e.category || '').trim();
+            return (cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike')) && Number(e.amount) > 0;
+          });
+          if (!isDeletedByUser && !hasBikeExpense) {
+            target.expenses = (Array.isArray(target.expenses) ? target.expenses : []).concat(log.expenses);
+            target.vehicleType = 'バイクシェア利用';
+            hasChange = true;
+          }
         } else {
           // 9/18, 9/19 以外の過去日（9/10〜9/17等）から誤ったバイクシェア/レンタサイクル情報を完全排除
           const target = parsed.dailyLogs[date];
@@ -2299,13 +2738,12 @@ class Store {
     return t >= start && t < end;
   }
 
-  // 今週のクエスト進捗データを取得（累積進捗・残り件数・達成率）
-  getQuestProgress(quest = CURRENT_WEEK_QUEST) {
+  // クエスト期間内の実配達件数を集計（公式トリップはポイント数＝配達件数、手動タップは1件）
+  countQuestDeliveries(quest = CURRENT_WEEK_QUEST) {
     let logDeliveriesCount = 0;
     const startMs = new Date(quest.startAt).getTime();
     const endMs = new Date(quest.endAt).getTime();
 
-    // 期間内の全日次ログから実配達件数を集計
     if (this.state && this.state.dailyLogs) {
       Object.values(this.state.dailyLogs).forEach(log => {
         if (log.deliveries && Array.isArray(log.deliveries)) {
@@ -2314,21 +2752,34 @@ class Store {
             const tStr = (del.completedAt && del.completedAt.length >= 5) ? del.completedAt.slice(0, 5) : '12:00';
             const tMs = new Date(`${dStr}T${tStr}:00+09:00`).getTime();
             if (tMs >= startMs && tMs < endMs) {
-              logDeliveriesCount++;
+              // 公式トリップはダブル・トリプル配達を含むためポイント数を配達件数として加算
+              const pts = Number(del.points);
+              logDeliveriesCount += (!isNaN(pts) && pts > 0) ? pts : 1;
             }
           });
         }
       });
     }
 
+    return logDeliveriesCount;
+  }
+
+  // 今週のクエスト進捗データを取得（累積進捗・残り件数・達成率）
+  getQuestProgress(quest = CURRENT_WEEK_QUEST) {
+    const logDeliveriesCount = this.countQuestDeliveries(quest);
+    const startMs = new Date(quest.startAt).getTime();
+    const endMs = new Date(quest.endAt).getTime();
+
     // 端末保存の累積カウンター確認
+    // 公式確定実績を取り込んだ時点（QUEST_OFFICIAL_BASELINE）より前に保存された
+    // 手動オフセットは、公式件数と二重になるため無効として扱う
     let manualAdjust = 0;
     try {
       if (typeof localStorage !== 'undefined') {
         const raw = localStorage.getItem(`uber_log_quest_${quest.id}`);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (typeof parsed.manualAdjust === 'number') {
+          if (typeof parsed.manualAdjust === 'number' && parsed.officialBaseline === QUEST_OFFICIAL_BASELINE) {
             manualAdjust = parsed.manualAdjust;
           }
         }
@@ -2366,6 +2817,7 @@ class Store {
         localStorage.setItem(`uber_log_quest_${questId}`, JSON.stringify({
           questId,
           manualAdjust,
+          officialBaseline: QUEST_OFFICIAL_BASELINE,
           updatedAt: new Date().toISOString()
         }));
       }
@@ -2375,23 +2827,7 @@ class Store {
   // クエスト進捗手動設定
   setQuestProgressCount(count, quest = CURRENT_WEEK_QUEST) {
     const targetCount = Math.max(0, Number(count) || 0);
-    let logDeliveriesCount = 0;
-    const startMs = new Date(quest.startAt).getTime();
-    const endMs = new Date(quest.endAt).getTime();
-    if (this.state && this.state.dailyLogs) {
-      Object.values(this.state.dailyLogs).forEach(log => {
-        if (log.deliveries && Array.isArray(log.deliveries)) {
-          log.deliveries.forEach(del => {
-            const dStr = (del.date || log.date || '').replace(/\//g, '-');
-            const tStr = (del.completedAt && del.completedAt.length >= 5) ? del.completedAt.slice(0, 5) : '12:00';
-            const tMs = new Date(`${dStr}T${tStr}:00+09:00`).getTime();
-            if (tMs >= startMs && tMs < endMs) {
-              logDeliveriesCount++;
-            }
-          });
-        }
-      });
-    }
+    const logDeliveriesCount = this.countQuestDeliveries(quest);
     const manualAdjust = targetCount - logDeliveriesCount;
     this.saveQuestProgress(quest.id, manualAdjust);
     return targetCount;
@@ -3069,15 +3505,19 @@ class Store {
     return log.sales;
   }
 
-  // 当日経費の追加
-  addExpense(dateStr, { category, amount, memo }) {
+  // 当日経費の追加（idを指定すると既存IDを保持したまま別日付へ移動できる）
+  addExpense(dateStr, { category, amount, memo, id }) {
     const log = this.getDailyLog(dateStr);
     if (!log.expenses) log.expenses = [];
 
     const amt = Number(amount) || 0;
     const now = new Date().toISOString();
+    // 同一IDで戻す場合は、その日付の削除済みマーク（tombstone）を解除する
+    if (id && Array.isArray(log.deletedExpenseIds)) {
+      log.deletedExpenseIds = log.deletedExpenseIds.filter(x => x !== id);
+    }
     const expense = {
-      id: `exp_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+      id: id || `exp_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
       category: category || 'バイクシェア',
       amount: amt,
       memo: memo || '',
@@ -3118,6 +3558,9 @@ class Store {
     const idx = log.expenses.findIndex(e => e.id === expenseId);
     if (idx !== -1) {
       const removed = log.expenses.splice(idx, 1)[0];
+      // 削除済みマーク（tombstone）を残し、クラウド同期や公式シード補完での復活を防ぐ
+      if (!Array.isArray(log.deletedExpenseIds)) log.deletedExpenseIds = [];
+      if (!log.deletedExpenseIds.includes(expenseId)) log.deletedExpenseIds.push(expenseId);
       this.saveToStorage(dateStr);
       return removed;
     }

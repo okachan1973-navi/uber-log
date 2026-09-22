@@ -301,15 +301,43 @@ class CloudSyncManager {
           merged.sales.total = 21310;
         }
       }
+
+      // 9/21・9/22の公式確定売上（公式スクリーンショット照合済み）の保全ガード
+      const OFFICIAL_DAY_SALES = {
+        '2026-09-21': { delivery: 3490, quest: 800, total: 4290 },
+        '2026-09-22': { delivery: 8250, quest: 1600, total: 9850 }
+      };
+      const officialDay = OFFICIAL_DAY_SALES[date];
+      if (officialDay && (merged.sales.total || 0) < officialDay.total) {
+        merged.sales.delivery = officialDay.delivery;
+        merged.sales.quest = officialDay.quest;
+        merged.sales.total = officialDay.total;
+      }
     }
 
     // 5. 当日経費明細のマージ（ID一致時はローカル優先、新規明細は全て合算）
+    //    削除済みマーク（tombstone）は両端を統合し、削除した経費の復活を防ぐ
+    const deletedExpenseIds = Array.from(new Set([
+      ...(Array.isArray(cloudLog.deletedExpenseIds) ? cloudLog.deletedExpenseIds : []),
+      ...(Array.isArray(localLog.deletedExpenseIds) ? localLog.deletedExpenseIds : [])
+    ]));
     const expMap = new Map();
     (cloudLog.expenses || []).forEach(e => expMap.set(e.id, { ...e }));
     (localLog.expenses || []).forEach(e => {
       expMap.set(e.id, { ...(expMap.get(e.id) || {}), ...e });
     });
-    merged.expenses = Array.from(expMap.values());
+    merged.expenses = Array.from(expMap.values()).filter(e => !deletedExpenseIds.includes(e.id));
+    if (deletedExpenseIds.length > 0) {
+      merged.deletedExpenseIds = deletedExpenseIds;
+    }
+
+    // 5-2. 手動タップ記録のアーカイブ（公式実績置換時の退避分）はID基準で保持
+    const archiveMap = new Map();
+    (cloudLog.manualTapsArchive || []).forEach(d => archiveMap.set(d.id, { ...d }));
+    (localLog.manualTapsArchive || []).forEach(d => archiveMap.set(d.id, { ...(archiveMap.get(d.id) || {}), ...d }));
+    if (archiveMap.size > 0) {
+      merged.manualTapsArchive = Array.from(archiveMap.values());
+    }
 
     // 6. 車両/移動手段種別のマージ
     merged.vehicleType = localLog.vehicleType || cloudLog.vehicleType || null;
