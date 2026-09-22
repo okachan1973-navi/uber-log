@@ -326,6 +326,218 @@ class UI {
       }
     }
     this.renderDeliveryList(log.deliveries || []);
+
+    // 9. 経費入力セクション
+    this.renderExpenseSection();
+  }
+
+  // 経費入力セクションの描画（稼働タブ下部インライン）
+  renderExpenseSection() {
+    const dateInput = document.getElementById('expense-input-date');
+    if (!dateInput) return;
+
+    // 日付初期値：今日、max=今日（未来日不可）
+    const today = getTodayDateString();
+    if (!dateInput.value) {
+      dateInput.value = today;
+    }
+    dateInput.max = today;
+
+    // 登録済み経費リストの描画
+    this.renderExpenseList();
+  }
+
+  // 登録済み経費リストの描画（直近14日分、日付降順）
+  renderExpenseList() {
+    const container = document.getElementById('expense-list-container');
+    const header = document.getElementById('expense-list-header');
+    if (!container) return;
+
+    const expenses = store.getRecentExpenses(14);
+
+    if (!expenses || expenses.length === 0) {
+      if (header) header.style.display = 'none';
+      container.innerHTML = '';
+      return;
+    }
+
+    if (header) header.style.display = 'block';
+
+    container.innerHTML = expenses.map(exp => {
+      const [y, m, d] = exp.dateStr.split('-').map(Number);
+      const dateLabel = `${m}/${d}`;
+      const cat = exp.category || '';
+      const isBike = cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike');
+      const typeLabel = isBike ? 'バイクシェア' : (cat === '必要経費' ? '必要経費' : cat);
+      const badgeClass = isBike ? 'bike' : 'other';
+      const amt = Number(exp.amount) || 0;
+
+      return `
+        <div class="expense-list-item" data-expense-id="${exp.id}" data-expense-date="${exp.dateStr}">
+          <div class="expense-item-top">
+            <span class="expense-item-date-type">
+              ${dateLabel}<span class="expense-type-badge ${badgeClass}">${typeLabel}</span>
+            </span>
+            <span class="expense-item-amount">¥${amt.toLocaleString()}</span>
+          </div>
+          <div class="expense-item-content">${exp.memo || '（メモなし）'}</div>
+          <div class="expense-item-actions">
+            <button type="button" class="expense-action-btn edit" data-id="${exp.id}" data-date="${exp.dateStr}">修正</button>
+            <button type="button" class="expense-action-btn delete" data-id="${exp.id}" data-date="${exp.dateStr}">削除</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // 修正ボタンイベント
+    container.querySelectorAll('.expense-action-btn.edit').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        const dateStr = btn.getAttribute('data-date');
+        this.showExpenseEditForm(dateStr, id);
+      });
+    });
+
+    // 削除ボタンイベント
+    container.querySelectorAll('.expense-action-btn.delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        const dateStr = btn.getAttribute('data-date');
+        if (confirm('この経費を削除しますか？')) {
+          store.deleteExpense(dateStr, id);
+          this.showToast('経費を削除しました');
+          this.renderExpenseSection();
+          this.renderAnalyticsView();
+        }
+      });
+    });
+  }
+
+  // 経費修正フォームをインラインで表示
+  showExpenseEditForm(dateStr, expenseId) {
+    const log = store.getDailyLog(dateStr);
+    if (!log.expenses) return;
+    const exp = log.expenses.find(e => e.id === expenseId);
+    if (!exp) return;
+
+    const itemEl = document.querySelector(`.expense-list-item[data-expense-id="${expenseId}"]`);
+    if (!itemEl) return;
+
+    const cat = (exp.category || '').trim();
+    const isBike = cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike');
+    const selectedType = isBike ? 'バイクシェア' : '必要経費';
+
+    itemEl.innerHTML = `
+      <div class="expense-edit-form">
+        <div class="expense-form-group">
+          <label class="expense-form-label">日付</label>
+          <input type="date" class="expense-form-control edit-date" value="${dateStr}" max="${getTodayDateString()}">
+        </div>
+        <div class="expense-form-group">
+          <label class="expense-form-label">種類</label>
+          <select class="expense-form-control edit-type">
+            <option value="バイクシェア" ${selectedType === 'バイクシェア' ? 'selected' : ''}>🚲 バイクシェア</option>
+            <option value="必要経費" ${selectedType === '必要経費' ? 'selected' : ''}>🏷️ 必要経費</option>
+          </select>
+        </div>
+        <div class="expense-form-group">
+          <label class="expense-form-label">内容</label>
+          <input type="text" class="expense-form-control edit-content" value="${exp.memo || ''}" maxlength="60">
+        </div>
+        <div class="expense-form-group">
+          <label class="expense-form-label">金額</label>
+          <div class="expense-amount-wrap">
+            <input type="number" class="expense-form-control expense-amount-input edit-amount" value="${exp.amount}" inputmode="numeric" min="1">
+            <span class="expense-amount-unit">円</span>
+          </div>
+        </div>
+        <div class="expense-edit-actions">
+          <button type="button" class="expense-edit-save-btn">保存</button>
+          <button type="button" class="expense-edit-cancel-btn">キャンセル</button>
+        </div>
+      </div>
+    `;
+
+    // 保存ボタン
+    itemEl.querySelector('.expense-edit-save-btn').addEventListener('click', () => {
+      const newDate = itemEl.querySelector('.edit-date').value;
+      const newType = itemEl.querySelector('.edit-type').value;
+      const newContent = itemEl.querySelector('.edit-content').value.trim();
+      const newAmount = parseInt(itemEl.querySelector('.edit-amount').value, 10);
+
+      if (!newDate || !newAmount || newAmount <= 0 || isNaN(newAmount)) {
+        this.showToast('金額を正しく入力してください');
+        return;
+      }
+
+      if (newDate !== dateStr) {
+        // 日付変更の場合：旧日付から削除→新日付に追加
+        store.deleteExpense(dateStr, expenseId);
+        store.addExpense(newDate, {
+          category: newType,
+          amount: newAmount,
+          memo: newContent
+        });
+      } else {
+        // 同日の場合：既存レコードを更新
+        store.updateExpense(dateStr, expenseId, {
+          category: newType,
+          amount: newAmount,
+          memo: newContent
+        });
+      }
+
+      this.showToast('経費を更新しました');
+      this.renderExpenseSection();
+      this.renderAnalyticsView();
+    });
+
+    // キャンセルボタン
+    itemEl.querySelector('.expense-edit-cancel-btn').addEventListener('click', () => {
+      this.renderExpenseSection();
+    });
+  }
+
+  // 経費登録ボタンのイベントハンドラ初期化
+  initExpenseInputEvents() {
+    const registerBtn = document.getElementById('btn-expense-register');
+    if (!registerBtn) return;
+
+    registerBtn.addEventListener('click', () => {
+      const dateInput = document.getElementById('expense-input-date');
+      const typeInput = document.getElementById('expense-input-type');
+      const contentInput = document.getElementById('expense-input-content');
+      const amountInput = document.getElementById('expense-input-amount');
+
+      const dateStr = dateInput ? dateInput.value : '';
+      const category = typeInput ? typeInput.value : 'バイクシェア';
+      const memo = contentInput ? contentInput.value.trim() : '';
+      const amount = amountInput ? parseInt(amountInput.value, 10) : 0;
+
+      // バリデーション
+      if (!dateStr) {
+        this.showToast('日付を入力してください');
+        return;
+      }
+      if (!amount || amount <= 0 || isNaN(amount)) {
+        this.showToast('金額を正しく入力してください');
+        return;
+      }
+
+      // 登録
+      store.addExpense(dateStr, { category, amount, memo });
+      this.showToast('経費を登録しました');
+
+      // フォームリセット（日付はそのまま）
+      if (contentInput) contentInput.value = '';
+      if (amountInput) amountInput.value = '';
+
+      // リスト再描画＋分析画面更新
+      this.renderExpenseSection();
+      this.renderAnalyticsView();
+    });
   }
 
   // 今週のクエスト進捗カードの描画（月曜朝4:00〜金曜朝4:00、目標80件）

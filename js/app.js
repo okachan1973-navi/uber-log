@@ -970,6 +970,9 @@ function initSalesAndExpensesActions() {
       ui.showToast(`移動手段を「${vehicleSelect.value}」に更新しました`);
     });
   }
+
+  // 3. インライン経費入力セクション（稼働タブ下部）
+  ui.initExpenseInputEvents();
 }
 
 

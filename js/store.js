@@ -3075,12 +3075,14 @@ class Store {
     if (!log.expenses) log.expenses = [];
 
     const amt = Number(amount) || 0;
+    const now = new Date().toISOString();
     const expense = {
       id: `exp_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
-      category: category || 'レンタサイクル',
+      category: category || 'バイクシェア',
       amount: amt,
       memo: memo || '',
-      createdAt: new Date().toISOString()
+      createdAt: now,
+      updatedAt: now
     };
 
     log.expenses.push(expense);
@@ -3099,7 +3101,8 @@ class Store {
         ...log.expenses[idx],
         category: category !== undefined ? category : log.expenses[idx].category,
         amount: amount !== undefined ? (Number(amount) || 0) : log.expenses[idx].amount,
-        memo: memo !== undefined ? memo : log.expenses[idx].memo
+        memo: memo !== undefined ? memo : log.expenses[idx].memo,
+        updatedAt: new Date().toISOString()
       };
       this.saveToStorage(dateStr);
       return log.expenses[idx];
@@ -3119,6 +3122,35 @@ class Store {
       return removed;
     }
     return null;
+  }
+
+  // 直近N日分の全経費を日付降順で取得（経費一覧表示用）
+  getRecentExpenses(days = 14) {
+    const allLogs = this.getAllDailyLogs();
+    const today = getTodayDateString();
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutoffStr = getTodayDateString(cutoff);
+
+    const result = [];
+    allLogs.forEach(log => {
+      if (log.date < cutoffStr || log.date > today) return;
+      if (!Array.isArray(log.expenses) || log.expenses.length === 0) return;
+      log.expenses.forEach(exp => {
+        result.push({
+          ...exp,
+          dateStr: log.date
+        });
+      });
+    });
+
+    // 日付降順、同日内はcreatedAt降順
+    result.sort((a, b) => {
+      if (a.dateStr !== b.dateStr) return b.dateStr.localeCompare(a.dateStr);
+      return (b.createdAt || '').localeCompare(a.createdAt || '');
+    });
+
+    return result;
   }
 
   // 移動手段/車両種別の更新
@@ -3343,6 +3375,7 @@ class Store {
     let monthSales = 0;
     let monthDeliveriesCount = 0;
     let monthBikeExpenses = 0;
+    let monthOtherExpenses = 0;
     monthLogs.forEach(l => {
       const m = this.getCalculatedMetrics(l);
       if (m.count > 0 || m.totalSales !== null) {
@@ -3356,13 +3389,16 @@ class Store {
           if (!isNaN(amt) && amt > 0) {
             if (!cat || cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike')) {
               monthBikeExpenses += amt;
+            } else if (cat === '必要経費') {
+              monthOtherExpenses += amt;
             }
           }
         });
       }
     });
 
-    const monthSalesProfit = monthSales - monthBikeExpenses;
+    // 月次利益 = 売上 - Bike経費 - 必要経費
+    const monthSalesProfit = monthSales - monthBikeExpenses - monthOtherExpenses;
     const [mY, mM] = currentMonthPrefix.split('-').map(Number);
     const cleanMonthPeriod = `${mY}年${mM}月`;
 
@@ -3373,7 +3409,7 @@ class Store {
       salesProfit: monthSalesProfit,
       calculatedSales: monthSales,
       bikeExpenses: monthBikeExpenses,
-      otherExpenses: 0,
+      otherExpenses: monthOtherExpenses,
       deliveriesCount: monthDeliveriesCount,
       note: `※${mM}月度 登録分（全${monthDeliveriesCount}件）`
     };
