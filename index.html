@@ -13,7 +13,7 @@
   <meta name="theme-color" content="#0a0d12">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0d12'/><circle cx='50' cy='50' r='36' fill='%2306C167'/><text x='50' y='60' font-size='34' font-weight='900' fill='%23000' text-anchor='middle'>U</text></svg>">
   <script>
-    window.UBER_LOG_APP_VERSION = '20260923_v21';
+    window.UBER_LOG_APP_VERSION = '20260923_v22';
 
     // file:// 起動時のCORSブロックを回避し、HTTP/HTTPS環境でのみPWAマニフェストおよびService Workerを読み込む
     if (window.location.protocol.startsWith('http')) {
@@ -25,7 +25,7 @@
       // Service Workerの登録と更新監視（PWA自動更新コア）
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js?v=20260923_v21', { scope: './' })
+          navigator.serviceWorker.register('./sw.js?v=20260923_v22', { scope: './' })
             .then((reg) => {
               // 起動時にサーバー上の最新Service Workerの有無をチェック
               reg.update();

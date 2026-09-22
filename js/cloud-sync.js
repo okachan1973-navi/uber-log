@@ -266,6 +266,14 @@ class CloudSyncManager {
       merged.quests = rawQuests;
     }
 
+    // 3-2. Uber公式の売上調整イベント（Support Adjustment等）はID基準で両端を保持
+    const adjMap = new Map();
+    (cloudLog.adjustments || []).forEach(a => adjMap.set(a.id, { ...a }));
+    (localLog.adjustments || []).forEach(a => adjMap.set(a.id, { ...(adjMap.get(a.id) || {}), ...a }));
+    if (adjMap.size > 0) {
+      merged.adjustments = Array.from(adjMap.values());
+    }
+
     // 4. 売上内訳のマージ（Delivery, Quest, Adjustment, Other, Total）
     if (localLog.sales || cloudLog.sales) {
       const ls = localLog.sales || {};
@@ -303,14 +311,20 @@ class CloudSyncManager {
       }
 
       // 9/21・9/22の公式確定売上（公式スクリーンショット照合済み）の保全ガード
+      // 9/22は 23:46 Support Adjustment -¥607 反映後の確定値（¥8,250 + ¥1,600 - ¥607 = ¥9,243）
       const OFFICIAL_DAY_SALES = {
         '2026-09-21': { delivery: 3490, quest: 800, total: 4290 },
-        '2026-09-22': { delivery: 8250, quest: 1600, total: 9850 }
+        '2026-09-22': { delivery: 8250, quest: 1600, adjustment: -607, total: 9243 }
       };
       const officialDay = OFFICIAL_DAY_SALES[date];
-      if (officialDay && (merged.sales.total || 0) < officialDay.total) {
+      const hasOfficialAdjustment = officialDay && officialDay.adjustment !== undefined;
+      if (officialDay && (
+        (merged.sales.total || 0) < officialDay.total ||
+        (hasOfficialAdjustment && (merged.sales.adjustment !== officialDay.adjustment || merged.sales.total !== officialDay.total))
+      )) {
         merged.sales.delivery = officialDay.delivery;
         merged.sales.quest = officialDay.quest;
+        if (hasOfficialAdjustment) merged.sales.adjustment = officialDay.adjustment;
         merged.sales.total = officialDay.total;
       }
     }

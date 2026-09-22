@@ -1172,8 +1172,10 @@ class UI {
         `);
       }
 
-      // 2. 売上調整金カード（プラス）
-      if (metrics.adjustmentSales > 0) {
+      // 2. 売上調整金カード（プラス／マイナス。Uber側の売上調整であり経費ではない）
+      if (metrics.adjustmentSales !== 0) {
+        const adj = metrics.adjustmentSales;
+        const adjSign = adj > 0 ? '+' : '-';
         additionalCards.push(`
           <div class="balance-card card-adjustment">
             <div class="balance-card-left">
@@ -1182,7 +1184,7 @@ class UI {
                 <span class="balance-card-title">売上調整金</span>
               </div>
             </div>
-            <span class="balance-card-amount">+¥${metrics.adjustmentSales.toLocaleString()}</span>
+            <span class="balance-card-amount">${adjSign}¥${Math.abs(adj).toLocaleString()}</span>
           </div>
         `);
       }

@@ -1663,12 +1663,23 @@ const CONFIRMED_SEED_DATA = {
           "note": "公式画面は「クエスト ¥800」「6回乗車クエスト ¥800」の2表示だが同一報酬のため1件のみ計上（二重計上防止）。15:00の「3回乗車クエスト ¥0」は報酬0のため売上非加算"
         }
       ],
+      "adjustments": [
+        {
+          "id": "adj_0922_1",
+          "time": "23:46",
+          "eventType": "調整",
+          "officialTitle": "Support Adjustment",
+          "amount": -607,
+          "userNote": "配達ミスに伴う調整",
+          "note": "Uber側の売上調整（経費ではない）。12:53 del_0922_8（Delivery ¥607）とは別イベントで、tripは変更しない"
+        }
+      ],
       "sales": {
         "delivery": 8250,
         "quest": 1600,
-        "adjustment": 0,
+        "adjustment": -607,
         "other": 0,
-        "total": 9850
+        "total": 9243
       },
       "expenses": [
         {
@@ -2400,6 +2411,23 @@ class Store {
             target.quests = log.quests;
             hasChange = true;
           }
+          // Uber公式の売上調整イベント（9/22 23:46 Support Adjustment -¥607 等）。
+          // 調整イベントはID単位で保持し、sales.adjustment はイベント合計と一致させる（tripは変更しない）
+          if (Array.isArray(log.adjustments) && log.adjustments.length > 0) {
+            const adjList = Array.isArray(target.adjustments) ? target.adjustments : [];
+            const adjIds = new Set(adjList.map(a => a.id));
+            log.adjustments.forEach(a => {
+              if (!adjIds.has(a.id)) {
+                adjList.push(a);
+                hasChange = true;
+              }
+            });
+            target.adjustments = adjList;
+            if (!target.sales || target.sales.adjustment !== log.sales.adjustment || target.sales.total !== log.sales.total) {
+              target.sales = { ...(target.sales || {}), ...log.sales };
+              hasChange = true;
+            }
+          }
           // Bike経費（¥1,527）はユーザー削除済み（tombstone）の場合は復活させない
           const bikeExpenseId = log.expenses[0].id;
           const isDeletedByUser = Array.isArray(target.deletedExpenseIds) && target.deletedExpenseIds.includes(bikeExpenseId);
@@ -2869,9 +2897,9 @@ class Store {
     }
 
     // 2. 調整金属性 (調)
-    // 対象日: 調整金（adjustmentSales）が存在する日（例: 2026-09-18）
+    // 対象日: 調整金（adjustmentSales）が存在する日（プラス例: 2026-09-18 +¥200 / マイナス例: 2026-09-22 -¥607）
     const metrics = log ? this.getCalculatedMetrics(log) : null;
-    if (metrics && metrics.adjustmentSales > 0) {
+    if (metrics && metrics.adjustmentSales !== 0) {
       attrs.push(DAY_ATTRIBUTE_DEFINITIONS.adjustment);
     }
 
@@ -3320,7 +3348,7 @@ class Store {
 
     // 1日総売上（通常稼働分 ＋ 特別保証ボーナス等すべての確認済みUber総収入）
     let totalSales = null;
-    if (deliverySales !== null || questSales !== null || adjustmentSales > 0 || otherSales > 0 || guaranteeBonus > 0) {
+    if (deliverySales !== null || questSales !== null || adjustmentSales !== 0 || otherSales !== 0 || guaranteeBonus > 0) {
       totalSales = (deliverySales || 0) + (questSales || 0) + (adjustmentSales || 0) + (otherSales || 0) + (guaranteeBonus || 0);
     }
 
@@ -3402,7 +3430,7 @@ class Store {
 
     // 時給計算対象売上（通常報酬 ＋ 通常クエスト ＋ 売上調整金。新規保証・特別報奨等の特別収入は除外。経費も引かない）
     let hourlyBaseSales = null;
-    if (deliverySales !== null || questSales !== null || adjustmentSales > 0) {
+    if (deliverySales !== null || questSales !== null || adjustmentSales !== 0) {
       hourlyBaseSales = (deliverySales || 0) + (questSales || 0) + (adjustmentSales || 0);
     }
 
