@@ -1,9 +1,9 @@
 /**
  * UBER LOG - Service Worker (Auto-Update & Offline Resilience)
- * Version: 20260924_v25
+ * Version: 20260924_v26
  */
 
-const SW_VERSION = '20260924_v25';
+const SW_VERSION = '20260924_v26';
 const CACHE_NAME = 'uber-log-' + SW_VERSION;
 
 // インストール時に待機せず即座にアクティブ化
@@ -38,6 +38,9 @@ self.addEventListener('fetch', (event) => {
 
   // 外部API（Supabase, Google Maps等）はService Workerの介入を完全に除外
   if (url.origin !== self.location.origin) return;
+
+  // PCローカル起動時の公式取込API（/api/）は常にサーバーへ直接（キャッシュしない）
+  if (url.pathname.startsWith('/api/')) return;
 
   // 1. ナビゲーションリクエスト（index.html / 画面初期読込）
   // 常にネットワーク優先（Network-First）：オンライン時は必ず最新のHTMLを取得

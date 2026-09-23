@@ -20,4 +20,4 @@ Thumbs.db
 tools/official-import/inbox/
 tools/official-import/staging/
 __pycache__/
-.claude/settings.local.json
+.claude/settings.local.jsontools/official-import/logs/

@@ -495,6 +495,42 @@ try {
   }
 
   // ==========================================================
+  section('13. ローカルbackend・「取り込み実行」（spec/server-tests.js）');
+  {
+    const r = spawnSync(process.execPath, [path.join(__dirname, 'server-tests.js')], { encoding: 'utf8', timeout: 15 * 60 * 1000 });
+    process.stdout.write((r.stdout || '').split('\n').filter(l => !/^結果:/.test(l)).join('\n'));
+    const m = (r.stdout || '').match(/結果: (\d+) passed, (\d+) failed/);
+    if (m) { passed += Number(m[1]); failed += Number(m[2]); } else { failed++; console.log(`  ❌ server-tests が完了しません: ${(r.stderr || '').slice(0, 300)}`); }
+  }
+
+  // ==========================================================
+  section('13-7. デスクトップ用ランチャー（launcher.vbs）');
+  {
+    const vbs = path.join(__dirname, '..', 'launcher.vbs');
+    const port = 8096;
+    const health = () => {
+      const r = spawnSync(process.execPath, ['-e', `require('http').get({host:'127.0.0.1',port:${port},path:'/api/health',headers:{Host:'localhost:${port}'}},res=>{let d='';res.on('data',c=>d+=c);res.on('end',()=>console.log(d))}).on('error',()=>console.log('{}'))`], { encoding: 'utf8' });
+      try { return JSON.parse(r.stdout); } catch (e) { return {}; }
+    };
+    const launch = p => spawnSync('cscript', ['//nologo', vbs, `/port:${p}`, '/nobrowser'], { encoding: 'utf8', timeout: 60000 });
+    const r1 = launch(port);
+    const h1 = health();
+    const r2 = launch(port);
+    const h2 = health();
+    check(r1.status === 0 && /started/.test(r1.stdout) && h1.app === 'uber-log-local', 'サーバー未起動 → 画面を出さずに自動起動');
+    check(r2.status === 0 && /running/.test(r2.stdout) && h2.pid === h1.pid, `起動済み → 二重起動しない（同じプロセス pid ${h1.pid}）`);
+    const listen = spawnSync('powershell', ['-NoProfile', '-Command', `(Get-NetTCPConnection -LocalPort ${port} -State Listen | ForEach-Object { $_.LocalAddress }) -join ','`], { encoding: 'utf8' }).stdout.trim();
+    check(listen.split(',').every(a => a === '127.0.0.1' || a === '::1') && listen.length > 0, `待受けはループバックのみ（${listen}）`);
+    if (h1.pid) { try { process.kill(h1.pid); } catch (e) { /* 終了済み */ } }
+    // 別のプログラムがポートを使用中なら起動せず知らせる
+    const other = require('child_process').spawn(process.execPath, ['-e', `require('http').createServer((q,s)=>s.end('other')).listen(8095,'127.0.0.1')`]);
+    spawnSync(process.execPath, ['-e', 'setTimeout(()=>{},700)']);
+    const r3 = launch(8095);
+    other.kill();
+    check(r3.status === 2, '別のプログラムがポート使用中 → 起動せずメッセージ（終了コード 2）');
+  }
+
+  // ==========================================================
   section('11. 本体データの整合性（現在の js/store.js・js/trip-maps.js 全日）');
   {
     const seed = pipeline.readSeed(path.join(ROOT, 'js', 'store.js')).data.dailyLogs;

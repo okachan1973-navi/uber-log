@@ -7,7 +7,7 @@
   <style>
     :root {
       --bg: #f4f5f7; --card: #fff; --text: #1d1f23; --muted: #6b7079; --line: #d9dce1;
-      --accent: #0a7c5a; --accent-weak: #e3f4ee; --warn: #b3541e; --warn-weak: #fdf0e7; --err: #c62828;
+      --accent: #0a7c5a; --accent-weak: #e3f4ee; --warn: #b3541e; --warn-weak: #fdf0e7; --err: #c62828; --err-weak: #fdeaea;
     }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", "Yu Gothic UI", "Meiryo", sans-serif; }
@@ -18,67 +18,92 @@
     .card h2 { font-size: 15px; margin: 0 0 10px; }
     .step { display: inline-block; min-width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 11px; background: var(--accent); color: #fff; font-size: 12px; margin-right: 6px; }
     input[type=date] { font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; }
-    textarea { width: 100%; min-height: 260px; font: 13px/1.5 Consolas, "BIZ UDGothic", monospace; padding: 10px; border: 1px solid var(--line); border-radius: 6px; resize: vertical; }
+    textarea { width: 100%; min-height: 220px; font: 13px/1.5 Consolas, "BIZ UDGothic", monospace; padding: 10px; border: 1px solid var(--line); border-radius: 6px; resize: vertical; }
     .drop { border: 2px dashed var(--line); border-radius: 10px; padding: 26px; text-align: center; color: var(--muted); cursor: pointer; transition: .15s; }
-    .drop.over { border-color: var(--accent); background: var(--accent-weak); color: var(--accent); }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px 14px; margin-top: 12px; font-size: 12px; }
-    .grid div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .drop.over, .drop.attention { border-color: var(--accent); background: var(--accent-weak); color: var(--accent); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px 12px; margin-top: 12px; font-size: 12px; }
+    .img-item { display: flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; background: #fafbfc; min-width: 0; }
+    .img-item.flag { border-color: var(--warn); background: var(--warn-weak); }
+    .img-item span { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .img-item small { color: var(--muted); }
+    .img-item button { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 15px; padding: 0 2px; }
     .stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     .stat { background: var(--bg); border-radius: 8px; padding: 6px 12px; font-size: 13px; }
     .stat b { font-size: 16px; margin-left: 4px; }
-    .note { margin-top: 10px; padding: 8px 12px; border-radius: 6px; font-size: 13px; }
+    .note { margin-top: 10px; padding: 8px 12px; border-radius: 6px; font-size: 13px; white-space: pre-wrap; }
     .note.warn { background: var(--warn-weak); color: var(--warn); }
     .note.ok { background: var(--accent-weak); color: var(--accent); }
-    .note.err { background: #fdeaea; color: var(--err); }
+    .note.err { background: var(--err-weak); color: var(--err); }
     button { font: inherit; border: 0; border-radius: 8px; padding: 10px 22px; cursor: pointer; }
-    .primary { background: var(--accent); color: #fff; font-weight: 600; font-size: 16px; }
+    .primary { background: var(--accent); color: #fff; font-weight: 700; font-size: 18px; padding: 14px 36px; }
     .primary:disabled { background: #9fb8ae; cursor: default; }
     .ghost { background: var(--bg); color: var(--text); border: 1px solid var(--line); padding: 6px 14px; font-size: 13px; }
-    .cmd { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
-    .cmd[hidden] { display: none; }
-    .cmd code { background: #1d1f23; color: #e8f5ef; padding: 8px 14px; border-radius: 6px; font-size: 15px; }
     .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
     .muted { color: var(--muted); font-size: 12px; }
+    .progress { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 4px; }
+    .progress li { color: var(--muted); }
+    .progress li.doing { color: var(--text); font-weight: 700; }
+    .progress li.doing::before { content: "▶ "; color: var(--accent); }
+    .progress li.done { color: var(--accent); }
+    .progress li.done::before { content: "✓ "; }
+    .problem { border: 1px solid var(--warn); background: var(--warn-weak); border-radius: 8px; padding: 12px 14px; margin-top: 10px; }
+    .problem.error { border-color: var(--err); background: var(--err-weak); }
+    .problem h3 { margin: 0 0 4px; font-size: 15px; }
+    .problem ul { margin: 6px 0; padding-left: 20px; }
+    .problem .detail { white-space: pre-wrap; font-size: 13px; }
+    .result h2 { font-size: 20px; }
+    .result table { border-collapse: collapse; font-size: 16px; }
+    .result td { padding: 3px 18px 3px 0; }
+    .result td:last-child { font-weight: 700; text-align: right; }
+    .pass { display: inline-block; background: var(--accent); color: #fff; border-radius: 6px; padding: 2px 10px; font-weight: 700; margin-top: 8px; }
+    .link-btn { display: inline-block; margin-top: 14px; background: var(--accent); color: #fff; text-decoration: none; border-radius: 8px; padding: 10px 26px; font-weight: 700; }
+    [hidden] { display: none !important; }
   </style>
 </head>
 <body>
 <main>
   <h1>UBER_LOG 公式取込</h1>
-  <p class="lead">PC用の補助画面です（スマホ版UBER_LOGには表示されません）。ここで保存したデータは Git に入りません。</p>
+  <p class="lead">日付・一覧・スクショを入れて「取り込み実行」を押すだけで、確認・反映・記録まで自動で行います。</p>
+
+  <div class="note err" id="offline" hidden>この画面はPCのローカル専用です。デスクトップの「UBER_LOG」から開いてください。</div>
 
   <section class="card">
     <h2><span class="step">1</span>日付</h2>
     <input type="date" id="date">
+    <span class="muted" id="date-note"></span>
   </section>
 
   <section class="card">
     <h2><span class="step">2</span>Uberアクティビティ一覧（コピーして貼り付け）</h2>
-    <textarea id="activity" placeholder="Delivery&#10;Tuesday, September 22nd, 2026&#10;19:48&#10;￥483&#10;View Details&#10;…"></textarea>
+    <textarea id="activity" placeholder="Delivery&#10;Wednesday, September 23rd, 2026&#10;17:15&#10;￥320&#10;View Details&#10;…"></textarea>
     <div class="stats" id="parse-stats"></div>
     <div id="parse-notes"></div>
   </section>
 
   <section class="card">
-    <h2><span class="step">3</span>公式スクリーンショット（Delivery詳細をまとめてドラッグ）</h2>
+    <h2><span class="step">3</span>公式スクリーンショット（Delivery詳細を全部ドラッグ）</h2>
     <div class="drop" id="drop">ここに画像をドラッグ＆ドロップ（またはクリックして選択）<br><span class="muted">PNG / JPG・Delivery詳細部分だけを切り取った画像</span></div>
     <input type="file" id="file-input" accept="image/png,image/jpeg" multiple hidden>
     <div class="row" style="margin-top:10px">
-      <div class="stat">選択画像:<b id="img-count">0</b> 枚</div>
-      <button class="ghost" id="clear-images" type="button">画像をクリア</button>
+      <div class="stat">画像枚数<b id="img-count">0</b> 枚</div>
+      <button class="ghost" id="clear-images" type="button">画像をすべて外す</button>
     </div>
     <div id="img-notes"></div>
     <div class="grid" id="img-list"></div>
   </section>
 
   <section class="card">
-    <h2><span class="step">4</span>保存</h2>
-    <button class="primary" id="save" type="button">取込データを保存</button>
-    <p class="muted" id="save-hint">初回だけ保存先に <b>UBER_LOG\tools\official-import\inbox</b> フォルダを選んでください（次回からは記憶されます）。</p>
-    <div id="save-result"></div>
-    <div class="cmd" id="cmd-box" hidden>
-      <span>次に Claude Code で:</span><code id="cmd"></code><button class="ghost" id="copy-cmd" type="button">コピー</button>
+    <h2><span class="step">4</span>取り込み</h2>
+    <button class="primary" id="run" type="button">取り込み実行</button>
+    <div id="run-note"></div>
+    <div id="status" hidden>
+      <div class="note ok" id="status-msg"></div>
+      <ul class="progress" id="progress"></ul>
     </div>
+    <div id="problems"></div>
   </section>
+
+  <section class="card result" id="result" hidden></section>
 </main>
 
 <script src="lib/activity-parser.js"></script>
@@ -86,158 +111,218 @@
 (() => {
   const $ = id => document.getElementById(id);
   const P = window.UberActivityParser;
-  const images = new Map(); // name -> { file, width, height }
-  const yen = n => (n < 0 ? '-' : '') + '¥' + Math.abs(n).toLocaleString();
+  const api = (p, opt = {}) => fetch(p, { ...opt, headers: { 'X-UBER-LOG': '1', ...(opt.headers || {}) } });
+  const yen = n => (n < 0 ? '-' : '') + '¥' + Math.abs(Number(n) || 0).toLocaleString();
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const hms = s => `${Math.floor(s / 3600)}:${String(Math.floor(s % 3600 / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+  let backend = false;
+  let busy = false;
+  const saved = new Set();           // サーバーに保存済みの画像（外さない限り再送不要）
+  const added = new Map();           // 今回追加した画像 name -> { file, width }
+  let flagged = new Set();           // 確認が必要な画像
 
   const today = new Date();
-  $('date').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  $('date').value = todayStr;
+  $('date').max = todayStr;
 
   // ---------- 一覧テキストの簡易解析 ----------
   function renderParse() {
     const date = $('date').value;
     const text = $('activity').value;
-    const notes = [];
-    if (!text.trim()) {
-      $('parse-stats').innerHTML = '';
-      $('parse-notes').innerHTML = '';
-      return;
-    }
-    const parsed = P.parseActivityText(text, { defaultYear: date.slice(0, 4) });
-    const s = P.summarize(parsed, date);
+    if (!text.trim()) { $('parse-stats').innerHTML = ''; $('parse-notes').innerHTML = ''; return; }
+    const s = P.summarize(P.parseActivityText(text, { defaultYear: date.slice(0, 4) }), date);
     $('parse-stats').innerHTML = [
-      ['Delivery', s.delivery], ['クエスト行', s.quest], ['調整', s.adjustment],
-      ['配達報酬', yen(s.deliverySales)], ['クエスト（重複排除後）', yen(s.questSales)], ['調整合計', yen(s.adjustmentSales)]
+      ['Delivery', s.delivery], ['配達報酬', yen(s.deliverySales)], ['クエスト（重複排除後）', yen(s.questSales)], ['調整', yen(s.adjustmentSales)]
     ].map(([k, v]) => `<div class="stat">${k}<b>${v}</b></div>`).join('');
-    if (s.unknown) notes.push(['warn', `未分類・対象外のイベントが ${s.unknown} 件あります（取込時に確認が必要です）`]);
-    if (s.duplicateCandidates) notes.push(['warn', `クエストの重複候補が ${s.duplicateCandidates} 件あります（取込時に確認が必要です）`]);
+    const notes = [];
+    if (!s.delivery) notes.push(['err', `${date} の Delivery が見つかりません。日付とコピー範囲（日付の行も含めて）を確認してください`]);
     if (s.otherDates) notes.push(['ok', `${date} 以外の日付のイベント ${s.otherDates} 件は取込対象外です`]);
-    if (s.undatedEvents) notes.push(['warn', `日付が読み取れないイベントが ${s.undatedEvents} 件あります（日付の行も一緒にコピーしてください）`]);
-    if (!s.delivery) notes.push(['err', `${date} の Delivery が見つかりません。日付とコピー範囲を確認してください`]);
-    const imgCount = images.size;
-    if (s.delivery && imgCount && s.delivery !== imgCount) notes.push(['warn', `Delivery ${s.delivery} 件に対してスクショ ${imgCount} 枚です`]);
-    $('parse-notes').innerHTML = notes.map(([c, t]) => `<div class="note ${c}">${t}</div>`).join('');
+    if (s.unknown) notes.push(['warn', `未分類・対象外のイベントが ${s.unknown} 件あります（取込時に確認が必要になります）`]);
+    const n = saved.size + added.size;
+    if (s.delivery && n && s.delivery !== n) notes.push(['warn', `Delivery ${s.delivery} 件に対してスクショ ${n} 枚です`]);
+    $('parse-notes').innerHTML = notes.map(([c, t]) => `<div class="note ${c}">${esc(t)}</div>`).join('');
   }
   $('activity').addEventListener('input', renderParse);
-  $('date').addEventListener('change', renderParse);
 
   // ---------- 画像 ----------
   function addFiles(list) {
     const jobs = [...list].filter(f => /^image\/(png|jpeg)$/.test(f.type)).map(file => new Promise(resolve => {
       const url = URL.createObjectURL(file);
       const img = new Image();
-      img.onload = () => { images.set(file.name, { file, width: img.naturalWidth, height: img.naturalHeight }); URL.revokeObjectURL(url); resolve(); };
+      img.onload = () => { added.set(file.name, { file, width: img.naturalWidth, height: img.naturalHeight }); saved.delete(file.name); flagged.delete(file.name); URL.revokeObjectURL(url); resolve(); };
       img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
       img.src = url;
     }));
     Promise.all(jobs).then(renderImages);
   }
   function renderImages() {
-    $('img-count').textContent = images.size;
-    const wide = [...images.values()].filter(i => i.width > 800);
+    const n = saved.size + added.size;
+    $('img-count').textContent = n;
+    const wide = [...added.values()].filter(i => i.width > 800);
     $('img-notes').innerHTML = wide.length
-      ? `<div class="note warn">画面全体のスクショが ${wide.length} 枚あります（幅800px超）。Delivery詳細部分だけを切り取った画像にしてください: ${wide.map(i => i.file.name).join(', ')}</div>`
-      : '';
-    $('img-list').innerHTML = [...images.values()].sort((a, b) => a.file.name.localeCompare(b.file.name, 'ja'))
-      .map(i => `<div title="${i.file.name}">${i.file.name}<br><span class="muted">${i.width}×${i.height}</span></div>`).join('');
+      ? `<div class="note warn">画面全体のスクショが ${wide.length} 枚あります（幅800px超）。Delivery詳細部分だけを切り取った画像にしてください。</div>` : '';
+    const items = [...[...saved].map(name => ({ name, tag: '保存済み' })), ...[...added.values()].map(i => ({ name: i.file.name, tag: `${i.width}×${i.height}` }))]
+      .sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+    $('img-list').innerHTML = items.map(i => `<div class="img-item${flagged.has(i.name) ? ' flag' : ''}" title="${esc(i.name)}"><span>${esc(i.name)}<br><small>${esc(i.tag)}</small></span><button type="button" data-remove="${esc(i.name)}" title="外す">×</button></div>`).join('');
     renderParse();
   }
+  $('img-list').addEventListener('click', e => {
+    const name = e.target.getAttribute('data-remove');
+    if (!name) return;
+    saved.delete(name); added.delete(name); flagged.delete(name);
+    renderImages();
+  });
   const drop = $('drop');
   drop.addEventListener('click', () => $('file-input').click());
-  $('file-input').addEventListener('change', e => addFiles(e.target.files));
+  $('file-input').addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
   drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
   drop.addEventListener('dragleave', () => drop.classList.remove('over'));
-  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); addFiles(e.dataTransfer.files); });
-  $('clear-images').addEventListener('click', () => { images.clear(); renderImages(); });
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over', 'attention'); addFiles(e.dataTransfer.files); });
+  $('clear-images').addEventListener('click', () => { saved.clear(); added.clear(); flagged.clear(); renderImages(); });
 
-  // ---------- 保存先フォルダ（File System Access API・ハンドルを IndexedDB に記憶） ----------
-  const DB = 'uber-log-official-import';
-  function idb(mode, fn) {
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB, 1);
-      req.onupgradeneeded = () => req.result.createObjectStore('kv');
-      req.onsuccess = () => {
-        const tx = req.result.transaction('kv', mode);
-        const r = fn(tx.objectStore('kv'));
-        tx.oncomplete = () => resolve(r && r.result);
-        tx.onerror = () => reject(tx.error);
-      };
-      req.onerror = () => reject(req.error);
-    });
-  }
-  async function getInboxHandle() {
-    let handle = null;
-    try { handle = await idb('readonly', s => s.get('inbox')); } catch (e) { handle = null; }
-    if (handle && (await handle.requestPermission({ mode: 'readwrite' })) === 'granted') return handle;
-    handle = await window.showDirectoryPicker({ id: 'uber-log-inbox', mode: 'readwrite' });
-    if (handle.name !== 'inbox' && !confirm(`選んだフォルダは「${handle.name}」です。\nUBER_LOG\\tools\\official-import\\inbox を選ぶのが正しい手順です。このまま保存しますか？`)) {
-      throw new Error('保存を中止しました');
-    }
-    try { await idb('readwrite', s => s.put(handle, 'inbox')); } catch (e) { /* 記憶できなくても保存は続行 */ }
-    return handle;
-  }
-  async function writeFile(dir, name, data) {
-    const fh = await dir.getFileHandle(name, { create: true });
-    const w = await fh.createWritable();
-    await w.write(data);
-    await w.close();
-  }
-
-  function downloadText(name, text) {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
-    a.download = name;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  }
-
-  function showResult(kind, html) {
-    $('save-result').innerHTML = `<div class="note ${kind}">${html}</div>`;
-  }
-
-  $('save').addEventListener('click', async () => {
+  // ---------- 日付（保存済みデータの読込） ----------
+  async function loadDate() {
     const date = $('date').value;
-    const text = $('activity').value;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return showResult('err', '日付を指定してください');
-    if (!text.trim()) return showResult('err', 'Uberアクティビティ一覧を貼り付けてください');
-    if (!images.size && !confirm('スクリーンショットが0枚です。一覧テキストだけ保存しますか？')) return;
+    saved.clear(); added.clear(); flagged.clear();
+    $('date-note').textContent = '';
+    if (backend && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      try {
+        const r = await (await api(`/api/inbox/${date}`)).json();
+        if (r.activity) $('activity').value = r.activity;
+        (r.screenshots || []).forEach(n => saved.add(n));
+        if (r.activity || (r.screenshots || []).length) $('date-note').textContent = `（${date} の保存済みデータを読み込みました）`;
+      } catch (e) { /* 読めなくても入力は続けられる */ }
+    }
+    renderImages();
+  }
+  $('date').addEventListener('change', () => { $('activity').value = ''; loadDate(); $('result').hidden = true; $('problems').innerHTML = ''; });
 
-    if (!window.showDirectoryPicker) {
-      // 代替: activity.txt をダウンロードし、フォルダへ手動で置く
-      downloadText('activity.txt', text);
-      showResult('warn', `このブラウザはフォルダへの直接保存に対応していません（Chrome / Edge 推奨）。<br>
-        1) ダウンロードした <b>activity.txt</b> を <b>tools\\official-import\\inbox\\${date}\\</b> へ移動<br>
-        2) スクショを <b>tools\\official-import\\inbox\\${date}\\screenshots\\</b> へコピー`);
-      $('cmd').textContent = `/uber-import ${date}`;
-      $('cmd-box').hidden = false;
-      return;
-    }
-    $('save').disabled = true;
-    try {
-      const inbox = await getInboxHandle();
-      const dayDir = await inbox.getDirectoryHandle(date, { create: true });
-      const shotDir = await dayDir.getDirectoryHandle('screenshots', { create: true });
-      const existing = [];
-      for await (const [name] of shotDir.entries()) existing.push(name);
-      await writeFile(dayDir, 'activity.txt', text.replace(/\r?\n/g, '\r\n'));
-      for (const { file } of images.values()) await writeFile(shotDir, file.name, file);
-      const s = P.summarize(P.parseActivityText(text, { defaultYear: date.slice(0, 4) }), date);
-      await writeFile(dayDir, 'manifest.json', JSON.stringify({
-        date, savedAt: new Date().toISOString(), source: 'official-import-v1 helper',
-        screenshots: [...images.keys()].sort(), activitySummary: s
-      }, null, 2));
-      const extra = existing.filter(n => !images.has(n));
-      showResult('ok', `保存しました: inbox\\${date}\\（activity.txt・スクショ ${images.size} 枚）` +
-        (extra.length ? `<br>※ 以前に保存した画像 ${extra.length} 枚がフォルダに残っています（不要なら削除してください）: ${extra.join(', ')}` : ''));
-      $('cmd').textContent = `/uber-import ${date}`;
-      $('cmd-box').hidden = false;
-    } catch (e) {
-      if (e.name !== 'AbortError') showResult('err', `保存できませんでした: ${e.message}`);
-    } finally {
-      $('save').disabled = false;
-    }
+  // ---------- 実行 ----------
+  const toBase64 = file => new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1]);
+    r.onerror = reject;
+    r.readAsDataURL(file);
   });
 
-  $('copy-cmd').addEventListener('click', () => navigator.clipboard.writeText($('cmd').textContent));
+  async function start(decisions) {
+    if (busy) return;
+    const date = $('date').value;
+    const text = $('activity').value;
+    $('run-note').innerHTML = '';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return note('err', '日付を選んでください');
+    if (date > todayStr) return note('err', '未来の日付は取り込めません');
+    if (!text.trim()) return note('err', 'Uberアクティビティ一覧を貼り付けてください');
+    if (!saved.size && !added.size) return note('err', 'Delivery詳細のスクショを入れてください');
+    busy = true;
+    $('run').disabled = true;
+    $('result').hidden = true;
+    $('problems').innerHTML = '';
+    showStatus('保存中...', null, 'save');
+    try {
+      const files = [];
+      for (const { file } of added.values()) files.push({ name: file.name, data: await toBase64(file) });
+      const res = await api('/api/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, activity: text, keep: [...saved], files, decisions }) });
+      const job = await res.json();
+      if (!res.ok) throw new Error(job.error || `送信に失敗しました（${res.status}）`);
+      [...added.keys()].forEach(n => saved.add(n));
+      added.clear();
+      renderImages();
+      poll(job.id);
+    } catch (e) {
+      finish();
+      showProblems([{ type: 'error', title: 'エラー', detail: e.message }]);
+    }
+  }
+  function note(kind, text) { $('run-note').innerHTML = `<div class="note ${kind}">${esc(text)}</div>`; }
+  function finish() { busy = false; $('run').disabled = !backend; }
+
+  function showStatus(msg, steps, stepKey, state) {
+    $('status').hidden = false;
+    $('status-msg').textContent = msg;
+    $('status-msg').className = `note ${state === 'error' ? 'err' : state === 'needs_review' ? 'warn' : 'ok'}`;
+    if (!steps) return;
+    const idx = steps.findIndex(s => s.key === stepKey);
+    $('progress').innerHTML = steps.filter(s => s.key !== 'done').map((s, i) =>
+      `<li class="${state === 'done' || i < idx ? 'done' : i === idx && state === 'running' ? 'doing' : ''}">${esc(s.label)}</li>`).join('');
+  }
+
+  async function poll(id) {
+    let job;
+    try { job = await (await api(`/api/jobs/${id}`)).json(); } catch (e) { setTimeout(() => poll(id), 1500); return; }
+    showStatus(job.message, job.steps, job.step, job.state);
+    if (job.state === 'running') { setTimeout(() => poll(id), 1000); return; }
+    finish();
+    if (job.problems && job.problems.length) showProblems(job.problems, job.state);
+    if (job.state === 'done') showResult(job);
+  }
+
+  function showProblems(problems, state) {
+    flagged = new Set();
+    const mapFiles = [];
+    $('problems').innerHTML = (state === 'needs_review' ? '<div class="note warn"><b>確認が必要です</b>（UBER_LOG には反映していません）</div>' : '') + problems.map(p => {
+      (p.items || []).forEach(i => i.file && flagged.add(i.file));
+      if (p.type === 'map') (p.items || []).forEach(i => mapFiles.push(i.file));
+      const items = (p.items || []).map(i => `<li>${esc([i.time, i.amount !== undefined ? yen(i.amount) : '', i.fields ? `読めない項目: ${i.fields}` : '', i.file ? `（${i.file}）` : ''].filter(Boolean).join(' '))}</li>`).join('');
+      const actions = p.type === 'map'
+        ? `<div class="row" style="margin-top:8px"><button class="ghost" type="button" data-act="add">スクショを追加する</button><button class="ghost" type="button" data-act="mapless">MAPなしで取り込む</button></div>`
+        : (p.type === 'unreadable' || p.type === 'other') ? `<div class="row" style="margin-top:8px"><button class="ghost" type="button" data-act="add">スクショを追加する</button></div>` : '';
+      return `<div class="problem${p.type === 'error' ? ' error' : ''}"><h3>${esc(p.title)}</h3>${items ? `<ul>${items}</ul>` : ''}<div class="detail">${esc(p.detail || '')}</div>${actions}</div>`;
+    }).join('');
+    renderImages();
+    $('problems').querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.act === 'add') {
+        drop.classList.add('attention');
+        drop.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else if (b.dataset.act === 'mapless' && confirm(`次の ${mapFiles.length} 件を MAP なしで取り込みます。よろしいですか？\n${mapFiles.join('\n')}`)) {
+        start({ mapMissingOk: mapFiles });
+      }
+    }));
+  }
+
+  function showResult(job) {
+    const r = job.result || {};
+    const s = r.summary || {};
+    const [y, m, d] = String(r.date || job.date).split('-');
+    const rows = [
+      [`${s.trips}トリップ`, ''], [`${s.deliveriesCount}配達`, ''],
+      ['配達報酬', yen(s.deliverySales)], ['クエスト', yen(s.questSales)], ['調整', yen(s.adjustmentSales)],
+      ['総売上', yen(s.totalSales)], ['距離', `${Number(s.distanceKm).toFixed(2)} km`], ['配達時間', hms(s.durationSeconds || 0)], ['MAP', s.maps]
+    ];
+    const extra = r.unchanged
+      ? '<p class="muted">この日はすでに取り込み済みで、変更はありませんでした（二重登録なし）。</p>'
+      : `<p class="muted">記録: HANDOFF 更新・保存（commit ${esc(r.commit || '')}）${r.pushed ? '・GitHub へ送信済み' : ''}${r.version ? ` / version ${esc(r.version)}` : ''}</p>`;
+    $('result').innerHTML = `<h2>${y}/${m}/${d} 取込完了</h2><table>${rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>
+      <div class="pass">VALIDATION ${esc(r.status || 'PASS')}</div>${extra}
+      ${(r.warnings || []).length ? `<details><summary class="muted">注意 ${r.warnings.length} 件</summary><ul class="muted">${r.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul></details>` : ''}
+      <a class="link-btn" href="/">UBER_LOGを見る</a>`;
+    $('result').hidden = false;
+    $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  $('run').addEventListener('click', () => start());
+
+  // ---------- 起動時: ローカルbackendの確認・実行中ジョブの再表示 ----------
+  (async () => {
+    try {
+      const h = await (await fetch('/api/health', { cache: 'no-store' })).json();
+      backend = h && h.app === 'uber-log-local';
+    } catch (e) { backend = false; }
+    $('offline').hidden = backend;
+    $('run').disabled = !backend;
+    await loadDate();
+    if (backend) {
+      try {
+        const res = await api('/api/jobs/current');
+        if (res.ok) {
+          const job = await res.json();
+          if (job.state === 'running') { busy = true; $('run').disabled = true; poll(job.id); }
+        }
+      } catch (e) { /* 無ければ何もしない */ }
+    }
+  })();
 })();
 </script>
 </body>
