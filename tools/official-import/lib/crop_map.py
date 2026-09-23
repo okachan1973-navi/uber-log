@@ -25,6 +25,7 @@ WIDTH_TOLERANCE = 3
 WHITE = 246            # これ以上明るいRGBは「白」
 COL_RATIO = 0.20       # 地図の列: 窓内の非白画素がこの割合以上（地図外の余白はほぼ0、縦の白い道路でも途切れない値）
 MIN_FILL = 0.60        # 地図窓全体の非白率の下限
+ROAD_GAP = 12          # 地図内の縦の白い道路としてつなぐ最大幅(px)
 
 
 def _load(path):
@@ -38,6 +39,25 @@ def _load(path):
             r, g, b = data[x, y]
             row[x] = 0 if (r >= WHITE and g >= WHITE and b >= WHITE) else 1
     return img, w, h, nonwhite
+
+
+def _fill_gaps(flags, max_gap):
+    """地図を縦に貫く白い道路（数px〜十数px）で横範囲が途切れないよう、短い空白をつなぐ"""
+    out = list(flags)
+    i = 0
+    n = len(out)
+    while i < n:
+        if not out[i]:
+            j = i
+            while j < n and not out[j]:
+                j += 1
+            if 0 < i and j < n and j - i <= max_gap:
+                for k in range(i, j):
+                    out[k] = True
+            i = j
+        else:
+            i += 1
+    return out
 
 
 def _longest_run(flags):
@@ -63,7 +83,7 @@ def detect(path):
             continue
         bottom = top + MAP_H  # exclusive
         cols = [sum(nw[y][x] for y in range(top, bottom)) / MAP_H >= COL_RATIO for x in range(w)]
-        left, right = _longest_run(cols)
+        left, right = _longest_run(_fill_gaps(cols, ROAD_GAP))
         if right < 0:
             continue
         width = right - left + 1

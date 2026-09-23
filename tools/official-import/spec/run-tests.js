@@ -79,6 +79,12 @@ function removeSeedDay(root, date) {
   fs.writeFileSync(file, src.replace(/\n/g, seed.eol), 'utf8');
 }
 
+function keepSeedUntil(root, date) {
+  pipeline.readSeed(path.join(root, 'js', 'store.js')).blocks
+    .map(b => b.date).filter(d => d > date).reverse()
+    .forEach(d => removeSeedDay(root, d));
+}
+
 function removeCatalogPrefix(root, prefix) {
   const file = path.join(root, 'js', 'trip-maps.js');
   const tm = pipeline.readTripMaps(file);
@@ -198,6 +204,7 @@ try {
   section('5. 新規日の取込（9/22 を一旦消した状態から一覧＋スクショで再構築）');
   {
     const root = makeRoot();
+    keepSeedUntil(root, '2026-09-22'); // 週次・クエスト集計を 9/22 時点で比較するため、以降の日は除く
     removeSeedDay(root, '2026-09-22');
     setupInbox(root, '2026-09-22');
     const r = pipeline.apply(root, '2026-09-22');
@@ -262,24 +269,38 @@ try {
     removeCatalogPrefix(root, 'del_0921_');
     removeSeedDay(root, '2026-09-21');
     setupInbox(root, '2026-09-21');
-    const before = fs.readFileSync(path.join(root, 'js', 'store.js'), 'utf8');
     const r1 = pipeline.apply(root, '2026-09-21', { skipVersionBump: true });
-    const mapCheck = r1.staging.validation.checks.find(c => c.name.startsWith('MAP'));
-    check(!r1.applied && r1.staging.validation.status === 'FAIL' && /MAPなし/.test(mapCheck.detail), `地図が切れたスクショ（del_0921_3相当）は MAPなしとして停止: ${mapCheck.detail.split('\n')[0]}`);
-    check(fs.readFileSync(path.join(root, 'js', 'store.js'), 'utf8') === before, 'FAIL時は store.js を変更しない');
-
-    const cutFile = origCatalog.del_0921_3.origFile;
-    setupInbox(root, '2026-09-21', { decisions: { mapMissingOk: [cutFile] } });
-    const r2 = pipeline.apply(root, '2026-09-21', { skipVersionBump: true });
-    if (r2.staging.validation.status !== 'PASS') console.log(r2.staging.validation.errors);
-    check(r2.applied && r2.staging.summary.maps === '6/7', `ユーザー確認（mapMissingOk）後に反映・MAP ${r2.staging.summary.maps}`);
+    if (r1.staging.validation.status !== 'PASS') console.log(r1.staging.validation.errors);
+    check(r1.applied && r1.staging.summary.maps === '7/7', `7件すべて公式スクショから切り抜き・MAP ${r1.staging.summary.maps}`);
     const cat = pipeline.readTripMaps(path.join(root, 'js', 'trip-maps.js')).catalog;
     const ids = ['del_0921_1', 'del_0921_2', 'del_0921_4', 'del_0921_5', 'del_0921_6', 'del_0921_7'];
     check(ids.every(id => cat[id] && cat[id].box.every((v, i) => Math.abs(v - origCatalog[id].box[i]) <= 2)), '新規MAPの切り抜き位置が既存確定MAPと一致（±2px）');
-    check(!cat.del_0921_3, 'MAPなしのtripはカタログ登録しない（捏造しない）');
-    check(ids.every(id => fs.existsSync(path.join(root, 'assets', 'maps', `map_${id}.png`)) && fs.existsSync(path.join(root, 'assets', 'maps', `full_${id}.png`))), 'map_*.png（420x233）・full_*.png を assets/maps へ保存');
-    const sizes = JSON.parse(spawnSync(process.env.UBER_IMPORT_PYTHON || 'python', ['-c', `import json,sys;from PIL import Image;print(json.dumps([Image.open(p).size for p in sys.argv[1:]]))`, ...ids.map(id => path.join(root, 'assets', 'maps', `map_${id}.png`))], { encoding: 'utf8' }).stdout);
+    // del_0921_3 は既存MAPが手作業で幅414に切られていたが、元画像では地図は420px全体が写っている（縦の白い道路で途切れても検出できること）
+    check(cat.del_0921_3 && cat.del_0921_3.box[0] === 23 && cat.del_0921_3.box[1] === 169, `縦の白い道路で途切れる地図も検出（del_0921_3: ${cat.del_0921_3 && JSON.stringify(cat.del_0921_3.box)}）`);
+    const all = ids.concat('del_0921_3');
+    check(all.every(id => fs.existsSync(path.join(root, 'assets', 'maps', `map_${id}.png`)) && fs.existsSync(path.join(root, 'assets', 'maps', `full_${id}.png`))), 'map_*.png・full_*.png を assets/maps へ保存');
+    const sizes = JSON.parse(spawnSync(process.env.UBER_IMPORT_PYTHON || 'python', ['-c', `import json,sys;from PIL import Image;print(json.dumps([Image.open(p).size for p in sys.argv[1:]]))`, ...all.map(id => path.join(root, 'assets', 'maps', `map_${id}.png`))], { encoding: 'utf8' }).stdout);
     check(sizes.every(s => s[0] === 420 && s[1] === 233), 'MAP画像は既存規格 420x233');
+  }
+
+  // ==========================================================
+  section('7-2. 地図が画像端で切れたスクショ（del_0922_10 のMAPカタログを外した状態から）');
+  {
+    const root = makeRoot();
+    removeCatalogPrefix(root, 'del_0922_10');
+    setupInbox(root, '2026-09-22');
+    const before = fs.readFileSync(path.join(root, 'js', 'store.js'), 'utf8');
+    const beforeTm = fs.readFileSync(path.join(root, 'js', 'trip-maps.js'), 'utf8');
+    const r1 = pipeline.apply(root, '2026-09-22', { skipVersionBump: true });
+    const mapCheck = r1.staging.validation.checks.find(c => c.name.startsWith('MAP'));
+    check(!r1.applied && r1.staging.validation.status === 'FAIL' && /MAPなし/.test(mapCheck.detail), `推測で切り出さず MAPなしとして停止: ${mapCheck.detail.split('\n')[0]}`);
+    check(fs.readFileSync(path.join(root, 'js', 'store.js'), 'utf8') === before && fs.readFileSync(path.join(root, 'js', 'trip-maps.js'), 'utf8') === beforeTm, 'FAIL時は store.js・trip-maps.js を変更しない');
+
+    setupInbox(root, '2026-09-22', { decisions: { mapMissingOk: [origCatalog.del_0922_10.origFile] } });
+    const r2 = pipeline.apply(root, '2026-09-22', { skipVersionBump: true });
+    if (r2.staging.validation.status !== 'PASS') console.log(r2.staging.validation.errors);
+    check(r2.staging.validation.status === 'PASS' && r2.staging.summary.maps === '17/18', `ユーザー確認（mapMissingOk）後は PASS・MAP ${r2.staging.summary.maps}`);
+    check(!pipeline.readTripMaps(path.join(root, 'js', 'trip-maps.js')).catalog.del_0922_10, 'MAPなしのtripはカタログ登録しない（捏造しない）');
   }
 
   // ==========================================================
@@ -352,9 +373,7 @@ try {
   section('10. 9/22時点の確定データ回帰（本物の js/store.js のコピーから 9/23以降を除いて集計）');
   {
     const frozen = makeRoot();
-    pipeline.readSeed(path.join(frozen, 'js', 'store.js')).blocks
-      .map(b => b.date).filter(d => d > '2026-09-22').reverse()
-      .forEach(d => removeSeedDay(frozen, d));
+    keepSeedUntil(frozen, '2026-09-22');
     const r = pipeline.report(frozen, '2026-09-22');
     check(r.day.trips === 18 && r.day.count === 25 && r.day.total === 9243 && r.day.profit === 7716 && r.day.seconds === 26060 && r.day.distance === 67.13, '9/22: 18trip / 25件 / ¥9,243 / 利益 ¥7,716 / 7:14:20 / 67.13km');
     check(r.day.delivery === 8250 && r.day.quest === 1600 && r.day.adjustment === -607, '9/22 内訳: 配達報酬 ¥8,250 / クエスト ¥1,600 / その他 -¥607');
