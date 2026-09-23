@@ -523,7 +523,7 @@ class UI {
     // 種類ごとの入力初期値（バイクシェアは基本的に1日パスのみ利用。入力後の手動変更は可能）
     const EXPENSE_TYPE_PRESETS = {
       '必要経費': { memo: '', amount: '' },
-      'バイクシェア': { memo: 'バイクシェア1日パス', amount: '1527' }
+      'バイクシェア': { memo: 'バイクシェア1日パス', amount: '527' }
     };
     const typeEl = document.getElementById('expense-input-type');
     const contentEl = document.getElementById('expense-input-content');
