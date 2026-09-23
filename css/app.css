@@ -4051,11 +4051,25 @@ select.expense-form-control {
    履歴カレンダー（月単位の稼働／休み）
    ========================================== */
 .history-calendar {
+  margin-bottom: 16px;
+}
+
+/* カレンダー本体のカード（説明文はカードの外に置く） */
+.cal-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 10px 8px 8px;
-  margin-bottom: 16px;
+}
+
+/* 日曜・祝日（振替休日・国民の休日を含む）の日付 */
+.cal-red-day .cal-day,
+.cal-wd.cal-red-day {
+  color: #ff6b6b;
+}
+
+.cal-worked.cal-red-day .cal-day {
+  color: #ff8a8a;
 }
 
 .history-calendar[hidden],
@@ -4192,11 +4206,10 @@ select.expense-form-control {
 }
 
 .cal-note {
-  margin: 12px 4px 2px;
-  font-size: 22px; /* スマホで普通に読める大きさ（旧11pxの約2倍）。収まらない場合は自然に折り返す */
-  font-weight: 600;
-  color: var(--text-main);
-  line-height: 1.5;
-  word-break: normal;
+  margin: 10px 6px 0;
+  font-size: 16px; /* カレンダー上部の「2026年9月」（.cal-title）と同程度 */
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.6;
   overflow-wrap: anywhere;
 }

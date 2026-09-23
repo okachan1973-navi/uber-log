@@ -2134,11 +2134,76 @@ function getCurrentTimeString(d = new Date()) {
 }
 
 // 日本の祝日データ（2026年9月周辺の確実な国民の祝日を安全に内包。外部API依存なし）
-const JAPAN_HOLIDAYS = {
-  '2026-09-21': '敬老の日',
-  '2026-09-22': '国民の休日',
-  '2026-09-23': '秋分の日'
-};
+// 日本の国民の祝日（「国民の祝日に関する法律」の現行規定で年ごとに計算。特定の年月をハードコードしない）
+//  - 固定日・ハッピーマンデー（第n月曜）・春分／秋分（1980〜2099年の近似式）
+//  - 振替休日: 祝日が日曜なら、その後の最初の祝日でない日
+//  - 国民の休日: 前日と翌日がともに祝日の平日（例: 2026-09-22）
+const japanHolidayCache = {};
+function computeJapanHolidays(year) {
+  if (japanHolidayCache[year]) return japanHolidayCache[year];
+  const pad = n => String(n).padStart(2, '0');
+  const key = (m, d) => `${year}-${pad(m)}-${pad(d)}`;
+  const nthMonday = (m, n) => {
+    const firstDay = new Date(year, m - 1, 1).getDay();
+    return 1 + ((8 - firstDay) % 7) + (n - 1) * 7;
+  };
+  const base = year - 1980;
+  const shunbun = Math.floor(20.8431 + 0.242194 * base - Math.floor(base / 4));
+  const shubun = Math.floor(23.2488 + 0.242194 * base - Math.floor(base / 4));
+  const h = {};
+  h[key(1, 1)] = '元日';
+  h[key(1, nthMonday(1, 2))] = '成人の日';
+  h[key(2, 11)] = '建国記念の日';
+  h[key(2, 23)] = '天皇誕生日';
+  h[key(3, shunbun)] = '春分の日';
+  h[key(4, 29)] = '昭和の日';
+  h[key(5, 3)] = '憲法記念日';
+  h[key(5, 4)] = 'みどりの日';
+  h[key(5, 5)] = 'こどもの日';
+  h[key(7, nthMonday(7, 3))] = '海の日';
+  h[key(8, 11)] = '山の日';
+  h[key(9, nthMonday(9, 3))] = '敬老の日';
+  h[key(9, shubun)] = '秋分の日';
+  h[key(10, nthMonday(10, 2))] = 'スポーツの日';
+  h[key(11, 3)] = '文化の日';
+  h[key(11, 23)] = '勤労感謝の日';
+  const toKey = dt => `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+  // 国民の休日（前日・翌日が祝日の平日）
+  for (let m = 1; m <= 12; m++) {
+    const days = new Date(year, m, 0).getDate();
+    for (let d = 2; d < days; d++) {
+      const k = key(m, d);
+      const dt = new Date(year, m - 1, d);
+      if (!h[k] && dt.getDay() !== 0 && h[toKey(new Date(year, m - 1, d - 1))] && h[toKey(new Date(year, m - 1, d + 1))]) {
+        h[k] = '国民の休日';
+      }
+    }
+  }
+  // 振替休日
+  Object.keys(h).sort().forEach(k => {
+    const [yy, mm, dd] = k.split('-').map(Number);
+    if (new Date(yy, mm - 1, dd).getDay() !== 0) return;
+    const next = new Date(yy, mm - 1, dd + 1);
+    while (h[toKey(next)]) next.setDate(next.getDate() + 1);
+    if (next.getFullYear() === year) h[toKey(next)] = '振替休日';
+  });
+  japanHolidayCache[year] = h;
+  return h;
+}
+function getJapanHolidayName(dateStr) {
+  if (!dateStr) return null;
+  const clean = String(dateStr).replace(/\//g, '-');
+  const year = Number(clean.slice(0, 4));
+  if (!year) return null;
+  return computeJapanHolidays(year)[clean] || null;
+}
+// 後方互換: 以前の固定表（JAPAN_HOLIDAYS[日付]）と同じ形で参照できるよう、前後の年を計算して展開
+const JAPAN_HOLIDAYS = (() => {
+  const all = {};
+  const y = new Date().getFullYear();
+  for (let yy = Math.min(2026, y) - 1; yy <= Math.max(2026, y) + 5; yy++) Object.assign(all, computeJapanHolidays(yy));
+  return all;
+})();
 
 // 曜日・祝日判定ヘルパー
 function getDayOfWeekInfo(dateStr) {
@@ -2150,7 +2215,7 @@ function getDayOfWeekInfo(dateStr) {
   const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
   const weekdayChar = weekdays[dayIndex];
 
-  const holidayName = JAPAN_HOLIDAYS[cleanStr] || null;
+  const holidayName = getJapanHolidayName(cleanStr);
   const isHoliday = !!holidayName;
   const isSunday = dayIndex === 0;
   const isSaturday = dayIndex === 6;
@@ -2229,7 +2294,7 @@ function getNextPayoutDate(weekEndDateStr) {
     const curD = String(dateObj.getDate()).padStart(2, '0');
     const isoStr = `${curY}-${curM}-${curD}`;
     const isWeekend = day === 0 || day === 6;
-    const isHoliday = !!(typeof JAPAN_HOLIDAYS !== 'undefined' && JAPAN_HOLIDAYS[isoStr]);
+    const isHoliday = !!getJapanHolidayName(isoStr);
 
     if (!isWeekend && !isHoliday) {
       const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
@@ -4629,6 +4694,7 @@ if (typeof window !== 'undefined') {
   window.AVOIDANCE_DATABASE = AVOIDANCE_DATABASE;
   window.AVOIDANCE_RULES = AVOIDANCE_RULES;
   window.JAPAN_HOLIDAYS = JAPAN_HOLIDAYS;
+  window.getJapanHolidayName = getJapanHolidayName;
   window.getDayOfWeekInfo = getDayOfWeekInfo;
   window.formatDateWithWeekday = formatDateWithWeekday;
   window.getWeekRange = getWeekRange;
@@ -4670,6 +4736,7 @@ if (typeof module !== 'undefined' && module.exports) {
     AVOIDANCE_DATABASE,
     AVOIDANCE_RULES,
     JAPAN_HOLIDAYS,
+    getJapanHolidayName,
     getDayOfWeekInfo,
     formatDateWithWeekday,
     getWeekRange,

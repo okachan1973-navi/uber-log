@@ -520,6 +520,26 @@ class UI {
     const registerBtn = document.getElementById('btn-expense-register');
     if (!registerBtn) return;
 
+    // 種類ごとの入力初期値（バイクシェアは基本的に1日パスのみ利用。入力後の手動変更は可能）
+    const EXPENSE_TYPE_PRESETS = {
+      '必要経費': { memo: '', amount: '' },
+      'バイクシェア': { memo: 'バイクシェア1日パス', amount: '1527' }
+    };
+    const typeEl = document.getElementById('expense-input-type');
+    const contentEl = document.getElementById('expense-input-content');
+    const amountEl = document.getElementById('expense-input-amount');
+    const applyPreset = (type) => {
+      const p = EXPENSE_TYPE_PRESETS[type] || EXPENSE_TYPE_PRESETS['必要経費'];
+      if (contentEl) contentEl.value = p.memo;
+      if (amountEl) amountEl.value = p.amount;
+    };
+    // 画面を開いた時は「必要経費」・内容と金額は空欄
+    if (typeEl) {
+      typeEl.value = '必要経費';
+      typeEl.addEventListener('change', () => applyPreset(typeEl.value));
+    }
+    applyPreset('必要経費');
+
     registerBtn.addEventListener('click', () => {
       const dateInput = document.getElementById('expense-input-date');
       const typeInput = document.getElementById('expense-input-type');
@@ -549,9 +569,9 @@ class UI {
       store.addExpense(dateStr, { category, amount, memo });
       this.showToast('経費を登録しました');
 
-      // フォームリセット（日付はそのまま）
-      if (contentInput) contentInput.value = '';
-      if (amountInput) amountInput.value = '';
+      // フォームリセット（日付はそのまま。種類は「必要経費」・内容と金額は空欄に戻す）
+      if (typeInput) typeInput.value = '必要経費';
+      applyPreset('必要経費');
 
       // リスト再描画＋分析画面更新
       this.renderExpenseSection();
@@ -1163,32 +1183,37 @@ class UI {
       const date = `${y}-${pad(m)}-${pad(d)}`;
       const st = store.getDayStatus(date);
       const wd = new Date(y, m - 1, d).getDay();
+      // 日曜・日本の祝日（振替休日・国民の休日を含む）は日付に色を付ける。土曜は祝日でなければ色なし
+      const holidayName = (typeof getJapanHolidayName === 'function') ? getJapanHolidayName(date) : null;
       const cls = ['cal-cell', `cal-${st.status}`];
       if (date === today) cls.push('cal-today');
-      if (wd === 0) cls.push('cal-sun');
-      if (wd === 6) cls.push('cal-sat');
+      if (wd === 0 || holidayName) cls.push('cal-red-day');
       let body = '';
       if (st.status === 'worked') {
         worked++;
+        // カレンダー上だけ100円未満を切り捨て・カンマなしで表示（実データ・他画面の表示は変更しない）
         body = `<span class="cal-count">${st.count}<small>件</small></span>` +
-          (st.totalSales !== null ? `<span class="cal-sales">¥${Number(st.totalSales).toLocaleString()}</span>` : '');
+          (st.totalSales !== null ? `<span class="cal-sales">¥${Math.trunc(Number(st.totalSales) / 100) * 100}</span>` : '');
       } else if (st.status === 'off') {
         off++;
         body = '<span class="cal-off-label">休</span>';
       }
       const attrs = st.status === 'worked' ? ` role="button" tabindex="0" data-date="${date}" aria-label="${m}月${d}日 ${st.count}件"` : '';
-      cells.push(`<div class="${cls.join(' ')}"${attrs}><span class="cal-day">${d}</span>${body}</div>`);
+      const titleAttr = holidayName ? ` title="${holidayName}"` : '';
+      cells.push(`<div class="${cls.join(' ')}"${attrs}${titleAttr}><span class="cal-day">${d}</span>${body}</div>`);
     }
     container.innerHTML = `
+      <div class="cal-card">
       <div class="cal-header">
         <button type="button" class="cal-nav" data-dir="-1" aria-label="前の月">‹</button>
         <span class="cal-title">${y}年${m}月</span>
         <button type="button" class="cal-nav" data-dir="1" aria-label="次の月">›</button>
       </div>
       <div class="cal-summary">稼働 <b>${worked}</b>日 ・ 休み <b>${off}</b>日</div>
-      <div class="cal-grid cal-weekdays">${['日', '月', '火', '水', '木', '金', '土'].map((w, i) => `<div class="cal-wd${i === 0 ? ' cal-sun' : i === 6 ? ' cal-sat' : ''}">${w}</div>`).join('')}</div>
+      <div class="cal-grid cal-weekdays">${['日', '月', '火', '水', '木', '金', '土'].map((w, i) => `<div class="cal-wd${i === 0 ? ' cal-red-day' : ''}">${w}</div>`).join('')}</div>
       <div class="cal-grid">${cells.join('')}</div>
-      <p class="cal-note">日付をタップすると日別評価が見れます。『休』は非稼働日。</p>`;
+      </div>
+      <p class="cal-note">日付をタップすると日別評価が見れます。『休』は非稼働日。金額は100円未満を切り捨てて表示しています。</p>`;
     container.querySelectorAll('.cal-nav').forEach(btn => btn.addEventListener('click', () => {
       const dir = Number(btn.getAttribute('data-dir'));
       const d = new Date(y, m - 1 + dir, 1);
