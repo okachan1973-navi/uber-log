@@ -1188,7 +1188,7 @@ class UI {
       <div class="cal-summary">稼働 <b>${worked}</b>日 ・ 休み <b>${off}</b>日</div>
       <div class="cal-grid cal-weekdays">${['日', '月', '火', '水', '木', '金', '土'].map((w, i) => `<div class="cal-wd${i === 0 ? ' cal-sun' : i === 6 ? ' cal-sat' : ''}">${w}</div>`).join('')}</div>
       <div class="cal-grid">${cells.join('')}</div>
-      <p class="cal-note">稼働日をタップすると日別詳細を開きます。「休」は稼働していないことが確認済みの日です（未入力・未来の日は空欄）。</p>`;
+      <p class="cal-note">日付をタップすると日別評価が見れます。『休』は非稼働日。</p>`;
     container.querySelectorAll('.cal-nav').forEach(btn => btn.addEventListener('click', () => {
       const dir = Number(btn.getAttribute('data-dir'));
       const d = new Date(y, m - 1 + dir, 1);
@@ -1217,6 +1217,8 @@ class UI {
 
     const allLogs = store.getAllDailyLogs();
     const activeLogs = allLogs.filter(log => {
+      // 非稼働が確認済みの日（カレンダーで「休」）は一覧に出さない。配達実績・売上のある日は getDayStatus が worked を返すため対象外
+      if (store.getDayStatus && store.getDayStatus(log.date).status === 'off') return false;
       return (log.deliveries && log.deliveries.length > 0) || (log.quests && log.quests.length > 0) || log.workStartedAt || log.totalDistanceKm !== null;
     });
 

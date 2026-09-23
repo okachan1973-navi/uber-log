@@ -4192,8 +4192,11 @@ select.expense-form-control {
 }
 
 .cal-note {
-  margin: 8px 2px 0;
-  font-size: 11px;
-  color: var(--text-muted);
+  margin: 12px 4px 2px;
+  font-size: 22px; /* スマホで普通に読める大きさ（旧11pxの約2倍）。収まらない場合は自然に折り返す */
+  font-weight: 600;
+  color: var(--text-main);
   line-height: 1.5;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
