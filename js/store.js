@@ -57,6 +57,10 @@ const CURRENT_WEEK_QUEST = {
 // 二重計上になるのを防ぐため、この値が一致する保存データのみ手動補正を採用する。
 const QUEST_OFFICIAL_BASELINE = '20260922_official';
 
+// 稼働していないことが確認済みの日（履歴カレンダーの「休」表示用）。
+// 配達データが無い日を自動で「休」にはしない（未来・未入力・判定できない日と区別するため、確認済みの日だけをここに記録する）。
+const CONFIRMED_DAY_OFF_DATES = ['2026-09-12', '2026-09-13', '2026-09-20'];
+
 // 公式正本売上（2026-09-14 ～ 2026-09-17）
 const OFFICIAL_SOURCE_OF_TRUTH = {
   period: '2026-09-14 ～ 2026-09-17',
@@ -4417,6 +4421,22 @@ class Store {
     };
   }
 
+  // 日別の稼働状況（履歴カレンダー用。一覧と同じ日別データ・同じ計算を使う）
+  //  worked : 配達実績（件数）または売上がある日
+  //  off    : 稼働していないことが確認済みの日（CONFIRMED_DAY_OFF_DATES、または日別データの dayOff: true）
+  //  unknown: それ以外（未来・未入力・判定できない日）。「休」にはしない
+  getDayStatus(dateStr) {
+    const log = this.state && this.state.dailyLogs ? this.state.dailyLogs[dateStr] : null;
+    const metrics = log ? this.getCalculatedMetrics(log) : null;
+    if (metrics && (metrics.count > 0 || (metrics.totalSales !== null && metrics.totalSales !== 0))) {
+      return { status: 'worked', count: metrics.count, totalSales: metrics.totalSales, netProfit: metrics.netProfit };
+    }
+    if (CONFIRMED_DAY_OFF_DATES.includes(dateStr) || (log && log.dayOff === true)) {
+      return { status: 'off' };
+    }
+    return { status: 'unknown' };
+  }
+
   // 期間指定の売上内訳（開始日〜終了日、両端含む）。
   // 配達報酬はチップを除いた額、チップは配達の最終売上に含まれる内訳（総売上へは二重に加算しない）。
   // 合計: 配達報酬 + チップ + クエスト + 特別ボーナス + 調整 + その他 = 総売上
@@ -4634,6 +4654,7 @@ if (typeof window !== 'undefined') {
   window.parseUberSalesText = parseUberSalesText;
   window.getNextPayoutDate = getNextPayoutDate;
   window.CURRENT_WEEK_QUEST = CURRENT_WEEK_QUEST;
+  window.CONFIRMED_DAY_OFF_DATES = CONFIRMED_DAY_OFF_DATES;
   window.Store = Store;
   window.store = store;
 }
@@ -4644,6 +4665,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getTimeOptions,
     roundToTimeStep,
     CURRENT_WEEK_QUEST,
+    CONFIRMED_DAY_OFF_DATES,
     OFFICIAL_SOURCE_OF_TRUTH,
     AVOIDANCE_DATABASE,
     AVOIDANCE_RULES,

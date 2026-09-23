@@ -4005,3 +4005,195 @@ select.expense-form-control {
   color: #fbbf24;
   border: 1px solid rgba(251, 191, 36, 0.25);
 }
+
+/* ==========================================
+   履歴: 表示切替（一覧 / カレンダー）
+   ========================================== */
+.history-section-header {
+  gap: 8px;
+}
+
+.history-section-header .section-title {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-view-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 2px;
+}
+
+.history-view-btn {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.history-view-btn.active {
+  background: var(--color-uber-green);
+  color: #000;
+}
+
+/* ==========================================
+   履歴カレンダー（月単位の稼働／休み）
+   ========================================== */
+.history-calendar {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 8px 8px;
+  margin-bottom: 16px;
+}
+
+.history-calendar[hidden],
+.history-date-list[hidden] {
+  display: none !important;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.cal-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.cal-nav {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card-subtle);
+  color: var(--text-main);
+  border-radius: 10px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cal-summary {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.cal-summary b {
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.cal-weekdays {
+  margin-bottom: 3px;
+}
+
+.cal-wd {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 2px 0;
+}
+
+.cal-cell {
+  min-height: 58px;
+  border-radius: 8px;
+  padding: 3px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  border: 1px solid transparent;
+  min-width: 0;
+}
+
+.cal-empty {
+  visibility: hidden;
+}
+
+.cal-day {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+  line-height: 1.2;
+}
+
+.cal-worked {
+  background: rgba(6, 193, 103, 0.16);
+  border-color: rgba(6, 193, 103, 0.45);
+  cursor: pointer;
+}
+
+.cal-worked .cal-day {
+  color: var(--text-main);
+}
+
+.cal-count {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-uber-green);
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-count small {
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 1px;
+}
+
+.cal-sales {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.cal-off {
+  background: rgba(139, 148, 158, 0.15);
+}
+
+.cal-off-label {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-muted);
+  background: transparent;
+  margin-top: 4px;
+}
+
+.cal-today {
+  border-color: var(--text-main);
+}
+
+.cal-note {
+  margin: 8px 2px 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}

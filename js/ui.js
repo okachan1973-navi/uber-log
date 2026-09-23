@@ -1114,15 +1114,125 @@ class UI {
     this.selectedDelivery = null;
   }
 
+  // 履歴の表示切替（一覧 / カレンダー）。選択は端末に記憶
+  initHistoryViewToggle() {
+    if (this.historyToggleBound) return;
+    this.historyToggleBound = true;
+    try { this.historyView = localStorage.getItem('uber_log_history_view') === 'calendar' ? 'calendar' : 'list'; } catch (e) { this.historyView = 'list'; }
+    document.querySelectorAll('.history-view-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.setHistoryView(btn.getAttribute('data-view')));
+    });
+    this.applyHistoryView();
+  }
+
+  setHistoryView(view) {
+    this.historyView = view === 'calendar' ? 'calendar' : 'list';
+    try { localStorage.setItem('uber_log_history_view', this.historyView); } catch (e) { /* 記憶できなくても切替は有効 */ }
+    this.applyHistoryView();
+    if (this.historyView === 'calendar') this.renderHistoryCalendar();
+  }
+
+  applyHistoryView() {
+    const isCal = this.historyView === 'calendar';
+    const cal = document.getElementById('history-calendar-container');
+    const list = document.getElementById('history-list-container');
+    if (cal) cal.hidden = !isCal;
+    if (list) list.hidden = isCal;
+    document.querySelectorAll('.history-view-btn').forEach(btn => {
+      const active = btn.getAttribute('data-view') === this.historyView;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+  }
+
+  // 履歴カレンダー（月単位）。稼働日は配達件数と売上、確認済みの非稼働日は「休」。それ以外は日付のみ
+  renderHistoryCalendar() {
+    const container = document.getElementById('history-calendar-container');
+    if (!container || typeof store === 'undefined' || !store.getDayStatus) return;
+    const today = getTodayDateString();
+    if (!this.calendarMonth) this.calendarMonth = today.slice(0, 7);
+    const [y, m] = this.calendarMonth.split('-').map(Number);
+    const first = new Date(y, m - 1, 1);
+    const daysInMonth = new Date(y, m, 0).getDate();
+    const pad = n => String(n).padStart(2, '0');
+    const cells = [];
+    for (let i = 0; i < first.getDay(); i++) cells.push('<div class="cal-cell cal-empty"></div>');
+    let worked = 0;
+    let off = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = `${y}-${pad(m)}-${pad(d)}`;
+      const st = store.getDayStatus(date);
+      const wd = new Date(y, m - 1, d).getDay();
+      const cls = ['cal-cell', `cal-${st.status}`];
+      if (date === today) cls.push('cal-today');
+      if (wd === 0) cls.push('cal-sun');
+      if (wd === 6) cls.push('cal-sat');
+      let body = '';
+      if (st.status === 'worked') {
+        worked++;
+        body = `<span class="cal-count">${st.count}<small>件</small></span>` +
+          (st.totalSales !== null ? `<span class="cal-sales">¥${Number(st.totalSales).toLocaleString()}</span>` : '');
+      } else if (st.status === 'off') {
+        off++;
+        body = '<span class="cal-off-label">休</span>';
+      }
+      const attrs = st.status === 'worked' ? ` role="button" tabindex="0" data-date="${date}" aria-label="${m}月${d}日 ${st.count}件"` : '';
+      cells.push(`<div class="${cls.join(' ')}"${attrs}><span class="cal-day">${d}</span>${body}</div>`);
+    }
+    container.innerHTML = `
+      <div class="cal-header">
+        <button type="button" class="cal-nav" data-dir="-1" aria-label="前の月">‹</button>
+        <span class="cal-title">${y}年${m}月</span>
+        <button type="button" class="cal-nav" data-dir="1" aria-label="次の月">›</button>
+      </div>
+      <div class="cal-summary">稼働 <b>${worked}</b>日 ・ 休み <b>${off}</b>日</div>
+      <div class="cal-grid cal-weekdays">${['日', '月', '火', '水', '木', '金', '土'].map((w, i) => `<div class="cal-wd${i === 0 ? ' cal-sun' : i === 6 ? ' cal-sat' : ''}">${w}</div>`).join('')}</div>
+      <div class="cal-grid">${cells.join('')}</div>
+      <p class="cal-note">稼働日をタップすると日別詳細を開きます。「休」は稼働していないことが確認済みの日です（未入力・未来の日は空欄）。</p>`;
+    container.querySelectorAll('.cal-nav').forEach(btn => btn.addEventListener('click', () => {
+      const dir = Number(btn.getAttribute('data-dir'));
+      const d = new Date(y, m - 1 + dir, 1);
+      this.calendarMonth = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+      this.renderHistoryCalendar();
+    }));
+    const open = (date) => {
+      // 一覧と同じ日別詳細（同じ日別データ）を開く
+      this.setHistoryView('list');
+      this.renderHistoryView(date);
+      const card = document.querySelector(`.history-card[data-date="${date}"]`);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    container.querySelectorAll('.cal-worked[data-date]').forEach(cell => {
+      cell.addEventListener('click', () => open(cell.getAttribute('data-date')));
+      cell.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(cell.getAttribute('data-date')); } });
+    });
+  }
+
   // 「履歴」画面の描画
   renderHistoryView(expandedDate = null) {
     const container = document.getElementById('history-list-container');
     if (!container) return;
 
+    this.initHistoryViewToggle();
+
     const allLogs = store.getAllDailyLogs();
     const activeLogs = allLogs.filter(log => {
       return (log.deliveries && log.deliveries.length > 0) || (log.quests && log.quests.length > 0) || log.workStartedAt || log.totalDistanceKm !== null;
     });
+
+    // 見出しの期間（一覧に並ぶ日の最初〜最後）
+    const titleEl = document.getElementById('history-title');
+    if (titleEl) {
+      const dates = activeLogs.map(l => l.date).sort();
+      if (dates.length) {
+        const [fy, fm, fd] = dates[0].split('-').map(Number);
+        const [, lm, ld] = dates[dates.length - 1].split('-').map(Number);
+        titleEl.textContent = `📅 日別履歴（${String(fy).slice(2)}/${fm}/${fd}～${lm}/${ld}）`;
+      } else {
+        titleEl.textContent = '📅 日別履歴';
+      }
+    }
+    if (this.historyView === 'calendar') this.renderHistoryCalendar();
 
     if (activeLogs.length === 0) {
       container.innerHTML = `
@@ -1271,9 +1381,10 @@ class UI {
               ${dayAttrsHtml ? `<div class="day-attributes">${dayAttrsHtml}</div>` : ''}
             </div>
             <div class="history-header-right">
+              ${metrics.netProfit !== null ? `
               <div class="history-profit-item">
-                利益 <span class="h-sub-val val-profit">${metrics.netProfit !== null ? `¥${metrics.netProfit.toLocaleString()}` : '--'}</span>
-              </div>
+                利益 <span class="h-sub-val val-profit">¥${metrics.netProfit.toLocaleString()}</span>
+              </div>` : ''}
               <span class="expand-icon">▼</span>
             </div>
           </div>

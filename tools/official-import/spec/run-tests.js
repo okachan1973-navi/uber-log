@@ -470,6 +470,26 @@ try {
   }
 
   // ==========================================================
+  section('10-5. 履歴カレンダーの稼働状況（稼働／休／空欄）');
+  {
+    const r = runNode(`
+      const map={uber_log_v1_data:JSON.stringify({version:'1.2',dailyLogs:{'2026-09-20':{date:'2026-09-20',workStartedAt:'10:00',totalDistanceKm:null,workSessions:[],deliveries:[],quests:[]}}})};
+      global.localStorage={getItem:k=>map[k]||null,setItem:(k,v)=>{map[k]=v},removeItem:()=>{}};global.window={localStorage:global.localStorage};
+      const {store}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      const st={};for(let d=1;d<=30;d++){const k='2026-09-'+String(d).padStart(2,'0');st[k]=store.getDayStatus(k);}
+      st['2099-01-01']=store.getDayStatus('2099-01-01');
+      const m20=store.getCalculatedMetrics(store.state.dailyLogs['2026-09-20']);
+      console.log(JSON.stringify({st,p20:m20.netProfit,has20:!!store.state.dailyLogs['2026-09-20']}));`);
+    const byStatus = s => Object.keys(r.st).filter(k => r.st[k].status === s);
+    check(byStatus('off').join() === '2026-09-12,2026-09-13,2026-09-20', `「休」は確認済みの非稼働日だけ（${byStatus('off').map(d => d.slice(5)).join(', ')}）`);
+    const worked = byStatus('worked');
+    check(['10', '11', '14', '15', '16', '17', '18', '19', '21', '22'].every(d => worked.includes(`2026-09-${d}`)), `稼働日は配達実績のある日（${worked.map(d => d.slice(8)).join(', ')}）`);
+    check(r.st['2026-09-22'].count === 25 && r.st['2026-09-22'].totalSales === 9243 && r.st['2026-09-19'].count === 23, '稼働日の件数・売上は一覧と同じ日別データ（9/22 25件 ¥9,243）');
+    check(['2026-09-01', '2026-09-09', '2026-09-30', '2099-01-01'].every(d => r.st[d].status === 'unknown'), 'データの無い日・未来の日は「休」にしない（空欄）');
+    check(r.has20 && r.st['2026-09-20'].status === 'off' && r.p20 === null, '9/20 は端末の日別データを残したまま「休」・利益なし（一覧の「利益 --」は非表示）');
+  }
+
+  // ==========================================================
   section('10-3. UBER取込.cmd（run-latest-import.ps1: 最新日付の自動判定・実行前チェック・Claude Code 起動）');
   {
     const script = path.join(__dirname, '..', 'run-latest-import.ps1');
