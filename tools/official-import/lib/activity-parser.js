@@ -23,7 +23,8 @@
 
   const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
   const URL_RE = /https?:\/\/[^\s"'<>]+/i;
-  const MONEY_RE = /([+\-−–]?)\s*[¥￥]\s*([+\-−–]?)\s*(\d[\d,]*)/;
+  // 小数表記（例: ￥750.00）も受け付ける。円に端数は無いので .00 以外はそのまま小数で返し、検証で止める
+  const MONEY_RE = /([+\-−–]?)\s*[¥￥]\s*([+\-−–]?)\s*(\d[\d,]*)(?:\.(\d{1,2}))?/;
   const TIME_RE = /(?:^|[^\d:])(\d{1,2}):(\d{2})(?:\s*([AaPp])\.?\s*[Mm]\.?)?(?![\d:])/;
   const JP_TIME_RE = /(午前|午後)?\s*(\d{1,2})\s*時\s*(\d{1,2})\s*分/;
   const MONTHS = {
@@ -84,7 +85,8 @@
     const m = s.match(MONEY_RE);
     if (!m) return null;
     const neg = /[\-−–]/.test(m[1] + m[2]);
-    const value = parseInt(m[3].replace(/,/g, ''), 10);
+    let value = parseInt(m[3].replace(/,/g, ''), 10);
+    if (m[4] && parseInt(m[4], 10) !== 0) value += parseInt(m[4].padEnd(2, '0'), 10) / 100;
     return neg ? -value : value;
   }
 

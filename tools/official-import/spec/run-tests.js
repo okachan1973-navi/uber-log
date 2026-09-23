@@ -124,6 +124,13 @@ try {
     check(JSON.stringify(amounts) === JSON.stringify([200, -607, -150, -80]) && signs.events.every(x => x.type === 'adjustment'), `+調整／-調整の符号（${amounts.join(', ')}）`);
     check(signs.events[3].title === 'Support Adjustment', '公式名称 Support Adjustment を保持');
 
+    const dec = parser.parseActivityText('クエスト\n\nWednesday, September 23rd, 2026\n\n14:05\n\n￥750\n\nView Details\n3 回乗車クエスト\n\nWednesday, September 23rd, 2026\n\n14:05\n\n￥750.00\n\nView Details\n3 回乗車クエスト\n\nWednesday, September 23rd, 2026\n\n15:00\n\n￥0.00\n\nView Details', { defaultYear: 2026 });
+    const decQ = parser.dedupeQuests(dec.events);
+    check(dec.events.length === 3 && dec.events.map(e => e.amount).join() === '750,750,0' && dec.events[1].title === '3 回乗車クエスト' && !dec.warnings.length,
+      `小数表記 ￥750.00 / ￥0.00 と空行区切りの一覧（${dec.events.map(e => `${e.title} ${e.amount}`).join(' / ')}）`);
+    check(decQ.quests.filter(q => q.counted).length === 1 && decQ.duplicateCandidates.length === 0, '「クエスト ¥750」＋「3 回乗車クエスト ¥750.00」→ 1回計上');
+    check(parser.parseMoney('￥12.50') === 12.5, '円未満の端数は整数化せず残す（検証で停止させる）');
+
     const misc = parser.parseActivityText('2026-09-23\n保証報酬\n10:00\n￥5,000\nチップ\n11:00\n￥100\n謎の項目\n12:00\n￥10\n合計\n￥5,110', { defaultYear: 2026 });
     check(misc.events.map(x => x.type).join(',') === 'special,tip,unknown', `特別報酬・チップ単独・未分類を検知（${misc.events.map(x => x.type).join(',')}）`);
     check(misc.statementTotal && misc.statementTotal.amount === 5110, '一覧の合計表示を抽出（総売上の照合に使用）');

@@ -385,6 +385,8 @@ function buildStaging(root, date, opts = {}) {
     undated.map(e => `${e.type} ${e.time || '時刻不明'} ${yen(e.amount)}`).join('、'));
   check('未分類イベントなし', unknownEvents.length === 0,
     unknownEvents.map(e => `[${e.type === 'special' ? '特別報酬（自動取込対象外）' : e.type === 'tip' ? 'チップ単独' : '未分類'}] ${e.title || e.raw} ${e.time || ''} ${yen(e.amount)}`).join('、'));
+  const fractional = events.filter(e => !Number.isInteger(e.amount));
+  check('金額が円単位', fractional.length === 0, fractional.map(e => `${e.type} ${e.time || ''} ${e.amount}`).join('、'));
   check('時刻不明のDeliveryなし', actDeliveries.every(e => e.time), actDeliveries.filter(e => !e.time).map(e => yen(e.amount)).join('、'));
   check('クエスト重複候補なし', questResult.duplicateCandidates.length === 0,
     questResult.duplicateCandidates.map(c => `${c.key}: ${c.items.map(i => `${i.category || ''} ${i.title}`).join(' / ')}（decisions.json の questDuplicates で count_once / count_all を指定）`).join('、'));
@@ -658,6 +660,7 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
       else if (s.points === 3) memo.push('トリプル配達（3件完了/3pt）');
       else if (s.points > 3) memo.push(`${s.points}件完了/${s.points}pt`);
       if (s.baseFee !== null) memo.push(`最終売上¥${s.amount}（基本料金¥${s.baseFee}＋チップ¥${s.tip}）`);
+      if (s.note) memo.push(s.note); // 公式表記の原文など（スクショ読取時の注記）
       const d = {
         id,
         index: 0,
