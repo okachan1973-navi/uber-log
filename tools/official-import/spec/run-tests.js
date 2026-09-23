@@ -391,6 +391,110 @@ try {
   }
 
   // ==========================================================
+  section('10-2. 履歴の日別「B」バッジ（log.expenses[] のBike経費と連動）');
+  {
+    const r = runNode(`
+      const map={};
+      global.localStorage={getItem:k=>(k in map?map[k]:null),setItem:(k,v)=>{map[k]=String(v)},removeItem:k=>{delete map[k]}};
+      global.window={localStorage:global.localStorage};
+      const m=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))}); const s=m.store;
+      const keys=d=>s.getDayAttributes(d).map(a=>a.key).join(',');
+      const out={};
+      ['2026-09-18','2026-09-19','2026-09-21','2026-09-22','2026-09-23'].forEach(d=>out[d]=keys(d));
+      const bike=s.addExpense('2026-09-23',{category:'バイクシェア',amount:1527,memo:'稼働画面から登録'});
+      out.afterAdd=keys('2026-09-23');
+      s.updateExpense('2026-09-23',bike.id,{category:'必要経費',amount:1527,memo:'種類を変更'});
+      out.afterChangeToOther=keys('2026-09-23');
+      s.updateExpense('2026-09-23',bike.id,{category:'バイクシェア',amount:1527,memo:'戻す'});
+      out.afterChangeBack=keys('2026-09-23');
+      s.deleteExpense('2026-09-23',bike.id);
+      out.afterDelete=keys('2026-09-23');
+      s.addExpense('2026-09-23',{category:'必要経費',amount:500,memo:'備品'});
+      out.otherOnly=keys('2026-09-23');
+      // 端末データを再読込しても（アプリ再起動相当）Bike経費からBが付くこと
+      s.addExpense('2026-09-23',{category:'バイクシェア',amount:1527,memo:'再登録'});
+      delete require.cache[require.resolve(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))})];
+      const m2=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      out.reload=m2.store.getDayAttributes('2026-09-23').map(a=>a.key).join(',');
+      const w=m2.store.getRevenueSummary('2026-09-23').thisWeek;
+      out.weekBike=w.bikeExpenses;
+      out.pred=[m.isBikeExpenseCategory('バイクシェア'),m.isBikeExpenseCategory('バイクシェア利用'),m.isBikeExpenseCategory('レンタサイクル'),m.isBikeExpenseCategory('Bike share'),m.isBikeExpenseCategory('必要経費')].join(',');
+      console.log(JSON.stringify(out));`);
+    check(r['2026-09-18'] === 'bike_share,adjustment' && r['2026-09-19'] === 'bike_share,special_bonus' && r['2026-09-21'] === 'bike_share' && r['2026-09-22'] === 'bike_share,adjustment',
+      `既存の B（9/18・9/19・9/21・9/22）と 調・賞 を維持（${['2026-09-18', '2026-09-19', '2026-09-21', '2026-09-22'].map(d => `${d.slice(5)}:${r[d]}`).join(' / ')}）`);
+    check(r['2026-09-23'] === '', 'Bike経費なしの日は B なし（9/23 同梱データ）');
+    check(r.afterAdd === 'bike_share', '稼働画面の「バイクシェア」を登録 → 即 B');
+    check(r.afterChangeToOther === '', '修正で「必要経費」に変更 → B が消える');
+    check(r.afterChangeBack === 'bike_share', '修正で「バイクシェア」に戻す → B');
+    check(r.afterDelete === '', 'Bike経費を全件削除 → B が消える');
+    check(r.otherOnly === '', '必要経費のみの日は B なし');
+    check(r.reload === 'bike_share', '保存データの再読込後も B');
+    check(r.weekBike === 3054 + 1527, `B の判定と週次Bike集計が同じ判定を使用（今週Bike ¥${r.weekBike}）`);
+    check(r.pred === 'true,true,true,true,false', `共通判定 isBikeExpenseCategory（${r.pred}）`);
+  }
+
+  // ==========================================================
+  section('10-3. UBER取込.cmd（run-latest-import.ps1: 最新日付の自動判定・実行前チェック・Claude Code 起動）');
+  {
+    const script = path.join(__dirname, '..', 'run-latest-import.ps1');
+    const base = fs.mkdtempSync(path.join(os.tmpdir(), 'uberlog-latest-'));
+    tmpRoots.push(base);
+    const inbox = path.join(base, 'inbox');
+    const mkDay = (name, { activity = true, shots = 1 } = {}) => {
+      const d = path.join(inbox, name);
+      fs.mkdirSync(path.join(d, 'screenshots'), { recursive: true });
+      if (activity) fs.writeFileSync(path.join(d, 'activity.txt'), 'Delivery\n2026-09-23\n08:01\n￥451\n', 'utf8');
+      for (let i = 0; i < shots; i++) fs.writeFileSync(path.join(d, 'screenshots', `s${i}.png`), 'x');
+    };
+    // 偽の claude（受け取った引数と作業フォルダを記録するだけ）
+    const fakeClaude = path.join(base, 'fake-claude.cmd');
+    const argsFile = path.join(base, 'args.txt');
+    fs.writeFileSync(fakeClaude, `@echo off\r\n>"${argsFile}" echo ARGS=%*\r\n>>"${argsFile}" echo CWD=%CD%\r\nexit /b 0\r\n`, 'ascii');
+    const run = (extra = []) => {
+      const r = spawnSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script, '-InboxDir', inbox, '-Today', '2026-09-24', '-NoPause', ...extra], { encoding: 'utf8' });
+      return { code: r.status, out: (r.stdout || '') + (r.stderr || '') };
+    };
+
+    mkDay('2026-09-21'); mkDay('2026-09-22'); mkDay('2026-09-23', { shots: 3 });
+    fs.mkdirSync(path.join(inbox, 'notes'));          // 日付形式でない
+    fs.mkdirSync(path.join(inbox, '2026-13-01'));     // 存在しない日付
+    fs.mkdirSync(path.join(inbox, '2026-9-30'));      // 形式違い
+    mkDay('2099-01-01');                              // 未来日
+    let r = run(['-DryRun']);
+    check(r.code === 0 && /対象日:\s*\r?\n2026-09-23/.test(r.out) && /\/uber-import 2026-09-23/.test(r.out), '最新の有効な日付フォルダ 2026-09-23 を自動選択（文字列でなく日付として比較）');
+    check(!/2026-13-01|2026-9-30|notes/.test(r.out.replace(/警告.*\r?\n/g, '')), '無効フォルダ（notes・2026-13-01・2026-9-30）は無視');
+    check(/未来日のフォルダ 2099-01-01 は自動選択しません/.test(r.out), '未来日フォルダは選ばず警告');
+    check(/screenshots:\s*\r?\n3枚/.test(r.out) && /activity\.txt:\s*\r?\nOK/.test(r.out), '実行画面に対象日・activity.txt・スクショ枚数を表示');
+
+    r = run(['-ClaudeCommand', fakeClaude]);
+    const recorded = fs.existsSync(argsFile) ? fs.readFileSync(argsFile, 'utf8') : '';
+    check(r.code === 0 && /ARGS="\/uber-import 2026-09-23"/.test(recorded), `Claude Code を初期プロンプト「/uber-import 2026-09-23」付きで起動（${recorded.split(/\r?\n/)[0]}）`);
+    check(recorded.includes(`CWD=${ROOT}`), 'UBER_LOG 直下で起動');
+    check(/Claude Code を終了しました/.test(r.out), '終了後に結果確認の案内を表示');
+
+    fs.rmSync(path.join(inbox, '2026-09-23', 'activity.txt'));
+    r = run(['-DryRun']);
+    check(r.code === 1 && /対象: 2026-09-23/.test(r.out) && /activity\.txt がありません/.test(r.out), 'activity.txt なし → 開始せずエラー表示');
+
+    fs.rmSync(path.join(inbox, '2026-09-23', 'screenshots'), { recursive: true });
+    mkDay('2026-09-23', { shots: 0 });
+    r = run(['-DryRun']);
+    check(r.code === 1 && /画像（PNG \/ JPG）がありません/.test(r.out), 'スクショ0枚 → 開始せずエラー表示');
+    fs.rmSync(path.join(inbox, '2026-09-23', 'screenshots'), { recursive: true });
+    r = run(['-DryRun']);
+    check(r.code === 1 && /screenshots フォルダがありません/.test(r.out), 'screenshots フォルダなし → 開始せずエラー表示');
+
+    mkDay('2026-09-23');
+    r = run(['-ClaudeCommand', 'claude-not-installed-xyz']);
+    check(r.code === 1 && /Claude Codeが見つかりません/.test(r.out), 'Claude Code が PATH に無い → 日本語で表示して停止（インストールしない）');
+
+    fs.rmSync(inbox, { recursive: true });
+    fs.mkdirSync(inbox);
+    r = run(['-DryRun']);
+    check(r.code === 1 && /取込できる日付フォルダ/.test(r.out), '日付フォルダが無い → エラー表示');
+  }
+
+  // ==========================================================
   section('11. 本体データの整合性（現在の js/store.js・js/trip-maps.js 全日）');
   {
     const seed = pipeline.readSeed(path.join(ROOT, 'js', 'store.js')).data.dailyLogs;

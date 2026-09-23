@@ -8,13 +8,15 @@
 2. 取込画面 `tools/official-import/index.html`（Chrome か Edge で開く）に貼り付け
 3. Delivery 詳細のスクショを全部ドラッグ
 4. ［取込データを保存］
-5. Claude Code で
+5. `UBER_LOG` フォルダの **UBER取込.cmd** をダブルクリック
 
-   ```
-   /uber-import 2026-09-23
-   ```
+これだけです。日付の入力は不要です（保存した一番新しい日付を自動で選びます）。
+あとは Claude Code が照合・検証・反映・テスト・HANDOFF 更新・commit / push まで行います。
 
-これだけです。あとは Claude Code が照合・検証・反映・テスト・HANDOFF 更新・commit / push まで行います。
+- 取込中に Claude から質問（MAPが切れている・重複候補など）や許可の確認が出たら、その画面でそのまま答えます。
+- 終わったら `/exit` で Claude Code を閉じ、何かキーを押すとウィンドウが閉じます。
+- エラー（activity.txt が無い・スクショが0枚・Claude Code が見つからない等）のときは、取込を始めずに理由を表示して止まります。
+- 未来の日付のフォルダは自動では選びません（警告を表示）。昨日以前の日を取り込み直したいときは、Claude Code で `/uber-import 2026-09-23` のように日付を指定して実行します。
 
 - 初回だけ、保存先に `UBER_LOG\tools\official-import\inbox` フォルダを選びます（次回からは記憶されます）。
 - スクショは今までどおり **Delivery 詳細の部分だけ**を切り取ってください（Win + Shift + S）。画面全体のスクショは止まります。
@@ -63,6 +65,7 @@ tools/official-import/
   README_JA.md          この説明
   index.html            取込補助画面（PC用）
   import.js             コマンド（/uber-import が内部で使う）
+  run-latest-import.ps1 UBER取込.cmd の本体（最新日付の判定・事前チェック・Claude Code 起動）
   lib/
     activity-parser.js  一覧テキスト解析・クエスト重複排除（画面と共用）
     pipeline.js         照合・検証・UBER_LOG への反映

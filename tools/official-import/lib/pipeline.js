@@ -93,7 +93,6 @@ function formatHms(sec) {
 // 既存ブロックの書式を崩さないよう、対象日のブロックだけを差し替え／挿入する
 // ------------------------------------------------------------
 const SEED_START = 'const CONFIRMED_SEED_DATA = ';
-const SEED_END = '\n};\n\nfunction getConfirmedSeedData';
 
 function findMatchingBrace(text, openIdx) {
   let depth = 0;
@@ -120,10 +119,9 @@ function readSeed(storeFile) {
   const eol = raw.includes('\r\n') ? '\r\n' : '\n';
   const src = raw.replace(/\r\n/g, '\n');
   const s = src.indexOf(SEED_START);
-  const e = src.indexOf(SEED_END);
-  if (s < 0 || e < 0) throw new Error('store.js に CONFIRMED_SEED_DATA が見つかりません');
+  if (s < 0) throw new Error('store.js に CONFIRMED_SEED_DATA が見つかりません');
   const litStart = s + SEED_START.length;
-  const litEnd = e + 2; // 最後の "}" の直後
+  const litEnd = findMatchingBrace(src, litStart) + 1; // シード末尾の "}" の直後（後続コードの並びに依存しない）
   const data = JSON.parse(src.slice(litStart, litEnd));
   const blocks = [];
   const re = /\n {4}"(\d{4}-\d{2}-\d{2})": \{/g;

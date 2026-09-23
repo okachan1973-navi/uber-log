@@ -1,14 +1,59 @@
 ================================================================================
 UBER_LOG 正本開発引継ぎドキュメント（MASTER HANDOFF）
 ================================================================================
-最終更新日時: 2026-09-24 03:00 (JST)
+最終更新日時: 2026-09-24 12:00 (JST)
 対象プロジェクト: UBER_LOG (PWA / バニラJavaScript)
 正本ファイル: C:\Users\okano\Desktop\UBER_HANDOFF.txt
-最新状態: v24。2026-09-23 の公式実績を公式取込v1（/uber-import）で初めて取込（20trip / 23件 / 総売上 ¥10,683 / MAP 20/20、VALIDATION PASS）。取込時に MAP切り抜きの検出改善（縦の白い道路で途切れる地図）・一覧の小数表記（￥750.00）対応を実施。9/23の経費はアプリ入力分のため HANDOFF未把握。
+最新状態: v25。履歴Bバッジ修正（アプリで登録した「バイクシェア」経費で B が付かなかった問題を共通判定化で解消）＋ UBER取込.cmd（ダブルクリックで最新日付の /uber-import を自動開始）を追加。公式データ・MAPは変更なし。
+（以下 v24 時点の状態記述）v24。2026-09-23 の公式実績を公式取込v1（/uber-import）で初めて取込（20trip / 23件 / 総売上 ¥10,683 / MAP 20/20、VALIDATION PASS）。取込時に MAP切り抜きの検出改善（縦の白い道路で途切れる地図）・一覧の小数表記（￥750.00）対応を実施。9/23の経費はアプリ入力分のため HANDOFF未把握。
 （以下 v23 時点の状態記述）v23リリース。「UBER_LOG 公式取込 v1」を実装。毎日「一覧テキスト貼付＋Delivery詳細スクショ投入＋ /uber-import YYYY-MM-DD」だけで、照合・検証・反映・テスト・HANDOFF・commit/push まで進む。実績データ（9/22まで）は変更なし。
 （以下 v22 時点の状態記述）v22リリース。Uber公式明細で確認された 2026-09-22 23:46「調整」Support Adjustment -¥607 を売上調整（分析上「その他」）として正式追加。9/22総売上 ¥9,850 → ¥9,243、9/22利益 ¥8,323 → ¥7,716。Delivery tripは一切変更なし。経費ではない。80件クエストは35/80のまま。
 （以下 v21 時点の状態記述）v21リリース。2026-09-21・09-22のUber公式確定実績（25公式トリップ／35配達）を公式スクリーンショット照合のうえ追加。クエスト重複表示の二重計上排除、チップ¥50の内訳保持、Bike経費 各日¥1,527登録、80件クエスト進捗 35/80（残45）補正、公式MAP 25件追加（累計89/89件=100%）。v20の「稼働」名称変更＋経費入力機能はそのまま継続。既存確定Bikeデータ（9/18 ¥1,980、9/19 ¥1,527）と9/19 ¥320修復結果は保護済み。
 
+■ v25（2026-09-24 実装）: 履歴Bバッジ修正＋毎日取込ワンクリック化（UBER取込.cmd）
+
+【毎日の操作（ユーザー）: 5ステップ・日付入力不要】
+  ① Uberアクティビティ一覧をコピー → ② 取込画面 tools/official-import/index.html へ貼付 → ③ Delivery詳細スクショを全部ドラッグ
+  → ④［取込データを保存］ → ⑤ UBER_LOG\UBER取込.cmd をダブルクリック
+
+A. 履歴の日別「B」バッジ修正
+  - 原因: getDayAttributes() のB判定が経費カテゴリの完全一致（「バイクシェア利用」「レンタバイク」「レンタサイクル」）＋ 9/18・9/19 の日付固定だった。
+    v20 の稼働画面の経費入力はカテゴリ「バイクシェア」で保存するため一致せず、9/23 にアプリから登録したBike経費で B が付かなかった。
+    一方、週次・月次のBike集計は「バイク／サイクル／bike を含む」判定だったため、利益には反映されていた（判定ロジックの二重化が原因）。
+  - 修正: js/store.js に共通判定 isBikeExpenseCategory(category) / isBikeExpense(expense) を新設（カテゴリ未設定・「バイク」「サイクル」「bike」を含む＝Bike、amount>0）。
+    履歴Bバッジ・週次Bike・先週Bike・月次Bike・9/21-22のBike補完判定・経費一覧の種類表示（js/ui.js）をすべてこの共通判定に統一。日付固定の B 付与は廃止。
+  - log.expenses[] との連動: その日の経費にBike経費が1件でもあれば B。必要経費のみの日は B なし。Bike経費を全件削除すると B も消える。
+    履歴タブは表示のたびに store の現在データから再描画されるため、経費の登録・修正・削除後に履歴へ戻った時点で B が更新される（再読み込み不要）。
+  - 既存の B（9/18・9/19・9/21・9/22）は各日の確定Bike経費データで維持。「調」「賞」の判定は変更なし。公式trip・MAP・売上・クエスト・Adjustment は変更なし。
+  - 確認: 自動テスト（登録→B / 必要経費へ修正→消える / 戻す→B / 全削除→消える / 必要経費のみ→なし / 再読込後→B / 既存B・調・賞維持）、
+    実画面確認（9/23 にバイクシェア経費を入れた状態で履歴タブ表示 → 9/23 に B、9/22 B調 / 9/21 B / 9/19 B賞 / 9/18 B調）。
+
+B. UBER取込.cmd（毎日の /uber-import を手入力しない入口）
+  - ファイル: UBER_LOG\UBER取込.cmd（ASCIIのみ・PowerShellスクリプトを呼ぶだけ）→ tools\official-import\run-latest-import.ps1（UTF-8 BOM付き）
+  - 最新日付の自動判定: inbox\ 直下の YYYY-MM-DD 形式フォルダのみ対象。DateTime として解析できるもの（2026-13-01 等は無視）を日付で比較し最新を選択。
+    今日より未来の日付フォルダは自動選択せず黄色で警告。日付フォルダが無ければエラー。
+  - 実行前チェック（1つでも不足なら Claude Code を起動しない）: activity.txt がある・空でない / screenshots フォルダがある / PNG・JPG が1枚以上。
+  - Claude Code の起動方式（このPCの Claude Code 2.1.280 の `claude --help` で確認）:
+    `claude [prompt]` は "starts an interactive session by default"（-p/--print は非対話）。これを使い、UBER_LOG 直下で
+    `claude "/uber-import <日付>"` を実行 → 対話セッションが開き、最初の指示として /uber-import <日付> が自動投入される。
+    取込中の質問（MAP不足・スクショ不一致・重複候補・UNKNOWN 等）や許可確認にも同じ画面で回答できる。
+    --dangerously-skip-permissions 等の権限スキップは使っていない（許可確認は通常どおり表示される）。
+  - エラー時の挙動: 「UBER_LOG 公式取込 / 対象: <日付> / エラー: <理由>」を日本語で表示し、キー入力までウィンドウを閉じない。
+    claude が PATH に無い場合は「Claude Codeが見つかりません」と表示して停止（インストールはしない）。
+    Claude Code 終了後（/exit）も「終了しました（対象日・終了コード）」を表示してキー入力待ち。
+  - 取込処理本体（prepare / validate / apply / test / report / HANDOFF / commit / push）は既存 /uber-import のまま変更なし。
+  - 別の日を取り込み直すときは、従来どおり Claude Code で /uber-import YYYY-MM-DD を直接実行する。
+  - 制約: UBER取込.cmd は Claude Code の対話画面を開くため、取込の完了確認は画面上の Claude Code の報告を見る（自動で閉じない）。
+
+C. テスト・確認結果（node tools/official-import/import.js test: 114項目 全PASS）
+  - 取込cmd: 最新日付選択 / 無効フォルダ無視 / 未来日警告 / activity.txt なし→停止 / screenshots なし・0枚→停止 / Claude Code なし→停止 /
+    正常時は UBER_LOG 直下で「/uber-import 2026-09-23」を引数に起動（偽の claude で受取引数と作業フォルダを確認）/ 終了後の案内表示。
+  - 実データ: run-latest-import.ps1 -DryRun で実際の inbox から 2026-09-23 を自動選択・スクショ20枚を確認。
+  - 9/23 再取込（/uber-import と同じ prepare → apply）: VALIDATION PASS・「既に取込済みで変更はありません（二重登録なし）」。
+    js/store.js・js/trip-maps.js・version.json はバイト単位で不変、assets/maps のファイル数不変。9/23 の 20trip / 23件 / ¥10,683 / MAP 20/20 を維持。
+  - 実際の対話画面での起動（ダブルクリック → Claude Code が /uber-import を開始）はユーザー側で初回確認すること（作業環境から対話端末を操作できないため未実施）。
+  - 取込ツールの堅牢化: pipeline.js の store.js 読取を「シード末尾の括弧対応」で判定するよう変更（シード直後のコード配置に依存しない）。
+  - バージョン: 20260924_v25（index.html / sw.js / version.json）
 ■ v23 公式取込 v1（2026-09-23 実装）: 毎日の公式データ取込の仕組み
 
 【毎日の操作（ユーザー）】
@@ -315,17 +360,18 @@ UBER_LOGは、Uber Eats 配達員向けの実働・売上・配達効率・地�
 
 - 技術スタック:
   - フロントエンド: Vanilla HTML5 / CSS3 / ES6+ JavaScript（ビルド不要）
-  - オフライン & 自動更新: Service Worker（sw.js, キャッシュ名: uber-log-20260924_v24）
-  - バージョン管理: version.json + window.UBER_LOG_APP_VERSION = '20260924_v24'（公式取込 apply 時に自動で +1）
+  - オフライン & 自動更新: Service Worker（sw.js, キャッシュ名: uber-log-20260924_v25）
+  - バージョン管理: version.json + window.UBER_LOG_APP_VERSION = '20260924_v25'（公式取込 apply 時に自動で +1）
   - データ永続化: localStorage（キー: uber_log_v1_data, uber_log_trip_map_memos, uber_log_history_sort_order, uber_log_quest_*） + Supabase クラウド同期（cloud-sync.js）
   - デザイン思想: iPhone縦画面（幅375〜430px）最優先のハイコントラスト・ダークモダンUI
 
 - 主要ファイル構成:
   - index.html: 4大タブ構造（稼働/履歴/分析/地雷）、経費入力インラインセクション（日付変更可・バイクシェア/必要経費の2分類・登録/修正/削除対応）、今週の売上利益カード（緑枠・2列3段6項目）、今月の実績カード（オレンジ枠・売上利益看板・2列4段8項目）、今週のクエスト進捗カード、Service Worker自動登録・更新監視
-  - sw.js: Service Worker（SW_VERSION: 20260924_v24）
-  - version.json: 公開版バージョンメタデータ（version: 20260924_v24）
+  - sw.js: Service Worker（SW_VERSION: 20260924_v25）
+  - version.json: 公開版バージョンメタデータ（version: 20260924_v25）
   - tools/official-import/: 公式取込 v1（PC用取込補助画面・CLI・解析/照合/検証/反映・MAP切り抜き・テスト。inbox/・staging/ はGit管理外）
   - .claude/commands/uber-import.md: /uber-import YYYY-MM-DD（毎日の公式取込コマンド）
+  - UBER取込.cmd ＋ tools/official-import/run-latest-import.ps1: 最新の inbox 日付を自動判定して /uber-import を起動（毎日はダブルクリックのみ）
   - manifest.json: PWA定義（start_url: ./index.html, scope: ./, display: standalone）
   - js/app.js: メインコントローラー（フォアグラウンド復帰時の自動バージョンチェック、復旧用ボタン制御、経費入力イベント初期化）
   - js/store.js: データストア（公式シードデータ、自動マイグレーション、メトリクス計算、銀行営業日振込日動的算出、特別ボーナス除外平均計算、クエスト重複排除、日別比較データ生成、MAP一口メモ永続化、曜日色統一、日別属性定義、履歴ソート管理、週クエスト進捗管理、週次売上利益計算、月次売上利益計算、Bike経費集計、経費CRUD（addExpense/updateExpense/deleteExpense/getRecentExpenses）、月次必要経費集計）
@@ -378,7 +424,7 @@ UBER_LOGは、Uber Eats 配達員向けの実働・売上・配達効率・地�
   ※23:46 調整「Support Adjustment」-¥607（adj_0922_1、経費ではなく売上調整。ユーザーメモ: 配達ミスに伴う調整）
   ※クエスト内訳: ¥1,600（¥800×2回。各回の6回乗車クエスト重複表示は計上せず、15:00の3回乗車クエスト¥0は非加算）
   ※配達報酬¥8,250には10:50 del_0922_6 のチップ¥50を含む最終売上¥370を含む（基本料金¥320＋チップ¥50、二重加算なし）
-- 2026-09-23 (水): 配達 23件 (20トリップ) | 売上 ¥10,683 | 配達時間 7時間9分33秒 | 走行 65.32km | 経費: アプリ入力分（HANDOFF未把握） | MAP 20/20件 | 公式取込v1（officialImport）
+- 2026-09-23 (水): 配達 23件 (20トリップ) | 売上 ¥10,683 | 配達時間 7時間9分33秒 | 走行 65.32km | 経費: アプリ入力分（Bike経費をアプリで登録済み・金額はHANDOFF未把握） | [B] | MAP 20/20件 | 公式取込v1（officialImport）
   ※9/23売上内訳: 配達報酬 ¥9,033 ＋ クエスト ¥1,650 ＋ 調整 ¥0 ＝ ¥10,683
   ※クエスト内訳: 13:06 ¥900（「6 回乗車クエスト ¥900」重複表示は計上せず）＋ 14:05 ¥750（「3 回乗車クエスト ¥750」重複表示は計上せず）。15:00「3 回乗車クエスト ¥0」は非加算
   ※14:53 del_0923_17 ローソン 靱本町三丁目: 最終売上¥538（基本料金¥320＋チップ¥218、二重加算なし）

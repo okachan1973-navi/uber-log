@@ -1978,6 +1978,18 @@ const CONFIRMED_SEED_DATA = {
   }
 };
 
+// Bike（バイクシェア等）経費の共通判定。週次・月次のBike集計、履歴の「B」バッジ、経費一覧表示で共用する。
+// 「バイクシェア」（稼働画面の経費入力）・「バイクシェア利用」（既存データ）・レンタバイク／レンタサイクル等を含む。
+// カテゴリ未設定の経費は従来の集計どおりBike扱い。「必要経費」はBikeではない。
+function isBikeExpenseCategory(category) {
+  const cat = String(category || '').trim();
+  return !cat || cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike');
+}
+function isBikeExpense(expense) {
+  const amt = Number(expense && expense.amount);
+  return !isNaN(amt) && amt > 0 && isBikeExpenseCategory(expense.category);
+}
+
 function getConfirmedSeedData() {
   return JSON.parse(JSON.stringify(CONFIRMED_SEED_DATA));
 }
@@ -2777,10 +2789,7 @@ class Store {
           // Bike経費（¥1,527）はユーザー削除済み（tombstone）の場合は復活させない
           const bikeExpenseId = log.expenses[0].id;
           const isDeletedByUser = Array.isArray(target.deletedExpenseIds) && target.deletedExpenseIds.includes(bikeExpenseId);
-          const hasBikeExpense = Array.isArray(target.expenses) && target.expenses.some(e => {
-            const cat = (e.category || '').trim();
-            return (cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike')) && Number(e.amount) > 0;
-          });
+          const hasBikeExpense = Array.isArray(target.expenses) && target.expenses.some(isBikeExpense);
           if (!isDeletedByUser && !hasBikeExpense) {
             target.expenses = (Array.isArray(target.expenses) ? target.expenses : []).concat(log.expenses);
             target.vehicleType = 'バイクシェア利用';
@@ -3228,17 +3237,12 @@ class Store {
     // 1. バイクシェア属性 (B)
     // 正式定義: 「その日にバイクシェアを実際に利用したことが確認済み」
     // 自転車配達・推測・過去日パターン・単なるvehicleTypeフラグ等での付与は厳禁。
-    // 判定基準:
-    //  - その日のexpensesに「バイクシェア利用」「レンタバイク」「レンタサイクル」カテゴリの確認済み支出（amount > 0）が存在すること
-    //  - または確認済み確定日（2026-09-18, 2026-09-19）
-    const hasConfirmedBikeExpense = log && Array.isArray(log.expenses) && log.expenses.some(e => {
-      const cat = (e.category || '').trim();
-      const amt = Number(e.amount);
-      return (cat === 'バイクシェア利用' || cat === 'レンタバイク' || cat === 'レンタサイクル') && !isNaN(amt) && amt > 0;
-    });
-    const isConfirmedBikeDate = (dateStr === '2026-09-18' || dateStr === '2026-09-19');
+    // 判定基準: その日の log.expenses[] にBike経費（amount > 0）が1件以上あること。
+    // 判定は週次・月次のBike集計と同じ isBikeExpense() を使う（稼働画面で登録する「バイクシェア」も対象）。
+    // 経費を全件削除すればBも消える。9/18・9/19 も確定済みのBike経費データで判定される。
+    const hasBikeExpense = log && Array.isArray(log.expenses) && log.expenses.some(isBikeExpense);
 
-    if (hasConfirmedBikeExpense || isConfirmedBikeDate) {
+    if (hasBikeExpense) {
       attrs.push(DAY_ATTRIBUTE_DEFINITIONS.bike_share);
     }
 
@@ -4079,7 +4083,7 @@ class Store {
             const cat = (e.category || '').trim();
             const amt = Number(e.amount);
             if (!isNaN(amt) && amt > 0) {
-              if (!cat || cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike')) {
+              if (isBikeExpenseCategory(cat)) {
                 logBike += amt;
               }
             }
@@ -4125,7 +4129,7 @@ class Store {
             const cat = (e.category || '').trim();
             const amt = Number(e.amount);
             if (!isNaN(amt) && amt > 0) {
-              if (!cat || cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike')) {
+              if (isBikeExpenseCategory(cat)) {
                 logBike += amt;
               }
             }
@@ -4204,7 +4208,7 @@ class Store {
           const cat = (e.category || '').trim();
           const amt = Number(e.amount);
           if (!isNaN(amt) && amt > 0) {
-            if (!cat || cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike')) {
+            if (isBikeExpenseCategory(cat)) {
               monthBikeExpenses += amt;
             } else if (cat === '必要経費') {
               monthOtherExpenses += amt;
@@ -4446,6 +4450,8 @@ if (typeof window !== 'undefined') {
   window.getWeekRange = getWeekRange;
   window.getPreviousWeekRange = getPreviousWeekRange;
   window.getConfirmedSeedData = getConfirmedSeedData;
+  window.isBikeExpenseCategory = isBikeExpenseCategory;
+  window.isBikeExpense = isBikeExpense;
   window.getTodayDateString = getTodayDateString;
   window.getCurrentTimeString = getCurrentTimeString;
   window.formatJapaneseDate = formatJapaneseDate;
@@ -4481,6 +4487,8 @@ if (typeof module !== 'undefined' && module.exports) {
     getWeekRange,
     getPreviousWeekRange,
     getConfirmedSeedData,
+    isBikeExpenseCategory,
+    isBikeExpense,
     getTodayDateString,
     getCurrentTimeString,
     formatJapaneseDate,

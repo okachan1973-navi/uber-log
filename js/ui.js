@@ -377,7 +377,7 @@ class UI {
       const [y, m, d] = exp.dateStr.split('-').map(Number);
       const dateLabel = `${m}/${d}`;
       const cat = exp.category || '';
-      const isBike = cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike');
+      const isBike = isBikeExpenseCategory(cat);
       const typeLabel = isBike ? 'バイクシェア' : (cat === '必要経費' ? '必要経費' : cat);
       const badgeClass = isBike ? 'bike' : 'other';
       const amt = Number(exp.amount) || 0;
@@ -436,7 +436,7 @@ class UI {
     if (!itemEl) return;
 
     const cat = (exp.category || '').trim();
-    const isBike = cat.includes('バイク') || cat.includes('サイクル') || cat.toLowerCase().includes('bike');
+    const isBike = isBikeExpenseCategory(cat);
     const selectedType = isBike ? 'バイクシェア' : '必要経費';
 
     itemEl.innerHTML = `
