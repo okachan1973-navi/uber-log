@@ -1689,6 +1689,291 @@ const CONFIRMED_SEED_DATA = {
           "memo": "ドコモ・バイクシェア1日パス"
         }
       ]
+    },
+    "2026-09-23": {
+      "date": "2026-09-23",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 65.32,
+      "tripsCount": 20,
+      "officialPoints": 23,
+      "deliveriesCount": 23,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_0923_1",
+          "index": 1,
+          "completedAt": "08:01",
+          "restaurant": "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo〜お持帰り専門店〜",
+          "area": "大阪市此花区西九条2丁目",
+          "fee": 451,
+          "distanceKm": 3.46,
+          "durationStr": "22分33秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_2",
+          "index": 2,
+          "completedAt": "08:16",
+          "restaurant": "マクドナルド 阪神西九条駅前店",
+          "area": "大阪市此花区春日出南1丁目",
+          "fee": 320,
+          "distanceKm": 3.3,
+          "durationStr": "19分32秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_3",
+          "index": 3,
+          "completedAt": "08:55",
+          "restaurant": "モスバーガー ＪＲ福島駅前店 Mos Burger JR FUKUSHIMA EKIMAE",
+          "area": "大阪市西区土佐堀2丁目",
+          "fee": 415,
+          "distanceKm": 3.69,
+          "durationStr": "23分21秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_4",
+          "index": 4,
+          "completedAt": "09:19",
+          "restaurant": "マクドナルド 福島店 McDonald's FUKUSHIMA",
+          "area": "大阪市北区中津5丁目",
+          "fee": 396,
+          "distanceKm": 3.17,
+          "durationStr": "17分47秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_5",
+          "index": 5,
+          "completedAt": "09:38",
+          "restaurant": "ブルーボトルコーヒー 梅田茶屋町カフェ Blue Bottle Cofee Umeda Chayamachi Cafe",
+          "area": "大阪市北区豊崎2丁目",
+          "fee": 552,
+          "distanceKm": 4.3,
+          "durationStr": "27分30秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0923_6",
+          "index": 6,
+          "completedAt": "10:04",
+          "restaurant": "エッグスンシングス 梅田茶屋町店 Eggs 'n Things Umeda Chayamachi",
+          "area": "大阪市中央区安土町2丁目",
+          "fee": 862,
+          "distanceKm": 7.97,
+          "durationStr": "49分36秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0923_7",
+          "index": 7,
+          "completedAt": "10:54",
+          "restaurant": "バーガーキング 御堂筋本町店 Burger King Midosujihonmachi",
+          "area": "大阪市中央区平野町1丁目",
+          "fee": 320,
+          "distanceKm": 2.48,
+          "durationStr": "16分49秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_8",
+          "index": 8,
+          "completedAt": "11:05",
+          "restaurant": "スターバックス コーヒー 北浜店 Starbucks Coffee Kitahama",
+          "area": "大阪市中央区東高麗橋",
+          "fee": 320,
+          "distanceKm": 2.09,
+          "durationStr": "16分46秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_9",
+          "index": 9,
+          "completedAt": "11:19",
+          "restaurant": "たっぷりたんぱく肉とブロッコリー生活 大阪店",
+          "area": "大阪市中央区森ノ宮中央2丁目",
+          "fee": 452,
+          "distanceKm": 4.39,
+          "durationStr": "24分0秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_10",
+          "index": 10,
+          "completedAt": "11:49",
+          "restaurant": "松屋 天満橋店 Matsuya Tenmabashi",
+          "area": "大阪市北区天神橋3丁目",
+          "fee": 368,
+          "distanceKm": 2.75,
+          "durationStr": "18分37秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_11",
+          "index": 11,
+          "completedAt": "12:01",
+          "restaurant": "ラホンパンマーラータン 天神橋店",
+          "area": "大阪市北区曾根崎",
+          "fee": 320,
+          "distanceKm": 2.16,
+          "durationStr": "21分22秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_12",
+          "index": 12,
+          "completedAt": "12:20",
+          "restaurant": "ル・クロワッサン 北新地店 LE CROISSANT",
+          "area": "大阪市中央区瓦町4丁目",
+          "fee": 385,
+          "distanceKm": 3.4,
+          "durationStr": "25分7秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_13",
+          "index": 13,
+          "completedAt": "12:50",
+          "restaurant": "バーガーキング 御堂筋本町店 Burger King Midosujihonmachi",
+          "area": "大阪市西区立売堀2丁目",
+          "fee": 404,
+          "distanceKm": 3.09,
+          "durationStr": "23分0秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0923_14",
+          "index": 14,
+          "completedAt": "13:14",
+          "restaurant": "すき家 阿波座 Sukiya Awaza",
+          "area": "大阪市西区新町3丁目",
+          "fee": 320,
+          "distanceKm": 1.05,
+          "durationStr": "8分24秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_15",
+          "index": 15,
+          "completedAt": "13:47",
+          "restaurant": "ウエルシア大阪新町店",
+          "area": "大阪市福島区福島3丁目",
+          "fee": 400,
+          "distanceKm": 3.52,
+          "durationStr": "17分24秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_16",
+          "index": 16,
+          "completedAt": "14:40",
+          "restaurant": "マクドナルド ＪＲ野田駅前店 McDonald's JR NODA EKI-MAE",
+          "area": "大阪市江之子島2丁目",
+          "fee": 323,
+          "distanceKm": 2.41,
+          "durationStr": "14分49秒",
+          "points": 1,
+          "memo": "公式配達先表記: 2-chōme Osaka Osaka Enokojima 日本"
+        },
+        {
+          "id": "del_0923_17",
+          "index": 17,
+          "completedAt": "14:53",
+          "restaurant": "ローソン 靱本町三丁目",
+          "area": "大阪市西区土佐堀3丁目",
+          "fee": 538,
+          "baseFee": 320,
+          "tip": 218,
+          "distanceKm": 1.37,
+          "durationStr": "10分54秒",
+          "points": 1,
+          "memo": "最終売上¥538（基本料金¥320＋チップ¥218）"
+        },
+        {
+          "id": "del_0923_18",
+          "index": 18,
+          "completedAt": "15:28",
+          "restaurant": "かっぱ寿司 境川店 Kappa Sushi Sakaigawa",
+          "area": "大阪市浪速区大国3丁目",
+          "fee": 597,
+          "distanceKm": 4.96,
+          "durationStr": "29分23秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_19",
+          "index": 19,
+          "completedAt": "16:27",
+          "restaurant": "マクドナルド イオンモール大阪ドームシティ店",
+          "area": "大阪市西区千代崎3丁目",
+          "fee": 970,
+          "distanceKm": 3.75,
+          "durationStr": "26分50秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0923_20",
+          "index": 20,
+          "completedAt": "17:15",
+          "restaurant": "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY",
+          "area": "大阪市浪速区桜川2丁目",
+          "fee": 320,
+          "distanceKm": 2.01,
+          "durationStr": "15分49秒",
+          "points": 1,
+          "memo": ""
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_0923_1",
+          "time": "13:06",
+          "title": "クエスト",
+          "amount": 900,
+          "isDuplicateIgnored": false,
+          "note": "公式一覧は「クエスト ¥900」「6 回乗車クエスト ¥900」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0923_2",
+          "time": "14:05",
+          "title": "クエスト",
+          "amount": 750,
+          "isDuplicateIgnored": false,
+          "note": "公式一覧は「クエスト ¥750」「3 回乗車クエスト ¥750」の2表示だが同一報酬のため1件のみ計上（二重計上防止）。15:00の「3 回乗車クエスト」¥0は報酬0のため売上非加算"
+        }
+      ],
+      "sales": {
+        "delivery": 9033,
+        "quest": 1650,
+        "adjustment": 0,
+        "other": 0,
+        "total": 10683
+      },
+      "expenses": [],
+      "officialImport": {
+        "source": "official-import-v1",
+        "importedAt": "2026-09-23T17:50:20.306Z"
+      }
     }
   }
 };
