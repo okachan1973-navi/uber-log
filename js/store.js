@@ -2259,6 +2259,13 @@ const DAY_ATTRIBUTE_DEFINITIONS = {
     className: 'attr-bonus',
     description: '通常報酬や通常クエストとは別の特別保証・ボーナスが発生した日'
   },
+  tip: {
+    key: 'tip',
+    label: '♥',
+    fullName: 'チップ',
+    className: 'attr-tip',
+    description: 'チップを受け取った配達がある日（チップは配達の最終売上に含まれ、別途加算しない）'
+  },
   more: {
     key: 'more',
     label: '+N',
@@ -2269,7 +2276,7 @@ const DAY_ATTRIBUTE_DEFINITIONS = {
 };
 
 // 属性表示の固定優先順位（B -> 調 -> 賞 の定義順）
-const DAY_ATTRIBUTE_PRIORITY = ['bike_share', 'adjustment', 'special_bonus'];
+const DAY_ATTRIBUTE_PRIORITY = ['bike_share', 'adjustment', 'special_bonus', 'tip'];
 
 // 所要時間文字列を秒単位の数値に正確にパース（公式トリップ所要時間の厳密合算用）
 function parseDurationToSeconds(durationStr) {
@@ -3357,7 +3364,12 @@ class Store {
     }
 
     // 定義された優先順位に従って固定ソート（B -> 調 -> 賞）
-    const priority = (typeof DAY_ATTRIBUTE_PRIORITY !== 'undefined') ? DAY_ATTRIBUTE_PRIORITY : ['bike_share', 'adjustment', 'special_bonus'];
+    // 4. チップ属性 (♥): その日の配達にチップ（tip > 0）がある日
+    if (metrics && metrics.tipSales > 0) {
+      attrs.push(DAY_ATTRIBUTE_DEFINITIONS.tip);
+    }
+
+    const priority = (typeof DAY_ATTRIBUTE_PRIORITY !== 'undefined') ? DAY_ATTRIBUTE_PRIORITY : ['bike_share', 'adjustment', 'special_bonus', 'tip'];
     attrs.sort((a, b) => {
       const idxA = priority.indexOf(a.key);
       const idxB = priority.indexOf(b.key);
@@ -3789,8 +3801,21 @@ class Store {
       }
     }
 
+    // チップ（各配達の tip の合計）。Uber公式の最終売上（fee）にすでに含まれているため、総売上には別途加算しない。
+    // 表示・分析用に「配達報酬（チップを除く）」と「チップ」に分けて見せるための内訳。
+    let tipSales = 0;
+    let tipCount = 0;
+    (log.deliveries || []).forEach(d => {
+      const t = Number(d && d.tip);
+      if (Number.isFinite(t) && t > 0) {
+        tipSales += t;
+        tipCount++;
+      }
+    });
+    const baseDeliverySales = deliverySales !== null ? deliverySales - tipSales : null;
+
     // 新規ドライバー保証・特別収入
-    const guaranteeBonus = (log.sales && log.sales.guaranteeBonus) ? Number(log.sales.guaranteeBonus) : (Number(log.guaranteeBonus) || 0);
+    const guaranteeBonus =(log.sales && log.sales.guaranteeBonus) ? Number(log.sales.guaranteeBonus) : (Number(log.guaranteeBonus) || 0);
     const guaranteeBonusNote = (log.sales && log.sales.guaranteeBonusNote) ? log.sales.guaranteeBonusNote : (log.guaranteeBonusNote || '');
 
     // 1日総売上（通常稼働分 ＋ 特別保証ボーナス等すべての確認済みUber総収入）
@@ -3915,6 +3940,9 @@ class Store {
       count,
       tripsCount,
       deliverySales,
+      baseDeliverySales,
+      tipSales,
+      tipCount,
       questSales,
       adjustmentSales,
       otherSales,
@@ -4203,6 +4231,8 @@ class Store {
     let weekQuestSales = 0;
     let weekAdjustmentSales = 0;
     let weekOtherSales = 0;
+    let weekTipSales = 0;       // チップ（配達報酬に含まれる内訳。総売上へは別途加算しない）
+    let weekOtherOnlySales = 0; // 調整以外のその他
     let weekGuaranteeBonus = 0;
     let weekBikeExpenses = 0;
     let weekDeliveriesCount = 0;
@@ -4215,6 +4245,8 @@ class Store {
         weekQuestSales += (m.questSales || 0);
         weekAdjustmentSales += (m.adjustmentSales || 0);
         weekOtherSales += ((m.adjustmentSales || 0) + (m.otherSales || 0));
+        weekTipSales += (m.tipSales || 0);
+        weekOtherOnlySales += (m.otherSales || 0);
         weekCalculatedSales += (m.totalSales || 0);
         weekDeliveriesCount += m.count;
         weekTripsCount += (l.tripsCount || (l.deliveries ? l.deliveries.length : 0));
@@ -4276,6 +4308,11 @@ class Store {
       questSales: weekQuestSales,
       adjustmentSales: weekOtherSales,
       otherSales: weekOtherSales,
+      // 内訳表示用（合計すると officialSales と一致: 配達報酬(チップ除く) + チップ + クエスト + 特別ボーナス + 調整 + その他）
+      baseDeliverySales: weekDeliverySales - weekTipSales,
+      tipSales: weekTipSales,
+      adjustmentOnlySales: weekAdjustmentSales,
+      otherOnlySales: weekOtherOnlySales,
       bikeExpenses: weekBikeExpenses,
       deliveriesCount: weekDeliveriesCount,
       deliveryCount: weekDeliveriesCount,
@@ -4378,6 +4415,36 @@ class Store {
       registeredTotal,
       auditFootnote
     };
+  }
+
+  // 期間指定の売上内訳（開始日〜終了日、両端含む）。
+  // 配達報酬はチップを除いた額、チップは配達の最終売上に含まれる内訳（総売上へは二重に加算しない）。
+  // 合計: 配達報酬 + チップ + クエスト + 特別ボーナス + 調整 + その他 = 総売上
+  getSalesBreakdown(startDate, endDate) {
+    const out = {
+      startDate, endDate, days: 0, deliveriesCount: 0,
+      deliverySales: 0, baseDeliverySales: 0, tipSales: 0, tipCount: 0,
+      questSales: 0, guaranteeBonus: 0, adjustmentSales: 0, otherSales: 0, totalSales: 0, bikeExpenses: 0
+    };
+    this.getAllDailyLogs()
+      .filter(l => (!startDate || l.date >= startDate) && (!endDate || l.date <= endDate))
+      .forEach(l => {
+        const m = this.getCalculatedMetrics(l);
+        if (!(m.count > 0 || m.totalSales !== null || m.totalExpenses > 0)) return;
+        out.days++;
+        out.deliveriesCount += m.count;
+        out.deliverySales += (m.deliverySales || 0);
+        out.baseDeliverySales += (m.baseDeliverySales || 0);
+        out.tipSales += (m.tipSales || 0);
+        out.tipCount += (m.tipCount || 0);
+        out.questSales += (m.questSales || 0);
+        out.guaranteeBonus += (m.guaranteeBonus || 0);
+        out.adjustmentSales += (m.adjustmentSales || 0);
+        out.otherSales += (m.otherSales || 0);
+        out.totalSales += (m.totalSales || 0);
+        (l.expenses || []).forEach(e => { if (isBikeExpense(e)) out.bikeExpenses += Number(e.amount); });
+      });
+    return out;
   }
 
   // 全体・累計・直近7日の分析データ取得

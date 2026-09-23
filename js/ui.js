@@ -918,6 +918,7 @@ class UI {
           <div class="trip-stats-meta">
             ${metaLine ? `<span class="trip-meta-stat">${metaLine}</span>` : ''}
             ${(del.points && del.points > 1) ? `<span class="trip-points-pill">${del.points}pt（ダブル）</span>` : ''}
+            ${(Number(del.tip) > 0) ? `<span class="trip-tip-pill" title="最終売上に含まれるチップ">♥ チップ¥${Number(del.tip).toLocaleString()}</span>` : ''}
             <button type="button" class="btn-trip-map ${hasMap ? '' : 'no-map'}" data-del-id="${del.id || ''}" title="${hasMap ? '公式実績地図を表示' : '公式地図画像は未登録です'}">MAP</button>
           </div>
           <div class="trip-eval-buttons" data-del-id="${del.id || ''}">
@@ -932,6 +933,45 @@ class UI {
         </div>
       </div>
     `;
+  }
+
+  // 売上内訳（期間指定）: 配達報酬（チップ除く）/ チップ / クエスト / 特別ボーナス / 調整 / その他 / 総売上
+  renderPeriodBreakdown() {
+    const startEl = document.getElementById('period-start');
+    const endEl = document.getElementById('period-end');
+    const rowsEl = document.getElementById('period-rows');
+    if (!startEl || !endEl || !rowsEl || typeof store === 'undefined' || !store.getSalesBreakdown) return;
+    if (!this.periodInputsBound) {
+      // 初期値: 今月1日〜今日
+      const today = getTodayDateString();
+      startEl.value = `${today.slice(0, 7)}-01`;
+      endEl.value = today;
+      const onChange = () => this.renderPeriodBreakdown();
+      startEl.addEventListener('change', onChange);
+      endEl.addEventListener('change', onChange);
+      this.periodInputsBound = true;
+    }
+    let start = startEl.value;
+    let end = endEl.value;
+    if (start && end && start > end) [start, end] = [end, start];
+    const b = store.getSalesBreakdown(start, end);
+    const yen = n => `${n < 0 ? '-' : ''}¥${Math.abs(n).toLocaleString()}`;
+    const signed = n => (n > 0 ? `+${yen(n)}` : yen(n));
+    const rows = [
+      ['配達報酬', yen(b.baseDeliverySales), ''],
+      ['チップ', `${yen(b.tipSales)}${b.tipCount ? `<small>（${b.tipCount}件）</small>` : ''}`, 'val-tip'],
+      ['クエスト', yen(b.questSales), ''],
+      ['特別ボーナス', yen(b.guaranteeBonus), 'val-bonus'],
+      ['調整', signed(b.adjustmentSales), b.adjustmentSales < 0 ? 'val-bike' : 'val-adj'],
+      ['その他', signed(b.otherSales), ''],
+      ['総売上', yen(b.totalSales), 'val-total']
+    ];
+    rowsEl.innerHTML = rows.map(([label, val, cls]) => `
+      <div class="period-row${cls === 'val-total' ? ' period-row-total' : ''}">
+        <span class="period-row-label">${label}</span>
+        <span class="period-row-val ${cls}">${val}</span>
+      </div>`).join('') +
+      `<div class="period-row period-row-sub"><span class="period-row-label">稼働 ${b.days}日 / ${b.deliveriesCount}件</span><span class="period-row-val">Bike -${yen(b.bikeExpenses)}</span></div>`;
   }
 
   // 公式トリップ地図モーダルを開く
@@ -1189,6 +1229,22 @@ class UI {
         `);
       }
 
+      // 2-2. チップカード（配達報酬に含まれる内訳。総売上へ二重に加算しないため「+」を付けない）
+      if (metrics.tipSales > 0) {
+        additionalCards.push(`
+          <div class="balance-card card-tip">
+            <div class="balance-card-left">
+              <span class="day-attr-badge attr-tip">♥</span>
+              <div class="balance-card-info">
+                <span class="balance-card-title">チップ</span>
+                <span class="balance-card-sub">配達報酬に含む（${metrics.tipCount}件）</span>
+              </div>
+            </div>
+            <span class="balance-card-amount">¥${metrics.tipSales.toLocaleString()}</span>
+          </div>
+        `);
+      }
+
       // 3. バイクシェア利用カード（マイナス）
       if (metrics.totalExpenses > 0) {
         additionalCards.push(`
@@ -1438,9 +1494,20 @@ class UI {
       weekPayoutEl.textContent = rev.thisWeek.payoutDateText || '--';
     }
 
-    // 今週の売上利益内訳（6項目・2列×3段）
+    // 今週の売上利益内訳（8項目・2列×4段）。配達報酬はチップを除いた額（各項目の合計＝売上。チップの二重計上なし）
     const weekDelSalesEl = document.getElementById('week-delivery-sales');
-    if (weekDelSalesEl) weekDelSalesEl.textContent = `¥${rev.thisWeek.deliverySales.toLocaleString()}`;
+    const weekBaseDelivery = rev.thisWeek.baseDeliverySales !== undefined ? rev.thisWeek.baseDeliverySales : rev.thisWeek.deliverySales;
+    if (weekDelSalesEl) weekDelSalesEl.textContent = `¥${weekBaseDelivery.toLocaleString()}`;
+
+    const weekTipEl = document.getElementById('week-tip-sales');
+    if (weekTipEl) weekTipEl.textContent = `¥${(rev.thisWeek.tipSales || 0).toLocaleString()}`;
+
+    const weekAdjEl = document.getElementById('week-adj-sales');
+    if (weekAdjEl) {
+      const adj = rev.thisWeek.adjustmentOnlySales !== undefined ? rev.thisWeek.adjustmentOnlySales : (rev.thisWeek.otherSales || 0);
+      weekAdjEl.textContent = adj > 0 ? `+¥${adj.toLocaleString()}` : adj < 0 ? `-¥${Math.abs(adj).toLocaleString()}` : '¥0';
+      weekAdjEl.className = `breakdown-val ${adj < 0 ? 'val-bike' : 'val-adj'}`;
+    }
 
     const weekQuestSalesEl = document.getElementById('week-quest-sales');
     if (weekQuestSalesEl) weekQuestSalesEl.textContent = `¥${rev.thisWeek.questSales.toLocaleString()}`;
@@ -1451,20 +1518,16 @@ class UI {
       weekBonusSalesEl.textContent = `¥${bonus.toLocaleString()}`;
     }
 
+    // その他（調整以外。調整は上の「調整」に独立表示）
     const weekOtherSalesEl = document.getElementById('week-other-sales');
     if (weekOtherSalesEl) {
-      const other = rev.thisWeek.otherSales || 0;
-      if (other > 0) {
-        weekOtherSalesEl.textContent = `+¥${other.toLocaleString()}`;
-        weekOtherSalesEl.className = 'breakdown-val val-adj';
-      } else if (other < 0) {
-        weekOtherSalesEl.textContent = `-¥${Math.abs(other).toLocaleString()}`;
-        weekOtherSalesEl.className = 'breakdown-val val-bike';
-      } else {
-        weekOtherSalesEl.textContent = '¥0';
-        weekOtherSalesEl.className = 'breakdown-val';
-      }
+      const other = rev.thisWeek.otherOnlySales !== undefined ? rev.thisWeek.otherOnlySales : (rev.thisWeek.otherSales || 0);
+      weekOtherSalesEl.textContent = other > 0 ? `+¥${other.toLocaleString()}` : other < 0 ? `-¥${Math.abs(other).toLocaleString()}` : '¥0';
+      weekOtherSalesEl.className = 'breakdown-val';
     }
+
+    // 売上内訳（期間指定）
+    this.renderPeriodBreakdown();
 
     const weekBikeEl = document.getElementById('week-bike-expenses');
     if (weekBikeEl) {

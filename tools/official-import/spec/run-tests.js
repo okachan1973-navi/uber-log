@@ -398,7 +398,8 @@ try {
       global.localStorage={getItem:k=>(k in map?map[k]:null),setItem:(k,v)=>{map[k]=String(v)},removeItem:k=>{delete map[k]}};
       global.window={localStorage:global.localStorage};
       const m=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))}); const s=m.store;
-      const keys=d=>s.getDayAttributes(d).map(a=>a.key).join(',');
+      // このセクションは B（と既存の調・賞）の確認。♥（チップ）は 10-4 で確認する
+      const keys=d=>s.getDayAttributes(d).map(a=>a.key).filter(k=>k!=='tip').join(',');
       const out={};
       ['2026-09-18','2026-09-19','2026-09-21','2026-09-22','2026-09-23'].forEach(d=>out[d]=keys(d));
       const bike=s.addExpense('2026-09-23',{category:'バイクシェア',amount:1527,memo:'稼働画面から登録'});
@@ -415,7 +416,7 @@ try {
       s.addExpense('2026-09-23',{category:'バイクシェア',amount:1527,memo:'再登録'});
       delete require.cache[require.resolve(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))})];
       const m2=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
-      out.reload=m2.store.getDayAttributes('2026-09-23').map(a=>a.key).join(',');
+      out.reload=m2.store.getDayAttributes('2026-09-23').map(a=>a.key).filter(k=>k!=='tip').join(',');
       const w=m2.store.getRevenueSummary('2026-09-23').thisWeek;
       out.weekBike=w.bikeExpenses;
       out.pred=[m.isBikeExpenseCategory('バイクシェア'),m.isBikeExpenseCategory('バイクシェア利用'),m.isBikeExpenseCategory('レンタサイクル'),m.isBikeExpenseCategory('Bike share'),m.isBikeExpenseCategory('必要経費')].join(',');
@@ -431,6 +432,41 @@ try {
     check(r.reload === 'bike_share', '保存データの再読込後も B');
     check(r.weekBike === 3054 + 1527, `B の判定と週次Bike集計が同じ判定を使用（今週Bike ¥${r.weekBike}）`);
     check(r.pred === 'true,true,true,true,false', `共通判定 isBikeExpenseCategory（${r.pred}）`);
+  }
+
+  // ==========================================================
+  section('10-4. チップ（独立項目・二重計上なし）');
+  {
+    const r = runNode(`
+      global.localStorage={getItem:()=>null,setItem:()=>{},removeItem:()=>{}};global.window={localStorage:global.localStorage};
+      const {store}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      const days={};
+      store.getAllDailyLogs().forEach(l=>{const m=store.getCalculatedMetrics(l);days[l.date]={tip:m.tipSales,cnt:m.tipCount,base:m.baseDeliverySales,del:m.deliverySales,total:m.totalSales,profit:m.netProfit,attrs:store.getDayAttributes(l.date).map(a=>a.key).join(',')};});
+      const w=store.getRevenueSummary('2026-09-22').thisWeek;
+      const b=store.getSalesBreakdown('2026-09-01','2026-09-30');
+      const b22=store.getSalesBreakdown('2026-09-22','2026-09-22');
+      console.log(JSON.stringify({days,w:{off:w.officialSales,base:w.baseDeliverySales,tip:w.tipSales,q:w.questSales,g:w.guaranteeBonus,adj:w.adjustmentOnlySales,oth:w.otherOnlySales,legacyOther:w.otherSales,del:w.deliverySales},b,b22}));`);
+    const d22 = r.days['2026-09-22'];
+    const d23 = r.days['2026-09-23'];
+    check(d22.tip === 50 && d22.cnt === 1 && d22.base === 8200 && d22.del === 8250 && d22.total === 9243 && d22.profit === 7716,
+      '9/22: チップ ¥50（No.6 マクドナルド 九条店）・配達報酬 ¥8,200＋チップ ¥50＝¥8,250・総売上 ¥9,243 / 利益 ¥7,716 は不変（二重計上なし）');
+    if (d23) {
+      check(d23.tip === 218 && d23.cnt === 1 && d23.base + d23.tip === d23.del && d23.total === 10683,
+        '9/23: チップ ¥218（No.17 ローソン 靱本町三丁目・公式スクショ確認済み）・総売上 ¥10,683 は不変');
+    }
+    const tipDays = Object.entries(r.days).filter(([, v]) => v.attrs.split(',').includes('tip')).map(([k]) => k);
+    check(tipDays.join() === Object.entries(r.days).filter(([, v]) => v.tip > 0).map(([k]) => k).join() && tipDays.includes('2026-09-22'),
+      `♥ はチップのある日だけ（${tipDays.join(', ')}）`);
+    check(d22.attrs === 'bike_share,adjustment,tip' && r.days['2026-09-19'].attrs === 'bike_share,special_bonus' && r.days['2026-09-21'].attrs === 'bike_share',
+      `並び順 B → 調 → 賞 → ♥（9/22: ${d22.attrs}）・既存の B/調/賞 は不変`);
+    check(Object.values(r.days).every(v => v.base === null || v.base + v.tip === v.del), '全日: 配達報酬（チップ除く）＋チップ＝配達報酬（最終売上の合計）');
+    const w = r.w;
+    check(w.base + w.tip + w.q + w.g + w.adj + w.oth === w.off && w.del === w.base + w.tip && w.legacyOther === w.adj + w.oth,
+      `今週の内訳（配達報酬 ¥${w.base} ＋ チップ ¥${w.tip} ＋ クエスト ＋ 特別 ＋ 調整 ＋ その他）＝売上 ¥${w.off}`);
+    const b = r.b;
+    check(b.baseDeliverySales + b.tipSales + b.questSales + b.guaranteeBonus + b.adjustmentSales + b.otherSales === b.totalSales,
+      `期間指定（9/1〜9/30）: 内訳の合計＝総売上 ¥${b.totalSales}・チップ累計 ¥${b.tipSales}（${b.tipCount}件）`);
+    check(r.b22.tipSales === 50 && r.b22.totalSales === 9243 && r.b22.days === 1, '期間指定（9/22のみ）: チップ ¥50・総売上 ¥9,243');
   }
 
   // ==========================================================

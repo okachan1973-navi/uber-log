@@ -1787,6 +1787,143 @@ body {
   color: #ff453a;
 }
 
+/* ♥: チップカード (ローズ系。配達報酬に含まれる内訳) */
+.balance-card.card-tip {
+  background: rgba(251, 113, 133, 0.1);
+  border-color: rgba(251, 113, 133, 0.35);
+  color: #fb7185;
+}
+
+/* ♥ (チップを受け取った日: ローズ系四角。B・調・賞と同じ大きさ) */
+.day-attr-badge.attr-tip {
+  background-color: rgba(251, 113, 133, 0.16);
+  color: #fb7185;
+  border: 1px solid rgba(251, 113, 133, 0.45);
+  font-size: 12px;
+}
+
+/* 配達明細のチップ表示（控えめなインライン表示） */
+.trip-tip-pill {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fb7185;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.breakdown-val.val-tip {
+  color: #fb7185;
+}
+
+/* 売上内訳（期間指定）カード */
+.period-breakdown-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.period-card-header {
+  margin-bottom: 8px;
+}
+
+.period-card-title {
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-main);
+}
+
+.period-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.period-range input[type="date"] {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px 8px;
+  color-scheme: dark;
+}
+
+.period-range-sep {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.period-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.period-row-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.period-row-val {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  font-variant-numeric: tabular-nums;
+}
+
+.period-row-val small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+.period-row-val.val-tip { color: #fb7185; }
+.period-row-val.val-bonus { color: #fbbf24; }
+.period-row-val.val-adj { color: #38bdf8; }
+.period-row-val.val-bike { color: #ff453a; }
+
+.period-row-total {
+  border-bottom: none;
+  padding-top: 8px;
+}
+
+.period-row-total .period-row-label {
+  color: var(--text-main);
+}
+
+.period-row-total .period-row-val {
+  font-size: 19px;
+}
+
+.period-row-sub {
+  border-bottom: none;
+}
+
+.period-row-sub .period-row-label,
+.period-row-sub .period-row-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.period-note {
+  margin: 6px 2px 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
 .history-metrics-strip {
   display: flex;
   align-items: center;
