@@ -51,7 +51,7 @@ C. テスト・確認結果（node tools/official-import/import.js test: 114項�
   - 実データ: run-latest-import.ps1 -DryRun で実際の inbox から 2026-09-23 を自動選択・スクショ20枚を確認。
   - 9/23 再取込（/uber-import と同じ prepare → apply）: VALIDATION PASS・「既に取込済みで変更はありません（二重登録なし）」。
     js/store.js・js/trip-maps.js・version.json はバイト単位で不変、assets/maps のファイル数不変。9/23 の 20trip / 23件 / ¥10,683 / MAP 20/20 を維持。
-  - 実際の対話画面での起動（ダブルクリック → Claude Code が /uber-import を開始）はユーザー側で初回確認すること（作業環境から対話端末を操作できないため未実施）。
+  - 実機確認: ユーザーが UBER取込.cmd をダブルクリックし、Claude Code の対話画面が開いて /uber-import 2026-09-23 が自動で開始されることを確認済み（2026-09-24）。
   - 取込ツールの堅牢化: pipeline.js の store.js 読取を「シード末尾の括弧対応」で判定するよう変更（シード直後のコード配置に依存しない）。
   - バージョン: 20260924_v25（index.html / sw.js / version.json）
 ■ v23 公式取込 v1（2026-09-23 実装）: 毎日の公式データ取込の仕組み
