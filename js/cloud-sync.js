@@ -327,6 +327,16 @@ class CloudSyncManager {
         if (hasOfficialAdjustment) merged.sales.adjustment = officialDay.adjustment;
         merged.sales.total = officialDay.total;
       }
+
+      // 公式取込v1（tools/official-import）で反映された日は、アプリ同梱の公式データを正とする
+      const seedLog = (typeof window !== 'undefined' && typeof window.getConfirmedSeedData === 'function')
+        ? (window.getConfirmedSeedData().dailyLogs || {})[date]
+        : null;
+      if (seedLog && seedLog.officialImport && seedLog.sales) {
+        ['delivery', 'quest', 'adjustment', 'other', 'total'].forEach(k => {
+          merged.sales[k] = seedLog.sales[k];
+        });
+      }
     }
 
     // 5. 当日経費明細のマージ（ID一致時はローカル優先、新規明細は全て合算）

@@ -1697,6 +1697,64 @@ function getConfirmedSeedData() {
   return JSON.parse(JSON.stringify(CONFIRMED_SEED_DATA));
 }
 
+// 公式取込v1で反映された日（シードに officialImport あり）を端末データへ同期する。
+// - 公式側: trip（ID単位）・件数・距離・クエスト・売上調整・売上内訳をシードに合わせる
+// - 端末側: 経費・稼働セッション・○×評価・理由メモ等はそのまま保持
+// - シードに無い配達記録（手動タップ等）は削除せず manualTapsArchive へ退避
+// 変更があれば true を返す
+function syncOfficialImportedDay(target, log) {
+  let changed = false;
+  const current = Array.isArray(target.deliveries) ? target.deliveries : [];
+  const seedIds = new Set(log.deliveries.map(d => d.id));
+
+  const leftovers = current.filter(d => !seedIds.has(d.id));
+  if (leftovers.length > 0) {
+    const archive = Array.isArray(target.manualTapsArchive) ? target.manualTapsArchive : [];
+    const archivedIds = new Set(archive.map(d => d.id));
+    leftovers.forEach(d => {
+      if (!archivedIds.has(d.id)) archive.push(d);
+    });
+    target.manualTapsArchive = archive;
+    changed = true;
+  }
+
+  const byId = new Map(current.map(d => [d.id, d]));
+  const nextDeliveries = log.deliveries.map(sd => ({ ...(byId.get(sd.id) || {}), ...sd }));
+  if (JSON.stringify(nextDeliveries) !== JSON.stringify(current)) {
+    target.deliveries = nextDeliveries;
+    changed = true;
+  }
+
+  ['tripsCount', 'officialPoints', 'deliveriesCount', 'totalDistanceKm'].forEach(k => {
+    if (target[k] !== log[k]) {
+      target[k] = log[k];
+      changed = true;
+    }
+  });
+
+  if (JSON.stringify(target.quests || []) !== JSON.stringify(log.quests || [])) {
+    target.quests = log.quests || [];
+    changed = true;
+  }
+
+  if (Array.isArray(log.adjustments)) {
+    const adjMap = new Map((Array.isArray(target.adjustments) ? target.adjustments : []).map(a => [a.id, a]));
+    log.adjustments.forEach(a => adjMap.set(a.id, { ...(adjMap.get(a.id) || {}), ...a }));
+    const nextAdj = Array.from(adjMap.values());
+    if (JSON.stringify(nextAdj) !== JSON.stringify(target.adjustments || [])) {
+      target.adjustments = nextAdj;
+      changed = true;
+    }
+  }
+
+  const salesKeys = ['delivery', 'quest', 'adjustment', 'other', 'total'];
+  if (!target.sales || salesKeys.some(k => target.sales[k] !== log.sales[k])) {
+    target.sales = { ...(target.sales || {}), ...log.sales };
+    changed = true;
+  }
+  return changed;
+}
+
 // 今日の日付文字列（YYYY-MM-DD）を取得
 function getTodayDateString(d = new Date()) {
   const year = d.getFullYear();
@@ -2251,6 +2309,9 @@ class Store {
         if (!parsed.dailyLogs[date]) {
           parsed.dailyLogs[date] = log;
           hasChange = true;
+        } else if (log.officialImport) {
+          // 公式取込v1（tools/official-import）で反映された日: Uber公式データを正とし、端末側データは保持
+          if (syncOfficialImportedDay(parsed.dailyLogs[date], log)) hasChange = true;
         } else if (date === '2026-09-10') {
           const target = parsed.dailyLogs[date];
           if (!target.quests || target.quests.length < 2 || !target.quests.some(q => q.amount === 100)) {

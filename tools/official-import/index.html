@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UBER_LOG 公式取込</title>
+  <style>
+    :root {
+      --bg: #f4f5f7; --card: #fff; --text: #1d1f23; --muted: #6b7079; --line: #d9dce1;
+      --accent: #0a7c5a; --accent-weak: #e3f4ee; --warn: #b3541e; --warn-weak: #fdf0e7; --err: #c62828;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", "Yu Gothic UI", "Meiryo", sans-serif; }
+    main { max-width: 980px; margin: 0 auto; padding: 28px 24px 60px; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    .lead { color: var(--muted); margin: 0 0 22px; font-size: 13px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+    .card h2 { font-size: 15px; margin: 0 0 10px; }
+    .step { display: inline-block; min-width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 11px; background: var(--accent); color: #fff; font-size: 12px; margin-right: 6px; }
+    input[type=date] { font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; }
+    textarea { width: 100%; min-height: 260px; font: 13px/1.5 Consolas, "BIZ UDGothic", monospace; padding: 10px; border: 1px solid var(--line); border-radius: 6px; resize: vertical; }
+    .drop { border: 2px dashed var(--line); border-radius: 10px; padding: 26px; text-align: center; color: var(--muted); cursor: pointer; transition: .15s; }
+    .drop.over { border-color: var(--accent); background: var(--accent-weak); color: var(--accent); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px 14px; margin-top: 12px; font-size: 12px; }
+    .grid div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .stat { background: var(--bg); border-radius: 8px; padding: 6px 12px; font-size: 13px; }
+    .stat b { font-size: 16px; margin-left: 4px; }
+    .note { margin-top: 10px; padding: 8px 12px; border-radius: 6px; font-size: 13px; }
+    .note.warn { background: var(--warn-weak); color: var(--warn); }
+    .note.ok { background: var(--accent-weak); color: var(--accent); }
+    .note.err { background: #fdeaea; color: var(--err); }
+    button { font: inherit; border: 0; border-radius: 8px; padding: 10px 22px; cursor: pointer; }
+    .primary { background: var(--accent); color: #fff; font-weight: 600; font-size: 16px; }
+    .primary:disabled { background: #9fb8ae; cursor: default; }
+    .ghost { background: var(--bg); color: var(--text); border: 1px solid var(--line); padding: 6px 14px; font-size: 13px; }
+    .cmd { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+    .cmd[hidden] { display: none; }
+    .cmd code { background: #1d1f23; color: #e8f5ef; padding: 8px 14px; border-radius: 6px; font-size: 15px; }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .muted { color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>UBER_LOG 公式取込</h1>
+  <p class="lead">PC用の補助画面です（スマホ版UBER_LOGには表示されません）。ここで保存したデータは Git に入りません。</p>
+
+  <section class="card">
+    <h2><span class="step">1</span>日付</h2>
+    <input type="date" id="date">
+  </section>
+
+  <section class="card">
+    <h2><span class="step">2</span>Uberアクティビティ一覧（コピーして貼り付け）</h2>
+    <textarea id="activity" placeholder="Delivery&#10;Tuesday, September 22nd, 2026&#10;19:48&#10;￥483&#10;View Details&#10;…"></textarea>
+    <div class="stats" id="parse-stats"></div>
+    <div id="parse-notes"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">3</span>公式スクリーンショット（Delivery詳細をまとめてドラッグ）</h2>
+    <div class="drop" id="drop">ここに画像をドラッグ＆ドロップ（またはクリックして選択）<br><span class="muted">PNG / JPG・Delivery詳細部分だけを切り取った画像</span></div>
+    <input type="file" id="file-input" accept="image/png,image/jpeg" multiple hidden>
+    <div class="row" style="margin-top:10px">
+      <div class="stat">選択画像:<b id="img-count">0</b> 枚</div>
+      <button class="ghost" id="clear-images" type="button">画像をクリア</button>
+    </div>
+    <div id="img-notes"></div>
+    <div class="grid" id="img-list"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">4</span>保存</h2>
+    <button class="primary" id="save" type="button">取込データを保存</button>
+    <p class="muted" id="save-hint">初回だけ保存先に <b>UBER_LOG\tools\official-import\inbox</b> フォルダを選んでください（次回からは記憶されます）。</p>
+    <div id="save-result"></div>
+    <div class="cmd" id="cmd-box" hidden>
+      <span>次に Claude Code で:</span><code id="cmd"></code><button class="ghost" id="copy-cmd" type="button">コピー</button>
+    </div>
+  </section>
+</main>
+
+<script src="lib/activity-parser.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const P = window.UberActivityParser;
+  const images = new Map(); // name -> { file, width, height }
+  const yen = n => (n < 0 ? '-' : '') + '¥' + Math.abs(n).toLocaleString();
+
+  const today = new Date();
+  $('date').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+  // ---------- 一覧テキストの簡易解析 ----------
+  function renderParse() {
+    const date = $('date').value;
+    const text = $('activity').value;
+    const notes = [];
+    if (!text.trim()) {
+      $('parse-stats').innerHTML = '';
+      $('parse-notes').innerHTML = '';
+      return;
+    }
+    const parsed = P.parseActivityText(text, { defaultYear: date.slice(0, 4) });
+    const s = P.summarize(parsed, date);
+    $('parse-stats').innerHTML = [
+      ['Delivery', s.delivery], ['クエスト行', s.quest], ['調整', s.adjustment],
+      ['配達報酬', yen(s.deliverySales)], ['クエスト（重複排除後）', yen(s.questSales)], ['調整合計', yen(s.adjustmentSales)]
+    ].map(([k, v]) => `<div class="stat">${k}<b>${v}</b></div>`).join('');
+    if (s.unknown) notes.push(['warn', `未分類・対象外のイベントが ${s.unknown} 件あります（取込時に確認が必要です）`]);
+    if (s.duplicateCandidates) notes.push(['warn', `クエストの重複候補が ${s.duplicateCandidates} 件あります（取込時に確認が必要です）`]);
+    if (s.otherDates) notes.push(['ok', `${date} 以外の日付のイベント ${s.otherDates} 件は取込対象外です`]);
+    if (s.undatedEvents) notes.push(['warn', `日付が読み取れないイベントが ${s.undatedEvents} 件あります（日付の行も一緒にコピーしてください）`]);
+    if (!s.delivery) notes.push(['err', `${date} の Delivery が見つかりません。日付とコピー範囲を確認してください`]);
+    const imgCount = images.size;
+    if (s.delivery && imgCount && s.delivery !== imgCount) notes.push(['warn', `Delivery ${s.delivery} 件に対してスクショ ${imgCount} 枚です`]);
+    $('parse-notes').innerHTML = notes.map(([c, t]) => `<div class="note ${c}">${t}</div>`).join('');
+  }
+  $('activity').addEventListener('input', renderParse);
+  $('date').addEventListener('change', renderParse);
+
+  // ---------- 画像 ----------
+  function addFiles(list) {
+    const jobs = [...list].filter(f => /^image\/(png|jpeg)$/.test(f.type)).map(file => new Promise(resolve => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => { images.set(file.name, { file, width: img.naturalWidth, height: img.naturalHeight }); URL.revokeObjectURL(url); resolve(); };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+      img.src = url;
+    }));
+    Promise.all(jobs).then(renderImages);
+  }
+  function renderImages() {
+    $('img-count').textContent = images.size;
+    const wide = [...images.values()].filter(i => i.width > 800);
+    $('img-notes').innerHTML = wide.length
+      ? `<div class="note warn">画面全体のスクショが ${wide.length} 枚あります（幅800px超）。Delivery詳細部分だけを切り取った画像にしてください: ${wide.map(i => i.file.name).join(', ')}</div>`
+      : '';
+    $('img-list').innerHTML = [...images.values()].sort((a, b) => a.file.name.localeCompare(b.file.name, 'ja'))
+      .map(i => `<div title="${i.file.name}">${i.file.name}<br><span class="muted">${i.width}×${i.height}</span></div>`).join('');
+    renderParse();
+  }
+  const drop = $('drop');
+  drop.addEventListener('click', () => $('file-input').click());
+  $('file-input').addEventListener('change', e => addFiles(e.target.files));
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); addFiles(e.dataTransfer.files); });
+  $('clear-images').addEventListener('click', () => { images.clear(); renderImages(); });
+
+  // ---------- 保存先フォルダ（File System Access API・ハンドルを IndexedDB に記憶） ----------
+  const DB = 'uber-log-official-import';
+  function idb(mode, fn) {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('kv');
+      req.onsuccess = () => {
+        const tx = req.result.transaction('kv', mode);
+        const r = fn(tx.objectStore('kv'));
+        tx.oncomplete = () => resolve(r && r.result);
+        tx.onerror = () => reject(tx.error);
+      };
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function getInboxHandle() {
+    let handle = null;
+    try { handle = await idb('readonly', s => s.get('inbox')); } catch (e) { handle = null; }
+    if (handle && (await handle.requestPermission({ mode: 'readwrite' })) === 'granted') return handle;
+    handle = await window.showDirectoryPicker({ id: 'uber-log-inbox', mode: 'readwrite' });
+    if (handle.name !== 'inbox' && !confirm(`選んだフォルダは「${handle.name}」です。\nUBER_LOG\\tools\\official-import\\inbox を選ぶのが正しい手順です。このまま保存しますか？`)) {
+      throw new Error('保存を中止しました');
+    }
+    try { await idb('readwrite', s => s.put(handle, 'inbox')); } catch (e) { /* 記憶できなくても保存は続行 */ }
+    return handle;
+  }
+  async function writeFile(dir, name, data) {
+    const fh = await dir.getFileHandle(name, { create: true });
+    const w = await fh.createWritable();
+    await w.write(data);
+    await w.close();
+  }
+
+  function downloadText(name, text) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  function showResult(kind, html) {
+    $('save-result').innerHTML = `<div class="note ${kind}">${html}</div>`;
+  }
+
+  $('save').addEventListener('click', async () => {
+    const date = $('date').value;
+    const text = $('activity').value;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return showResult('err', '日付を指定してください');
+    if (!text.trim()) return showResult('err', 'Uberアクティビティ一覧を貼り付けてください');
+    if (!images.size && !confirm('スクリーンショットが0枚です。一覧テキストだけ保存しますか？')) return;
+
+    if (!window.showDirectoryPicker) {
+      // 代替: activity.txt をダウンロードし、フォルダへ手動で置く
+      downloadText('activity.txt', text);
+      showResult('warn', `このブラウザはフォルダへの直接保存に対応していません（Chrome / Edge 推奨）。<br>
+        1) ダウンロードした <b>activity.txt</b> を <b>tools\\official-import\\inbox\\${date}\\</b> へ移動<br>
+        2) スクショを <b>tools\\official-import\\inbox\\${date}\\screenshots\\</b> へコピー`);
+      $('cmd').textContent = `/uber-import ${date}`;
+      $('cmd-box').hidden = false;
+      return;
+    }
+    $('save').disabled = true;
+    try {
+      const inbox = await getInboxHandle();
+      const dayDir = await inbox.getDirectoryHandle(date, { create: true });
+      const shotDir = await dayDir.getDirectoryHandle('screenshots', { create: true });
+      const existing = [];
+      for await (const [name] of shotDir.entries()) existing.push(name);
+      await writeFile(dayDir, 'activity.txt', text.replace(/\r?\n/g, '\r\n'));
+      for (const { file } of images.values()) await writeFile(shotDir, file.name, file);
+      const s = P.summarize(P.parseActivityText(text, { defaultYear: date.slice(0, 4) }), date);
+      await writeFile(dayDir, 'manifest.json', JSON.stringify({
+        date, savedAt: new Date().toISOString(), source: 'official-import-v1 helper',
+        screenshots: [...images.keys()].sort(), activitySummary: s
+      }, null, 2));
+      const extra = existing.filter(n => !images.has(n));
+      showResult('ok', `保存しました: inbox\\${date}\\（activity.txt・スクショ ${images.size} 枚）` +
+        (extra.length ? `<br>※ 以前に保存した画像 ${extra.length} 枚がフォルダに残っています（不要なら削除してください）: ${extra.join(', ')}` : ''));
+      $('cmd').textContent = `/uber-import ${date}`;
+      $('cmd-box').hidden = false;
+    } catch (e) {
+      if (e.name !== 'AbortError') showResult('err', `保存できませんでした: ${e.message}`);
+    } finally {
+      $('save').disabled = false;
+    }
+  });
+
+  $('copy-cmd').addEventListener('click', () => navigator.clipboard.writeText($('cmd').textContent));
+})();
+</script>
+</body>
+</html>

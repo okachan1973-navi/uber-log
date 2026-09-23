@@ -15,3 +15,9 @@ tests/
 Thumbs.db
 .vscode/
 .idea/
+
+# UBER_LOG 公式取込v1: 生データ（Uber一覧・公式スクショ）と中間データは個人情報を含み得るためコミットしない
+tools/official-import/inbox/
+tools/official-import/staging/
+__pycache__/
+.claude/settings.local.json
