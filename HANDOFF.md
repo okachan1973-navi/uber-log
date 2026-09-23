@@ -1,18 +1,80 @@
 ================================================================================
 UBER_LOG 正本開発引継ぎドキュメント（MASTER HANDOFF）
 ================================================================================
-最終更新日時: 2026-09-24 12:00 (JST)
+最終更新日時: 2026-09-24 19:00 (JST)
 対象プロジェクト: UBER_LOG (PWA / バニラJavaScript)
 正本ファイル: C:\Users\okano\Desktop\UBER_HANDOFF.txt
-最新状態: v25。履歴Bバッジ修正（アプリで登録した「バイクシェア」経費で B が付かなかった問題を共通判定化で解消）＋ UBER取込.cmd（ダブルクリックで最新日付の /uber-import を自動開始）を追加。公式データ・MAPは変更なし。
+最新状態: v26。毎日の公式取込を「デスクトップの UBER_LOG → 取込画面 →［取り込み実行］」の1画面・1ボタンに統合（ローカルbackend＋非対話のスクショ読取＋既存パイプライン＋HANDOFF自動記録＋commit/push）。公式データ・MAPは変更なし。
+（以下 v25 時点の状態記述）v25。履歴Bバッジ修正（アプリで登録した「バイクシェア」経費で B が付かなかった問題を共通判定化で解消）＋ UBER取込.cmd（ダブルクリックで最新日付の /uber-import を自動開始）を追加。公式データ・MAPは変更なし。
 （以下 v24 時点の状態記述）v24。2026-09-23 の公式実績を公式取込v1（/uber-import）で初めて取込（20trip / 23件 / 総売上 ¥10,683 / MAP 20/20、VALIDATION PASS）。取込時に MAP切り抜きの検出改善（縦の白い道路で途切れる地図）・一覧の小数表記（￥750.00）対応を実施。9/23の経費はアプリ入力分のため HANDOFF未把握。
 （以下 v23 時点の状態記述）v23リリース。「UBER_LOG 公式取込 v1」を実装。毎日「一覧テキスト貼付＋Delivery詳細スクショ投入＋ /uber-import YYYY-MM-DD」だけで、照合・検証・反映・テスト・HANDOFF・commit/push まで進む。実績データ（9/22まで）は変更なし。
 （以下 v22 時点の状態記述）v22リリース。Uber公式明細で確認された 2026-09-22 23:46「調整」Support Adjustment -¥607 を売上調整（分析上「その他」）として正式追加。9/22総売上 ¥9,850 → ¥9,243、9/22利益 ¥8,323 → ¥7,716。Delivery tripは一切変更なし。経費ではない。80件クエストは35/80のまま。
 （以下 v21 時点の状態記述）v21リリース。2026-09-21・09-22のUber公式確定実績（25公式トリップ／35配達）を公式スクリーンショット照合のうえ追加。クエスト重複表示の二重計上排除、チップ¥50の内訳保持、Bike経費 各日¥1,527登録、80件クエスト進捗 35/80（残45）補正、公式MAP 25件追加（累計89/89件=100%）。v20の「稼働」名称変更＋経費入力機能はそのまま継続。既存確定Bikeデータ（9/18 ¥1,980、9/19 ¥1,527）と9/19 ¥320修復結果は保護済み。
 
+■ v26（2026-09-24 実装）: 毎日の公式取込を1画面・1ボタンに統合
+
+【毎日の操作（ユーザー）】※これ以外は不要（PowerShell・python -m http.server・UBER取込.cmd・Claude Code 手動起動・/uber-import 入力はすべて不要）
+  ① デスクトップの「UBER_LOG」をダブルクリック → ② 日付を確認 → ③ Uber一覧を貼る → ④ スクショを全部ドラッグ → ⑤「取り込み実行」→ 完了結果を見る（「UBER_LOGを見る」で本体へ）
+
+1. 起動方式:
+  - デスクトップの「UBER_LOG.lnk」（tools/official-import/install-shortcut.ps1 で作成済み・再作成可）→ wscript.exe tools\official-import\launcher.vbs（コンソール画面なし）。
+  - launcher.vbs: http://127.0.0.1:8088/api/health で UBER_LOG backend が起動済みか確認 → 未起動なら node tools\official-import\server.js を非表示で起動（起動済みなら二重起動しない）
+    → http://localhost:8088/tools/official-import/ を既定のブラウザで開く。
+    ポート8088を別のプログラム（以前の手動 python -m http.server 等）が使っている場合は起動せずメッセージ表示。Node.js が無い場合もメッセージ表示。
+  - 以前ユーザーが手動で起動していた python -m http.server 8088（全インターフェースで待受け＝LANにも公開されていた）はユーザー了承のうえ停止済み。今後は不要。
+
+2. ローカルbackend（tools/official-import/server.js・Node.js 標準機能のみ・外部ライブラリなし）:
+  - Node.js を選択（既存の取込パイプラインが Node 製のため同一ランタイムで最も安全）。
+  - 待受けは 127.0.0.1 と ::1 のみ（LAN・外部に非公開。テストで LAN アドレスから接続不可を確認）。Host ヘッダーが localhost/127.0.0.1 以外は拒否（DNS rebinding 対策）。
+  - API は独自ヘッダー X-UBER-LOG: 1 必須＋他サイト Origin 拒否（他サイトのページから取込を実行させない）。
+  - 配信: / = 通常の UBER_LOG（リポジトリをそのまま配信）、/tools/official-import/ = 公式取込画面。inbox・staging・logs・ドットファイル（.git 等）は配信しない。
+  - API: health（起動確認）/ inbox/<日付>（保存済みの一覧・スクショ名）/ import（取り込み実行・POST）/ jobs/<id>（処理状況）。いずれも /api 配下。
+  - ログ: tools/official-import/logs/server.log（gitignore）。
+  - sw.js: /api 配下をキャッシュ対象外に（GitHub Pages 公開版には /api が無いため影響なし）。
+
+3. 取込実行フロー（tools/official-import/lib/import-job.js。判断ロジックは既存 pipeline.js をそのまま使用）:
+  0) 取込で更新するファイル（js/store.js・js/trip-maps.js・assets/maps・index.html・sw.js・version.json・HANDOFF.md）に未コミット変更があれば混ぜずに停止
+  1) 保存: inbox/<日付>/activity.txt・screenshots/（画面で × にした画像は削除せず inbox/<日付>/_previous/<時刻>/ へ退避）・decisions.json（画面の「MAPなしで取り込む」）
+  2) 一覧解析: 既存 prepare（lib/run-step.js 経由で子プロセス実行）
+  3) スクショ確認: 未読・内容が変わった画像（sha256 で判定）だけ Claude Code を非対話で起動して読取（lib/screen-reader.js）
+     起動: claude.exe -p --tools Read --permission-prompts none --output-format json --json-schema <スキーマ> --no-session-persistence（8枚ずつ）
+     → 使えるのは Read のみ・許可が要る操作は自動拒否・権限スキップ不使用。構造化出力（structured_output）を backend が staging/<日付>.screens.json へ書く。
+     読取ルールは /uber-import と同じ（推測禁止・読めない値は UNKNOWN・配達先は丁目まで・ローマ字のみの配達先は区名を推測せず原文を note）。
+  4) MAP作成・検証: 既存 validate（MAP crop 含む）→ FAIL なら本体に書かず「確認が必要です」
+  5) UBER_LOG反映: 既存 apply（取込済みで差分なしなら「完了（取込済み・変更なし）」で終了・二重登録なし）
+  6) テスト: node tools/official-import/import.js test（FAIL なら commit しない）
+  7) 記録: 既存 report → HANDOFF の「公式取込 自動記録」ブロック（開始／終了マーカー間・日別行＋最新集計）を自動更新（lib/handoff.js、手書き部分は変更しない）
+     → HANDOFF.md へ同期 → 取込対象ファイルのみ git add → commit「data(<日付>): official import (<N> trips, ¥<総売上>)」→ push
+  8) 完了画面: 日付・トリップ・配達・配達報酬・クエスト・調整・総売上・距離・配達時間・MAP・VALIDATION PASS・［UBER_LOGを見る］（http://localhost:8088/）
+
+4. エラー・確認時の動作（すべて取込画面の中に表示。PowerShell には戻さない）:
+  - 処理中は「保存中 → 一覧解析中 → スクショ確認中 → MAP作成・検証中 → UBER_LOG反映中 → テスト中 → 記録・保存中 → 完了」を表示。
+  - MAP不足: 「N件のMAP画像を確認できません」＋時刻・金額・ファイル名、［スクショを追加する］［MAPなしで取り込む］。
+  - 読めない項目・Delivery詳細以外の画像・件数や金額の不一致・未分類イベント等: 項目ごとに表示（本体は非反映）。
+  - Claude Code が無い: 「Claude Code が見つかりません」を表示して停止。テスト失敗: 反映済み・未 commit であることを表示。push 失敗: commit 済みであることを表示。
+  - 同時実行は1件のみ（実行中は受付しない）。未来日は受け付けない。
+
+5. 旧入口の扱い:
+  - v25 の UBER取込.cmd はユーザー確認のうえ削除（リポジトリからも削除）。
+  - 保守用として残す: run-latest-import.ps1（最新日付で対話型 /uber-import を開始）、Claude Code の /uber-import YYYY-MM-DD、import.js の各コマンド。README は保守用節に移動。
+
+6. 既存PWA: スマホの4タブ（稼働・履歴・分析・地雷）・画面は変更なし。GitHub Pages 公開版はローカルAPIに依存しない（取込画面は backend が無いと「PCのローカル専用」表示のみ）。
+   ※ localhost の UBER_LOG は GitHub Pages とは別オリジンのため、端末保存データ（経費等）はクラウド同期ログイン時のみ共通。
+
+7. テスト（node tools/official-import/import.js test: 150項目 全PASS。うち spec/server-tests.js 32項目＋ランチャー4項目）:
+  - backend: 配信（/・/tools/official-import/）・Host/ヘッダー/Origin 拒否・生データ非配信・LAN から接続不可・未来日拒否
+  - 取り込み実行（一時リポジトリ＋送信先 bare リポジトリで実行）: 保存（日付フォルダ・activity・スクショ）→ MAP不足で「確認が必要です」（14:48 ¥331 を表示・本体非反映）
+    → MAPなしで取り込む → 反映・HANDOFF 自動記録・HANDOFF.md 同期・commit（取込対象ファイルのみ）・push → git status clean
+    → 同日再実行で「変更なし」・commit なし / 読めないスクショ・件数不一致で本体非反映 / 未コミット変更があれば停止 / × の画像は _previous へ退避 / Claude Code なしで停止
+  - ランチャー: 未起動→非表示で自動起動 / 起動済み→二重起動しない（同一pid）/ 待受けはループバックのみ / 別プログラムがポート使用中→起動しない
+  - 実環境確認（2026-09-24）: launcher で 8088 に起動（127.0.0.1・::1 のみ）→ 画面と同じ API で 2026-09-23 を取り込み実行 → 「完了（取込済み・変更なし）」
+    20trip / 23配達 / ¥10,683 / MAP 20/20、HEAD・js/store.js 不変。取込画面は保存済みの一覧・スクショ20枚を自動読込し、処理ステップの進行表示を確認。
+  - スクショ読取（claude -p・Read のみ・構造化出力）は実際の 9/23 スクショ1枚で動作確認済み（13:14 ¥320 を正しく返却）。
+  - バージョン: 20260924_v26（index.html / sw.js / version.json）
+
 ■ v25（2026-09-24 実装）: 履歴Bバッジ修正＋毎日取込ワンクリック化（UBER取込.cmd）
 
-【毎日の操作（ユーザー）: 5ステップ・日付入力不要】
+【毎日の操作（v25時点・v26で置き換え済み）】
   ① Uberアクティビティ一覧をコピー → ② 取込画面 tools/official-import/index.html へ貼付 → ③ Delivery詳細スクショを全部ドラッグ
   → ④［取込データを保存］ → ⑤ UBER_LOG\UBER取込.cmd をダブルクリック
 
@@ -360,18 +422,19 @@ UBER_LOGは、Uber Eats 配達員向けの実働・売上・配達効率・地�
 
 - 技術スタック:
   - フロントエンド: Vanilla HTML5 / CSS3 / ES6+ JavaScript（ビルド不要）
-  - オフライン & 自動更新: Service Worker（sw.js, キャッシュ名: uber-log-20260924_v25）
-  - バージョン管理: version.json + window.UBER_LOG_APP_VERSION = '20260924_v25'（公式取込 apply 時に自動で +1）
+  - オフライン & 自動更新: Service Worker（sw.js, キャッシュ名: uber-log-20260924_v26）
+  - バージョン管理: version.json + window.UBER_LOG_APP_VERSION = '20260924_v26'（公式取込 apply 時に自動で +1）
   - データ永続化: localStorage（キー: uber_log_v1_data, uber_log_trip_map_memos, uber_log_history_sort_order, uber_log_quest_*） + Supabase クラウド同期（cloud-sync.js）
   - デザイン思想: iPhone縦画面（幅375〜430px）最優先のハイコントラスト・ダークモダンUI
 
 - 主要ファイル構成:
   - index.html: 4大タブ構造（稼働/履歴/分析/地雷）、経費入力インラインセクション（日付変更可・バイクシェア/必要経費の2分類・登録/修正/削除対応）、今週の売上利益カード（緑枠・2列3段6項目）、今月の実績カード（オレンジ枠・売上利益看板・2列4段8項目）、今週のクエスト進捗カード、Service Worker自動登録・更新監視
-  - sw.js: Service Worker（SW_VERSION: 20260924_v25）
-  - version.json: 公開版バージョンメタデータ（version: 20260924_v25）
+  - sw.js: Service Worker（SW_VERSION: 20260924_v26）
+  - version.json: 公開版バージョンメタデータ（version: 20260924_v26）
   - tools/official-import/: 公式取込 v1（PC用取込補助画面・CLI・解析/照合/検証/反映・MAP切り抜き・テスト。inbox/・staging/ はGit管理外）
   - .claude/commands/uber-import.md: /uber-import YYYY-MM-DD（毎日の公式取込コマンド）
-  - UBER取込.cmd ＋ tools/official-import/run-latest-import.ps1: 最新の inbox 日付を自動判定して /uber-import を起動（毎日はダブルクリックのみ）
+  - デスクトップ「UBER_LOG」→ tools/official-import/launcher.vbs → server.js（127.0.0.1:8088）→ 公式取込画面［取り込み実行］（v26 の日常入口）
+  - tools/official-import/run-latest-import.ps1: 保守用（v25 の UBER取込.cmd は v26 で削除）
   - manifest.json: PWA定義（start_url: ./index.html, scope: ./, display: standalone）
   - js/app.js: メインコントローラー（フォアグラウンド復帰時の自動バージョンチェック、復旧用ボタン制御、経費入力イベント初期化）
   - js/store.js: データストア（公式シードデータ、自動マイグレーション、メトリクス計算、銀行営業日振込日動的算出、特別ボーナス除外平均計算、クエスト重複排除、日別比較データ生成、MAP一口メモ永続化、曜日色統一、日別属性定義、履歴ソート管理、週クエスト進捗管理、週次売上利益計算、月次売上利益計算、Bike経費集計、経費CRUD（addExpense/updateExpense/deleteExpense/getRecentExpenses）、月次必要経費集計）
