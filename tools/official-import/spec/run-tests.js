@@ -504,6 +504,15 @@ try {
   }
 
   // ==========================================================
+  section('14. 経費（ユーザー入力）の端末保存・クラウド同期（spec/sync-tests.js）');
+  {
+    const r = spawnSync(process.execPath, [path.join(__dirname, 'sync-tests.js')], { encoding: 'utf8', timeout: 5 * 60 * 1000 });
+    process.stdout.write((r.stdout || '').split('\n').filter(l => !/^結果:/.test(l)).join('\n'));
+    const m = (r.stdout || '').match(/結果: (\d+) passed, (\d+) failed/);
+    if (m) { passed += Number(m[1]); failed += Number(m[2]); } else { failed++; console.log(`  ❌ sync-tests が完了しません: ${(r.stderr || '').slice(0, 300)}`); }
+  }
+
+  // ==========================================================
   section('13-7. デスクトップ用ランチャー（launcher.vbs）');
   {
     const vbs = path.join(__dirname, '..', 'launcher.vbs');

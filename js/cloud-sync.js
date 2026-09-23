@@ -27,6 +27,7 @@ class CloudSyncManager {
     this.pushTimeout = null;
     this.isSyncing = false;
     this.pendingSyncDates = this.loadPendingSyncDates();
+    this.localVersions = {}; // 日付ごとの端末内変更回数（送信中の変更を取りこぼさないため）
 
     this.initEventListeners();
   }
@@ -119,6 +120,7 @@ class CloudSyncManager {
   // ローカルデータ保存時のフック（store.js から呼び出される）
   onLocalDataSaved(changedDate = null) {
     if (changedDate) {
+      this.localVersions[changedDate] = (this.localVersions[changedDate] || 0) + 1;
       this.pendingSyncDates.add(changedDate);
     } else {
       // 日付未指定の場合は本日の日付をマーク
@@ -339,18 +341,22 @@ class CloudSyncManager {
       }
     }
 
-    // 5. 当日経費明細のマージ（ID一致時はローカル優先、新規明細は全て合算）
+    // 5. 当日経費明細のマージ（ID単位の和集合。片方にだけある経費は必ず残す。同じIDは updatedAt が新しい方）
     //    削除済みマーク（tombstone）は両端を統合し、削除した経費の復活を防ぐ
     const deletedExpenseIds = Array.from(new Set([
       ...(Array.isArray(cloudLog.deletedExpenseIds) ? cloudLog.deletedExpenseIds : []),
       ...(Array.isArray(localLog.deletedExpenseIds) ? localLog.deletedExpenseIds : [])
     ]));
-    const expMap = new Map();
-    (cloudLog.expenses || []).forEach(e => expMap.set(e.id, { ...e }));
-    (localLog.expenses || []).forEach(e => {
-      expMap.set(e.id, { ...(expMap.get(e.id) || {}), ...e });
-    });
-    merged.expenses = Array.from(expMap.values()).filter(e => !deletedExpenseIds.includes(e.id));
+    if (typeof window !== 'undefined' && typeof window.mergeExpenseLists === 'function') {
+      merged.expenses = window.mergeExpenseLists(localLog.expenses, cloudLog.expenses, deletedExpenseIds);
+    } else {
+      const expMap = new Map();
+      (cloudLog.expenses || []).forEach(e => expMap.set(e.id, { ...e }));
+      (localLog.expenses || []).forEach(e => {
+        expMap.set(e.id, { ...(expMap.get(e.id) || {}), ...e });
+      });
+      merged.expenses = Array.from(expMap.values()).filter(e => !deletedExpenseIds.includes(e.id));
+    }
     if (deletedExpenseIds.length > 0) {
       merged.deletedExpenseIds = deletedExpenseIds;
     }
@@ -437,8 +443,13 @@ class CloudSyncManager {
         });
 
         if (hasLocalUpdate) {
-          // LocalStorageへ永続化（ループ防止のため直接setItem）
-          localStorage.setItem('uber_log_v1_data', JSON.stringify(store.state));
+          // LocalStorageへ永続化（クラウド送信フックは呼ばない）。
+          // 別の画面が先に保存した経費等を消さないよう、保存済みデータと日ごとに統合して書く
+          if (typeof store.persistState === 'function') {
+            store.persistState();
+          } else {
+            localStorage.setItem('uber_log_v1_data', JSON.stringify(store.state));
+          }
           // UI再描画を要請
           if (window.app && typeof window.app.renderAll === 'function') {
             window.app.renderAll();
@@ -492,9 +503,29 @@ class CloudSyncManager {
 
     const datesToPush = Array.from(this.pendingSyncDates);
 
+    // 送信前に現在のクラウド側を取得し、日ごとに統合してから送る（別端末が先に送った経費等を上書きで消さない）
+    const { data: cloudRows, error: fetchError } = await client
+      .from('uber_daily_logs')
+      .select('date, data, updated_at')
+      .eq('user_id', userId);
+    if (fetchError) {
+      throw new Error(`送信前のクラウド確認に失敗: ${fetchError.message}`); // pending は残して次回再送
+    }
+    const cloudByDate = new Map((cloudRows || []).map(r => [r.date, r.data]));
+
     for (const date of datesToPush) {
-      const dayLog = store.state.dailyLogs[date];
+      const versionAtStart = this.localVersions[date] || 0;
+      let dayLog = store.state.dailyLogs[date];
       if (dayLog) {
+        const cloudDay = cloudByDate.get(date);
+        if (cloudDay) {
+          const merged = this.mergeDailyLog(dayLog, cloudDay);
+          if (JSON.stringify(merged) !== JSON.stringify(dayLog)) {
+            store.state.dailyLogs[date] = merged;
+            if (typeof store.persistState === 'function') store.persistState();
+            dayLog = merged;
+          }
+        }
         const { error } = await client
           .from('uber_daily_logs')
           .upsert({
@@ -508,7 +539,10 @@ class CloudSyncManager {
           throw error; // エラー時はpendingSyncDatesから削除せず次回再送
         }
       }
-      this.pendingSyncDates.delete(date);
+      // 送信中にこの日が変更された場合は、次回も送るため pending を残す
+      if ((this.localVersions[date] || 0) === versionAtStart) {
+        this.pendingSyncDates.delete(date);
+      }
     }
 
     this.savePendingSyncDates();

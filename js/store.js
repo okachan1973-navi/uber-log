@@ -1990,6 +1990,68 @@ function isBikeExpense(expense) {
   return !isNaN(amt) && amt > 0 && isBikeExpenseCategory(expense.category);
 }
 
+// ------------------------------------------------------------
+// ユーザー入力データ（経費など）のマージ（端末保存・クラウド同期で共用）
+// 経費は Uber 公式データとは別のユーザーデータ。日別ログ全体の新旧で丸ごと勝ち負けさせず、必ずID単位で統合する。
+//  - 片方にだけある経費は残す（削除済み tombstone に載っているものだけ除く）
+//  - 同じIDは updatedAt（無ければ createdAt）が新しい方。同じなら primary 側
+//  - deletedExpenseIds は両方の和集合（削除した経費を復活させない）
+// ------------------------------------------------------------
+function expenseTime(e) {
+  const t = Date.parse((e && (e.updatedAt || e.createdAt)) || '');
+  return isNaN(t) ? 0 : t;
+}
+function mergeExpenseLists(primary, other, deletedIds = []) {
+  const deleted = new Set(deletedIds);
+  const map = new Map();
+  const keyOf = e => (e && e.id) ? e.id : `noid:${JSON.stringify(e)}`;
+  (Array.isArray(primary) ? primary : []).forEach(e => map.set(keyOf(e), { ...e }));
+  (Array.isArray(other) ? other : []).forEach(e => {
+    const k = keyOf(e);
+    const cur = map.get(k);
+    if (!cur || expenseTime(e) > expenseTime(cur)) map.set(k, { ...e });
+  });
+  return Array.from(map.values()).filter(e => !(e && e.id && deleted.has(e.id)));
+}
+function mergeById(primary, other) {
+  const map = new Map();
+  (Array.isArray(other) ? other : []).forEach(x => map.set(x && x.id, { ...x }));
+  (Array.isArray(primary) ? primary : []).forEach(x => map.set(x && x.id, { ...(map.get(x && x.id) || {}), ...x }));
+  return Array.from(map.values());
+}
+// 同じ日の2つのコピーを統合（primary の内容を基本に、other にしか無いユーザー入力を失わない）
+function mergeDayUserData(primary, other) {
+  if (!other) return primary;
+  if (!primary) return other;
+  const merged = { ...primary };
+  const deletedIds = Array.from(new Set([
+    ...(Array.isArray(primary.deletedExpenseIds) ? primary.deletedExpenseIds : []),
+    ...(Array.isArray(other.deletedExpenseIds) ? other.deletedExpenseIds : [])
+  ]));
+  if (primary.expenses || other.expenses) merged.expenses = mergeExpenseLists(primary.expenses, other.expenses, deletedIds);
+  if (deletedIds.length) merged.deletedExpenseIds = deletedIds;
+  if (primary.workSessions || other.workSessions) {
+    merged.workSessions = mergeById(primary.workSessions, other.workSessions)
+      .sort((a, b) => String(a.start || '').localeCompare(String(b.start || '')));
+  }
+  if (primary.manualTapsArchive || other.manualTapsArchive) merged.manualTapsArchive = mergeById(primary.manualTapsArchive, other.manualTapsArchive);
+  if (!merged.vehicleType && other.vehicleType) merged.vehicleType = other.vehicleType;
+  return merged;
+}
+
+// シードの確定Bike経費（9/18・9/19 等）が端末データに無い場合だけ追加する。既存の経費は置き換えない。
+// ユーザーが削除した（deletedExpenseIds にある）シード経費は復活させない。追加したら true
+function restoreSeedBikeExpense(target, seedLog) {
+  const seedExpenses = Array.isArray(seedLog.expenses) ? seedLog.expenses : [];
+  if (!seedExpenses.length) return false;
+  const current = Array.isArray(target.expenses) ? target.expenses : [];
+  const deleted = Array.isArray(target.deletedExpenseIds) ? target.deletedExpenseIds : [];
+  if (current.some(isBikeExpense) || seedExpenses.some(e => deleted.includes(e.id))) return false;
+  target.expenses = current.concat(seedExpenses.filter(e => !current.some(c => c.id === e.id)));
+  if (!target.vehicleType) target.vehicleType = 'バイクシェア利用';
+  return true;
+}
+
 function getConfirmedSeedData() {
   return JSON.parse(JSON.stringify(CONFIRMED_SEED_DATA));
 }
@@ -2575,6 +2637,7 @@ function parseUberSalesText(rawText) {
 class Store {
   constructor() {
     this.state = this.loadFromStorage();
+    this.watchOtherInstances();
   }
 
   // LocalStorageから読み込み（初回起動時は空シードをロード、既存データは完全保持）
@@ -2682,11 +2745,8 @@ class Store {
             target.sales = log.sales;
             hasChange = true;
           }
-          if (!target.expenses || target.expenses.length === 0 || target.expenses[0].category !== 'バイクシェア利用') {
-            target.expenses = log.expenses;
-            target.vehicleType = 'バイクシェア利用';
-            hasChange = true;
-          }
+          // 確定Bike経費が無い場合だけ補う（ユーザーが登録した経費は置き換えない・削除済み tombstone は復活させない）
+          if (restoreSeedBikeExpense(target, log)) hasChange = true;
           if (!target.workSessions || target.workSessions.length === 0) {
             target.workSessions = log.workSessions;
             target.workStartedAt = log.workStartedAt;
@@ -2714,11 +2774,8 @@ class Store {
             target.sales = log.sales;
             hasChange = true;
           }
-          if (!target.expenses || target.expenses.length === 0 || target.expenses[0].category !== 'バイクシェア利用') {
-            target.expenses = log.expenses;
-            target.vehicleType = 'バイクシェア利用';
-            hasChange = true;
-          }
+          // 確定Bike経費が無い場合だけ補う（ユーザーが登録した経費は置き換えない・削除済み tombstone は復活させない）
+          if (restoreSeedBikeExpense(target, log)) hasChange = true;
           if (!target.quests || target.quests.length < 5) {
             target.quests = log.quests;
             hasChange = true;
@@ -2872,11 +2929,51 @@ class Store {
     }
   }
 
+  // 端末保存（LocalStorage）への書込。
+  // 同じ端末で別の画面（タブ・ホーム画面アプリ・古いインスタンス）が先に保存した内容を、この画面の古いメモリ内容で
+  // 上書きしないよう、保存済みデータを読み直して日ごとに統合してから書く（経費等のユーザー入力は ID 単位で和集合）。
+  // replace: true は全データの復元・初期化のときだけ（統合せずにそのまま書く）。
+  persistState({ replace = false } = {}) {
+    if (typeof localStorage === 'undefined') return;
+    let toWrite = this.state;
+    if (!replace) {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const stored = raw ? JSON.parse(raw) : null;
+        if (stored && stored.dailyLogs && this.state && this.state.dailyLogs) {
+          const logs = { ...stored.dailyLogs };
+          Object.entries(this.state.dailyLogs).forEach(([d, day]) => {
+            logs[d] = stored.dailyLogs[d] ? mergeDayUserData(day, stored.dailyLogs[d]) : day;
+          });
+          this.state.dailyLogs = logs;
+          toWrite = { ...stored, ...this.state, dailyLogs: logs };
+        }
+      } catch (e) {
+        // 保存済みデータが読めない場合はメモリ内容をそのまま書く
+      }
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toWrite));
+  }
+
+  // 別の画面が端末保存を更新したら、この画面のメモリ内容も最新に読み直す
+  watchOtherInstances() {
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;
+    window.addEventListener('storage', (e) => {
+      if (e && e.key && e.key !== STORAGE_KEY) return;
+      try {
+        this.state = this.loadFromStorage();
+        if (typeof ui !== 'undefined' && ui && typeof ui.refreshAll === 'function') ui.refreshAll();
+      } catch (err) {
+        console.warn('UBER_LOG: failed to reload after storage change', err);
+      }
+    });
+  }
+
   // LocalStorageへ保存 & クラウド同期フック呼び出し
-  saveToStorage(changedDate = null) {
+  saveToStorage(changedDate = null, { replace = false } = {}) {
     try {
       if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+        this.persistState({ replace });
       }
       if (typeof window !== 'undefined' && window.cloudSync && typeof window.cloudSync.onLocalDataSaved === 'function') {
         window.cloudSync.onLocalDataSaved(changedDate);
@@ -4417,7 +4514,7 @@ class Store {
         throw new Error('無効なデータ形式です（dailyLogsが見つかりません）');
       }
       this.state = data;
-      this.saveToStorage();
+      this.saveToStorage(null, { replace: true });
       return { success: true };
     } catch (e) {
       return { success: false, error: e.message };
@@ -4430,7 +4527,7 @@ class Store {
       version: '1.1',
       dailyLogs: {}
     };
-    this.saveToStorage();
+    this.saveToStorage(null, { replace: true });
   }
 }
 
@@ -4452,6 +4549,8 @@ if (typeof window !== 'undefined') {
   window.getConfirmedSeedData = getConfirmedSeedData;
   window.isBikeExpenseCategory = isBikeExpenseCategory;
   window.isBikeExpense = isBikeExpense;
+  window.mergeExpenseLists = mergeExpenseLists;
+  window.mergeDayUserData = mergeDayUserData;
   window.getTodayDateString = getTodayDateString;
   window.getCurrentTimeString = getCurrentTimeString;
   window.formatJapaneseDate = formatJapaneseDate;
@@ -4489,6 +4588,8 @@ if (typeof module !== 'undefined' && module.exports) {
     getConfirmedSeedData,
     isBikeExpenseCategory,
     isBikeExpense,
+    mergeExpenseLists,
+    mergeDayUserData,
     getTodayDateString,
     getCurrentTimeString,
     formatJapaneseDate,
