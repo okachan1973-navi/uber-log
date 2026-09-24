@@ -523,7 +523,7 @@ class UI {
     // 種類ごとの入力初期値（バイクシェアは基本的に1日パスのみ利用。入力後の手動変更は可能）
     const EXPENSE_TYPE_PRESETS = {
       '必要経費': { memo: '', amount: '' },
-      'バイクシェア': { memo: 'バイクシェア1日パス', amount: '527' }
+      'バイクシェア': { memo: 'バイクシェア1日パス', amount: '1527' }
     };
     const typeEl = document.getElementById('expense-input-type');
     const contentEl = document.getElementById('expense-input-content');
@@ -1241,11 +1241,9 @@ class UI {
     this.initHistoryViewToggle();
 
     const allLogs = store.getAllDailyLogs();
-    const activeLogs = allLogs.filter(log => {
-      // 非稼働が確認済みの日（カレンダーで「休」）は一覧に出さない。配達実績・売上のある日は getDayStatus が worked を返すため対象外
-      if (store.getDayStatus && store.getDayStatus(log.date).status === 'off') return false;
-      return (log.deliveries && log.deliveries.length > 0) || (log.quests && log.quests.length > 0) || log.workStartedAt || log.totalDistanceKm !== null;
-    });
+    // 一覧に出すのは稼働日だけ（共通判定 store.isWorkedDay。分析の日別比較・カレンダーと同じ定義）。
+    // 稼働開始時刻・workSession・手動タップ・経費だけの日、空レコード、今日というだけの日は出さない（データは削除しない）
+    const activeLogs = allLogs.filter(log => store.isWorkedDay(log));
 
     // 見出しの期間（一覧に並ぶ日の最初〜最後）
     const titleEl = document.getElementById('history-title');
@@ -1338,7 +1336,7 @@ class UI {
         additionalCards.push(`
           <div class="balance-card card-bonus">
             <div class="balance-card-left">
-              <span class="day-attr-badge attr-bonus">賞</span>
+              <span class="day-attr-badge attr-bonus attr-quest-trophy">🏆</span>
               <div class="balance-card-info">
                 <span class="balance-card-title">特別収入（新規保証）</span>
                 ${metrics.milestone ? `<span class="balance-card-sub">${metrics.milestone}</span>` : ''}

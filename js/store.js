@@ -2562,19 +2562,14 @@ const DAY_ATTRIBUTE_DEFINITIONS = {
     className: 'attr-adjustment',
     description: '基本報酬や通常クエストとは別に調整金が付与された日'
   },
+  // 🏆 特別ボーナス系（v38〜 旧「賞」を廃止して統一）。新規保証・特別収入（guaranteeBonus）と
+  // 特別クエスト（questType: special）のどちらか／両方がある日に1個だけ付く。内部データの分類は別のまま
   special_bonus: {
     key: 'special_bonus',
-    label: '賞',
-    fullName: '特別保証・ボーナス',
-    className: 'attr-bonus',
-    description: '通常報酬や通常クエストとは別の特別保証・ボーナスが発生した日'
-  },
-  special_quest: {
-    key: 'special_quest',
     label: '🏆',
-    fullName: '特別クエスト',
+    fullName: '特別ボーナス（新規保証・特別収入／特別クエスト）',
     className: 'attr-bonus attr-quest-trophy',
-    description: '特別クエスト（questType: special。例: 80回乗車クエスト）の報酬があった日。配色は「賞」と同じ金色系'
+    description: '新規保証・特別収入、または特別クエスト（例: 80回乗車クエスト）の報酬があった日。金色系'
   },
   tip: {
     key: 'tip',
@@ -2592,8 +2587,8 @@ const DAY_ATTRIBUTE_DEFINITIONS = {
   }
 };
 
-// 属性表示の固定優先順位（B -> 調 -> 賞 の定義順）
-const DAY_ATTRIBUTE_PRIORITY = ['bike_share', 'adjustment', 'special_bonus', 'special_quest', 'tip'];
+// 属性表示の固定優先順位（B -> 調 -> 🏆 -> ♥ の定義順）
+const DAY_ATTRIBUTE_PRIORITY = ['bike_share', 'adjustment', 'special_bonus', 'tip'];
 
 // 所要時間文字列を秒単位の数値に正確にパース（公式トリップ所要時間の厳密合算用）
 function parseDurationToSeconds(durationStr) {
@@ -3674,16 +3669,13 @@ class Store {
       attrs.push(DAY_ATTRIBUTE_DEFINITIONS.adjustment);
     }
 
-    // 3. 特別保証・ボーナス属性 (賞)
-    // 対象日: guaranteeBonus > 0 の日（例: 2026-09-19）
-    if ((metrics && metrics.guaranteeBonus > 0) || (log && log.sales && log.sales.guaranteeBonus > 0) || dateStr === '2026-09-19') {
+    // 3. 特別ボーナス系属性 (🏆)
+    // 対象日: 新規保証・特別収入 guaranteeBonus > 0 の日（例: 2026-09-19）または
+    //         特別クエスト（questType: special）の報酬がある日（例: 2026-09-24）。両方あっても1個だけ
+    const hasGuaranteeBonus = (metrics && metrics.guaranteeBonus > 0) || (log && log.sales && log.sales.guaranteeBonus > 0) || dateStr === '2026-09-19';
+    const hasSpecialQuest = !!(metrics && metrics.specialQuestSales > 0);
+    if (hasGuaranteeBonus || hasSpecialQuest) {
       attrs.push(DAY_ATTRIBUTE_DEFINITIONS.special_bonus);
-    }
-
-    // 定義された優先順位に従って固定ソート（B -> 調 -> 賞）
-    // 3-2. 特別クエスト属性 (🏆): questType が special のクエストが1件以上ある日（複数あっても1個）
-    if (metrics && metrics.specialQuestSales > 0) {
-      attrs.push(DAY_ATTRIBUTE_DEFINITIONS.special_quest);
     }
 
     // 4. チップ属性 (♥): その日の配達にチップ（tip > 0）がある日
@@ -3691,7 +3683,8 @@ class Store {
       attrs.push(DAY_ATTRIBUTE_DEFINITIONS.tip);
     }
 
-    const priority = (typeof DAY_ATTRIBUTE_PRIORITY !== 'undefined') ? DAY_ATTRIBUTE_PRIORITY : ['bike_share', 'adjustment', 'special_bonus', 'special_quest', 'tip'];
+    // 定義された優先順位に従って固定ソート（B -> 調 -> 🏆 -> ♥）
+    const priority = (typeof DAY_ATTRIBUTE_PRIORITY !== 'undefined') ? DAY_ATTRIBUTE_PRIORITY : ['bike_share', 'adjustment', 'special_bonus', 'tip'];
     attrs.sort((a, b) => {
       const idxA = priority.indexOf(a.key);
       const idxB = priority.indexOf(b.key);
@@ -4755,14 +4748,36 @@ class Store {
     };
   }
 
-  // 日別の稼働状況（履歴カレンダー用。一覧と同じ日別データ・同じ計算を使う）
-  //  worked : 配達実績（件数）または売上がある日
+  // 稼働日の共通判定（日別履歴一覧・分析の日別比較/稼働日数・カレンダーで共通）。引数は日付文字列または日別ログ
+  // 稼働日 = 次のいずれか
+  //  - 公式の配達件数（deliveriesCount）またはトリップ数（tripsCount）が1以上
+  //  - 実配達（店舗名または報酬額の入った Delivery）が1件以上
+  //  - 配達売上（deliverySales）が0より大きい
+  // 稼働開始時刻・workSession・手動タップ（店舗名も報酬もない空タップ）・経費・同期データだけの日、
+  // 空レコード、0件/売上0の日は稼働日ではない。「今日」かどうか・レコードの有無では判定しない
+  isWorkedDay(dateOrLog) {
+    const log = typeof dateOrLog === 'string'
+      ? (this.state && this.state.dailyLogs ? this.state.dailyLogs[dateOrLog] : null)
+      : dateOrLog;
+    if (!log) return false;
+    if (Number(log.deliveriesCount) > 0 || Number(log.tripsCount) > 0) return true;
+    const hasRealDelivery = (log.deliveries || []).some(d => d && (
+      (d.restaurant && String(d.restaurant).trim() !== '') ||
+      (d.fee !== null && d.fee !== undefined && d.fee !== '' && Number(d.fee) > 0)
+    ));
+    if (hasRealDelivery) return true;
+    const metrics = this.getCalculatedMetrics(log);
+    return metrics.deliverySales !== null && metrics.deliverySales > 0;
+  }
+
+  // 日別の稼働状況（履歴カレンダー用。一覧・日別比較と同じ isWorkedDay で判定）
+  //  worked : 稼働日（isWorkedDay）
   //  off    : 稼働していないことが確認済みの日（CONFIRMED_DAY_OFF_DATES、または日別データの dayOff: true）
   //  unknown: それ以外（未来・未入力・判定できない日）。「休」にはしない
   getDayStatus(dateStr) {
     const log = this.state && this.state.dailyLogs ? this.state.dailyLogs[dateStr] : null;
     const metrics = log ? this.getCalculatedMetrics(log) : null;
-    if (metrics && (metrics.count > 0 || (metrics.totalSales !== null && metrics.totalSales !== 0))) {
+    if (metrics && this.isWorkedDay(log)) {
       return { status: 'worked', count: metrics.count, totalSales: metrics.totalSales, netProfit: metrics.netProfit };
     }
     if (CONFIRMED_DAY_OFF_DATES.includes(dateStr) || (log && log.dayOff === true)) {
@@ -4785,7 +4800,8 @@ class Store {
       .forEach(l => {
         const m = this.getCalculatedMetrics(l);
         if (!(m.count > 0 || m.totalSales !== null || m.totalExpenses > 0)) return;
-        out.days++;
+        // 「稼働 N日」は共通の稼働日判定で数える（金額の集計対象は従来どおり）
+        if (this.isWorkedDay(l)) out.days++;
         out.deliveriesCount += m.count;
         out.deliverySales += (m.deliverySales || 0);
         out.baseDeliverySales += (m.baseDeliverySales || 0);
@@ -4818,8 +4834,8 @@ class Store {
 
     allLogs.forEach(log => {
       const metrics = this.getCalculatedMetrics(log);
-      const hasActivity = metrics.count > 0 || log.workStartedAt || metrics.totalSales !== null;
-      if (hasActivity) {
+      // 稼働日数・平均は稼働日（isWorkedDay）だけで集計（稼働開始時刻だけの日などは含めない）
+      if (this.isWorkedDay(log)) {
         activeDaysCount++;
         totalDeliveries += metrics.count;
         if (metrics.totalSales !== null) {
@@ -4853,10 +4869,8 @@ class Store {
       : '0時間0分';
 
     // 日別比較用データ（全稼働日、降順、10円単位四捨五入時給）
-    const dailyComparison = allLogs.filter(log => {
-      const m = this.getCalculatedMetrics(log);
-      return m.count > 0 || log.workStartedAt || m.totalSales !== null;
-    }).map(log => {
+    // 日別履歴一覧と同じ共通判定（isWorkedDay）。非稼働日（例: 稼働開始時刻だけ残る 9/20）は出さない
+    const dailyComparison = allLogs.filter(log => this.isWorkedDay(log)).map(log => {
       const metrics = this.getCalculatedMetrics(log);
       const regSales = metrics.regularSales !== undefined ? metrics.regularSales : ((metrics.deliverySales || 0) + (metrics.questSales || 0) - (metrics.specialQuestSales || 0) + (metrics.adjustmentSales || 0));
       

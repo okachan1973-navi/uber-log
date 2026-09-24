@@ -498,7 +498,7 @@ try {
       out.pred=[m.isBikeExpenseCategory('バイクシェア'),m.isBikeExpenseCategory('バイクシェア利用'),m.isBikeExpenseCategory('レンタサイクル'),m.isBikeExpenseCategory('Bike share'),m.isBikeExpenseCategory('必要経費')].join(',');
       console.log(JSON.stringify(out));`);
     check(r['2026-09-18'] === 'bike_share,adjustment' && r['2026-09-19'] === 'bike_share,special_bonus' && r['2026-09-21'] === 'bike_share' && r['2026-09-22'] === 'bike_share,adjustment',
-      `既存の B（9/18・9/19・9/21・9/22）と 調・賞 を維持（${['2026-09-18', '2026-09-19', '2026-09-21', '2026-09-22'].map(d => `${d.slice(5)}:${r[d]}`).join(' / ')}）`);
+      `既存の B（9/18・9/19・9/21・9/22）と 調・🏆（旧「賞」） を維持（${['2026-09-18', '2026-09-19', '2026-09-21', '2026-09-22'].map(d => `${d.slice(5)}:${r[d]}`).join(' / ')}）`);
     check(r['2026-09-23'] === '', 'Bike経費なしの日は B なし（9/23 同梱データ）');
     check(r.afterAdd === 'bike_share', '稼働画面の「バイクシェア」を登録 → 即 B');
     check(r.afterChangeToOther === '', '修正で「必要経費」に変更 → B が消える');
@@ -534,7 +534,7 @@ try {
     check(tipDays.join() === Object.entries(r.days).filter(([, v]) => v.tip > 0).map(([k]) => k).join() && tipDays.includes('2026-09-22'),
       `♥ はチップのある日だけ（${tipDays.join(', ')}）`);
     check(d22.attrs === 'bike_share,adjustment,tip' && r.days['2026-09-19'].attrs === 'bike_share,special_bonus' && r.days['2026-09-21'].attrs === 'bike_share',
-      `並び順 B → 調 → 賞 → ♥（9/22: ${d22.attrs}）・既存の B/調/賞 は不変`);
+      `並び順 B → 調 → 🏆 → ♥（9/22: ${d22.attrs}）・既存の B/調/🏆 は不変`);
     check(Object.values(r.days).every(v => v.base === null || v.base + v.tip === v.del), '全日: 配達報酬（チップ除く）＋チップ＝配達報酬（最終売上の合計）');
     const w = r.w;
     check(w.base + w.tip + w.q + w.g + w.adj + w.oth === w.off && w.del === w.base + w.tip && w.legacyOther === w.adj + w.oth,
@@ -582,32 +582,44 @@ try {
   }
 
   // ==========================================================
-  section('10-7. 日別一覧の 🏆（特別クエストがあった日）');
+  section('10-7. 日別一覧の 🏆（特別ボーナス系: 新規保証・特別収入／特別クエスト。旧「賞」は廃止して統一）');
   {
     const r = runNode(`
       global.localStorage={getItem:()=>null,setItem:()=>{},removeItem:()=>{}};global.window={localStorage:global.localStorage};
       const m=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});const s=m.store;
       const attrs={};s.getAllDailyLogs().forEach(l=>{attrs[l.date]=s.getDayAttributes(l.date).map(a=>a.key+':'+a.label+':'+a.className);});
+      const trophies=d=>s.getDayAttributes(d).filter(a=>a.label==='🏆').length;
       // 同じ日に特別クエストが2件ある場合も 🏆 は1個
       const log=JSON.parse(JSON.stringify(s.getDailyLog('2026-09-24')));
       log.quests.push({id:'q_extra',time:'20:00',title:'クエスト',amount:1000,isDuplicateIgnored:false,questName:'100回乗車クエスト',questType:'special'});
       s.state.dailyLogs['2099-01-01']=Object.assign(log,{date:'2099-01-01'});
-      const two=s.getDayAttributes('2099-01-01').filter(a=>a.key==='special_quest').length;
+      const two=trophies('2099-01-01');
       // 通常クエストだけの日（questType: normal）
       const normal=JSON.parse(JSON.stringify(s.getDailyLog('2026-09-24')));
       normal.quests=normal.quests.filter(q=>q.questType!=='special');
       s.state.dailyLogs['2099-01-02']=Object.assign(normal,{date:'2099-01-02'});
-      const none=s.getDayAttributes('2099-01-02').filter(a=>a.key==='special_quest').length;
-      console.log(JSON.stringify({attrs,two,none,bonusLabel:m.DAY_ATTRIBUTE_DEFINITIONS.special_bonus.className}));`);
+      const none=trophies('2099-01-02');
+      // 新規保証・特別収入と特別クエストが同じ日にある場合も 🏆 は1個（内部データは別々のまま）
+      const both=JSON.parse(JSON.stringify(s.getDailyLog('2026-09-24')));
+      both.sales=Object.assign({},both.sales||{},{guaranteeBonus:5000,guaranteeBonusNote:'テスト保証'});
+      s.state.dailyLogs['2099-01-03']=Object.assign(both,{date:'2099-01-03'});
+      const mb=s.getCalculatedMetrics(s.state.dailyLogs['2099-01-03']);
+      const bothN=trophies('2099-01-03');
+      const labels=Object.values(m.DAY_ATTRIBUTE_DEFINITIONS).map(d=>d.label);
+      console.log(JSON.stringify({attrs,two,none,bothN,bothG:mb.guaranteeBonus,bothSq:mb.specialQuestSales,labels,hasSQdef:!!m.DAY_ATTRIBUTE_DEFINITIONS.special_quest}));`);
     const a24 = r.attrs['2026-09-24'] || [];
-    check(a24.filter(x => x.startsWith('special_quest:🏆:')).length === 1, `9/24 に 🏆 を1個（${a24.map(x => x.split(':')[1]).join(' ')}）`);
-    check(a24.some(x => x === 'special_quest:🏆:attr-bonus attr-quest-trophy'), '🏆 は「賞」と同じ配色（attr-bonus）を使用');
-    const withTrophy = Object.entries(r.attrs).filter(([, v]) => v.some(x => x.startsWith('special_quest:'))).map(([k]) => k);
-    check(withTrophy.join() === '2026-09-24', `🏆 は特別クエストのある日だけ（${withTrophy.join(', ')}）`);
+    const a19 = r.attrs['2026-09-19'] || [];
+    check(a19.map(x => x.split(':')[1]).join(' ') === 'B 🏆', `9/19（新規保証 ¥12,132）は「賞」ではなく 🏆（${a19.map(x => x.split(':')[1]).join(' ')}）`);
+    check(a24.filter(x => x.split(':')[1] === '🏆').length === 1, `9/24（特別クエスト ¥8,890）は 🏆 を1個のまま（${a24.map(x => x.split(':')[1]).join(' ')}）`);
+    check([...a19, ...a24].filter(x => x.split(':')[1] === '🏆').every(x => x.endsWith(':attr-bonus attr-quest-trophy')), '🏆 は従来の金色系（attr-bonus）を使用');
+    check(!r.labels.includes('賞') && !Object.values(r.attrs).some(v => v.some(x => x.split(':')[1] === '賞')), '日別属性から「賞」を廃止（どの日にも出ない）');
+    const withTrophy = Object.entries(r.attrs).filter(([, v]) => v.some(x => x.split(':')[1] === '🏆')).map(([k]) => k).sort();
+    check(withTrophy.join() === '2026-09-19,2026-09-24', `🏆 は特別ボーナス系のある日だけ（${withTrophy.join(', ')}）`);
     check(r.two === 1 && r.none === 0, '特別クエストが複数でも 🏆 は1個・通常クエストだけの日は表示しない');
-    const order = ['bike_share', 'adjustment', 'special_bonus', 'special_quest', 'tip'];
-    check(Object.values(r.attrs).every(v => v.map(x => order.indexOf(x.split(':')[0])).every((n, i, arr) => i === 0 || arr[i - 1] <= n)), '並び順 B → 調 → 賞 → 🏆 → ♥（既存マークはそのまま）');
-    check(r.attrs['2026-09-19'].map(x => x.split(':')[1]).join(' ') === 'B 賞' && r.attrs['2026-09-22'].map(x => x.split(':')[1]).join(' ') === 'B 調 ♥', '既存の 9/19「B 賞」・9/22「B 調 ♥」は変更なし');
+    check(r.bothN === 1 && r.bothG === 5000 && r.bothSq === 8890, '新規保証と特別クエストが同じ日でも 🏆 は1個（内部は guaranteeBonus / specialQuestSales で別管理）');
+    const order = ['bike_share', 'adjustment', 'special_bonus', 'tip'];
+    check(Object.values(r.attrs).every(v => v.map(x => order.indexOf(x.split(':')[0])).every((n, i, arr) => n >= 0 && (i === 0 || arr[i - 1] <= n))), '並び順 B → 調 → 🏆 → ♥');
+    check(r.attrs['2026-09-22'].map(x => x.split(':')[1]).join(' ') === 'B 調 ♥', '9/22「B 調 ♥」は変更なし');
   }
 
   // ==========================================================
@@ -672,6 +684,93 @@ try {
     check(r.avgPer === Math.round(expectedReg / 152) && r.avgPer === 445, `平均単価 ¥${r.avgPer}（¥67,608 ÷ 152件）`);
     check(r.total === 88630 && r.month.s === 88630 && r.month.p === 82069, '総売上 ¥88,630・今月の売上利益 ¥82,069 は不変（特別クエストを含む）');
     check(r.week.s === 41405 && r.week.p === 38351 && r.week.g === 8890 && r.week.q === 4650, '今週の総売上 ¥41,405・売上利益 ¥38,351・特別ボーナス ¥8,890（特別クエスト）は不変');
+  }
+
+  // ==========================================================
+  section('10-10. バイクシェア1日パスの初期値 ¥1,527（既存経費は書き換えない）');
+  {
+    const uiSrc = fs.readFileSync(path.join(ROOT, 'js', 'ui.js'), 'utf8');
+    const block = uiSrc.slice(uiSrc.indexOf('const EXPENSE_TYPE_PRESETS'), uiSrc.indexOf('// 画面を開いた時は'));
+    // 実際のプリセット処理（ui.js の該当部分）を偽の入力欄で動かす
+    const fake = () => ({ value: '' });
+    const els = { 'expense-input-type': fake(), 'expense-input-content': fake(), 'expense-input-amount': fake() };
+    const document = { getElementById: id => els[id] };
+    const applyPreset = new Function('document', `${block}; return applyPreset;`)(document);
+    els['expense-input-type'].value = 'バイクシェア';
+    applyPreset('バイクシェア');
+    check(els['expense-input-content'].value === 'バイクシェア1日パス' && els['expense-input-amount'].value === '1527', `バイクシェア選択時: 「${els['expense-input-content'].value} / ¥${els['expense-input-amount'].value}」`);
+    els['expense-input-amount'].value = '2000';
+    check(parseInt(els['expense-input-amount'].value, 10) === 2000, '自動入力後に金額を手動で変更できる（登録は入力欄の値を使用）');
+    applyPreset('必要経費');
+    check(els['expense-input-content'].value === '' && els['expense-input-amount'].value === '', '必要経費に戻すと内容・金額は空欄');
+    check(!/amount:\s*'527'/.test(uiSrc), '旧初期値 ¥527 は残っていない');
+    const r = runNode(`
+      const map={uber_log_v1_data:JSON.stringify({version:'1.2',dailyLogs:{'2026-09-24':{date:'2026-09-24',expenses:[{id:'exp_old527',category:'バイクシェア',amount:527,memo:'バイクシェア1日パス'}]}}})};
+      global.localStorage={getItem:k=>map[k]||null,setItem:(k,v)=>{map[k]=v},removeItem:()=>{}};global.window={localStorage:global.localStorage};
+      const {store}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      const e=(store.getDailyLog('2026-09-24').expenses||[]).find(x=>x.id==='exp_old527');
+      console.log(JSON.stringify({amt:e&&e.amount}));`);
+    check(r.amt === 527, `登録済みの経費（¥527 で登録済みの分）は書き換えない（¥${r.amt}）`);
+  }
+
+  // ==========================================================
+  section('10-11. 稼働日の共通判定（日別履歴一覧・日別比較・カレンダー）');
+  {
+    const r = runNode(`
+      const map={};
+      global.localStorage={getItem:k=>map[k]||null,setItem:(k,v)=>{map[k]=v},removeItem:()=>{}};global.window={localStorage:global.localStorage};
+      const m0=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      const today=m0.getTodayDateString();
+      delete require.cache[require.resolve(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))})];
+      const logs={
+        '2026-09-20':{date:'2026-09-20',workStartedAt:'10:00',workEndedAt:null,totalDistanceKm:null,workSessions:[{id:'ws1',start:'10:00',end:null}],deliveries:[],quests:[]},
+        '2099-02-01':{date:'2099-02-01',expenses:[{id:'e1',category:'必要経費',amount:300,memo:'x'}],deliveries:[],quests:[]},
+        '2099-02-02':{date:'2099-02-02',deliveries:[],quests:[],workSessions:[]},
+        '2099-02-03':{date:'2099-02-03',workSessions:[{id:'ws2',start:'09:00',end:'12:00'}],deliveries:[],quests:[]},
+        '2099-02-04':{date:'2099-02-04',deliveriesCount:0,sales:{delivery:0},deliveries:[],quests:[]}
+      };
+      logs[today]={date:today,workStartedAt:'09:00',workSessions:[{id:'ws3',start:'09:00',end:null}],deliveries:[],quests:[]};
+      map.uber_log_v1_data=JSON.stringify({version:'1.2',dailyLogs:logs});
+      const {store}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      const w=d=>store.isWorkedDay(d);
+      const cmp=()=>store.getAnalytics().dailyComparison.map(x=>x.date);
+      store.addDelivery(today,'10:00'); // 手動タップ（店舗名・報酬なし）
+      const todayTap={worked:w(today),inCmp:cmp().includes(today),status:store.getDayStatus(today).status};
+      store.getDailyLog(today).deliveries.push({id:'d_real',index:2,completedAt:'10:30',restaurant:'テスト店',area:'',fee:500,distanceKm:null,durationStr:'',memo:''});
+      const todayReal={worked:w(today),inCmp:cmp().includes(today),status:store.getDayStatus(today).status};
+      store.getDailyLog(today).deliveries=[];
+      const st={};['2026-09-12','2026-09-13','2026-09-20'].forEach(d=>st[d]=store.getDayStatus(d).status);
+      const l20=store.state.dailyLogs['2026-09-20'];
+      // 既存の稼働日（9/24まで）の値
+      const a=store.getAnalytics();
+      const c22=a.dailyComparison.find(x=>x.date==='2026-09-22');
+      const m22=store.getCalculatedMetrics(store.getDailyLog('2026-09-22'));
+      const m24=store.getCalculatedMetrics(store.getDailyLog('2026-09-24'));
+      const b=store.getSalesBreakdown('2026-09-01','2026-09-24');
+      const logs24=store.getAllDailyLogs().filter(l=>l.date<='2026-09-24');
+      store.state.dailyLogs=Object.fromEntries(logs24.map(l=>[l.date,l]));
+      const a24=store.getAnalytics();
+      console.log(JSON.stringify({today,todayTap,todayReal,
+        others:{exp:w('2099-02-01'),empty:w('2099-02-02'),ws:w('2099-02-03'),zero:w('2099-02-04'),none:w('2099-02-05')},
+        cmp:a.dailyComparison.map(x=>x.date),st,
+        keep20:{ws:l20&&l20.workStartedAt,sess:l20&&l20.workSessions&&l20.workSessions.length},
+        c22:{c:c22.count,t:c22.totalSales},m22:{c:m22.count,t:m22.totalSales,p:m22.netProfit,hw:m22.hourlyWage},m24:{c:m24.count,t:m24.totalSales,p:m24.netProfit,hw:m24.hourlyWage},
+        bdays:b.days,btotal:b.totalSales,
+        a24:{days:a24.activeDaysCount,cnt:a24.totalDeliveries,avgDaily:a24.avgDailyEarnings,avgPer:a24.avgPerDelivery,total:a24.totalSalesSum,cmp:a24.dailyComparison.length}}));`);
+    check(r.cmp.every(d => !['2026-09-12', '2026-09-13', '2026-09-20'].includes(d)) && !r.cmp.some(d => d.startsWith('2099-02-')), `日別比較に 9/20（稼働開始時刻・workSessionだけ）・9/12・9/13・非稼働の日は出ない（${r.cmp.length}日）`);
+    check(r.st['2026-09-20'] === 'off' && r.st['2026-09-12'] === 'off' && r.st['2026-09-13'] === 'off', 'カレンダーでは 9/12・9/13・9/20 は「休」のまま');
+    check(r.keep20.ws === '10:00' && r.keep20.sess === 1, '9/20 の稼働開始時刻・workSession は削除しない（表示だけ除外）');
+    check(!r.todayTap.worked && !r.todayTap.inCmp && r.todayTap.status === 'unknown', `今日（${r.today}）: 稼働開始・手動タップだけなら非稼働（一覧・日別比較に出さない・「休」にもしない）`);
+    check(r.todayReal.worked && r.todayReal.inCmp && r.todayReal.status === 'worked', '今日に配達実績が1件入ると自動で稼働日（一覧・日別比較に表示）');
+    check(!r.others.exp && !r.others.empty && !r.others.ws && !r.others.zero && !r.others.none, '経費だけ・空レコード・workSessionだけ・0件/売上0・データなしの日は稼働日ではない');
+    const expected = ['10', '11', '14', '15', '16', '17', '18', '19', '21', '22', '23', '24'].map(d => `2026-09-${d}`);
+    check(expected.every(d => r.cmp.includes(d)), '既存の稼働日（9/10〜9/24 の12日）は日別比較に表示');
+    check(r.c22.c === 25 && r.c22.t === 9243 && r.m22.c === 25 && r.m22.t === 9243 && r.m24.c === 22 && r.m24.t === 17189 && r.m24.p === 17189, '既存稼働日の件数・売上・利益は不変（9/22 25件 ¥9,243 / 9/24 22件 ¥17,189）');
+    check(r.a24.days === 12 && r.a24.cnt === 152 && r.a24.avgDaily === 5634 && r.a24.avgPer === 445 && r.a24.total === 88630 && r.a24.cmp === 12,
+      `端末に 9/20 の稼働開始データがあっても稼働日数 ${r.a24.days}日・平均日給 ¥${r.a24.avgDaily}・平均単価 ¥${r.a24.avgPer}・総売上 ¥88,630 は不変`);
+    check(r.bdays === 12 && r.btotal === 88630, `売上内訳の「稼働 N日」も共通判定（${r.bdays}日、経費だけの日は数えない）・総売上は不変`);
+    const uiSrc = fs.readFileSync(path.join(ROOT, 'js', 'ui.js'), 'utf8');
+    check(/const activeLogs = allLogs\.filter\(log => store\.isWorkedDay\(log\)\)/.test(uiSrc), '日別履歴一覧は共通判定 store.isWorkedDay を使用（今日・レコードの有無では判定しない）');
   }
 
   // ==========================================================
