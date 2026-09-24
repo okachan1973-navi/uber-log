@@ -243,6 +243,28 @@
     return { events: result, statementTotal, warnings };
   }
 
+  // クエスト行の種類
+  //  base   : 売上計上の「クエスト」（MISC）
+  //  variant: 達成表示の「N回乗車クエスト」（QUEST）
+  function isBaseQuest(q) {
+    return /^(クエスト|quest)$/i.test((q.title || '').trim()) || /^misc$/i.test(q.category || '');
+  }
+  function isVariantQuest(q) {
+    return /\d+\s*回.*クエスト|\d+\s*(trips?|rides?|deliver(y|ies)).*quest/i.test(q.title || '') || /^quest$/i.test(q.category || '');
+  }
+  // 達成表示から売上計上までの許容時間（分）
+  const QUEST_PAYOUT_WINDOW_MIN = 60;
+  // 特別クエスト: 回数が多い（週単位など）の回数クエスト。例: 80回乗車クエスト。6回・3回などの日次クエストは通常クエスト
+  const SPECIAL_QUEST_MIN_TRIPS = 20;
+  function questTripCount(name) {
+    const m = String(name || '').replace(/\s+/g, '').match(/(\d+)回/);
+    return m ? Number(m[1]) : null;
+  }
+  function questTypeOf(name) {
+    const n = questTripCount(name);
+    return n !== null && n >= SPECIAL_QUEST_MIN_TRIPS ? 'special' : 'normal';
+  }
+
   /**
    * クエストの重複排除（既存ルールの自動化）
    * - 同時刻・同額で「クエスト（MISC）」と「N回乗車クエスト（QUEST）」の2行 → 同一報酬として1回のみ計上
@@ -272,8 +294,8 @@
       }
       const shortKey = key.split('|').slice(1).join('|'); // "20:09|800"
       const decision = decided[key] || decided[shortKey];
-      const isBase = q => /^(クエスト|quest)$/i.test((q.title || '').trim()) || /^misc$/i.test(q.category || '');
-      const isVariant = q => /\d+\s*回.*クエスト|\d+\s*(trips?|rides?|deliver(y|ies)).*quest/i.test(q.title || '') || /^quest$/i.test(q.category || '');
+      const isBase = isBaseQuest;
+      const isVariant = isVariantQuest;
       const knownPair = list.length === 2 && (
         (isBase(list[0]) && isVariant(list[1]) && !isBase(list[1])) ||
         (isBase(list[1]) && isVariant(list[0]) && !isBase(list[0]))
@@ -293,6 +315,40 @@
         list.forEach(q => { q.reason = '重複候補（要確認）'; });
         candidates.push({ key: shortKey, items: list.map(q => ({ seq: q.seq, title: q.title, category: q.category, time: q.time, amount: q.amount })) });
       }
+    });
+
+    // 時刻がずれた「達成表示」と「売上計上」の統合（例: 2026-09-24 19:15「80 回乗車クエスト ¥8,890」→ 19:23「クエスト ¥8,890」）
+    // Uber一覧では回数クエストの達成行の数分後に、同額の「クエスト」行として売上に計上される。
+    // 同じ日・同じ金額で、達成行（回数クエスト）→ 売上計上行（クエスト）が 0〜60分以内の組だけを同一報酬として1回計上する。
+    // 金額だけでは統合しない。候補が複数ある場合は最も近い時刻の1件と1対1で組み、組めなかった行はそれぞれ別報酬として残る。
+    const minutes = t => { const m = String(t || '').match(/^(\d{1,2}):(\d{2})$/); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
+    const openVariants = out.filter(q => q.counted && isVariantQuest(q) && !isBaseQuest(q) && minutes(q.time) !== null);
+    const openBases = out.filter(q => q.counted && isBaseQuest(q) && !q.questName && minutes(q.time) !== null);
+    openVariants
+      .sort((a, b) => minutes(a.time) - minutes(b.time))
+      .forEach(v => {
+        const vt = minutes(v.time);
+        const cands = openBases.filter(b => !b.pairedWith && b.amount === v.amount && (b.date || '') === (v.date || '') &&
+          minutes(b.time) >= vt && minutes(b.time) - vt <= QUEST_PAYOUT_WINDOW_MIN);
+        if (!cands.length) return;
+        cands.sort((a, b) => minutes(a.time) - minutes(b.time));
+        const base = cands[0];
+        base.pairedWith = v.seq;
+        base.questName = v.title;
+        base.achievedAt = v.time;
+        v.counted = false;
+        v.duplicateOfSeq = base.seq;
+        v.reason = `${base.time} の売上計上「${base.title}」と同一報酬（${v.time} は達成表示）のため計上しない`;
+      });
+
+    // 同時刻の組でも、計上する行に回数クエストの名称を持たせる（特別クエストの識別に使う）
+    out.forEach(q => {
+      if (q.counted && !q.questName) {
+        const dup = out.find(x => x.duplicateOfSeq === q.seq && isVariantQuest(x));
+        if (dup) q.questName = dup.title;
+        else if (isVariantQuest(q)) q.questName = q.title;
+      }
+      if (q.counted) q.questType = questTypeOf(q.questName || q.title);
     });
     return { quests: out, duplicateCandidates: candidates };
   }
@@ -318,5 +374,5 @@
     };
   }
 
-  return { parseActivityText, dedupeQuests, summarize, parseDate, parseTime, parseMoney, toHalfWidth, tokenizeLine };
+  return { parseActivityText, dedupeQuests, questTypeOf, SPECIAL_QUEST_MIN_TRIPS, summarize, parseDate, parseTime, parseMoney, toHalfWidth, tokenizeLine };
 });

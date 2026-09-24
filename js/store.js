@@ -1978,6 +1978,247 @@ const CONFIRMED_SEED_DATA = {
         "source": "official-import-v1",
         "importedAt": "2026-09-23T17:50:20.306Z"
       }
+    },
+    "2026-09-24": {
+      "date": "2026-09-24",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 62.02,
+      "tripsCount": 16,
+      "officialPoints": 22,
+      "deliveriesCount": 22,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_0924_1",
+          "index": 1,
+          "completedAt": "07:42",
+          "restaurant": "魚屋のおむすび丸徳 sakanaya omusubi marutoku",
+          "area": "大阪市浪速区稲荷2丁目",
+          "fee": 861,
+          "distanceKm": 6.82,
+          "durationStr": "41分27秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0924_2",
+          "index": 2,
+          "completedAt": "08:33",
+          "restaurant": "なか卯 桜川店 Nakau Sakuragawa",
+          "area": "大阪市浪速区桜川4丁目",
+          "fee": 320,
+          "distanceKm": 1.75,
+          "durationStr": "12分54秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0924_3",
+          "index": 3,
+          "completedAt": "08:44",
+          "restaurant": "マクドナルド 南堀江関西スーパー店 McDonald's MINAMI-HORIE KANSAI S.M.",
+          "area": "大阪市浪速区元町3丁目",
+          "fee": 380,
+          "distanceKm": 4.09,
+          "durationStr": "26分49秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0924_4",
+          "index": 4,
+          "completedAt": "09:18",
+          "restaurant": "【チキンステーキ弁当】Master Of Chicken～大正店～",
+          "area": "大阪市西区境川1丁目",
+          "fee": 387,
+          "distanceKm": 3.49,
+          "durationStr": "18分33秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0924_5",
+          "index": 5,
+          "completedAt": "10:06",
+          "restaurant": "マクドナルド 九　条　店 McDonald's KUJO",
+          "area": "大阪市西区千代崎1丁目",
+          "fee": 320,
+          "distanceKm": 1.11,
+          "durationStr": "10分33秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0924_6",
+          "index": 6,
+          "completedAt": "10:19",
+          "restaurant": "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY",
+          "area": "大阪市市岡元町2丁目",
+          "fee": 386,
+          "distanceKm": 2.64,
+          "durationStr": "16分20秒",
+          "points": 1,
+          "memo": "公式配達先表記: 2-chōme 27 Osaka Ichioka Motomachi Japan"
+        },
+        {
+          "id": "del_0924_7",
+          "index": 7,
+          "completedAt": "10:37",
+          "restaurant": "マクドナルド 九 条 店 McDonald's KUJO",
+          "area": "大阪市西区九条南3丁目",
+          "fee": 437,
+          "distanceKm": 3.6,
+          "durationStr": "26分12秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0924_8",
+          "index": 8,
+          "completedAt": "11:21",
+          "restaurant": "バーガーキング 九条店 Burger King Kujo",
+          "area": "大阪市西区九条南4丁目",
+          "fee": 320,
+          "distanceKm": 1.58,
+          "durationStr": "11分54秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0924_9",
+          "index": 9,
+          "completedAt": "11:30",
+          "restaurant": "すき家 西九条駅前店 Sukiya Saikujo-Ekimae",
+          "area": "大阪市大正区三軒家東",
+          "fee": 908,
+          "distanceKm": 7.79,
+          "durationStr": "41分45秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0924_10",
+          "index": 10,
+          "completedAt": "13:06",
+          "restaurant": "天下一品 西長堀店",
+          "area": "大阪市九条1丁目",
+          "fee": 320,
+          "distanceKm": 2.49,
+          "durationStr": "16分10秒",
+          "points": 1,
+          "memo": "公式配達先表記: 1-chōme 27 Osaka Kujō Japan"
+        },
+        {
+          "id": "del_0924_11",
+          "index": 11,
+          "completedAt": "15:13",
+          "restaurant": "松屋 九条店 Matsuya Kujo",
+          "area": "大阪市此花区梅香1丁目",
+          "fee": 666,
+          "distanceKm": 4.12,
+          "durationStr": "29分1秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0924_12",
+          "index": 12,
+          "completedAt": "15:42",
+          "restaurant": "すき家 此花四貫島店 Sukiya Konohana Shikanjima",
+          "area": "大阪市此花区春日出北1丁目",
+          "fee": 320,
+          "distanceKm": 2.98,
+          "durationStr": "16分52秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0924_13",
+          "index": 13,
+          "completedAt": "16:20",
+          "restaurant": "名代 かすうどん ながた 西九条店",
+          "area": "大阪市港区弁天4丁目",
+          "fee": 757,
+          "distanceKm": 8.32,
+          "durationStr": "56分11秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0924_14",
+          "index": 14,
+          "completedAt": "17:39",
+          "restaurant": "やよい軒 フォレオ大阪ドームシティ店",
+          "area": "大阪市大正区泉尾1丁目",
+          "fee": 320,
+          "distanceKm": 1.74,
+          "durationStr": "13分18秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0924_15",
+          "index": 15,
+          "completedAt": "18:09",
+          "restaurant": "築地銀だこ イオンモール大阪ドームシティ店 Tsukiji Gindaco Aeon Mall Osaka Dome City",
+          "area": "大阪市港区南市岡1丁目",
+          "fee": 320,
+          "distanceKm": 3.11,
+          "durationStr": "23分4秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0924_16",
+          "index": 16,
+          "completedAt": "18:39",
+          "restaurant": "ケンタッキーフライドチキン イオンモール大阪ドームシティ店",
+          "area": "大阪市此花区梅香1丁目",
+          "fee": 677,
+          "distanceKm": 6.39,
+          "durationStr": "40分55秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_0924_1",
+          "time": "19:23",
+          "title": "クエスト",
+          "amount": 8890,
+          "isDuplicateIgnored": false,
+          "questName": "80回乗車クエスト",
+          "questType": "special",
+          "achievedAt": "19:15",
+          "note": "公式一覧は 19:15「80 回乗車クエスト ¥8,890」（達成表示）と 19:23「クエスト ¥8,890」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0924_2",
+          "time": "19:23",
+          "title": "クエスト",
+          "amount": 600,
+          "isDuplicateIgnored": false,
+          "questName": "6回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "19:15",
+          "note": "公式一覧は 19:15「6 回乗車クエスト ¥600」（達成表示）と 19:23「クエスト ¥600」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）。15:00の「6 回乗車クエスト」¥0は報酬0のため売上非加算"
+        }
+      ],
+      "sales": {
+        "delivery": 7699,
+        "quest": 9490,
+        "adjustment": 0,
+        "other": 0,
+        "total": 17189
+      },
+      "expenses": [],
+      "officialImport": {
+        "source": "official-import-v1",
+        "importedAt": "2026-09-24T12:04:21.039Z"
+      }
     }
   }
 };
@@ -3883,6 +4124,12 @@ class Store {
     });
     const baseDeliverySales = deliverySales !== null ? deliverySales - tipSales : null;
 
+    // 特別クエスト（questType: 'special'。例: 80回乗車クエスト）。クエスト報酬（questSales）の内訳で、別途加算はしない
+    const specialQuests = deduplicateQuests(log.quests || [])
+      .filter(q => !q.isDuplicateIgnored && q.questType === 'special' && Number(q.amount) > 0)
+      .map(q => ({ name: q.questName || q.title, amount: Number(q.amount), time: q.time }));
+    const specialQuestSales = specialQuests.reduce((s, q) => s + q.amount, 0);
+
     // 新規ドライバー保証・特別収入
     const guaranteeBonus =(log.sales && log.sales.guaranteeBonus) ? Number(log.sales.guaranteeBonus) : (Number(log.guaranteeBonus) || 0);
     const guaranteeBonusNote = (log.sales && log.sales.guaranteeBonusNote) ? log.sales.guaranteeBonusNote : (log.guaranteeBonusNote || '');
@@ -4012,6 +4259,8 @@ class Store {
       baseDeliverySales,
       tipSales,
       tipCount,
+      specialQuests,
+      specialQuestSales,
       questSales,
       adjustmentSales,
       otherSales,

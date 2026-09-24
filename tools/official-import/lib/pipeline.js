@@ -412,7 +412,24 @@ function buildStaging(root, date, opts = {}) {
   });
   check('スクショ全件読取済み（UNKNOWNなし・値が正常）', screenErrors.length === 0, screenErrors.join('\n'));
 
-  const deliveryScreens = screens.filter(s => s.kind === 'delivery' && s.time && Number.isInteger(s.amount));
+  // 同じDeliveryを2回撮ったスクショ（撮り直し等）は1枚として扱う。
+  // 見出しの時刻・金額だけでなく、時間・距離・ポイント・店舗・配達先まで全て一致するものだけを同一とみなす
+  // （同じ時刻・同じ金額でも中身が違えば別Deliveryとして残し、件数不一致で止める）。
+  const sameDelivery = (a, b) => a.time === b.time && a.amount === b.amount && a.durationSeconds === b.durationSeconds &&
+    round2(a.distanceKm) === round2(b.distanceKm) && a.points === b.points &&
+    String(a.restaurant).replace(/\s+/g, '') === String(b.restaurant).replace(/\s+/g, '') &&
+    String(a.area).replace(/\s+/g, '') === String(b.area).replace(/\s+/g, '') &&
+    (a.baseFee ?? null) === (b.baseFee ?? null) && (a.tip ?? null) === (b.tip ?? null);
+  const deliveryScreens = [];
+  screens.filter(s => s.kind === 'delivery' && s.time && Number.isInteger(s.amount)).forEach(s => {
+    const dup = deliveryScreens.find(k => sameDelivery(k, s));
+    if (dup) {
+      s.duplicateOf = dup.file;
+      warnings.push(`${s.file} は ${dup.file} と同じDelivery（${s.time} ${yen(s.amount)}・時間/距離/店舗/配達先が一致）の重複スクショのため1枚として扱いました`);
+      return;
+    }
+    deliveryScreens.push(s);
+  });
 
   // 3. activity ↔ スクショ 照合（日付・時刻・金額が完全一致したものだけを同一tripとする）
   const matchErrors = [];
@@ -513,16 +530,27 @@ function buildStaging(root, date, opts = {}) {
       t.map = { status: 'existing' };
       return;
     }
-    const stem = `${String(i + 1).padStart(2, '0')}_${sha256(t.screen.file).slice(0, 8)}`;
-    t.map = { status: 'pending', work: path.join(p.workDir, `map_${stem}.png`), workFull: path.join(p.workDir, `full_${stem}.png`) };
-    jobs.push({ src: path.join(p.screenshotDir, t.screen.file), map: t.map.work, full: t.map.workFull });
+    // 同じDeliveryの重複スクショ（撮り直し）がある場合は、それぞれ切り抜きを試して地図が切り抜けた方を使う
+    const sources = [t.screen.file].concat(screens.filter(s => s.duplicateOf === t.screen.file).map(s => s.file));
+    t.map = { status: 'pending', candidates: sources.map((file, k) => {
+      const stem = `${String(i + 1).padStart(2, '0')}_${k}_${sha256(file).slice(0, 8)}`;
+      const cand = { file, work: path.join(p.workDir, `map_${stem}.png`), workFull: path.join(p.workDir, `full_${stem}.png`) };
+      jobs.push({ src: path.join(p.screenshotDir, file), map: cand.work, full: cand.workFull });
+      return cand;
+    }) };
   });
   const cropResults = runCropBatch(p, jobs);
   const mapErrors = [];
   const sizeErrors = [];
   trips.forEach(t => {
     if (!t.map || t.map.status !== 'pending') return;
-    const r = cropResults.find(c => path.resolve(c.src) === path.resolve(p.screenshotDir, t.screen.file));
+    const results = t.map.candidates.map(cand => ({ cand, r: cropResults.find(c => path.resolve(c.src) === path.resolve(p.screenshotDir, cand.file)) }));
+    const okPick = results.find(x => x.r && x.r.ok);
+    const r = okPick ? okPick.r : (results[0] && results[0].r);
+    if (okPick) {
+      t.map = { status: 'pending', work: okPick.cand.work, workFull: okPick.cand.workFull, sourceFile: okPick.cand.file };
+      if (okPick.cand.file !== t.screen.file) warnings.push(`${t.screen.time} ${yen(t.screen.amount)}: MAP は重複スクショ ${okPick.cand.file} から切り抜き`);
+    }
     if (r && r.size && r.size[0] > MAX_SCREENSHOT_WIDTH) {
       sizeErrors.push(`${t.screen.file}: 幅 ${r.size[0]}px（画面全体ではなく Delivery詳細部分だけを切り取ってください）`);
     }
@@ -702,8 +730,14 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
     nextQ += 1;
     const notes = notCounted
       .filter(n => n.duplicateOfSeq === q.seq)
-      .map(n => `公式一覧は「${q.title} ${yen(q.amount)}」「${n.title} ${yen(n.amount)}」の2表示だが同一報酬のため1件のみ計上（二重計上防止）`);
+      .map(n => (n.time && n.time !== q.time)
+        ? `公式一覧は ${n.time}「${n.title} ${yen(n.amount)}」（達成表示）と ${q.time}「${q.title} ${yen(q.amount)}」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）`
+        : `公式一覧は「${q.title} ${yen(q.amount)}」「${n.title} ${yen(n.amount)}」の2表示だが同一報酬のため1件のみ計上（二重計上防止）`);
     const quest = { id: `quest_${md}_${nextQ}`, time: q.time, title: q.title, amount: q.amount, isDuplicateIgnored: false };
+    // クエスト名（回数クエストの名称）と種別（通常 normal / 特別 special）。会計上はどちらもクエスト報酬
+    if (q.questName) quest.questName = String(q.questName).replace(/\s+/g, '');
+    if (q.questType) quest.questType = q.questType;
+    if (q.achievedAt && q.achievedAt !== q.time) quest.achievedAt = q.achievedAt;
     if (notes.length) quest.note = notes.join('。');
     return quest;
   });
@@ -827,7 +861,7 @@ function apply(root, date, opts = {}) {
     [mapRel, fullRel].forEach(rel => {
       if (fs.existsSync(path.join(root, rel))) throw new Error(`既存MAPファイルがあるため上書きしません: ${rel}`);
     });
-    entries.push({ id: d.id, entry: { map: mapRel, full: fullRel, box: d.map.box, origFile: d.screen.file }, work: d.map.work, workFull: d.map.workFull });
+    entries.push({ id: d.id, entry: { map: mapRel, full: fullRel, box: d.map.box, origFile: d.map.sourceFile || d.screen.file }, work: d.map.work, workFull: d.map.workFull });
   });
   fs.mkdirSync(p.mapsDir, { recursive: true });
   entries.forEach(e => {

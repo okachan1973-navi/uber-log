@@ -703,7 +703,7 @@ class UI {
       return `
         <div class="quest-item ${q.isDuplicateIgnored ? 'duplicate-ignored' : ''}">
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-weight:700; color:var(--text-main); font-size:14px;">🎁 ${q.title}</span>
+            <span style="font-weight:700; color:var(--text-main); font-size:14px;">${q.questType === 'special' ? `🏆 ${q.questName || q.title}<span class="quest-special-badge">特別</span>` : `🎁 ${q.questName || q.title}`}</span>
             <span style="font-size:12px; color:var(--text-muted);">${q.time}</span>
             ${q.isDuplicateIgnored ? `<span class="quest-ignored-badge">重複除外 (二重計上防止)</span>` : ''}
           </div>
@@ -1365,6 +1365,22 @@ class UI {
           </div>
         `);
       }
+
+      // 1-2. 特別クエストカード（クエスト報酬に含まれる内訳。別途加算しないため「+」を付けない）
+      (metrics.specialQuests || []).forEach(sq => {
+        additionalCards.push(`
+          <div class="balance-card card-special-quest">
+            <div class="balance-card-left">
+              <span class="day-attr-badge attr-special-quest">🏆</span>
+              <div class="balance-card-info">
+                <span class="balance-card-title">${sq.name}</span>
+                <span class="balance-card-sub">特別クエスト（クエストに含む）</span>
+              </div>
+            </div>
+            <span class="balance-card-amount">¥${sq.amount.toLocaleString()}</span>
+          </div>
+        `);
+      });
 
       // 2-2. チップカード（配達報酬に含まれる内訳。総売上へ二重に加算しないため「+」を付けない）
       if (metrics.tipSales > 0) {

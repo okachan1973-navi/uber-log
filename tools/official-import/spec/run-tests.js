@@ -201,6 +201,79 @@ try {
   }
 
   // ==========================================================
+  section('4-2. 2026-09-24（修正C書の確定正解値をテストオラクルに使用）');
+  {
+    const root = makeRoot();
+    keepSeedUntil(root, '2026-09-24');
+    removeSeedDay(root, '2026-09-24');
+    setupInbox(root, '2026-09-24');
+    const r = pipeline.apply(root, '2026-09-24', { skipVersionBump: true });
+    if (r.staging.validation.status !== 'PASS') console.log(r.staging.validation.errors);
+    check(r.applied && r.staging.validation.status === 'PASS', '9/24 一覧＋スクショ（18:09 の重複スクショを含む17枚）→ PASS・反映');
+    const d = pipeline.readSeed(path.join(root, 'js', 'store.js')).data.dailyLogs['2026-09-24'];
+    const fees = d.deliveries.map(x => `${x.completedAt} ${x.fee}`);
+    const expected = ['07:42 861', '08:33 320', '08:44 380', '09:18 387', '10:06 320', '10:19 386', '10:37 437', '11:21 320', '11:30 908', '13:06 320', '15:13 666', '15:42 320', '16:20 757', '17:39 320', '18:09 320', '18:39 677'];
+    check(d.deliveries.length === 16 && d.tripsCount === 16 && JSON.stringify(fees) === JSON.stringify(expected), `1. Delivery 16件（確定正解の時刻・金額と完全一致）`);
+    check(d.sales.delivery === 7699 && d.deliveries.reduce((s, x) => s + x.fee, 0) === 7699, '2. Delivery 合計 ¥7,699');
+    const t1739 = d.deliveries.find(x => x.completedAt === '17:39');
+    const t1809 = d.deliveries.find(x => x.completedAt === '18:09');
+    check(t1739 && t1809 && t1739.id !== t1809.id && t1809.durationStr === '23分4秒' && t1809.distanceKm === 3.11, `3. 17:39 ¥320（${t1739 && t1739.id}）と 18:09 ¥320（${t1809 && t1809.id}・23分4秒・3.11km）は別Delivery`);
+    check(d.deliveries.filter(x => x.fee === 320).length === 7, '4. 同額 ¥320 の7件（08:33・10:06・11:21・13:06・15:42・17:39・18:09）が統合されずに残る');
+    check(r.staging.validation.warnings.some(w => /同じDelivery.*重複スクショ/.test(w)), '同じDeliveryを2回撮ったスクショ（全項目一致）は1枚として扱い、注意に記録');
+    const q600 = d.quests.filter(q => q.amount === 600);
+    const q8890 = d.quests.filter(q => q.amount === 8890);
+    check(q600.length === 1 && q600[0].questName === '6回乗車クエスト' && q600[0].questType === 'normal', '5. 6回乗車クエスト ¥600 を1回だけ計上（通常クエスト）');
+    check(q8890.length === 1 && q8890[0].questName === '80回乗車クエスト', '6. 80回乗車クエスト ¥8,890 を1回だけ計上');
+    check(d.sales.quest === 9490 && d.quests.reduce((s, q) => s + q.amount, 0) === 9490, '7. クエスト合計 ¥9,490（19:15 達成表示と 19:23 売上計上を同一報酬として統合・15:00 の ¥0 は非加算）');
+    check(q8890[0] && q8890[0].questType === 'special' && q8890[0].achievedAt === '19:15' && q8890[0].time === '19:23', '8. 80回乗車クエストを「特別クエスト」（questType: special）として識別・達成 19:15 / 計上 19:23 を保持');
+    check(d.sales.total === 17189, '9. Delivery ＋ クエスト ＝ ¥17,189');
+    const m = runNode(`
+      global.localStorage={getItem:()=>null,setItem:()=>{},removeItem:()=>{}};global.window={localStorage:global.localStorage};
+      const {store}=require(${JSON.stringify(path.join(root, 'js', 'store.js'))});
+      const x=store.getCalculatedMetrics(store.getDailyLog('2026-09-24'));
+      console.log(JSON.stringify({total:x.totalSales,q:x.questSales,sq:x.specialQuestSales,sqs:x.specialQuests,count:x.count}));`);
+    check(m.total === 17189 && m.q === 9490 && m.sq === 8890 && m.sqs.length === 1 && m.sqs[0].name === '80回乗車クエスト' && m.count === 22,
+      `アプリ計算: 総売上 ¥17,189 / クエスト ¥9,490（うち特別 ¥8,890・80回乗車クエスト）/ 22件`);
+    const again = pipeline.apply(root, '2026-09-24', { skipVersionBump: true });
+    const d2 = pipeline.readSeed(path.join(root, 'js', 'store.js')).data.dailyLogs['2026-09-24'];
+    check(again.unchanged === true && d2.deliveries.length === 16 && d2.quests.length === 2, '10. 再取り込み → 変更なし（Delivery・クエストの二重登録なし）');
+
+    // 安全装置は維持: 中身が違うのに同時刻・同額のスクショが2枚 → 件数不一致で停止
+    const root2 = makeRoot();
+    keepSeedUntil(root2, '2026-09-24');
+    removeSeedDay(root2, '2026-09-24');
+    setupInbox(root2, '2026-09-24', { screens: s => { s.screenshots[s.screenshots.length - 1].distanceKm = 2.5; } });
+    const bad = pipeline.apply(root2, '2026-09-24', { skipVersionBump: true });
+    check(!bad.applied && bad.staging.validation.checks.some(c => !c.ok && /Delivery件数一致/.test(c.name)), '同時刻・同額でも中身（距離など）が違うスクショは同一扱いせず停止（本体は非反映）');
+    // 07:42 のスクショが無い → 停止（9/24 取込で実際に起きた状態）
+    const root3 = makeRoot();
+    keepSeedUntil(root3, '2026-09-24');
+    removeSeedDay(root3, '2026-09-24');
+    setupInbox(root3, '2026-09-24', { screens: s => { s.screenshots = s.screenshots.filter(x => x.time !== '07:42'); } });
+    const miss = pipeline.apply(root3, '2026-09-24', { skipVersionBump: true });
+    const missCheck = miss.staging.validation.checks.find(c => /Delivery件数一致/.test(c.name));
+    check(!miss.applied && missCheck && !missCheck.ok && /07:42 ¥861 に一致するスクショがありません/.test(missCheck.detail), '07:42 のスクショ不足 → 「一覧 07:42 ¥861 に一致するスクショがありません」で停止');
+  }
+
+  // ==========================================================
+  section('4-3. クエストの達成表示と売上計上の統合ルール');
+  {
+    const q = (title, time, amount, seq) => ({ type: 'quest', title, category: null, time, amount, seq, date: '2026-09-24' });
+    const far = parser.dedupeQuests([q('6 回乗車クエスト', '12:00', 600, 1), q('クエスト', '13:30', 600, 2)]);
+    check(far.quests.filter(x => x.counted).length === 2, '60分を超えて離れた同額の行は統合しない（別報酬として両方計上）');
+    const diff = parser.dedupeQuests([q('6 回乗車クエスト', '19:15', 600, 1), q('クエスト', '19:23', 700, 2)]);
+    check(diff.quests.filter(x => x.counted).length === 2, '金額が違えば統合しない');
+    const before = parser.dedupeQuests([q('クエスト', '19:10', 600, 1), q('6 回乗車クエスト', '19:15', 600, 2)]);
+    check(before.quests.filter(x => x.counted).length === 2, '売上計上が達成表示より前の時刻なら統合しない');
+    const only = parser.dedupeQuests([q('6 回乗車クエスト', '19:15', 600, 1)]);
+    check(only.quests[0].counted && only.quests[0].questType === 'normal' && only.quests[0].questName === '6 回乗車クエスト', '達成表示だけの回数クエストは1件として計上（通常クエスト）');
+    check(parser.questTypeOf('80 回乗車クエスト') === 'special' && parser.questTypeOf('6回乗車クエスト') === 'normal' && parser.questTypeOf('クエスト') === 'normal',
+      `特別クエストの判定: ${parser.SPECIAL_QUEST_MIN_TRIPS}回以上の回数クエスト（80回 → special / 6回・名称なし → normal）`);
+    const two = parser.dedupeQuests([q('6 回乗車クエスト', '19:15', 600, 1), q('6 回乗車クエスト', '19:40', 600, 2), q('クエスト', '19:23', 600, 3)]);
+    check(two.quests.filter(x => x.counted).length === 2, '達成表示2件・売上計上1件なら、近い組だけ統合して残り1件は別報酬として計上（1対1）');
+  }
+
+  // ==========================================================
   section('5. 新規日の取込（9/22 を一旦消した状態から一覧＋スクショで再構築）');
   {
     const root = makeRoot();
@@ -349,8 +422,11 @@ try {
       workSessions: [{ id: 's1', start: '08:00', end: '20:00' }],
       sales: { delivery: 0, quest: 0, adjustment: 0, other: 0, total: 0 }
     };
+    // 端末データはサイズが大きく Windows のコマンドライン長の上限を超えるため、一時ファイルで渡す
+    const localFile = path.join(root, 'local-device-data.json');
+    fs.writeFileSync(localFile, JSON.stringify(local), 'utf8');
     const out = runNode(`
-      const map={uber_log_v1_data:process.argv[1],uber_log_trip_evaluations:JSON.stringify({del_0922_3:{evaluation:'bad',reason:'階段'}})};
+      const map={uber_log_v1_data:require('fs').readFileSync(process.argv[1],'utf8'),uber_log_trip_evaluations:JSON.stringify({del_0922_3:{evaluation:'bad',reason:'階段'}})};
       global.localStorage={getItem:k=>map[k]||null,setItem:(k,v)=>{map[k]=v},removeItem:k=>{delete map[k]}};
       global.window={localStorage:global.localStorage};
       const m=require(${JSON.stringify(path.join(root, 'js', 'store.js'))});
@@ -361,7 +437,7 @@ try {
       const merged=cloudSync.mergeDailyLog(l,stale);
       console.log(JSON.stringify({n:l.deliveries.length,archive:(l.manualTapsArchive||[]).length,exp:l.expenses.map(e=>e.id),ws:l.workSessions.length,
         ev:(l.deliveries.find(d=>d.id==='del_0922_3')||{}).evaluation,total:x.totalSales,profit:x.netProfit,mergedTotal:merged.sales.total,mergedAdj:merged.sales.adjustment}));`,
-    [JSON.stringify(local)]);
+    [localFile]);
     check(out.n === 18 && out.archive === 3, `端末の手動タップ3件は manualTapsArchive へ退避し公式18tripへ置換（=${out.n} / 退避 ${out.archive}）`);
     check(out.exp.join() === 'exp_local_1' && out.ws === 1, '端末で入力した経費・稼働セッションを保持');
     check(out.ev === 'bad', '○×評価を保持');
