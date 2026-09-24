@@ -63,16 +63,18 @@ function createCloud() {
  * 端末（またはタブ）を1つ起動する
  * @param {{storage, cloud?, loggedIn?:boolean}} opts
  */
-function createDevice({ storage, cloud = null, loggedIn = true }) {
+function createDevice({ storage, cloud = null, loggedIn = true, lazySession = false }) {
   const listeners = {};
-  const document = { visibilityState: 'visible', addEventListener: (ev, fn) => { (listeners[ev] = listeners[ev] || []).push(fn); } };
+  const document = { visibilityState: 'visible', readyState: 'complete', addEventListener: (ev, fn) => { (listeners[ev] = listeners[ev] || []).push(fn); } };
+  // lazySession: 本物の supabase-client.js と同じく、isReady()/getSession() が呼ばれるまでセッション（ログイン状態）を復元しない
+  let restored = !lazySession;
   const window = {
     localStorage: storage,
     addEventListener: (ev, fn) => { (listeners[`w:${ev}`] = listeners[`w:${ev}`] || []).push(fn); },
     supabaseManager: cloud ? {
-      isReady: () => true,
-      isLoggedIn: () => loggedIn,
-      getSession: async () => (loggedIn ? {} : null),
+      isReady: () => { restored = true; return true; },
+      isLoggedIn: () => loggedIn && restored,
+      getSession: async () => { restored = true; return loggedIn ? {} : null; },
       getUserId: () => 'user-1',
       onAuthChange: () => {},
       client: cloud.client

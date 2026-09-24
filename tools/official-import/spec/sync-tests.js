@@ -146,6 +146,42 @@ const bikeCount = (dev, id) => ((dev.day(D) || {}).expenses || []).filter(e => e
     check(dev19.day('2026-09-19').expenses.some(e => e.id === 'exp_0919_1') && dev19.hasB('2026-09-19') && dev19.hasB('2026-09-18'), '新しい端末では確定Bike経費（9/18・9/19）が入り B 表示');
 
     // ==========================================================
+    section('14-7. 起動時の同期（ログインを保存済みの端末でアプリを開いただけ・入力してすぐ閉じた場合）');
+    {
+      const D24 = '2026-09-24';
+      const cloud7 = createCloud();
+      // 本物の supabase-client.js と同じく、isReady()/getSession() が呼ばれるまでログインを復元しない端末
+      const phoneSt7 = createStorage();
+      const phone7 = createDevice({ storage: phoneSt7, cloud: cloud7, lazySession: true });
+      await sleep(200);
+      check(phone7.sync.status === 'SYNCED', `スマホを開いただけで起動時の同期が走る（状態: ${phone7.sync.status}）`);
+      const eBike = phone7.store.addExpense(D24, { category: 'バイクシェア', amount: 527, memo: 'バイクシェア1日パス' });
+      await sleep(1000);
+      check(((cloud7.row(D24) || {}).expenses || []).some(x => x.id === eBike.id), '1. スマホで登録した経費が、画面切替なしで自動的にクラウドへ送られる');
+      const web7St = createStorage();
+      const web7 = createDevice({ storage: web7St, cloud: cloud7, lazySession: true });
+      await sleep(300);
+      check(web7.bikeIds(D24).includes(eBike.id) && web7.hasB(D24), '1. Web を開いただけでスマホの経費が表示され、9/24 に B');
+      const eWeb = web7.store.addExpense(D24, { category: '必要経費', amount: 300, memo: 'Webで登録' });
+      await sleep(1000);
+      const phone7b = createDevice({ storage: phoneSt7, cloud: cloud7, lazySession: true });
+      await sleep(300);
+      check(((phone7b.day(D24) || {}).expenses || []).some(x => x.id === eWeb.id), '2. Web で登録した経費が、スマホを開き直すと表示される');
+      const ids = ((phone7b.day(D24) || {}).expenses || []).map(x => x.id);
+      check(ids.filter(x => x === eBike.id).length === 1 && ids.filter(x => x === eWeb.id).length === 1 && ids.length === 2, '3. 同じ経費が二重登録されない（各1件）');
+      const m7 = phone7b.store.getCalculatedMetrics(phone7b.day(D24));
+      check(m7.specialQuestSales === 8890 && m7.questSales === 9490 && m7.deliverySales === 7699, '9/24 の特別クエスト ¥8,890・クエスト ¥9,490・Delivery ¥7,699 は同期後も維持');
+      // 未ログインの端末は同期しない（状態を「未ログイン」として表示できる）
+      const offline7 = createDevice({ storage: createStorage(), cloud: cloud7, loggedIn: false, lazySession: true });
+      await sleep(200);
+      offline7.store.addExpense(D24, { category: '必要経費', amount: 1, memo: '未ログイン端末' });
+      await sleep(900);
+      check(offline7.sync.status === 'NOT_LOGGED_IN' && !((cloud7.row(D24) || {}).expenses || []).some(x => x.amount === 1),
+        `未ログインの端末は送信せず「未ログイン」状態になる（画面に注意を表示）: ${offline7.sync.status}`);
+      check(offline7.sync.pendingSyncDates.has(D24), '未ログイン中の入力は「未送信」として残り、ログイン後の同期で送られる');
+    }
+
+    // ==========================================================
     section('14-6. 全データの復元・初期化は統合せずにそのまま反映');
     const stR = createStorage();
     const devR = createDevice({ storage: stR });

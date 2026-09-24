@@ -4237,3 +4237,40 @@ select.expense-form-control {
   border-radius: 6px;
   vertical-align: 1px;
 }
+/* クラウド同期されていない時の注意バナー（ヘッダー直下） */
+.sync-warning-banner {
+  margin: 6px 12px 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sync-warning-banner[hidden] {
+  display: none !important;
+}
+
+.sync-warning-banner > div + div {
+  margin-top: 6px;
+}
+
+.sync-warning-banner a {
+  color: #fcd34d;
+  word-break: break-all;
+}
+
+.sync-warning-login {
+  margin-left: 6px;
+  border: 1px solid rgba(245, 158, 11, 0.6);
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+  border-radius: 8px;
+  padding: 2px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}

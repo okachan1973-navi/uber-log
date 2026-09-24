@@ -30,6 +30,25 @@ class CloudSyncManager {
     this.localVersions = {}; // 日付ごとの端末内変更回数（送信中の変更を取りこぼさないため）
 
     this.initEventListeners();
+    this.startInitialSync();
+  }
+
+  // 起動時の同期（保存済みのログインを復元して Pull → 未送信分を Push）。
+  // 以前は画面切替（visibilitychange）等のイベントでしか同期が始まらず、アプリを開いただけ・入力してすぐ閉じた場合に
+  // 端末間で経費等が共有されなかった。起動時に1回、表示中は一定間隔でも同期する。
+  startInitialSync() {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    const kick = () => setTimeout(() => this.pullAndSync(), 0);
+    if (document.readyState === 'loading' && typeof document.addEventListener === 'function') {
+      document.addEventListener('DOMContentLoaded', kick);
+    } else {
+      kick();
+    }
+    if (typeof setInterval === 'function') {
+      setInterval(() => {
+        if (document.visibilityState === 'visible') this.pullAndSync();
+      }, 5 * 60 * 1000);
+    }
   }
 
   // 保留中の同期待ち日付リストの読み込み
@@ -495,7 +514,12 @@ class CloudSyncManager {
     if (this.pendingSyncDates.size === 0) return;
 
     const sm = window.supabaseManager;
-    if (!sm || !sm.isLoggedIn()) return;
+    if (!sm || !sm.isReady()) return;
+    if (!sm.isLoggedIn()) {
+      // 保存済みのログイン（セッション）を復元してから送る。ログインしていなければ未送信のまま残す
+      const session = await sm.getSession();
+      if (!session || !sm.isLoggedIn()) return;
+    }
 
     const client = sm.client;
     const userId = sm.getUserId();

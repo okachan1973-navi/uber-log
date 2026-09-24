@@ -591,8 +591,41 @@ function initCloudSyncActions() {
   const syncIcon = document.getElementById('sync-status-icon');
   const syncText = document.getElementById('sync-status-text');
 
+  // ヘッダーの同期ドット（⚙️の横）と、同期されていない時の注意バナー
+  // 以前はドットが常に緑のままで、未ログイン（端末間で共有されない状態）でも気づけなかった
+  function updateSyncIndicators(status) {
+    const dot = document.getElementById('header-sync-dot');
+    if (dot) {
+      dot.className = 'header-sync-dot';
+      if (status === 'SYNCING') dot.classList.add('syncing');
+      else if (status === 'ERROR') dot.classList.add('error');
+      else if (status !== 'SYNCED') dot.classList.add('offline');
+      const titles = { SYNCED: 'クラウド同期済み', SYNCING: 'クラウド同期中', ERROR: 'クラウド同期エラー（端末内に保存中）', OFFLINE: 'オフライン（端末内に保存中）', NOT_LOGGED_IN: '未ログイン（この端末だけに保存）' };
+      dot.title = titles[status] || '同期未設定（この端末だけに保存）';
+    }
+    const banner = document.getElementById('sync-warning-banner');
+    if (!banner) return;
+    const isFile = window.location.protocol === 'file:';
+    const notLoggedIn = status === 'NOT_LOGGED_IN';
+    const messages = [];
+    if (isFile) {
+      messages.push('ファイルとして開いています（自動更新されません）。PCでは公開版 <a href="https://okachan1973-navi.github.io/uber-log/" target="_blank" rel="noopener">okachan1973-navi.github.io/uber-log</a> を使ってください。');
+    }
+    if (notLoggedIn) {
+      messages.push('クラウド同期に未ログインです。この端末で入力した経費などは、ほかの端末（スマホ／PC）に反映されません。<button type="button" class="sync-warning-login">ログイン</button>');
+    }
+    banner.innerHTML = messages.map(m => `<div>${m}</div>`).join('');
+    banner.hidden = messages.length === 0;
+    const btn = banner.querySelector('.sync-warning-login');
+    if (btn) btn.addEventListener('click', () => { ui.openSettingsModal(); });
+  }
+
   function updateSyncBadge(status, message) {
-    if (!syncBadge || !syncIcon || !syncText) return;
+    updateSyncIndicators(status);
+    if (!syncBadge || !syncIcon || !syncText) {
+      updateSettingsSyncUI();
+      return;
+    }
     syncBadge.className = 'sync-status-badge';
 
     switch (status) {
