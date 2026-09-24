@@ -4228,10 +4228,11 @@ class Store {
       }
     }
 
-    // 時給計算対象売上（通常報酬 ＋ 通常クエスト ＋ 売上調整金。新規保証・特別報奨等の特別収入は除外。経費も引かない）
+    // 時給計算対象売上＝通常分析売上（通常報酬 ＋ 通常クエスト ＋ 売上調整金。新規保証等の特別収入と特別クエスト（questType: special）は除外。経費も引かない）
+    // 総売上・利益・特別ボーナス集計には特別クエストを含めたまま（効率指標だけから除外）
     let hourlyBaseSales = null;
     if (deliverySales !== null || questSales !== null || adjustmentSales !== 0) {
-      hourlyBaseSales = (deliverySales || 0) + (questSales || 0) + (adjustmentSales || 0);
+      hourlyBaseSales = (deliverySales || 0) + (questSales || 0) - specialQuestSales + (adjustmentSales || 0);
     }
 
     // 基本時給（通常稼働売上 ÷ 配達時間。秒単位の正確な時間を使用）
@@ -4824,8 +4825,8 @@ class Store {
         if (metrics.totalSales !== null) {
           totalSalesSum += metrics.totalSales;
         }
-        // 通常稼働売上（通常報酬 ＋ 通常クエスト ＋ 通常の売上調整金等。新規保証等の大型特別ボーナスは除外）
-        const reg = (metrics.deliverySales || 0) + (metrics.questSales || 0) + (metrics.adjustmentSales || 0);
+        // 通常稼働売上（通常報酬 ＋ 通常クエスト ＋ 通常の売上調整金等。新規保証等の大型特別ボーナスと特別クエストは除外）
+        const reg = metrics.regularSales !== null && metrics.regularSales !== undefined ? metrics.regularSales : 0;
         totalRegularSalesSum += reg;
 
         if (metrics.workMinutes) {
@@ -4857,7 +4858,7 @@ class Store {
       return m.count > 0 || log.workStartedAt || m.totalSales !== null;
     }).map(log => {
       const metrics = this.getCalculatedMetrics(log);
-      const regSales = metrics.regularSales !== undefined ? metrics.regularSales : ((metrics.deliverySales || 0) + (metrics.questSales || 0) + (metrics.adjustmentSales || 0));
+      const regSales = metrics.regularSales !== undefined ? metrics.regularSales : ((metrics.deliverySales || 0) + (metrics.questSales || 0) - (metrics.specialQuestSales || 0) + (metrics.adjustmentSales || 0));
       
       // 時給: 通常売上 ÷ 配達時間（秒単位高精度計算）。一覧表示では10円単位に四捨五入
       let roundedHourly = null;
