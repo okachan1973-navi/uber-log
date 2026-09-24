@@ -582,6 +582,35 @@ try {
   }
 
   // ==========================================================
+  section('10-7. 日別一覧の 🏆（特別クエストがあった日）');
+  {
+    const r = runNode(`
+      global.localStorage={getItem:()=>null,setItem:()=>{},removeItem:()=>{}};global.window={localStorage:global.localStorage};
+      const m=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});const s=m.store;
+      const attrs={};s.getAllDailyLogs().forEach(l=>{attrs[l.date]=s.getDayAttributes(l.date).map(a=>a.key+':'+a.label+':'+a.className);});
+      // 同じ日に特別クエストが2件ある場合も 🏆 は1個
+      const log=JSON.parse(JSON.stringify(s.getDailyLog('2026-09-24')));
+      log.quests.push({id:'q_extra',time:'20:00',title:'クエスト',amount:1000,isDuplicateIgnored:false,questName:'100回乗車クエスト',questType:'special'});
+      s.state.dailyLogs['2099-01-01']=Object.assign(log,{date:'2099-01-01'});
+      const two=s.getDayAttributes('2099-01-01').filter(a=>a.key==='special_quest').length;
+      // 通常クエストだけの日（questType: normal）
+      const normal=JSON.parse(JSON.stringify(s.getDailyLog('2026-09-24')));
+      normal.quests=normal.quests.filter(q=>q.questType!=='special');
+      s.state.dailyLogs['2099-01-02']=Object.assign(normal,{date:'2099-01-02'});
+      const none=s.getDayAttributes('2099-01-02').filter(a=>a.key==='special_quest').length;
+      console.log(JSON.stringify({attrs,two,none,bonusLabel:m.DAY_ATTRIBUTE_DEFINITIONS.special_bonus.className}));`);
+    const a24 = r.attrs['2026-09-24'] || [];
+    check(a24.filter(x => x.startsWith('special_quest:🏆:')).length === 1, `9/24 に 🏆 を1個（${a24.map(x => x.split(':')[1]).join(' ')}）`);
+    check(a24.some(x => x === 'special_quest:🏆:attr-bonus attr-quest-trophy'), '🏆 は「賞」と同じ配色（attr-bonus）を使用');
+    const withTrophy = Object.entries(r.attrs).filter(([, v]) => v.some(x => x.startsWith('special_quest:'))).map(([k]) => k);
+    check(withTrophy.join() === '2026-09-24', `🏆 は特別クエストのある日だけ（${withTrophy.join(', ')}）`);
+    check(r.two === 1 && r.none === 0, '特別クエストが複数でも 🏆 は1個・通常クエストだけの日は表示しない');
+    const order = ['bike_share', 'adjustment', 'special_bonus', 'special_quest', 'tip'];
+    check(Object.values(r.attrs).every(v => v.map(x => order.indexOf(x.split(':')[0])).every((n, i, arr) => i === 0 || arr[i - 1] <= n)), '並び順 B → 調 → 賞 → 🏆 → ♥（既存マークはそのまま）');
+    check(r.attrs['2026-09-19'].map(x => x.split(':')[1]).join(' ') === 'B 賞' && r.attrs['2026-09-22'].map(x => x.split(':')[1]).join(' ') === 'B 調 ♥', '既存の 9/19「B 賞」・9/22「B 調 ♥」は変更なし');
+  }
+
+  // ==========================================================
   section('10-3. UBER取込.cmd（run-latest-import.ps1: 最新日付の自動判定・実行前チェック・Claude Code 起動）');
   {
     const script = path.join(__dirname, '..', 'run-latest-import.ps1');

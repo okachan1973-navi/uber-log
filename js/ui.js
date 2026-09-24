@@ -1366,7 +1366,7 @@ class UI {
         `);
       }
 
-      // 1-2. 特別クエストカード（クエスト報酬に含まれる内訳。別途加算しないため「+」を付けない）
+      // 1-2. 特別クエストカード（クエスト報酬に含まれる内訳。金額表記は 9/19 の特別収入と同じ「+¥」）
       (metrics.specialQuests || []).forEach(sq => {
         additionalCards.push(`
           <div class="balance-card card-special-quest">
@@ -1377,7 +1377,7 @@ class UI {
                 <span class="balance-card-sub">特別クエスト（クエストに含む）</span>
               </div>
             </div>
-            <span class="balance-card-amount">¥${sq.amount.toLocaleString()}</span>
+            <span class="balance-card-amount">+¥${sq.amount.toLocaleString()}</span>
           </div>
         `);
       });

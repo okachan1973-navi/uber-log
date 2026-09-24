@@ -4274,3 +4274,8 @@ select.expense-form-control {
   font-weight: 700;
   cursor: pointer;
 }
+/* 🏆 特別クエスト（日別履歴の一覧）: 色は「賞」（attr-bonus）と同じ。絵文字の大きさだけ調整 */
+.day-attr-badge.attr-quest-trophy {
+  font-size: 12px;
+  line-height: 1;
+}

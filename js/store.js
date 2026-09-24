@@ -2569,6 +2569,13 @@ const DAY_ATTRIBUTE_DEFINITIONS = {
     className: 'attr-bonus',
     description: '通常報酬や通常クエストとは別の特別保証・ボーナスが発生した日'
   },
+  special_quest: {
+    key: 'special_quest',
+    label: '🏆',
+    fullName: '特別クエスト',
+    className: 'attr-bonus attr-quest-trophy',
+    description: '特別クエスト（questType: special。例: 80回乗車クエスト）の報酬があった日。配色は「賞」と同じ金色系'
+  },
   tip: {
     key: 'tip',
     label: '♥',
@@ -2586,7 +2593,7 @@ const DAY_ATTRIBUTE_DEFINITIONS = {
 };
 
 // 属性表示の固定優先順位（B -> 調 -> 賞 の定義順）
-const DAY_ATTRIBUTE_PRIORITY = ['bike_share', 'adjustment', 'special_bonus', 'tip'];
+const DAY_ATTRIBUTE_PRIORITY = ['bike_share', 'adjustment', 'special_bonus', 'special_quest', 'tip'];
 
 // 所要時間文字列を秒単位の数値に正確にパース（公式トリップ所要時間の厳密合算用）
 function parseDurationToSeconds(durationStr) {
@@ -3674,12 +3681,17 @@ class Store {
     }
 
     // 定義された優先順位に従って固定ソート（B -> 調 -> 賞）
+    // 3-2. 特別クエスト属性 (🏆): questType が special のクエストが1件以上ある日（複数あっても1個）
+    if (metrics && metrics.specialQuestSales > 0) {
+      attrs.push(DAY_ATTRIBUTE_DEFINITIONS.special_quest);
+    }
+
     // 4. チップ属性 (♥): その日の配達にチップ（tip > 0）がある日
     if (metrics && metrics.tipSales > 0) {
       attrs.push(DAY_ATTRIBUTE_DEFINITIONS.tip);
     }
 
-    const priority = (typeof DAY_ATTRIBUTE_PRIORITY !== 'undefined') ? DAY_ATTRIBUTE_PRIORITY : ['bike_share', 'adjustment', 'special_bonus', 'tip'];
+    const priority = (typeof DAY_ATTRIBUTE_PRIORITY !== 'undefined') ? DAY_ATTRIBUTE_PRIORITY : ['bike_share', 'adjustment', 'special_bonus', 'special_quest', 'tip'];
     attrs.sort((a, b) => {
       const idxA = priority.indexOf(a.key);
       const idxB = priority.indexOf(b.key);
