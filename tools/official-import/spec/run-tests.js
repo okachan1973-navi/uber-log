@@ -611,6 +611,38 @@ try {
   }
 
   // ==========================================================
+  section('10-8. 分析の売上内訳: 特別クエスト → 特別ボーナス（通常クエストはクエスト）');
+  {
+    const r = runNode(`
+      global.localStorage={getItem:()=>null,setItem:()=>{},removeItem:()=>{}};global.window={localStorage:global.localStorage};
+      const {store}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      const w=store.getRevenueSummary('2026-09-24').thisWeek;
+      const pick=b=>({q:b.questSales,g:b.guaranteeBonus,go:b.guaranteeOnlySales,sq:b.specialQuestSales,t:b.totalSales,base:b.baseDeliverySales,tip:b.tipSales,adj:b.adjustmentSales,oth:b.otherSales});
+      const d24=store.getCalculatedMetrics(store.getDailyLog('2026-09-24'));
+      console.log(JSON.stringify({
+        w:{q:w.questSales,g:w.guaranteeBonus,go:w.guaranteeOnlySales,sq:w.specialQuestSales,off:w.officialSales,p:w.salesProfit,sum:w.baseDeliverySales+w.tipSales+w.questSales+w.guaranteeBonus+w.adjustmentOnlySales+w.otherOnlySales},
+        p0921:pick(store.getSalesBreakdown('2026-09-21','2026-09-25')),
+        p0924:pick(store.getSalesBreakdown('2026-09-24','2026-09-24')),
+        p0923:pick(store.getSalesBreakdown('2026-09-23','2026-09-23')),
+        p0919:pick(store.getSalesBreakdown('2026-09-19','2026-09-19')),
+        month:pick(store.getSalesBreakdown('2026-09-01','2026-09-30')),
+        prev:store.getRevenueSummary('2026-09-20').thisWeek,
+        d24:{q:d24.questSales,t:d24.totalSales,sq:d24.specialQuestSales}
+      }));`);
+    check(r.w.q === 4650 && r.w.g === 8890 && r.w.sq === 8890 && r.w.go === 0, `今週（9/21〜）: クエスト ¥${r.w.q} / 特別ボーナス ¥${r.w.g}（うち特別クエスト ¥${r.w.sq}）`);
+    check(r.w.off === 41405 && r.w.sum === 41405 && r.w.p === 38351, `総売上 ¥41,405・売上利益 ¥38,351 は不変（内訳の合計 ¥${r.w.sum}）`);
+    check(r.p0921.q === 4650 && r.p0921.g === 8890 && r.p0921.t === 41405, '期間指定 9/21〜9/25: クエスト ¥4,650 / 特別ボーナス ¥8,890 / 総売上 ¥41,405');
+    check(r.p0924.q === 600 && r.p0924.g === 8890 && r.p0924.t === 17189, '期間指定 9/24: 通常クエスト ¥600 はクエスト・特別クエスト ¥8,890 は特別ボーナス・総売上 ¥17,189');
+    check(r.p0923.q === 1650 && r.p0923.g === 0, '特別クエストの無い日（9/23）はクエスト ¥1,650・特別ボーナス ¥0 のまま');
+    const sumOk = b => b.base + b.tip + b.q + b.g + b.adj + b.oth === b.t;
+    check([r.p0921, r.p0924, r.p0923, r.p0919, r.month].every(sumOk), '二重計上なし: どの期間も 配達報酬＋チップ＋クエスト＋特別ボーナス＋調整＋その他 ＝ 総売上');
+    check(r.p0919.g === 12132 && r.p0919.go === 12132 && r.p0919.sq === 0 && r.prev.guaranteeBonus === 12132 && r.prev.officialSales === 43461,
+      '既存の特別収入（9/19 新規保証 ¥12,132）は特別ボーナスのまま・確定週 ¥43,461 不変');
+    check(r.month.g === 12132 + 8890 && r.month.go === 12132 && r.month.sq === 8890, `今月: 特別ボーナス ¥${r.month.g}（特別収入 ¥12,132 ＋ 特別クエスト ¥8,890）`);
+    check(r.d24.q === 9490 && r.d24.sq === 8890 && r.d24.t === 17189, '日別（9/24）はクエスト合計 ¥9,490 のまま（日別詳細の表示は変更なし）');
+  }
+
+  // ==========================================================
   section('10-3. UBER取込.cmd（run-latest-import.ps1: 最新日付の自動判定・実行前チェック・Claude Code 起動）');
   {
     const script = path.join(__dirname, '..', 'run-latest-import.ps1');

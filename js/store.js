@@ -4563,7 +4563,9 @@ class Store {
     let weekOtherSales = 0;
     let weekTipSales = 0;       // チップ（配達報酬に含まれる内訳。総売上へは別途加算しない）
     let weekOtherOnlySales = 0; // 調整以外のその他
-    let weekGuaranteeBonus = 0;
+    let weekGuaranteeBonus = 0;      // 特別ボーナス（特別収入・保証 ＋ 特別クエスト）
+    let weekGuaranteeOnly = 0;       // うち特別収入・保証
+    let weekSpecialQuestSales = 0;   // うち特別クエスト
     let weekBikeExpenses = 0;
     let weekDeliveriesCount = 0;
     let weekTripsCount = 0;
@@ -4572,7 +4574,9 @@ class Store {
       const m = this.getCalculatedMetrics(l);
       if (m.count > 0 || m.totalSales !== null || m.totalExpenses > 0) {
         weekDeliverySales += (m.deliverySales || 0);
-        weekQuestSales += (m.questSales || 0);
+        // 分析の分類: 通常クエスト → クエスト / 特別クエスト（questType: special）→ 特別ボーナス（二重計上しない）
+        weekQuestSales += (m.questSales || 0) - (m.specialQuestSales || 0);
+        weekSpecialQuestSales += (m.specialQuestSales || 0);
         weekAdjustmentSales += (m.adjustmentSales || 0);
         weekOtherSales += ((m.adjustmentSales || 0) + (m.otherSales || 0));
         weekTipSales += (m.tipSales || 0);
@@ -4580,7 +4584,8 @@ class Store {
         weekCalculatedSales += (m.totalSales || 0);
         weekDeliveriesCount += m.count;
         weekTripsCount += (l.tripsCount || (l.deliveries ? l.deliveries.length : 0));
-        weekGuaranteeBonus += (m.guaranteeBonus || 0);
+        weekGuaranteeBonus += (m.guaranteeBonus || 0) + (m.specialQuestSales || 0);
+        weekGuaranteeOnly += (m.guaranteeBonus || 0);
 
         let logBike = 0;
         if (Array.isArray(l.expenses)) {
@@ -4649,6 +4654,8 @@ class Store {
       tripsCount: weekTripsCount,
       guaranteeBonus: weekGuaranteeBonus,
       bonusSales: weekGuaranteeBonus,
+      guaranteeOnlySales: weekGuaranteeOnly,
+      specialQuestSales: weekSpecialQuestSales,
       payoutDateText: getNextPayoutDate(weekRange.endStr),
       note: '次回振込対象・当週確定売上利益',
       prevWeekComparison
@@ -4770,7 +4777,7 @@ class Store {
     const out = {
       startDate, endDate, days: 0, deliveriesCount: 0,
       deliverySales: 0, baseDeliverySales: 0, tipSales: 0, tipCount: 0,
-      questSales: 0, guaranteeBonus: 0, adjustmentSales: 0, otherSales: 0, totalSales: 0, bikeExpenses: 0
+      questSales: 0, guaranteeBonus: 0, guaranteeOnlySales: 0, specialQuestSales: 0, adjustmentSales: 0, otherSales: 0, totalSales: 0, bikeExpenses: 0
     };
     this.getAllDailyLogs()
       .filter(l => (!startDate || l.date >= startDate) && (!endDate || l.date <= endDate))
@@ -4783,8 +4790,11 @@ class Store {
         out.baseDeliverySales += (m.baseDeliverySales || 0);
         out.tipSales += (m.tipSales || 0);
         out.tipCount += (m.tipCount || 0);
-        out.questSales += (m.questSales || 0);
-        out.guaranteeBonus += (m.guaranteeBonus || 0);
+        // 分析の分類: 通常クエスト → クエスト / 特別クエスト → 特別ボーナス（二重計上しない）
+        out.questSales += (m.questSales || 0) - (m.specialQuestSales || 0);
+        out.specialQuestSales += (m.specialQuestSales || 0);
+        out.guaranteeOnlySales += (m.guaranteeBonus || 0);
+        out.guaranteeBonus += (m.guaranteeBonus || 0) + (m.specialQuestSales || 0);
         out.adjustmentSales += (m.adjustmentSales || 0);
         out.otherSales += (m.otherSales || 0);
         out.totalSales += (m.totalSales || 0);
