@@ -9,7 +9,10 @@ Uber公式 Delivery 詳細スクリーンショットから地図領域だけを
   2. 「直前の行が白っぽく、その行から非白が多い」行を地図上端の候補とする
   3. 候補ごとに、上端から233行の窓内で非白が多い列の最長連続区間（=地図の横範囲）を求め、
      窓の塗り率・直後の行が白いこと（地図下端）で採点する
-  4. 規格（420x233）に合う候補がなければ失敗として止める（推測で切り出さない）
+  4. 規格（420x233）に合う候補がなければ、表示倍率が違うスクショとして _detect_scaled で検出する
+     （縦横比 420:233・左右上下の白い余白で地図全体が写っていることを確かめる。例: 9/26 の地図 378x210）
+  5. どちらでも見つからなければ失敗として止める（推測で切り出さない・画像端で切れた地図は通さない）
+  表示倍率が違う場合の切り抜きは元の大きさのまま保存する（アプリは幅100%で表示するため拡大縮小しない）
 
 使い方:
   python crop_map.py detect <image>                -> JSON {"ok":..,"box":[l,t,r,b],...}
@@ -26,6 +29,11 @@ WHITE = 246            # これ以上明るいRGBは「白」
 COL_RATIO = 0.20       # 地図の列: 窓内の非白画素がこの割合以上（地図外の余白はほぼ0、縦の白い道路でも途切れない値）
 MIN_FILL = 0.60        # 地図窓全体の非白率の下限
 ROAD_GAP = 12          # 地図内の縦の白い道路としてつなぐ最大幅(px)
+# 表示倍率が違うスクショ用（_detect_scaled）
+SCALED_MIN_H = 150     # 地図の高さの下限（見積もり料金の枠などの低い帯を除外）
+SCALED_MIN_W, SCALED_MAX_W = 300, 520
+SCALED_ASPECT_TOL = 2  # 幅と「高さ x 420/233」の許容差(px)
+EDGE_WHITE_MAX = 0.05  # 地図の外側の列はほぼ白（非白率がこれ未満）
 
 
 def _load(path):
@@ -72,6 +80,60 @@ def _longest_run(flags):
     return best
 
 
+def _detect_scaled(w, h, nw, row_sum):
+    """表示倍率の違うスクショの地図検出（420x233 固定で見つからない場合のみ使う）。
+
+    地図の縦横比は常に 420:233。高さ（上下の白い余白に挟まれた濃い行の範囲）と
+    幅（その範囲で非白の多い列）を別々に測り、次をすべて満たす場合だけ地図全体が写っていると判定する:
+      - 上下: 地図の上の行・下の行が白っぽい（画像の上端・下端に接していない）
+      - 左右: 地図の左右に白い列が1列以上ある（画像の左端・右端に接していない）
+      - 縦横比: 幅 = 高さ x 420/233 （±SCALED_ASPECT_TOL px）。横が切れた地図は幅が足りず不合格
+      - 大きさ: 幅が SCALED_MIN_W〜SCALED_MAX_W、窓の塗り率が MIN_FILL 以上
+    切り抜きは元画像の該当領域をそのまま（拡大縮小しない）。
+    """
+    dense = w * 0.5
+    reasons = []
+    y = 1
+    while y < h:
+        if not (row_sum[y] >= dense and row_sum[y - 1] < dense):
+            y += 1
+            continue
+        top = y
+        bottom = top
+        while bottom < h and row_sum[bottom] >= w * 0.3:
+            bottom += 1
+        y = bottom + 1
+        height = bottom - top
+        if height < SCALED_MIN_H:
+            continue  # 地図より低い帯（見積もり料金の灰色の枠など）
+        cols = [sum(nw[yy][x] for yy in range(top, bottom)) / height for x in range(w)]
+        left, right = _longest_run(_fill_gaps([c >= COL_RATIO for c in cols], ROAD_GAP))
+        if right < 0:
+            continue
+        width = right - left + 1
+        expected_w = height * MAP_W / MAP_H
+        if bottom >= h:
+            reasons.append("地図の下端が画像の端で切れています")
+            continue
+        if left == 0 or cols[left - 1] >= EDGE_WHITE_MAX:
+            reasons.append(f"地図の左端が画像の端で切れています（地図 {width}x{height}px）")
+            continue
+        if right >= w - 1 or cols[right + 1] >= EDGE_WHITE_MAX:
+            reasons.append(f"地図の右端が画像の端で切れています（地図 {width}x{height}px）")
+            continue
+        if not (SCALED_MIN_W <= width <= SCALED_MAX_W):
+            continue
+        if abs(width - expected_w) > SCALED_ASPECT_TOL:
+            reasons.append(f"地図の縦横比が規格と合いません（地図 {width}x{height}px・高さからの想定幅 {expected_w:.0f}px。地図の一部が切れている可能性）")
+            continue
+        fill = sum(sum(nw[yy][left:right + 1]) for yy in range(top, bottom)) / (width * height)
+        if fill < MIN_FILL:
+            continue
+        return {"ok": True, "box": [left, top, right + 1, bottom], "fill": round(fill, 3),
+                "size": [w, h], "scaled": True}
+    return {"ok": False, "reason": reasons[0] if reasons else None, "size": [w, h]}
+
+
 def detect(path):
     img, w, h, nw = _load(path)
     row_sum = [sum(r) for r in nw]
@@ -95,8 +157,12 @@ def detect(path):
     good = [c for c in candidates
             if c["fill"] >= MIN_FILL and c["after"] < 0.3 and abs(c["width"] - MAP_W) <= WIDTH_TOLERANCE]
     if not good:
+        # 画面の表示倍率が違うスクショ（例: 2026-09-26 の地図 378x210）は、縦横比で完全性を確かめて検出する
+        scaled = _detect_scaled(w, h, nw, row_sum)
+        if scaled["ok"]:
+            return scaled
         near = sorted(candidates, key=lambda c: -c["fill"])[:3]
-        return {"ok": False, "reason": "規格(420x233)の地図領域を検出できません（画像端で地図が切れている等）",
+        return {"ok": False, "reason": scaled.get("reason") or "規格(420x233)の地図領域を検出できません（画像端で地図が切れている等）",
                 "size": [w, h], "candidates": near}
     if len(good) > 1:
         good.sort(key=lambda c: (-c["fill"], c["top"]))

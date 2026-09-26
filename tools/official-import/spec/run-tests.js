@@ -175,6 +175,49 @@ try {
   }
 
   // ==========================================================
+  section('3-2. MAP crop: 表示倍率が違うスクショ（例: 9/26 の地図 378x210）・本当に切れた地図は通さない');
+  {
+    const py = process.env.UBER_IMPORT_PYTHON || 'python';
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'uberlog-scaled-'));
+    tmpRoots.push(dir);
+    // 既存の正常なスクショ（del_0922_1: 地図 420x233）を0.9倍に縮小した画面を作り、そこから切れた画像も作る
+    const gen = spawnSync(py, ['-c', `
+import sys
+from PIL import Image
+src, d = sys.argv[1], sys.argv[2]
+im = Image.open(src).convert('RGB')
+s = im.resize((round(im.width * 0.9), round(im.height * 0.9)), Image.LANCZOS)
+s.save(d + '/scaled.png')
+print(s.width, s.height)`, path.join(ROOT, origCatalog.del_0922_1.full), dir], { encoding: 'utf8' });
+    const det = f => JSON.parse(spawnSync(py, [path.join(__dirname, '..', 'lib', 'crop_map.py'), 'detect', f], { encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' } }).stdout);
+    const ok = det(path.join(dir, 'scaled.png'));
+    const bw = ok.box ? ok.box[2] - ok.box[0] : 0, bh = ok.box ? ok.box[3] - ok.box[1] : 0;
+    check(gen.status === 0 && ok.ok && ok.scaled && Math.abs(bw - 378) <= 2 && Math.abs(bh - 210) <= 2,
+      `0.9倍表示の画面（420x233 規格外）でも地図全体を検出: ${bw}x${bh}（縦横比 420:233）`);
+    // 検出した地図の外側を切り落として「本当に切れた」画像を作る
+    const mk = (name, expr) => spawnSync(py, ['-c', `
+import sys
+from PIL import Image
+im = Image.open(sys.argv[1]); l, t, r, b = ${JSON.stringify(ok.box || [0, 0, 1, 1])}
+im.crop(${expr}).save(sys.argv[2])`, path.join(dir, 'scaled.png'), path.join(dir, name)], { encoding: 'utf8' });
+    mk('cut_right.png', '(0, 0, r - 4, im.height)');
+    mk('cut_right2.png', '(0, 0, r - 2, im.height)');
+    mk('cut_left.png', '(l + 3, 0, im.width, im.height)');
+    mk('edge_right.png', '(0, 0, r, im.height)');
+    mk('cut_bottom.png', '(0, 0, im.width, b - 20)');
+    const results = ['cut_right', 'cut_right2', 'cut_left', 'edge_right', 'cut_bottom'].map(n => [n, det(path.join(dir, `${n}.png`))]);
+    results.forEach(([n, r]) => check(!r.ok, `${n}: 地図が切れた画像は通さない（${r.reason}）`));
+    // 縦横比が合わない（横が欠けた地図を左右の白で囲んだ）画像も通さない
+    spawnSync(py, ['-c', `
+import sys
+from PIL import Image
+im = Image.open(sys.argv[1]).convert('RGB'); l, t, r, b = ${JSON.stringify(ok.box || [0, 0, 1, 1])}
+out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.argv[2])`, path.join(dir, 'scaled.png'), path.join(dir, 'narrow.png')], { encoding: 'utf8' });
+    const narrow = det(path.join(dir, 'narrow.png'));
+    check(!narrow.ok, `地図の横幅が高さに対して足りない画像は通さない（${narrow.reason}）`);
+  }
+
+  // ==========================================================
   section('4. 既存 9/22・9/21 の再取込（照合のみ・二重登録なし）');
   for (const date of ['2026-09-22', '2026-09-21']) {
     const root = makeRoot();
