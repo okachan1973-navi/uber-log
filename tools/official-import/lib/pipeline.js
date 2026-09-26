@@ -386,8 +386,10 @@ function buildStaging(root, date, opts = {}) {
   const fractional = events.filter(e => !Number.isInteger(e.amount));
   check('金額が円単位', fractional.length === 0, fractional.map(e => `${e.type} ${e.time || ''} ${e.amount}`).join('、'));
   check('時刻不明のDeliveryなし', actDeliveries.every(e => e.time), actDeliveries.filter(e => !e.time).map(e => yen(e.amount)).join('、'));
-  check('クエスト重複候補なし', questResult.duplicateCandidates.length === 0,
-    questResult.duplicateCandidates.map(c => `${c.key}: ${c.items.map(i => `${i.category || ''} ${i.title}`).join(' / ')}（decisions.json の questDuplicates で count_once / count_all を指定）`).join('、'));
+  // 検証名は実際の状態を表す（候補0件のときだけ「なし」。候補があって止まるときは「あり・確認が必要」）
+  const dupCount = questResult.duplicateCandidates.length;
+  check(dupCount === 0 ? 'クエスト重複候補なし' : `クエスト重複候補あり（${dupCount}件・同じ報酬か別の報酬かの確認が必要）`, dupCount === 0,
+    questResult.duplicateCandidates.map(c => `${c.key.replace('|', ' ¥')}: ${c.items.map(i => `「${(i.category ? i.category + ' ' : '') + i.title}」`).join(' と ')}（同じ報酬の2種類の表示なら count_once（1回だけ計上）、別々に受け取った報酬なら count_all（両方計上）を decisions.json の questDuplicates で指定）`).join('\n'));
 
   // 2. スクショ
   const files = listScreenshots(p.screenshotDir);
@@ -590,6 +592,7 @@ function buildStaging(root, date, opts = {}) {
         map: t.map || null
       })),
       quests: !questResult ? [] : questResult.quests.map(q => ({ time: q.time, category: q.category, title: q.title, amount: q.amount, counted: q.counted, reason: q.reason })),
+      questDuplicateCandidates: !questResult ? [] : questResult.duplicateCandidates,
       adjustments: !actAdjustments ? [] : actAdjustments.map(a => ({ time: a.time, title: a.title, amount: a.amount, activityUuid: a.activityUuid })),
       summary: !trips || !rec ? {} : {
         trips: trips.length,

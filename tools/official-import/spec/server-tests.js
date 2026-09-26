@@ -165,7 +165,9 @@ async function startServer(env) {
     check(r.status === 202 && r.json.state === 'running', '「取り込み実行」を受付（処理状況をポーリング）');
     let job = await waitJob(r.json.id);
     const mapP = (job.problems || []).find(p => p.type === 'map');
-    check(job.state === 'needs_review' && job.message === '確認が必要です', `確認が必要です（${job.message}）`);
+    check(job.state === 'needs_review' && job.message === '確認待ちのため停止しています' && job.step === 'validate',
+      `確認待ちで停止（${job.message}・停止した工程: ${job.step}）— 「処理中」とは区別`);
+    check(mapP && mapP.items.every(i => i.reason) && /推測で切り抜かず/.test(mapP.detail), `MAPを確認できない理由を画像ごとに表示（${mapP && mapP.items.map(i => i.reason).join(' / ')}）`);
     check(mapP && /1件のMAP画像を確認できません/.test(mapP.title) && mapP.items.length === 1 && mapP.items[0].time === '14:48' && mapP.items[0].amount === 331,
       `MAP不足を時刻・金額つきで表示（${mapP && mapP.title}: ${mapP && mapP.items.map(i => `${i.time} ¥${i.amount}`).join(', ')}）`);
     check(fs.readFileSync(storeFile, 'utf8') === beforeStore && head() === head0, 'UBER_LOG 本体（store.js）・git は変更なし');
@@ -226,6 +228,16 @@ async function startServer(env) {
     check(fs.existsSync(prevDir) && fs.readdirSync(prevDir).some(d => fs.readdirSync(path.join(prevDir, d)).includes(inbox.json.screenshots[0])),
       '画面で × にした画像は削除せず _previous へ退避');
     check(job.state === 'needs_review' && fs.readFileSync(storeFile, 'utf8') === store1, 'スクショが1枚足りない → 確認が必要です・本体は変更なし');
+
+    // ==========================================================
+    section('13-5b. 取込画面の表示（完了／処理中／確認待ちで停止／エラー停止の区別・クエスト重複の指定）');
+    const ui = (await request('GET', '/tools/official-import/')).text;
+    check(ui.includes('確認待ちのため停止しています（処理は動いていません') && ui.includes("'確認待ちで停止'") && ui.includes("'エラーで停止'") && ui.includes("'処理中…'") && ui.includes("'未実行'"),
+      '進捗は工程ごとに 完了／処理中…／確認待ちで停止／エラーで停止／未実行 を表示');
+    check(/replace\(\/中\(\?=（\|\$\)\/, ''\)/.test(ui), '完了・停止した工程に「保存中」などの「〜中」を出さない');
+    check(ui.includes('data-act="count_once"') && ui.includes('data-act="count_all"') && ui.includes('questDuplicates'),
+      'クエスト重複は画面のボタン（同じ報酬＝count_once / 別々の報酬＝count_all）で指定できる');
+    check(ui.includes('前回と同じ理由で停止しました'), '同じ理由で繰り返し止まった場合は「前回と同じ理由で停止」と表示');
 
     // ==========================================================
     section('13-6. Claude Code が見つからない場合');

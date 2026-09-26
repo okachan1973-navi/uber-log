@@ -33,6 +33,10 @@
     oct: 10, october: 10, nov: 11, november: 11, dec: 12, december: 12
   };
   const DETAILS_RE = /^(view details|詳細を表示|詳細を見る|詳細)$/i;
+  // 一覧の表の見出しセル（例: 「イベント	日時	売り上げ	表示する」をコピー範囲に含めた場合）。
+  // 見出しはイベントではないので、件名に混ぜない（混ざると「クエスト」が「イベント 日時 売り上げ 表示する クエスト」になり、
+  // 同時刻・同額の「クエスト」「N回乗車クエスト」の組として認識できなくなる。2026-09-26 21:28 で発生）
+  const TABLE_HEADER_RE = /^(イベント|日時|売り上げ|売上げ|売上|表示する|event|events|date|date\s*(?:&|and)\s*time|earnings|show)$/i;
 
   function pad2(n) { return String(n).padStart(2, '0'); }
 
@@ -166,6 +170,7 @@
     const warnings = [];
     let ctxDate = null;
     let cur = null;
+    const headerCells = [];
 
     const start = () => ({ labels: [], date: ctxDate, dateFromLine: false, time: null, amount: null, url: null, uuids: [], details: false, lines: [] });
     const flush = () => {
@@ -181,6 +186,10 @@
     lines.forEach((line) => {
       const t = tokenizeLine(line, defaultYear);
       if (!t.raw) return;
+      if (t.label && TABLE_HEADER_RE.test(t.label) && !t.date && !t.time && t.amount === null && !t.url && !t.uuid) {
+        headerCells.push(t.raw);
+        return;
+      }
 
       if (t.date) {
         if (cur && cur.amount !== null) flush();
@@ -211,6 +220,7 @@
       }
     });
     flush();
+    if (headerCells.length) warnings.push(`一覧の表の見出し（${headerCells.join('・')}）はイベントではないため無視しました`);
 
     let statementTotal = null;
     const result = [];

@@ -26,6 +26,7 @@ const STEPS = [
   ['record', '記録・保存中（HANDOFF・commit・push）'],
   ['done', '完了']
 ];
+const NEEDS_REVIEW_MESSAGE = '確認待ちのため停止しています';
 // 取込で変更してよいファイル（これ以外はコミットしない）
 const IMPORT_PATHS = ['js/store.js', 'js/trip-maps.js', 'assets/maps', 'index.html', 'sw.js', 'version.json', 'HANDOFF.md'];
 const IMAGE_EXT = /\.(png|jpe?g)$/i;
@@ -85,15 +86,18 @@ class ImportJob {
     this.log.push(`[${new Date().toLocaleTimeString('ja-JP')}] ${this.message}`);
   }
 
+  // 確認待ち: 処理は止まっている（動いていない）。止まった工程は this.step
   needsReview(problems) {
     this.state = 'needs_review';
-    this.message = '確認が必要です';
+    this.message = NEEDS_REVIEW_MESSAGE;
     this.problems = problems;
+    this.log.push(`[${new Date().toLocaleTimeString('ja-JP')}] 確認待ちで停止（${STEPS.find(s => s[0] === this.step)[1].replace(/中$/, '')}）: ${problems.map(p => p.title).join(' / ')}`);
   }
 
+  // エラー停止: 処理は止まっている。止まった工程は this.step
   fail(message) {
     this.state = 'error';
-    this.message = message;
+    this.message = `エラーで停止しました: ${message}`;
     this.problems = [{ type: 'error', title: 'エラー', detail: message }];
   }
 
@@ -166,7 +170,11 @@ class ImportJob {
       const cur = fs.existsSync(decFile) ? JSON.parse(fs.readFileSync(decFile, 'utf8')) : {};
       const next = { ...cur };
       if (payload.decisions.mapMissingOk) next.mapMissingOk = [...new Set([...(cur.mapMissingOk || []), ...payload.decisions.mapMissingOk])];
-      if (payload.decisions.questDuplicates) next.questDuplicates = { ...(cur.questDuplicates || {}), ...payload.decisions.questDuplicates };
+      if (payload.decisions.questDuplicates) {
+        const valid = Object.entries(payload.decisions.questDuplicates)
+          .filter(([k, v]) => /^\d{1,2}:\d{2}\|-?\d+$/.test(k) && (v === 'count_once' || v === 'count_all'));
+        next.questDuplicates = { ...(cur.questDuplicates || {}), ...Object.fromEntries(valid) };
+      }
       fs.writeFileSync(decFile, JSON.stringify(next, null, 2), 'utf8');
     }
     const files = fs.readdirSync(shotDir).filter(f => IMAGE_EXT.test(f)).sort((a, b) => a.localeCompare(b, 'ja'));
@@ -290,8 +298,10 @@ class ImportJob {
       problems.push({
         type: 'map',
         title: `${mapFailed.length}件のMAP画像を確認できません`,
-        detail: '地図が画像の端で切れています。地図全体が入るように撮り直したスクショを追加してください（切れた画像は × で外す）。',
-        items: mapFailed.map(d => ({ file: d.file, time: d.time, amount: d.amount })),
+        detail: '地図全体が写っていることを確認できなかったため、推測で切り抜かずに止めています（理由は各行）。' +
+          '地図の上下左右に白い余白が入るように撮り直したスクショを追加してください（古い画像は × で外す）。MAPなしで良い場合は「MAPなしで取り込む」。\n' +
+          '※ 画面の表示倍率・スクショの横幅が違うだけなら自動で検出されます（縦横比 420:233）。',
+        items: mapFailed.map(d => ({ file: d.file, time: d.time, amount: d.amount, reason: d.map && d.map.reason })),
         actions: ['replace', 'mapMissingOk']
       });
     }
@@ -308,11 +318,22 @@ class ImportJob {
     if (others.length) {
       problems.push({ type: 'other', title: 'Delivery詳細ではない画像が含まれています', detail: '× で外してから、もう一度「取り込み実行」を押してください。', items: others.map(s => ({ file: s.file })) });
     }
-    (v.checks || []).filter(c => !c.ok && !/^MAP/.test(c.name) && !(unreadable.length + others.length && /スクショ全件読取済み/.test(c.name)))
+    const dups = v.questDuplicateCandidates || [];
+    if (dups.length) {
+      problems.push({
+        type: 'quest',
+        title: `クエスト重複の確認が必要です（${dups.length}件）`,
+        detail: '同じ時刻・同じ金額のクエストが複数表示されています。同じ報酬が2種類の表示になっているだけなら「同じ報酬（1回だけ計上）」、' +
+          '別々に受け取った報酬なら「別々の報酬（両方計上）」を選んでください。\n選ばずに「取り込み実行」を押しても、同じ確認で止まります（二重計上を防ぐため）。',
+        items: dups.map(c => ({ key: c.key, time: c.key.split('|')[0], amount: Number(c.key.split('|')[1]), labels: c.items.map(i => (i.category ? i.category + ' ' : '') + i.title) })),
+        actions: ['count_once', 'count_all']
+      });
+    }
+    (v.checks || []).filter(c => !c.ok && !/^MAP/.test(c.name) && !(dups.length && /^クエスト重複/.test(c.name)) && !(unreadable.length + others.length && /スクショ全件読取済み/.test(c.name)))
       .forEach(c => problems.push({ type: 'check', title: c.name, detail: c.detail }));
     if (!problems.length) problems.push({ type: 'check', title: '検証で止まりました', detail: (v.errors || []).join('\n') });
     return problems;
   }
 }
 
-module.exports = { ImportJob, STEPS, IMPORT_PATHS };
+module.exports = { ImportJob, STEPS, IMPORT_PATHS, NEEDS_REVIEW_MESSAGE };

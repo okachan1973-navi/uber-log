@@ -161,6 +161,46 @@ try {
   }
 
   // ==========================================================
+  section('2-2. 一覧の表の見出し行（イベント 日時 売り上げ 表示する）・クエスト重複の表示');
+  {
+    // 2026-09-26: 見出し行ごとコピーすると、先頭の「クエスト ¥200」の件名に見出しが混ざり、21:28 の組が重複候補になっていた
+    const text = 'イベント\t日時\t売り上げ\t表示する\nクエスト\n\nSaturday, September 26th, 2026\n\n21:28\n\n￥200\n\nView Details\nクエスト\n\nSaturday, September 26th, 2026\n\n21:28\n\n￥500\n\nView Details\n' +
+      '1 回乗車クエスト\n\nSaturday, September 26th, 2026\n\n21:28\n\n￥200.00\n\nView Details\n3 回乗車クエスト\n\nSaturday, September 26th, 2026\n\n21:28\n\n￥500.00\n\nView Details';
+    const hp = parser.parseActivityText(text, { defaultYear: 2026 });
+    check(hp.events.length === 4 && hp.events[0].title === 'クエスト' && hp.warnings.some(w => /見出し（イベント・日時・売り上げ・表示する）はイベントではないため無視/.test(w)),
+      `見出し行は件名に混ぜずに無視（先頭: 「${hp.events[0] && hp.events[0].title}」）`);
+    const hq = parser.dedupeQuests(hp.events.filter(e => e.type === 'quest'));
+    check(hq.duplicateCandidates.length === 0 && hq.quests.filter(x => x.counted).map(x => x.amount).sort().join() === '200,500',
+      '21:28「クエスト ¥200」＋「1回乗車クエスト ¥200」→ ¥200 を1回だけ計上（¥500 の組も1回）・重複候補なし');
+    const once = parser.dedupeQuests(hp.events.filter(e => e.type === 'quest'), { questDuplicates: { '21:28|200': 'count_once' } });
+    check(once.quests.filter(x => x.counted).reduce((s, x) => s + x.amount, 0) === 700, 'decisions.json の count_once があっても結果は同じ（二重計上なし ¥700）');
+    const plain = parser.parseActivityText('Delivery\nイベント・運転\n10:00\n￥320', { defaultYear: 2026 });
+    check(plain.events.length === 1 && plain.events[0].type === 'delivery', '見出しと同じ語を含むだけの行は消さない');
+
+    // 検証名は実際の状態を表す（候補ありで「候補なし」と出さない）
+    const root = makeRoot();
+    setupInbox(root, '2026-09-22');
+    const actFile = path.join(root, 'tools', 'official-import', 'inbox', '2026-09-22', 'activity.txt');
+    fs.appendFileSync(actFile, '\nクエスト\nTuesday, September 22nd, 2026\n23:50\n￥100\nクエスト\nTuesday, September 22nd, 2026\n23:50\n￥100\n', 'utf8');
+    const st = pipeline.buildStaging(root, '2026-09-22');
+    const dupCheck = st.validation.checks.find(c => /^クエスト重複/.test(c.name));
+    check(st.validation.status === 'FAIL' && dupCheck && !dupCheck.ok && /^クエスト重複候補あり（1件/.test(dupCheck.name) && !/候補なし/.test(dupCheck.name),
+      `重複候補があるときは「${dupCheck && dupCheck.name}」（「候補なし」と表示しない）`);
+    check(st.questDuplicateCandidates.length === 1 && st.questDuplicateCandidates[0].key === '23:50|100', '重複候補を時刻・金額つきで画面へ渡す');
+    const { ImportJob } = require('../lib/import-job.js');
+    const job = new ImportJob({ root, date: '2026-09-22', testCommand: 'skip' });
+    const probs = job.explain({ checks: st.validation.checks, questDuplicateCandidates: st.questDuplicateCandidates, deliveries: [] }, { screenshots: [] });
+    const qp = probs.find(p => p.type === 'quest');
+    check(qp && /^クエスト重複の確認が必要です/.test(qp.title) && qp.actions.join() === 'count_once,count_all' && qp.items[0].time === '23:50' && qp.items[0].amount === 100 &&
+      /同じ確認で止まります/.test(qp.detail) && !probs.some(p => /候補なし/.test(p.title)),
+      `画面: 「${qp && qp.title}」＋ 同じ報酬（count_once）／別々の報酬（count_all）ボタン・押し直しても止まる理由を表示`);
+    const cleanRoot = makeRoot();
+    setupInbox(cleanRoot, '2026-09-22');
+    const clean = pipeline.buildStaging(cleanRoot, '2026-09-22');
+    check(clean.validation.checks.some(c => c.name === 'クエスト重複候補なし' && c.ok), '重複候補が0件のときだけ「クエスト重複候補なし」');
+  }
+
+  // ==========================================================
   section('3. MAP crop（既存規格 420x233・既存切り抜き位置との一致）');
   {
     const py = process.env.UBER_IMPORT_PYTHON || 'python';

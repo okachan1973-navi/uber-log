@@ -19,6 +19,7 @@ function stagingView(st) {
     errors: st.validation.errors,
     warnings: st.validation.warnings,
     summary: st.summary,
+    questDuplicateCandidates: st.questDuplicateCandidates || [],
     deliveries: (st.deliveries || []).map(d => ({
       id: d.id,
       file: d.screen && d.screen.file,

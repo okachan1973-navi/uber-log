@@ -42,10 +42,17 @@
     .muted { color: var(--muted); font-size: 12px; }
     .progress { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 4px; }
     .progress li { color: var(--muted); }
+    .progress li small { font-weight: 400; margin-left: 6px; }
+    .progress li.todo::before { content: "・ "; }
     .progress li.doing { color: var(--text); font-weight: 700; }
     .progress li.doing::before { content: "▶ "; color: var(--accent); }
     .progress li.done { color: var(--accent); }
     .progress li.done::before { content: "✓ "; }
+    .progress li.stopped { color: var(--warn); font-weight: 700; }
+    .progress li.stopped::before { content: "⏸ "; }
+    .progress li.failed { color: var(--err); font-weight: 700; }
+    .progress li.failed::before { content: "✕ "; }
+    .problem .reason { color: var(--warn); font-size: 12px; }
     .problem { border: 1px solid var(--warn); background: var(--warn-weak); border-radius: 8px; padding: 12px 14px; margin-top: 10px; }
     .problem.error { border-color: var(--err); background: var(--err-weak); }
     .problem h3 { margin: 0 0 4px; font-size: 15px; }
@@ -239,15 +246,40 @@
   function note(kind, text) { $('run-note').innerHTML = `<div class="note ${kind}">${esc(text)}</div>`; }
   function finish() { busy = false; $('run').disabled = !backend; }
 
-  function showStatus(msg, steps, stepKey, state) {
+  // 状態ごとの見出し（処理中／確認待ちで停止／エラーで停止／完了 を一目で区別する）
+  const STATE_HEAD = {
+    running: '▶ 処理中',
+    needs_review: '⏸ 確認待ちのため停止しています（処理は動いていません・UBER_LOG には反映していません）',
+    error: '✕ エラーで停止しました（処理は動いていません）',
+    done: '✓ 完了'
+  };
+  // 工程名から「中」を外す（完了・停止した工程に「保存中」と出さない）
+  const stepName = label => String(label).replace(/中(?=（|$)/, '');
+
+  function showStatus(msg, steps, stepKey, state = 'running') {
     $('status').hidden = false;
-    $('status-msg').textContent = msg;
+    const head = STATE_HEAD[state] || '';
+    const body = state === 'running' ? msg
+      : state === 'needs_review' ? '下の「確認が必要な項目」を解決してから、もう一度「取り込み実行」を押してください。'
+      : state === 'error' ? String(msg).replace(/^エラーで停止しました:\s*/, '')
+      : msg;
+    $('status-msg').innerHTML = `<b>${esc(head)}</b>${body && body !== head ? `<br>${esc(body)}` : ''}`;
     $('status-msg').className = `note ${state === 'error' ? 'err' : state === 'needs_review' ? 'warn' : 'ok'}`;
     if (!steps) return;
     const idx = steps.findIndex(s => s.key === stepKey);
-    $('progress').innerHTML = steps.filter(s => s.key !== 'done').map((s, i) =>
-      `<li class="${state === 'done' || i < idx ? 'done' : i === idx && state === 'running' ? 'doing' : ''}">${esc(s.label)}</li>`).join('');
+    $('progress').innerHTML = steps.filter(s => s.key !== 'done').map((s, i) => {
+      let cls = 'todo', tag = '未実行';
+      if (state === 'done' || i < idx) { cls = 'done'; tag = '完了'; }
+      else if (i === idx && state === 'running') { cls = 'doing'; tag = '処理中…'; }
+      else if (i === idx && state === 'needs_review') { cls = 'stopped'; tag = '確認待ちで停止'; }
+      else if (i === idx && state === 'error') { cls = 'failed'; tag = 'エラーで停止'; }
+      return `<li class="${cls}">${esc(stepName(s.label))}<small>${esc(tag)}</small></li>`;
+    }).join('');
   }
+
+  // 同じ理由で繰り返し止まっているか（「取り込み実行」を押し直しても解決しない場合に明示する）
+  let lastStopSig = '';
+  let sameStopCount = 0;
 
   async function poll(id) {
     let job;
@@ -262,10 +294,26 @@
   function showProblems(problems, state) {
     flagged = new Set();
     const mapFiles = [];
-    $('problems').innerHTML = (state === 'needs_review' ? '<div class="note warn"><b>確認が必要です</b>（UBER_LOG には反映していません）</div>' : '') + problems.map(p => {
+    let head = '';
+    if (state === 'needs_review') {
+      const sig = JSON.stringify(problems.map(p => [p.type, p.title, (p.items || []).map(i => i.file || i.key || '')]));
+      sameStopCount = sig === lastStopSig ? sameStopCount + 1 : 1;
+      lastStopSig = sig;
+      head = `<div class="note warn"><b>確認が必要な項目（${problems.length}件）</b> — 解決するまで UBER_LOG には反映しません。` +
+        (sameStopCount > 1 ? `<br><b>前回と同じ理由で停止しました（${sameStopCount}回目）。</b>下の項目を解決しないまま「取り込み実行」を押しても、同じ確認で止まります。` : '') + '</div>';
+    }
+    $('problems').innerHTML = head + problems.map(p => {
       (p.items || []).forEach(i => i.file && flagged.add(i.file));
       if (p.type === 'map') (p.items || []).forEach(i => mapFiles.push(i.file));
-      const items = (p.items || []).map(i => `<li>${esc([i.time, i.amount !== undefined ? yen(i.amount) : '', i.fields ? `読めない項目: ${i.fields}` : '', i.file ? `（${i.file}）` : ''].filter(Boolean).join(' '))}</li>`).join('');
+      const items = (p.items || []).map(i => {
+        if (p.type === 'quest') {
+          return `<li>${esc(`${i.time} ${yen(i.amount)}: ${(i.labels || []).map(l => `「${l}」`).join(' と ')}`)}` +
+            `<div class="row" style="margin-top:4px"><button class="ghost" type="button" data-act="count_once" data-key="${esc(i.key)}">同じ報酬（1回だけ計上）</button>` +
+            `<button class="ghost" type="button" data-act="count_all" data-key="${esc(i.key)}">別々の報酬（両方計上）</button></div></li>`;
+        }
+        const text = [i.time, i.amount !== undefined ? yen(i.amount) : '', i.fields ? `読めない項目: ${i.fields}` : '', i.file ? `（${i.file}）` : ''].filter(Boolean).join(' ');
+        return `<li>${esc(text)}${i.reason ? `<br><span class="reason">${esc(i.reason)}</span>` : ''}</li>`;
+      }).join('');
       const actions = p.type === 'map'
         ? `<div class="row" style="margin-top:8px"><button class="ghost" type="button" data-act="add">スクショを追加する</button><button class="ghost" type="button" data-act="mapless">MAPなしで取り込む</button></div>`
         : (p.type === 'unreadable' || p.type === 'other') ? `<div class="row" style="margin-top:8px"><button class="ghost" type="button" data-act="add">スクショを追加する</button></div>` : '';
@@ -273,11 +321,16 @@
     }).join('');
     renderImages();
     $('problems').querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
-      if (b.dataset.act === 'add') {
+      const act = b.dataset.act;
+      if (act === 'add') {
         drop.classList.add('attention');
         drop.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else if (b.dataset.act === 'mapless' && confirm(`次の ${mapFiles.length} 件を MAP なしで取り込みます。よろしいですか？\n${mapFiles.join('\n')}`)) {
+      } else if (act === 'mapless' && confirm(`次の ${mapFiles.length} 件を MAP なしで取り込みます。よろしいですか？\n${mapFiles.join('\n')}`)) {
         start({ mapMissingOk: mapFiles });
+      } else if ((act === 'count_once' || act === 'count_all') && confirm(act === 'count_once'
+        ? `${b.dataset.key.replace('|', ' ¥')} は同じ報酬の2種類の表示として、1回だけ計上します（二重計上しない）。よろしいですか？`
+        : `${b.dataset.key.replace('|', ' ¥')} は別々に受け取った報酬として、両方とも計上します。よろしいですか？`)) {
+        start({ questDuplicates: { [b.dataset.key]: act } });
       }
     }));
   }
