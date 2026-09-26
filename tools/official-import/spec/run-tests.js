@@ -711,6 +711,8 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
     const r = runNode(`
       global.localStorage={getItem:()=>null,setItem:()=>{},removeItem:()=>{}};global.window={localStorage:global.localStorage};
       const {store}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      // 検証用: 9/24 までの日だけで集計（9/26 以降の取込で今週の値が変わらないよう対象日を固定。10-9 と同じ）
+      store.state.dailyLogs=Object.fromEntries(store.getAllDailyLogs().filter(l=>l.date<='2026-09-24').map(l=>[l.date,l]));
       const w=store.getRevenueSummary('2026-09-24').thisWeek;
       const pick=b=>({q:b.questSales,g:b.guaranteeBonus,go:b.guaranteeOnlySales,sq:b.specialQuestSales,t:b.totalSales,base:b.baseDeliverySales,tip:b.tipSales,adj:b.adjustmentSales,oth:b.otherSales});
       const d24=store.getCalculatedMetrics(store.getDailyLog('2026-09-24'));
@@ -854,6 +856,30 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
     check(r.bdays === 12 && r.btotal === 88630, `売上内訳の「稼働 N日」も共通判定（${r.bdays}日、経費だけの日は数えない）・総売上は不変`);
     const uiSrc = fs.readFileSync(path.join(ROOT, 'js', 'ui.js'), 'utf8');
     check(/const activeLogs = allLogs\.filter\(log => store\.isWorkedDay\(log\)\)/.test(uiSrc), '日別履歴一覧は共通判定 store.isWorkedDay を使用（今日・レコードの有無では判定しない）');
+  }
+
+  // ==========================================================
+  section('10-12. 2026-09-26 公式取込の確定値（表示倍率の違うスクショ・チップ・見出し行つき一覧）');
+  {
+    const r = runNode(`
+      global.localStorage={getItem:()=>null,setItem:()=>{},removeItem:()=>{}};global.window={localStorage:global.localStorage};
+      const {store}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      const {TRIP_MAP_CATALOG}=require(${JSON.stringify(path.join(ROOT, 'js', 'trip-maps.js'))});
+      const log=store.getDailyLog('2026-09-26');const m=store.getCalculatedMetrics(log);
+      const d=log.deliveries.find(x=>x.completedAt==='08:13');
+      const ids=Object.keys(TRIP_MAP_CATALOG).filter(k=>k.startsWith('del_0926_'));
+      console.log(JSON.stringify({trips:m.tripsCount,count:m.count,ds:m.deliverySales,base:m.baseDeliverySales,tip:m.tipSales,tipCount:m.tipCount,q:m.questSales,t:m.totalSales,km:m.totalDistanceKm,sec:m.workSeconds,
+        d0813:d&&{fee:d.fee,tip:d.tip,base:d.baseFee},q2128:log.quests.filter(q=>q.time==='21:28'&&!q.isDuplicateIgnored).map(q=>q.amount).sort((a,b)=>a-b),
+        maps:ids.length,files:ids.map(i=>TRIP_MAP_CATALOG[i].map),attrs:store.getDayAttributes('2026-09-26').map(a=>a.label).join('')}));`);
+    check(r.trips === 25 && r.count === 34 && r.ds === 11845 && r.q === 7700 && r.t === 19545 && r.km === 90.44 && r.sec === 37907,
+      `9/26: 25トリップ / 34件 / 配達 ¥11,845 / クエスト ¥7,700 / 総売上 ¥19,545 / 90.44km / 10:31:47`);
+    check(r.d0813 && r.d0813.fee === 702 && r.d0813.tip === 97 && r.d0813.base === 605 && r.tip === 97 && r.tipCount === 1 && r.base === 11845 - 97,
+      '08:13 ¥702 = 料金 ¥605 ＋ チップ ¥97（チップは売上 ¥702 に含まれ再加算しない・日別チップ ¥97）');
+    check(JSON.stringify(r.q2128) === '[200,500]', '21:28 ¥200（クエスト＋1回乗車クエストの2種類の表示）は1回だけ計上');
+    const sizes = JSON.parse(spawnSync(process.env.UBER_IMPORT_PYTHON || 'python', ['-c', 'import json,sys;from PIL import Image;print(json.dumps(sorted({Image.open(p).size for p in sys.argv[1:]})))',
+      ...r.files.map(f => path.join(ROOT, f))], { encoding: 'utf8' }).stdout);
+    check(r.maps === 25 && JSON.stringify(sizes) === '[[378,210]]', `MAP 25/25（表示倍率の違う画面の実サイズ ${sizes.map(s => s.join('x')).join(', ')} で保存・拡大縮小なし）`);
+    check(r.attrs === '♥', '9/26 の日別属性は ♥（チップ）');
   }
 
   // ==========================================================
