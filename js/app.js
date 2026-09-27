@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSettingsActions();
   initCloudSyncActions();
   initSalesAndExpensesActions();
+  initTargetQuestActions();
   initAppUpdateChecker();
 
   // 初回描画
@@ -1006,6 +1007,85 @@ function initSalesAndExpensesActions() {
 
   // 3. インライン経費入力セクション（稼働タブ下部）
   ui.initExpenseInputEvents();
+}
+
+// 10. 目標クエスト（Target Quest）カード & 設定モーダルのアクション
+function initTargetQuestActions() {
+  const questCard = document.getElementById('week-quest-card');
+  const editQuestBtn = document.getElementById('btn-edit-target-quest');
+  const createQuestBtn = document.getElementById('btn-create-target-quest');
+  const closeQuestModalBtn = document.getElementById('btn-close-target-quest-modal');
+  const cancelQuestBtn = document.getElementById('btn-cancel-target-quest');
+  const questOverlay = document.getElementById('target-quest-modal-overlay');
+  const questForm = document.getElementById('target-quest-form');
+  const deleteQuestBtn = document.getElementById('btn-delete-target-quest');
+
+  // クエストカード全体のタップでモーダルを開く
+  if (questCard) {
+    questCard.addEventListener('click', () => {
+      triggerHaptic();
+      ui.openTargetQuestModal();
+    });
+  }
+
+  // ⚙ 設定ボタン
+  if (editQuestBtn) {
+    editQuestBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerHaptic();
+      ui.openTargetQuestModal();
+    });
+  }
+
+  // ＋ 目標クエストを設定するボタン（未設定時）
+  if (createQuestBtn) {
+    createQuestBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerHaptic();
+      ui.openTargetQuestModal();
+    });
+  }
+
+  // モーダル閉じるボタン（×）
+  if (closeQuestModalBtn) {
+    closeQuestModalBtn.addEventListener('click', () => {
+      ui.closeTargetQuestModal();
+    });
+  }
+
+  // モーダルキャンセルボタン
+  if (cancelQuestBtn) {
+    cancelQuestBtn.addEventListener('click', () => {
+      ui.closeTargetQuestModal();
+    });
+  }
+
+  // モーダル背景オーバーレイのタップで閉じる
+  if (questOverlay) {
+    questOverlay.addEventListener('click', (e) => {
+      if (e.target === questOverlay) {
+        ui.closeTargetQuestModal();
+      }
+    });
+  }
+
+  // クエスト保存フォーム
+  if (questForm) {
+    questForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      triggerHaptic();
+      ui.saveTargetQuestFromModal();
+    });
+  }
+
+  // クエスト削除ボタン
+  if (deleteQuestBtn) {
+    deleteQuestBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      triggerHaptic();
+      ui.deleteTargetQuestFromModal();
+    });
+  }
 }
 
 

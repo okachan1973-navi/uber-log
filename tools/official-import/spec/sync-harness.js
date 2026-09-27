@@ -29,26 +29,37 @@ function createStorage(initial = {}) {
 }
 
 function createCloud() {
-  const tables = { uber_daily_logs: new Map(), uber_benchmarks: new Map() };
+  const tables = { uber_daily_logs: new Map(), uber_benchmarks: new Map(), uber_metadata: new Map() };
   let online = true;
   const clone = v => JSON.parse(JSON.stringify(v));
-  const from = table => ({
-    select() {
-      return {
-        eq: async () => {
-          if (!online) return { data: null, error: { message: 'offline' } };
-          return { data: [...tables[table].values()].map(r => clone(r)), error: null };
-        }
-      };
-    },
-    async upsert(row) {
-      if (!online) return { error: { message: 'offline' } };
-      const key = row.date || row.id;
-      tables[table].set(key, { ...clone(row), updated_at: new Date().toISOString() });
-      if (api.onUpsert) await api.onUpsert(row);
-      return { error: null };
-    }
-  });
+  const from = table => {
+    if (!tables[table]) tables[table] = new Map();
+    return {
+      select() {
+        const createQuery = (filters = []) => ({
+          eq(col, val) {
+            return createQuery([...filters, [col, val]]);
+          },
+          then(resolve) {
+            if (!online) return resolve({ data: null, error: { message: 'offline' } });
+            let rows = [...tables[table].values()];
+            for (const [col, val] of filters) {
+              rows = rows.filter(r => r[col] === val);
+            }
+            return resolve({ data: rows.map(r => clone(r)), error: null });
+          }
+        });
+        return createQuery();
+      },
+      async upsert(row) {
+        if (!online) return { error: { message: 'offline' } };
+        const key = row.date || row.id || (row.key ? `${row.user_id}_${row.key}` : JSON.stringify(row));
+        tables[table].set(key, { ...clone(row), updated_at: new Date().toISOString() });
+        if (api.onUpsert) await api.onUpsert(row);
+        return { error: null };
+      }
+    };
+  };
   const api = {
     onUpsert: null,
     tables,

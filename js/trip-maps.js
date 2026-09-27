@@ -1194,6 +1194,97 @@ const TRIP_MAP_CATALOG = {
     "cropped": true,
     "box": [8, 151, 386, 361],
     "origFile": "スクリーンショット 2026-09-27 061713.png"
+  },
+  "del_0927_1": {
+    "map": "assets/maps/map_del_0927_1.png",
+    "full": "assets/maps/full_del_0927_1.png",
+    "cropped": true,
+    "box": [41, 152, 419, 362],
+    "origFile": "スクリーンショット 2026-09-27 191705.png"
+  },
+  "del_0927_2": {
+    "map": "assets/maps/map_del_0927_2.png",
+    "full": "assets/maps/full_del_0927_2.png",
+    "cropped": true,
+    "box": [33, 157, 411, 367],
+    "origFile": "スクリーンショット 2026-09-27 191727.png"
+  },
+  "del_0927_3": {
+    "map": "assets/maps/map_del_0927_3.png",
+    "full": "assets/maps/full_del_0927_3.png",
+    "cropped": true,
+    "box": [31, 157, 409, 367],
+    "origFile": "スクリーンショット 2026-09-27 191740.png"
+  },
+  "del_0927_4": {
+    "map": "assets/maps/map_del_0927_4.png",
+    "full": "assets/maps/full_del_0927_4.png",
+    "cropped": true,
+    "box": [35, 153, 413, 363],
+    "origFile": "スクリーンショット 2026-09-27 191753.png"
+  },
+  "del_0927_5": {
+    "map": "assets/maps/map_del_0927_5.png",
+    "full": "assets/maps/full_del_0927_5.png",
+    "cropped": true,
+    "box": [63, 157, 441, 367],
+    "origFile": "スクリーンショット 2026-09-27 192245.png"
+  },
+  "del_0927_6": {
+    "map": "assets/maps/map_del_0927_6.png",
+    "full": "assets/maps/full_del_0927_6.png",
+    "cropped": true,
+    "box": [41, 157, 419, 367],
+    "origFile": "スクリーンショット 2026-09-27 191806.png"
+  },
+  "del_0927_7": {
+    "map": "assets/maps/map_del_0927_7.png",
+    "full": "assets/maps/full_del_0927_7.png",
+    "cropped": true,
+    "box": [38, 159, 416, 369],
+    "origFile": "スクリーンショット 2026-09-27 191821.png"
+  },
+  "del_0927_8": {
+    "map": "assets/maps/map_del_0927_8.png",
+    "full": "assets/maps/full_del_0927_8.png",
+    "cropped": true,
+    "box": [27, 154, 405, 364],
+    "origFile": "スクリーンショット 2026-09-27 191842.png"
+  },
+  "del_0927_9": {
+    "map": "assets/maps/map_del_0927_9.png",
+    "full": "assets/maps/full_del_0927_9.png",
+    "cropped": true,
+    "box": [22, 162, 400, 372],
+    "origFile": "スクリーンショット 2026-09-27 191920.png"
+  },
+  "del_0927_10": {
+    "map": "assets/maps/map_del_0927_10.png",
+    "full": "assets/maps/full_del_0927_10.png",
+    "cropped": true,
+    "box": [24, 158, 402, 368],
+    "origFile": "スクリーンショット 2026-09-27 191937.png"
+  },
+  "del_0927_11": {
+    "map": "assets/maps/map_del_0927_11.png",
+    "full": "assets/maps/full_del_0927_11.png",
+    "cropped": true,
+    "box": [41, 161, 419, 371],
+    "origFile": "スクリーンショット 2026-09-27 191950.png"
+  },
+  "del_0927_12": {
+    "map": "assets/maps/map_del_0927_12.png",
+    "full": "assets/maps/full_del_0927_12.png",
+    "cropped": true,
+    "box": [34, 163, 412, 373],
+    "origFile": "スクリーンショット 2026-09-27 192006.png"
+  },
+  "del_0927_13": {
+    "map": "assets/maps/map_del_0927_13.png",
+    "full": "assets/maps/full_del_0927_13.png",
+    "cropped": true,
+    "box": [29, 160, 407, 370],
+    "origFile": "スクリーンショット 2026-09-27 192017.png"
   }
 };
 

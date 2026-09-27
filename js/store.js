@@ -53,6 +53,21 @@ const CURRENT_WEEK_QUEST = {
   deadlineText: '9/25（金）4:00まで'
 };
 
+
+// 過去の確定済み80回乗車クエスト（2026/09/21〜2026/09/25 達成済み特別クエスト¥8,890）
+const LEGACY_80_QUEST = {
+  id: 'quest_20260921_0925',
+  name: '80回乗車クエスト',
+  startAt: '2026-09-21T04:00:00+09:00',
+  endAt: '2026-09-25T04:00:00+09:00',
+  targetCount: 80,
+  expectedReward: 8890,
+  memo: '9/21〜9/25 達成済み特別クエスト',
+  manualAdjust: 0,
+  createdAt: '2026-09-21T04:00:00+09:00',
+  updatedAt: '2026-09-25T04:00:00+09:00'
+};
+
 // 公式確定実績の取り込み世代。端末に残る旧クエスト手動オフセットが公式件数と
 // 二重計上になるのを防ぐため、この値が一致する保存データのみ手動補正を採用する。
 const QUEST_OFFICIAL_BASELINE = '20260922_official';
@@ -2813,8 +2828,324 @@ const CONFIRMED_SEED_DATA = {
         "source": "official-import-v1",
         "importedAt": "2026-09-26T21:55:08.649Z"
       }
+    },
+    "2026-09-27": {
+      "date": "2026-09-27",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 38.36,
+      "tripsCount": 13,
+      "officialPoints": 17,
+      "deliveriesCount": 17,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_0927_1",
+          "index": 1,
+          "completedAt": "08:55",
+          "restaurant": "ローソン 大阪ドームシティ",
+          "area": "大阪市西区九条南2丁目",
+          "fee": 320,
+          "distanceKm": 2.08,
+          "durationStr": "12分39秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0927_2",
+          "index": 2,
+          "completedAt": "09:10",
+          "restaurant": "CoDeLi 大阪九条駅前店",
+          "area": "大阪市西区九条3丁目",
+          "fee": 320,
+          "distanceKm": 1.67,
+          "durationStr": "10分4秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0927_3",
+          "index": 3,
+          "completedAt": "09:15",
+          "restaurant": "マクドナルド みなと通夕凪店",
+          "area": "大阪市池島2丁目",
+          "fee": 537,
+          "distanceKm": 4.51,
+          "durationStr": "27分25秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）／公式配達先表記: 2-chōme 27 Osaka 池島 Japan"
+        },
+        {
+          "id": "del_0927_4",
+          "index": 4,
+          "completedAt": "09:53",
+          "restaurant": "マクドナルド 弁天町駅前店",
+          "area": "大阪市港区弁天4丁目",
+          "fee": 320,
+          "distanceKm": 1.82,
+          "durationStr": "12分37秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0927_5",
+          "index": 5,
+          "completedAt": "10:02",
+          "restaurant": "マクドナルド 弁天町駅前店",
+          "area": "大阪市港区弁天6丁目",
+          "fee": 320,
+          "distanceKm": 2.32,
+          "durationStr": "15分34秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0927_6",
+          "index": 6,
+          "completedAt": "10:12",
+          "restaurant": "吉野家 JR西九条駅店 Yoshinoya JR NISHIKUJO-EKI",
+          "area": "大阪市西区川口3丁目",
+          "fee": 639,
+          "distanceKm": 5.78,
+          "durationStr": "34分6秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0927_7",
+          "index": 7,
+          "completedAt": "11:21",
+          "restaurant": "ケンタッキーフライドチキン イオンモール大阪ドームシティ店",
+          "area": "大阪市泉尾1丁目",
+          "fee": 320,
+          "distanceKm": 2.46,
+          "durationStr": "14分57秒",
+          "points": 1,
+          "memo": "公式配達先表記: 1-chōme 27 Osaka Izuo Japan"
+        },
+        {
+          "id": "del_0927_8",
+          "index": 8,
+          "completedAt": "11:46",
+          "restaurant": "マクドナルド イオンモール大阪ドームシティ店",
+          "area": "大阪市西区千代崎1丁目",
+          "fee": 320,
+          "distanceKm": 1.95,
+          "durationStr": "10分28秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0927_9",
+          "index": 9,
+          "completedAt": "11:57",
+          "restaurant": "マクドナルド 九条店",
+          "area": "大阪市西区本田1丁目",
+          "fee": 414,
+          "distanceKm": 2.49,
+          "durationStr": "20分20秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0927_10",
+          "index": 10,
+          "completedAt": "12:34",
+          "restaurant": "キッチンオリジン 九条",
+          "area": "大阪市此花区梅香3丁目",
+          "fee": 725,
+          "distanceKm": 5.92,
+          "durationStr": "33分5秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0927_11",
+          "index": 11,
+          "completedAt": "13:07",
+          "restaurant": "コクミンドラッグ西九条店",
+          "area": "大阪市西区本田3丁目",
+          "fee": 389,
+          "distanceKm": 3.01,
+          "durationStr": "17分3秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0927_12",
+          "index": 12,
+          "completedAt": "13:32",
+          "restaurant": "スシロースシロー辰巳橋店",
+          "area": "大阪市大正区三軒家東1丁目",
+          "fee": 418,
+          "distanceKm": 2.32,
+          "durationStr": "15分43秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0927_13",
+          "index": 13,
+          "completedAt": "13:43",
+          "restaurant": "横浜家系ラーメン 天来家 大正駅前店",
+          "area": "大阪市浪速区幸町2丁目",
+          "fee": 320,
+          "distanceKm": 2.03,
+          "durationStr": "21分21秒",
+          "points": 1,
+          "memo": ""
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_0927_1",
+          "time": "11:37",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥150」「1 回乗車クエスト ¥150」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0927_2",
+          "time": "11:56",
+          "title": "クエスト",
+          "amount": 50,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥50」「1 回乗車クエスト ¥50」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0927_3",
+          "time": "12:12",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0927_4",
+          "time": "12:17",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0927_5",
+          "time": "12:59",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0927_6",
+          "time": "13:12",
+          "title": "クエスト",
+          "amount": 800,
+          "isDuplicateIgnored": false,
+          "questType": "normal"
+        },
+        {
+          "id": "quest_0927_7",
+          "time": "13:12",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0927_8",
+          "time": "13:30",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0927_9",
+          "time": "13:49",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0927_10",
+          "time": "13:49",
+          "title": "クエスト",
+          "amount": 4450,
+          "isDuplicateIgnored": false,
+          "questName": "50回乗車クエスト",
+          "questType": "special",
+          "note": "公式一覧は「クエスト ¥4,450」「50 回乗車クエスト ¥4,450」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0927_11",
+          "time": "14:07",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0927_12",
+          "time": "14:07",
+          "title": "クエスト",
+          "amount": 700,
+          "isDuplicateIgnored": false,
+          "questName": "3回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥700」「3 回乗車クエスト ¥700」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        }
+      ],
+      "sales": {
+        "delivery": 5362,
+        "quest": 6850,
+        "adjustment": 0,
+        "other": 0,
+        "total": 12212
+      },
+      "expenses": [],
+      "officialImport": {
+        "source": "official-import-v1",
+        "importedAt": "2026-09-27T10:23:14.143Z"
+      }
     }
-  }
+  },
+  "targetQuests": [
+    {
+      "id": "quest_20260921_0925",
+      "name": "80回乗車クエスト",
+      "startAt": "2026-09-21T04:00:00+09:00",
+      "endAt": "2026-09-25T04:00:00+09:00",
+      "targetCount": 80,
+      "expectedReward": 8890,
+      "memo": "9/21〜9/25 達成済み特別クエスト",
+      "manualAdjust": 0,
+      "createdAt": "2026-09-21T04:00:00+09:00",
+      "updatedAt": "2026-09-25T04:00:00+09:00"
+    }
+  ],
+  "deletedTargetQuestIds": []
 };
 
 // Bike（バイクシェア等）経費の共通判定。週次・月次のBike集計、履歴の「B」バッジ、経費一覧表示で共用する。
@@ -3829,6 +4160,16 @@ class Store {
         }
       } catch (e) {}
 
+      // 目標クエスト（TargetQuests）の補完
+      if (!Array.isArray(parsed.targetQuests)) {
+        parsed.targetQuests = seed.targetQuests ? [...seed.targetQuests] : [LEGACY_80_QUEST];
+        hasChange = true;
+      }
+      if (!Array.isArray(parsed.deletedTargetQuestIds)) {
+        parsed.deletedTargetQuestIds = seed.deletedTargetQuestIds ? [...seed.deletedTargetQuestIds] : [];
+        hasChange = true;
+      }
+
       if (hasChange && typeof localStorage !== 'undefined') {
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
@@ -4114,29 +4455,127 @@ class Store {
     return val;
   }
 
-  // 今週のクエスト設定オブジェクトを取得
-  getCurrentWeekQuest() {
-    return CURRENT_WEEK_QUEST;
+  // --- 目標クエスト（Target Quest）管理 ---
+
+  // 全目標クエストを取得（開始日時降順）
+  getTargetQuests() {
+    if (!this.state || !Array.isArray(this.state.targetQuests)) return [];
+    return [...this.state.targetQuests].sort((a, b) => new Date(b.startAt) - new Date(a.startAt));
   }
 
-  // 指定日時がクエスト期間内（2026-09-21 04:00 〜 2026-09-25 04:00）か判定
-  isDateTimeInQuestPeriod(dateStr, timeStr, quest = CURRENT_WEEK_QUEST) {
-    if (!dateStr) return false;
-    const cleanDate = String(dateStr).replace(/\//g, '-');
-    const cleanTime = (timeStr && timeStr.length >= 5) ? timeStr.slice(0, 5) : '12:00';
-    const isoStr = `${cleanDate}T${cleanTime}:00+09:00`;
-    const t = new Date(isoStr).getTime();
-    const start = new Date(quest.startAt).getTime();
-    const end = new Date(quest.endAt).getTime();
-    return t >= start && t < end;
+  // 指定IDの目標クエストを取得
+  getTargetQuestById(id) {
+    if (!id || !this.state || !Array.isArray(this.state.targetQuests)) return null;
+    return this.state.targetQuests.find(q => q.id === id) || null;
   }
 
-  // クエスト期間内の実配達件数を集計（公式トリップはポイント数＝配達件数、手動タップは1件）
-  countQuestDeliveries(quest = CURRENT_WEEK_QUEST) {
-    let logDeliveriesCount = 0;
+  // 現在進行中、または直近の目標クエストを取得
+  getActiveTargetQuest(now = new Date()) {
+    const quests = this.getTargetQuests();
+    if (!quests || quests.length === 0) return null;
+    const nowMs = (now instanceof Date ? now : new Date(now)).getTime();
+
+    // 1. 現在進行中（startAt <= now < endAt）
+    const activeList = quests.filter(q => {
+      const s = new Date(q.startAt).getTime();
+      const e = new Date(q.endAt).getTime();
+      return nowMs >= s && nowMs < e;
+    });
+    if (activeList.length > 0) {
+      // 終了日時が最も近いものを優先
+      return activeList.sort((a, b) => new Date(a.endAt) - new Date(b.endAt))[0];
+    }
+
+    // 2. 直近に終了したもの、または未来のもの
+    // 現在時刻より未来で開始が最も近いもの
+    const futureList = quests.filter(q => new Date(q.startAt).getTime() > nowMs);
+    if (futureList.length > 0) {
+      return futureList.sort((a, b) => new Date(a.startAt) - new Date(b.startAt))[0];
+    }
+
+    // 過去に終了した直近のもの
+    const pastList = quests.filter(q => new Date(q.endAt).getTime() <= nowMs);
+    if (pastList.length > 0) {
+      return pastList.sort((a, b) => new Date(b.endAt) - new Date(a.endAt))[0];
+    }
+
+    return quests[0] || null;
+  }
+
+  // 目標クエストを作成または更新
+  saveTargetQuest(questData) {
+    if (!questData) return null;
+    if (!Array.isArray(this.state.targetQuests)) this.state.targetQuests = [];
+    if (!Array.isArray(this.state.deletedTargetQuestIds)) this.state.deletedTargetQuestIds = [];
+
+    const nowIso = new Date().toISOString();
+    const id = questData.id || ('tq_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
+    const existingIdx = this.state.targetQuests.findIndex(q => q.id === id);
+
+    const cleanQuest = {
+      id,
+      name: String(questData.name || '目標クエスト').trim(),
+      startAt: questData.startAt,
+      endAt: questData.endAt,
+      targetCount: Math.max(1, parseInt(questData.targetCount, 10) || 1),
+      expectedReward: questData.expectedReward !== null && questData.expectedReward !== undefined && questData.expectedReward !== ''
+        ? Math.max(0, parseInt(questData.expectedReward, 10) || 0)
+        : null,
+      memo: String(questData.memo || '').trim(),
+      manualAdjust: parseInt(questData.manualAdjust, 10) || 0,
+      createdAt: existingIdx >= 0 ? (this.state.targetQuests[existingIdx].createdAt || nowIso) : nowIso,
+      updatedAt: nowIso
+    };
+
+    // 削除フラグ（tombstone）から解除
+    this.state.deletedTargetQuestIds = this.state.deletedTargetQuestIds.filter(tid => tid !== id);
+
+    if (existingIdx >= 0) {
+      this.state.targetQuests[existingIdx] = cleanQuest;
+    } else {
+      this.state.targetQuests.push(cleanQuest);
+    }
+
+    this.persistState();
+
+    // クラウド同期フック
+    if (typeof window !== 'undefined' && window.cloudSyncManager && typeof window.cloudSyncManager.onTargetQuestsSaved === 'function') {
+      window.cloudSyncManager.onTargetQuestsSaved();
+    }
+
+    return cleanQuest;
+  }
+
+  // 目標クエストを削除（tombstone記録＋即座に除外）
+  deleteTargetQuest(id) {
+    if (!id || !Array.isArray(this.state.targetQuests)) return false;
+    const existing = this.state.targetQuests.find(q => q.id === id);
+    if (!existing) return false;
+
+    if (!Array.isArray(this.state.deletedTargetQuestIds)) this.state.deletedTargetQuestIds = [];
+    if (!this.state.deletedTargetQuestIds.includes(id)) {
+      this.state.deletedTargetQuestIds.push(id);
+    }
+
+    this.state.targetQuests = this.state.targetQuests.filter(q => q.id !== id);
+    this.persistState();
+
+    // クラウド同期フック
+    if (typeof window !== 'undefined' && window.cloudSyncManager && typeof window.cloudSyncManager.onTargetQuestsSaved === 'function') {
+      window.cloudSyncManager.onTargetQuestsSaved();
+    }
+
+    return true;
+  }
+
+  // 目標クエスト期間内の公式Delivery件数を集計（ダブル=2、トリプル=3）
+  countTargetQuestDeliveries(quest) {
+    if (!quest || !quest.startAt || !quest.endAt) return 0;
     const startMs = new Date(quest.startAt).getTime();
     const endMs = new Date(quest.endAt).getTime();
+    if (isNaN(startMs) || isNaN(endMs)) return 0;
 
+    let totalDeliveries = 0;
     if (this.state && this.state.dailyLogs) {
       Object.values(this.state.dailyLogs).forEach(log => {
         if (log.deliveries && Array.isArray(log.deliveries)) {
@@ -4144,67 +4583,163 @@ class Store {
             const dStr = (del.date || log.date || '').replace(/\//g, '-');
             const tStr = (del.completedAt && del.completedAt.length >= 5) ? del.completedAt.slice(0, 5) : '12:00';
             const tMs = new Date(`${dStr}T${tStr}:00+09:00`).getTime();
-            if (tMs >= startMs && tMs < endMs) {
-              // 公式トリップはダブル・トリプル配達を含むためポイント数を配達件数として加算
+            // [startAt, endAt): 開始日時以上、終了日時未満
+            if (!isNaN(tMs) && tMs >= startMs && tMs < endMs) {
               const pts = Number(del.points);
-              logDeliveriesCount += (!isNaN(pts) && pts > 0) ? pts : 1;
+              totalDeliveries += (!isNaN(pts) && pts > 0) ? pts : 1;
             }
           });
         }
       });
     }
-
-    return logDeliveriesCount;
+    return totalDeliveries;
   }
 
-  // 今週のクエスト進捗データを取得（累積進捗・残り件数・達成率）
-  getQuestProgress(quest = CURRENT_WEEK_QUEST) {
-    const logDeliveriesCount = this.countQuestDeliveries(quest);
+  // 目標クエストの進捗情報を算出
+  calculateTargetQuestProgress(quest, now = new Date()) {
+    if (!quest) return null;
+    const officialCount = this.countTargetQuestDeliveries(quest);
+    const manualAdjust = Number(quest.manualAdjust) || 0;
+    const currentCount = Math.max(0, officialCount + manualAdjust);
+    const targetCount = Number(quest.targetCount) || 0;
+    const remainingCount = Math.max(0, targetCount - currentCount);
+    const percentage = targetCount > 0
+      ? Math.min(100, Math.round((currentCount / targetCount) * 1000) / 10)
+      : 0;
+
+    const nowMs = (now instanceof Date ? now : new Date(now)).getTime();
     const startMs = new Date(quest.startAt).getTime();
     const endMs = new Date(quest.endAt).getTime();
 
-    // 端末保存の累積カウンター確認
-    // 公式確定実績を取り込んだ時点（QUEST_OFFICIAL_BASELINE）より前に保存された
-    // 手動オフセットは、公式件数と二重になるため無効として扱う
-    let manualAdjust = 0;
-    try {
-      if (typeof localStorage !== 'undefined') {
-        const raw = localStorage.getItem(`uber_log_quest_${quest.id}`);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (typeof parsed.manualAdjust === 'number' && parsed.officialBaseline === QUEST_OFFICIAL_BASELINE) {
-            manualAdjust = parsed.manualAdjust;
-          }
-        }
-      }
-    } catch (e) {}
-
-    const currentCount = Math.max(0, logDeliveriesCount + manualAdjust);
-    const nowMs = Date.now();
     const isStarted = nowMs >= startMs;
     const isEnded = nowMs >= endMs;
-    const isAchieved = currentCount >= quest.targetCount;
-    const remainingCount = Math.max(0, quest.targetCount - currentCount);
-    const percentage = Math.min(100, Math.round((currentCount / quest.targetCount) * 100));
+    const isAchieved = targetCount > 0 && currentCount >= targetCount;
+
+    // 残り時間の計算
+    let remainingTimeText = '';
+    if (isEnded) {
+      remainingTimeText = isAchieved ? '達成・終了' : '受付終了';
+    } else if (!isStarted) {
+      const diffMs = startMs - nowMs;
+      const days = Math.floor(diffMs / (24 * 3600 * 1000));
+      const hours = Math.floor((diffMs % (24 * 3600 * 1000)) / (3600 * 1000));
+      remainingTimeText = `開始まで ${days > 0 ? `${days}日` : ''}${hours}時間`;
+    } else {
+      const diffMs = endMs - nowMs;
+      const days = Math.floor(diffMs / (24 * 3600 * 1000));
+      const hours = Math.floor((diffMs % (24 * 3600 * 1000)) / (3600 * 1000));
+      const mins = Math.floor((diffMs % (3600 * 1000)) / (60 * 1000));
+      if (days > 0) {
+        remainingTimeText = `残り ${days}日${hours}時間`;
+      } else if (hours > 0) {
+        remainingTimeText = `残り ${hours}時間${mins}分`;
+      } else {
+        remainingTimeText = `残り ${Math.max(1, mins)}分`;
+      }
+    }
+
+    // 終了日時表示用テキスト (例: 10/02 04:00)
+    const endDate = new Date(quest.endAt);
+    const m = String(endDate.getMonth() + 1).padStart(2, '0');
+    const d = String(endDate.getDate()).padStart(2, '0');
+    const h = String(endDate.getHours()).padStart(2, '0');
+    const mi = String(endDate.getMinutes()).padStart(2, '0');
+    const deadlineText = `${m}/${d} ${h}:${mi}`;
 
     return {
       questId: quest.id,
-      title: quest.title,
-      targetCount: quest.targetCount,
+      name: quest.name,
+      title: quest.name,
+      targetCount,
       currentCount,
+      officialCount,
+      manualAdjust,
       remainingCount,
       percentage,
-      deadlineText: quest.deadlineText,
+      expectedReward: quest.expectedReward ? Number(quest.expectedReward) : null,
+      memo: quest.memo || '',
       startAt: quest.startAt,
       endAt: quest.endAt,
+      deadlineText,
+      remainingTimeText,
       isStarted,
       isEnded,
-      isAchieved
+      isAchieved,
+      hasQuest: true
+    };
+  }
+
+  // 後方互換メソッド: 今週のクエスト設定オブジェクトを取得
+  getCurrentWeekQuest() {
+    const active = this.getActiveTargetQuest();
+    if (active) {
+      const endDate = new Date(active.endAt);
+      const m = endDate.getMonth() + 1;
+      const d = endDate.getDate();
+      const h = endDate.getHours();
+      const mi = String(endDate.getMinutes()).padStart(2, '0');
+      return {
+        id: active.id,
+        title: active.name,
+        targetCount: active.targetCount,
+        startAt: active.startAt,
+        endAt: active.endAt,
+        deadlineText: `${m}/${d} ${h}:${mi}まで`
+      };
+    }
+    return CURRENT_WEEK_QUEST;
+  }
+
+  // 後方互換メソッド: 指定日時がクエスト期間内か判定
+  isDateTimeInQuestPeriod(dateStr, timeStr, quest = null) {
+    const targetQuest = quest || this.getActiveTargetQuest() || CURRENT_WEEK_QUEST;
+    if (!dateStr) return false;
+    const cleanDate = String(dateStr).replace(/\//g, '-');
+    const cleanTime = (timeStr && timeStr.length >= 5) ? timeStr.slice(0, 5) : '12:00';
+    const isoStr = `${cleanDate}T${cleanTime}:00+09:00`;
+    const t = new Date(isoStr).getTime();
+    const start = new Date(targetQuest.startAt).getTime();
+    const end = new Date(targetQuest.endAt).getTime();
+    return t >= start && t < end;
+  }
+
+  // 後方互換メソッド: クエスト期間内の実配達件数を集計
+  countQuestDeliveries(quest = null) {
+    const targetQuest = quest || this.getActiveTargetQuest() || CURRENT_WEEK_QUEST;
+    return this.countTargetQuestDeliveries(targetQuest);
+  }
+
+  // 後方互換メソッド: 今週のクエスト進捗データを取得
+  getQuestProgress(quest = null) {
+    const targetQuest = quest || this.getActiveTargetQuest();
+    if (targetQuest) {
+      return this.calculateTargetQuestProgress(targetQuest);
+    }
+    return {
+      questId: null,
+      title: '目標クエスト未設定',
+      name: '目標クエスト未設定',
+      targetCount: 0,
+      currentCount: 0,
+      remainingCount: 0,
+      percentage: 0,
+      deadlineText: '--',
+      remainingTimeText: '',
+      isStarted: false,
+      isEnded: false,
+      isAchieved: false,
+      hasQuest: false
     };
   }
 
   // クエスト手動調整オフセットを保存
   saveQuestProgress(questId, manualAdjust) {
+    const quest = this.getTargetQuestById(questId);
+    if (quest) {
+      quest.manualAdjust = manualAdjust;
+      this.saveTargetQuest(quest);
+      return;
+    }
     try {
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem(`uber_log_quest_${questId}`, JSON.stringify({

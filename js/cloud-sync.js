@@ -28,6 +28,7 @@ class CloudSyncManager {
     this.isSyncing = false;
     this.pendingSyncDates = this.loadPendingSyncDates();
     this.localVersions = {}; // 日付ごとの端末内変更回数（送信中の変更を取りこぼさないため）
+    this.pendingTargetQuestsSync = false;
 
     this.initEventListeners();
     this.startInitialSync();
@@ -136,6 +137,12 @@ class CloudSyncManager {
     });
   }
 
+  // 目標クエスト保存時のフック（store.js から呼び出される）
+  onTargetQuestsSaved() {
+    this.pendingTargetQuestsSync = true;
+    this.schedulePush();
+  }
+
   // ローカルデータ保存時のフック（store.js から呼び出される）
   onLocalDataSaved(changedDate = null) {
     if (changedDate) {
@@ -165,6 +172,33 @@ class CloudSyncManager {
 
   // ------------------------------------------------------------
   // 【同期安全ルール 1 & 3】
+  // ------------------------------------------------------------
+  // 目標クエストの安全マージ（tombstone・updatedAt・端末間マージ）
+  // ------------------------------------------------------------
+  mergeTargetQuests(localQuests = [], localDeleted = [], cloudQuests = [], cloudDeleted = []) {
+    const deletedIds = Array.from(new Set([
+      ...(Array.isArray(localDeleted) ? localDeleted : []),
+      ...(Array.isArray(cloudDeleted) ? cloudDeleted : [])
+    ]));
+    const qMap = new Map();
+    (cloudQuests || []).forEach(q => {
+      if (q && q.id) qMap.set(q.id, { ...q });
+    });
+    (localQuests || []).forEach(q => {
+      if (q && q.id) {
+        const existing = qMap.get(q.id);
+        if (!existing || (q.updatedAt && (!existing.updatedAt || q.updatedAt >= existing.updatedAt))) {
+          qMap.set(q.id, { ...q });
+        }
+      }
+    });
+    const mergedQuests = Array.from(qMap.values()).filter(q => !deletedIds.includes(q.id));
+    const hasChange = JSON.stringify(mergedQuests) !== JSON.stringify(localQuests) ||
+                      JSON.stringify(deletedIds) !== JSON.stringify(localDeleted);
+    return { quests: mergedQuests, deletedIds, hasChange };
+  }
+
+  // ------------------------------------------------------------
   // 日別JSONのスマート・ディープマージ（配達・セッション・クエストの欠落防止）
   // ------------------------------------------------------------
   mergeDailyLog(localLog, cloudLog) {
@@ -476,6 +510,31 @@ class CloudSyncManager {
         }
       }
 
+      // 3-2. 目標クエスト（uber_metadata: target_quests）のPull & マージ
+      try {
+        const { data: metaRows, error: metaErr } = await client
+          .from('uber_metadata')
+          .select('key, value, updated_at')
+          .eq('user_id', userId)
+          .eq('key', 'target_quests');
+
+        if (!metaErr && metaRows && metaRows.length > 0 && metaRows[0].value) {
+          const cloudData = metaRows[0].value;
+          const localQuests = store.state.targetQuests || [];
+          const localDeleted = store.state.deletedTargetQuestIds || [];
+
+          const merged = this.mergeTargetQuests(localQuests, localDeleted, cloudData.quests || [], cloudData.deletedIds || []);
+          if (merged.hasChange) {
+            store.state.targetQuests = merged.quests;
+            store.state.deletedTargetQuestIds = merged.deletedIds;
+            if (typeof store.persistState === 'function') store.persistState();
+            hasLocalUpdate = true;
+          }
+        }
+      } catch (mqErr) {
+        console.warn('UBER_LOG: Target quests pull warning:', mqErr);
+      }
+
       // 3. 地雷データベース（uber_benchmarks）のPull & マージ
       const { data: cloudBms, error: bmError } = await client
         .from('uber_benchmarks')
@@ -570,6 +629,55 @@ class CloudSyncManager {
     }
 
     this.savePendingSyncDates();
+
+    // 目標クエストのPush
+    if (this.pendingTargetQuestsSync) {
+      try {
+        const localQuests = store.state.targetQuests || [];
+        const localDeleted = store.state.deletedTargetQuestIds || [];
+
+        // 送信前にもクラウド側を取得してマージ
+        const { data: cloudMeta } = await client
+          .from('uber_metadata')
+          .select('key, value')
+          .eq('user_id', userId)
+          .eq('key', 'target_quests');
+
+        let finalQuests = localQuests;
+        let finalDeleted = localDeleted;
+        if (cloudMeta && cloudMeta.length > 0 && cloudMeta[0].value) {
+          const cm = cloudMeta[0].value;
+          const merged = this.mergeTargetQuests(localQuests, localDeleted, cm.quests || [], cm.deletedIds || []);
+          finalQuests = merged.quests;
+          finalDeleted = merged.deletedIds;
+          if (merged.hasChange) {
+            store.state.targetQuests = finalQuests;
+            store.state.deletedTargetQuestIds = finalDeleted;
+            if (typeof store.persistState === 'function') store.persistState();
+          }
+        }
+
+        const { error: pushMetaErr } = await client
+          .from('uber_metadata')
+          .upsert({
+            user_id: userId,
+            key: 'target_quests',
+            value: {
+              quests: finalQuests,
+              deletedIds: finalDeleted,
+              updatedAt: new Date().toISOString()
+            }
+          });
+
+        if (!pushMetaErr) {
+          this.pendingTargetQuestsSync = false;
+        } else {
+          console.warn('UBER_LOG: Failed to push target_quests:', pushMetaErr);
+        }
+      } catch (e) {
+        console.warn('UBER_LOG: Error pushing target quests:', e);
+      }
+    }
   }
 
   // 保留中差分のPush実行

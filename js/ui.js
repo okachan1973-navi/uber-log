@@ -579,7 +579,7 @@ class UI {
     });
   }
 
-  // 今週のクエスト進捗カードの描画（月曜朝4:00〜金曜朝4:00、目標80件）
+  // 目標クエスト進捗カードの描画
   renderWeekQuestCard() {
     const card = document.getElementById('week-quest-card');
     if (!card) return;
@@ -587,19 +587,54 @@ class UI {
     if (typeof store === 'undefined' || typeof store.getQuestProgress !== 'function') return;
 
     const progress = store.getQuestProgress();
+    const emptyView = document.getElementById('week-quest-empty-view');
+    const activeView = document.getElementById('week-quest-active-view');
+    const iconEl = document.getElementById('week-quest-icon');
+    const titleTextEl = document.getElementById('week-quest-title-text');
+    const deadlineEl = document.getElementById('week-quest-deadline');
+    const remainingTimeEl = document.getElementById('week-quest-remaining-time');
+    const expectedRewardEl = document.getElementById('week-quest-expected-reward');
     const remLabelEl = document.getElementById('week-quest-remaining-label');
     const remNumEl = document.getElementById('week-quest-remaining-num');
     const remUnitEl = document.getElementById('week-quest-remaining-unit');
     const ratioEl = document.getElementById('week-quest-progress-ratio');
     const pctEl = document.getElementById('week-quest-progress-pct');
     const barEl = document.getElementById('week-quest-bar');
-    const deadlineEl = document.getElementById('week-quest-deadline');
 
     // スタイルクラスリセット
     card.classList.remove('is-achieved', 'is-ended');
 
+    if (!progress || !progress.hasQuest) {
+      // 未設定状態
+      if (iconEl) iconEl.textContent = '🎯';
+      if (titleTextEl) titleTextEl.textContent = '目標クエスト';
+      if (deadlineEl) deadlineEl.textContent = '未設定';
+      if (emptyView) emptyView.style.display = 'block';
+      if (activeView) activeView.style.display = 'none';
+      return;
+    }
+
+    // 設定済み状態
+    if (emptyView) emptyView.style.display = 'none';
+    if (activeView) activeView.style.display = 'block';
+
+    if (titleTextEl) titleTextEl.textContent = progress.name || '目標クエスト';
+
     if (deadlineEl) {
-      deadlineEl.textContent = progress.isEnded ? '受付終了' : progress.deadlineText;
+      deadlineEl.textContent = progress.isEnded ? '受付終了' : `${progress.deadlineText}まで`;
+    }
+
+    if (remainingTimeEl) {
+      remainingTimeEl.textContent = progress.remainingTimeText || '';
+    }
+
+    if (expectedRewardEl) {
+      if (progress.expectedReward && progress.expectedReward > 0) {
+        expectedRewardEl.textContent = `💰 予定: ¥${progress.expectedReward.toLocaleString()}`;
+        expectedRewardEl.style.display = 'inline';
+      } else {
+        expectedRewardEl.style.display = 'none';
+      }
     }
 
     if (barEl) {
@@ -612,22 +647,250 @@ class UI {
 
     if (progress.isAchieved) {
       card.classList.add('is-achieved');
-      if (remLabelEl) remLabelEl.textContent = '🎉';
+      if (iconEl) iconEl.textContent = '🏆';
+      if (remLabelEl) remLabelEl.textContent = '🏆';
       if (remNumEl) remNumEl.textContent = '目標達成';
       if (remUnitEl) remUnitEl.textContent = '！';
       if (ratioEl) ratioEl.textContent = `達成 ${progress.currentCount} / ${progress.targetCount}件`;
     } else if (progress.isEnded) {
       card.classList.add('is-ended');
+      if (iconEl) iconEl.textContent = '🎯';
       if (remLabelEl) remLabelEl.textContent = '期間';
       if (remNumEl) remNumEl.textContent = '終了';
       if (remUnitEl) remUnitEl.textContent = '';
       if (ratioEl) ratioEl.textContent = `終了 ${progress.currentCount} / ${progress.targetCount}件`;
     } else {
+      if (iconEl) iconEl.textContent = '🎯';
       if (remLabelEl) remLabelEl.textContent = 'あと';
       if (remNumEl) remNumEl.textContent = `${progress.remainingCount}`;
       if (remUnitEl) remUnitEl.textContent = '件';
       if (ratioEl) ratioEl.textContent = `${progress.currentCount} / ${progress.targetCount}件`;
     }
+  }
+
+  // 目標クエストモーダルを開く（questId: 編集対象ID、nullの場合はアクティブまたは新規）
+  openTargetQuestModal(questId = null) {
+    const overlay = document.getElementById('target-quest-modal-overlay');
+    if (!overlay) return;
+
+    const modalTitle = document.getElementById('target-quest-modal-title');
+    const idInput = document.getElementById('target-quest-id');
+    const nameInput = document.getElementById('target-quest-name');
+    const startDateInput = document.getElementById('target-quest-start-date');
+    const startTimeInput = document.getElementById('target-quest-start-time');
+    const endDateInput = document.getElementById('target-quest-end-date');
+    const endTimeInput = document.getElementById('target-quest-end-time');
+    const targetCountInput = document.getElementById('target-quest-target-count');
+    const rewardInput = document.getElementById('target-quest-expected-reward');
+    const adjustInput = document.getElementById('target-quest-manual-adjust');
+    const memoInput = document.getElementById('target-quest-memo');
+    const deleteBtn = document.getElementById('btn-delete-target-quest');
+    const errorMsg = document.getElementById('target-quest-error-msg');
+
+    if (errorMsg) {
+      errorMsg.style.display = 'none';
+      errorMsg.textContent = '';
+    }
+
+    let targetQuest = null;
+    if (questId) {
+      targetQuest = store.getTargetQuestById(questId);
+    } else {
+      targetQuest = store.getActiveTargetQuest();
+    }
+
+    if (targetQuest) {
+      // 既存クエストの編集
+      if (modalTitle) modalTitle.textContent = '🎯 目標クエスト編集';
+      if (idInput) idInput.value = targetQuest.id;
+      if (nameInput) nameInput.value = targetQuest.name || '';
+
+      // 日時分割
+      const sDate = new Date(targetQuest.startAt);
+      const eDate = new Date(targetQuest.endAt);
+      if (startDateInput) startDateInput.value = this.formatDateForInput(sDate);
+      if (startTimeInput) startTimeInput.value = this.formatTimeForInput(sDate) || '04:00';
+      if (endDateInput) endDateInput.value = this.formatDateForInput(eDate);
+      if (endTimeInput) endTimeInput.value = this.formatTimeForInput(eDate) || '04:00';
+
+      if (targetCountInput) targetCountInput.value = targetQuest.targetCount || '';
+      if (rewardInput) rewardInput.value = (targetQuest.expectedReward !== null && targetQuest.expectedReward !== undefined) ? targetQuest.expectedReward : '';
+      if (adjustInput) adjustInput.value = targetQuest.manualAdjust || 0;
+      if (memoInput) memoInput.value = targetQuest.memo || '';
+
+      if (deleteBtn) deleteBtn.style.display = 'inline-block';
+    } else {
+      // 新規作成
+      if (modalTitle) modalTitle.textContent = '🎯 目標クエスト新規作成';
+      if (idInput) idInput.value = '';
+      if (nameInput) nameInput.value = '今週のクエスト';
+
+      const now = new Date();
+      const defaultDates = this.getDefaultQuestDates(now);
+
+      if (startDateInput) startDateInput.value = defaultDates.startDate;
+      if (startTimeInput) startTimeInput.value = defaultDates.startTime;
+      if (endDateInput) endDateInput.value = defaultDates.endDate;
+      if (endTimeInput) endTimeInput.value = defaultDates.endTime;
+
+      if (targetCountInput) targetCountInput.value = 50;
+      if (rewardInput) rewardInput.value = '';
+      if (adjustInput) adjustInput.value = 0;
+      if (memoInput) memoInput.value = '';
+
+      if (deleteBtn) deleteBtn.style.display = 'none';
+    }
+
+    overlay.classList.add('active');
+    if (nameInput) nameInput.focus();
+  }
+
+  // 目標クエストモーダルを閉じる
+  closeTargetQuestModal() {
+    const overlay = document.getElementById('target-quest-modal-overlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  // モーダルからの目標クエスト保存
+  saveTargetQuestFromModal() {
+    const errorMsg = document.getElementById('target-quest-error-msg');
+    const id = (document.getElementById('target-quest-id')?.value || '').trim();
+    const name = (document.getElementById('target-quest-name')?.value || '').trim();
+    const startDate = document.getElementById('target-quest-start-date')?.value;
+    const startTime = document.getElementById('target-quest-start-time')?.value || '04:00';
+    const endDate = document.getElementById('target-quest-end-date')?.value;
+    const endTime = document.getElementById('target-quest-end-time')?.value || '04:00';
+    const targetCountStr = document.getElementById('target-quest-target-count')?.value;
+    const rewardStr = document.getElementById('target-quest-expected-reward')?.value;
+    const adjustStr = document.getElementById('target-quest-manual-adjust')?.value;
+    const memo = (document.getElementById('target-quest-memo')?.value || '').trim();
+
+    const showError = (msg) => {
+      if (errorMsg) {
+        errorMsg.textContent = msg;
+        errorMsg.style.display = 'block';
+      }
+    };
+
+    if (!name) {
+      showError('クエスト名を入力してください');
+      return;
+    }
+    if (!startDate || !endDate) {
+      showError('開始日と終了日を両方入力してください');
+      return;
+    }
+
+    const startAt = `${startDate}T${startTime}:00+09:00`;
+    const endAt = `${endDate}T${endTime}:00+09:00`;
+    const startMs = new Date(startAt).getTime();
+    const endMs = new Date(endAt).getTime();
+
+    if (isNaN(startMs) || isNaN(endMs)) {
+      showError('日時の形式が正しくありません');
+      return;
+    }
+    if (startMs >= endMs) {
+      showError('終了日時は開始日時より後に設定してください');
+      return;
+    }
+
+    const targetCount = parseInt(targetCountStr, 10);
+    if (isNaN(targetCount) || targetCount <= 0) {
+      showError('目標件数は1以上の数値を入力してください');
+      return;
+    }
+
+    let expectedReward = null;
+    if (rewardStr !== '' && rewardStr !== null && rewardStr !== undefined) {
+      const parsedReward = parseInt(rewardStr, 10);
+      if (isNaN(parsedReward) || parsedReward < 0) {
+        showError('予定報酬額は0以上の数値を入力してください');
+        return;
+      }
+      expectedReward = parsedReward;
+    }
+
+    const manualAdjust = parseInt(adjustStr, 10) || 0;
+
+    const questData = {
+      name,
+      startAt,
+      endAt,
+      targetCount,
+      expectedReward,
+      manualAdjust,
+      memo
+    };
+    if (id) {
+      questData.id = id;
+    }
+
+    store.saveTargetQuest(questData);
+    this.closeTargetQuestModal();
+    this.renderWeekQuestCard();
+    this.showToast(id ? '目標クエストを更新しました' : '目標クエストを作成しました');
+  }
+
+  // モーダルからの目標クエスト削除
+  deleteTargetQuestFromModal() {
+    const id = (document.getElementById('target-quest-id')?.value || '').trim();
+    if (!id) return;
+
+    if (!confirm('この目標クエストを削除しますか？\n（過去の配達データや売上は削除されません）')) {
+      return;
+    }
+
+    store.deleteTargetQuest(id);
+    this.closeTargetQuestModal();
+    this.renderWeekQuestCard();
+    this.showToast('目標クエストを削除しました');
+  }
+
+  // 補助: DateオブジェクトをYYYY-MM-DD文字列に変換（ローカル時間）
+  formatDateForInput(d) {
+    if (!d || isNaN(d.getTime())) return '';
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // 補助: DateオブジェクトをHH:mm文字列に変換（ローカル時間）
+  formatTimeForInput(d) {
+    if (!d || isNaN(d.getTime())) return '04:00';
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+
+  // 補助: 新規目標クエストのデフォルト期間を算出
+  getDefaultQuestDates(now = new Date()) {
+    const d = new Date(now);
+    const day = d.getDay(); // 0:日, 1:月, 2:火, 3:水, 4:木, 5:金, 6:土
+    const hour = d.getHours();
+
+    let startDate = new Date(d);
+    let endDate = new Date(d);
+
+    const isWeekendQuest = (day === 5 && hour >= 4) || day === 6 || day === 0 || (day === 1 && hour < 4);
+
+    if (isWeekendQuest) {
+      let diffToFri = (day === 5) ? 0 : (day === 6 ? -1 : (day === 0 ? -2 : -3));
+      startDate.setDate(d.getDate() + diffToFri);
+      endDate.setDate(startDate.getDate() + 3);
+    } else {
+      let diffToMon = (day === 1) ? 0 : (1 - day);
+      startDate.setDate(d.getDate() + diffToMon);
+      endDate.setDate(startDate.getDate() + 4);
+    }
+
+    return {
+      startDate: this.formatDateForInput(startDate),
+      startTime: '04:00',
+      endDate: this.formatDateForInput(endDate),
+      endTime: '04:00'
+    };
   }
 
   // 稼働セッション明細リストの描画

@@ -697,7 +697,7 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
     check([...a19, ...a24].filter(x => x.split(':')[1] === '🏆').every(x => x.endsWith(':attr-bonus attr-quest-trophy')), '🏆 は従来の金色系（attr-bonus）を使用');
     check(!r.labels.includes('賞') && !Object.values(r.attrs).some(v => v.some(x => x.split(':')[1] === '賞')), '日別属性から「賞」を廃止（どの日にも出ない）');
     const withTrophy = Object.entries(r.attrs).filter(([, v]) => v.some(x => x.split(':')[1] === '🏆')).map(([k]) => k).sort();
-    check(withTrophy.join() === '2026-09-19,2026-09-24', `🏆 は特別ボーナス系のある日だけ（${withTrophy.join(', ')}）`);
+    check(withTrophy.join() === '2026-09-19,2026-09-24,2026-09-27', `🏆 は特別ボーナス系のある日だけ（${withTrophy.join(', ')}）`);
     check(r.two === 1 && r.none === 0, '特別クエストが複数でも 🏆 は1個・通常クエストだけの日は表示しない');
     check(r.bothN === 1 && r.bothG === 5000 && r.bothSq === 8890, '新規保証と特別クエストが同じ日でも 🏆 は1個（内部は guaranteeBonus / specialQuestSales で別管理）');
     const order = ['bike_share', 'adjustment', 'special_bonus', 'tip'];
@@ -805,7 +805,7 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
       const map={};
       global.localStorage={getItem:k=>map[k]||null,setItem:(k,v)=>{map[k]=v},removeItem:()=>{}};global.window={localStorage:global.localStorage};
       const m0=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
-      const today=m0.getTodayDateString();
+      const today='2099-02-10';
       delete require.cache[require.resolve(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))})];
       const logs={
         '2026-09-20':{date:'2026-09-20',workStartedAt:'10:00',workEndedAt:null,totalDistanceKm:null,workSessions:[{id:'ws1',start:'10:00',end:null}],deliveries:[],quests:[]},
@@ -817,6 +817,7 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
       logs[today]={date:today,workStartedAt:'09:00',workSessions:[{id:'ws3',start:'09:00',end:null}],deliveries:[],quests:[]};
       map.uber_log_v1_data=JSON.stringify({version:'1.2',dailyLogs:logs});
       const {store}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      store.getTodayDateString=()=>today;
       const w=d=>store.isWorkedDay(d);
       const cmp=()=>store.getAnalytics().dailyComparison.map(x=>x.date);
       store.addDelivery(today,'10:00'); // 手動タップ（店舗名・報酬なし）
@@ -1025,6 +1026,14 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
     const confirmedIds = Object.entries(seed).filter(([d]) => d <= '2026-09-22').flatMap(([, l]) => (l.deliveries || []).map(t => t.id));
     check(confirmedIds.length === 89 && confirmedIds.every(id => catalog[id]), `9/22までの既存MAP 89/89 を維持（=${confirmedIds.filter(id => catalog[id]).length}/${confirmedIds.length}）`);
     console.log(`     MAP登録: ${allIds.size - unmapped.length}/${allIds.size}${unmapped.length ? `（MAPなし確認済み: ${unmapped.join(', ')}）` : ''}`);
+  }
+
+  // ==========================================================
+  section('15. 目標クエスト（Target Quest）機能の単体・統合テスト');
+  {
+    const r = spawnSync(process.execPath, [path.join(ROOT, 'spec', 'target-quest-tests.js')], { encoding: 'utf8' });
+    if (r.status !== 0) console.log(r.stdout, r.stderr);
+    check(r.status === 0, '目標クエスト全テスト（作成・編集・削除・進捗計算・予定報酬分離・クラウド同期）PASS');
   }
 } catch (e) {
   failed++;
