@@ -315,4 +315,58 @@ test('8. クラウド同期ディープマージ（tombstone除外、updatedAt�
   assert.strictEqual(q4, undefined, 'tombstone削除対象は復活しない');
 });
 
+// -------------------------------------------------------------
+// 9. CURRENT_WEEK_QUESTフォールバック完全撤廃と過去互換専用の保証
+// -------------------------------------------------------------
+test('9-1. 定数 CURRENT_WEEK_QUEST は過去互換用にエクスポートされていること', () => {
+  const { CURRENT_WEEK_QUEST } = storeModule;
+  assert(CURRENT_WEEK_QUEST, 'CURRENT_WEEK_QUESTがエクスポートされていること');
+  assert.strictEqual(CURRENT_WEEK_QUEST.id, 'quest_20260921_0925');
+  assert.strictEqual(CURRENT_WEEK_QUEST.targetCount, 80);
+  assert.strictEqual(CURRENT_WEEK_QUEST.startAt, '2026-09-21T04:00:00+09:00');
+  assert.strictEqual(CURRENT_WEEK_QUEST.endAt, '2026-09-25T04:00:00+09:00');
+});
+
+test('9-2. アクティブなクエストがない場合、getCurrentWeekQuest() は null を返すこと（旧80回へフォールバックしない）', () => {
+  const futureDate = '2099-05-01';
+  const res = store.getCurrentWeekQuest(futureDate);
+  assert.strictEqual(res, null, 'アクティブなクエストがない場合は null（旧80回が復活しないこと）');
+});
+
+test('9-3. アクティブなクエストがない場合、isDateTimeInQuestPeriod() は false を返すこと（旧80回へフォールバックしない）', () => {
+  assert.strictEqual(store.isDateTimeInQuestPeriod('2099-05-01', '12:00'), false, '未設定日はfalse');
+});
+
+test('9-4. クエスト未設定時、各互換メソッドが旧80回へフォールバックせず未設定状態（0/null/false）を維持すること', () => {
+  const origQuests = [...store.state.targetQuests];
+  store.state.targetQuests = [];
+  try {
+    assert.strictEqual(store.countQuestDeliveries(), 0, '未設定時は0件');
+    assert.strictEqual(store.getCurrentWeekQuest(), null, '未設定時はnull');
+    assert.strictEqual(store.isDateTimeInQuestPeriod('2026-09-22', '12:00'), false, '未設定時はfalse');
+    const prog = store.getQuestProgress();
+    assert.strictEqual(prog.hasQuest, false, '未設定時はhasQuest=false');
+    assert.strictEqual(prog.title, '目標クエスト未設定');
+    assert.strictEqual(store.setQuestProgressCount(10), 0, '未設定時はカウント変更不可');
+    assert.strictEqual(store.incrementQuestProgress(), 0, '未設定時はインクリメント不可');
+    assert.strictEqual(store.decrementQuestProgress(), 0, '未設定時はデクリメント不可');
+  } finally {
+    store.state.targetQuests = origQuests;
+  }
+});
+
+test('9-5. 終了後24時間を超えた過去クエストは getActiveTargetQuest() で取得されないこと（未設定に戻る）', () => {
+  // 9/21〜9/25の80回クエスト（終了日時: 2026-09-25 04:00）
+  // 終了から24時間経過した 2026-09-26 05:00 時点ではアクティブ対象外
+  const without50 = store.state.targetQuests.filter(q => q.id !== 'tq_20260925_50');
+  const origQuests = [...store.state.targetQuests];
+  store.state.targetQuests = without50;
+  try {
+    const res = store.getActiveTargetQuest('2026-09-26T05:00:00+09:00');
+    assert.strictEqual(res, null, '終了後24時間を超えた80回クエストはアクティブにならないこと');
+  } finally {
+    store.state.targetQuests = origQuests;
+  }
+});
+
 console.log(`\n🎉 全テスト完了: ${passedCount} passed, 0 failed\n`);

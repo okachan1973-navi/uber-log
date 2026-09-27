@@ -43,7 +43,10 @@ function roundToTimeStep(timeStr, stepMinutes = WORK_TIME_STEP_MINUTES) {
   return `${String(rh).padStart(2, '0')}:${String(rm).padStart(2, '0')}`;
 }
 
-// 今週のクエスト定義（期間・目標件数設定。将来のクエスト差し替えに柔軟対応）
+// 過去互換専用（LEGACY COMPATIBILITY ONLY）:
+// 2026/09/21〜09/25 の旧固定80回クエスト定義。
+// ※注意: アプリ本体の表示・集計・同期におけるフォールバックとしての使用は禁止。
+// 過去の外部スクリプト・テストコードの後方互換参照のためにのみ保持する。
 const CURRENT_WEEK_QUEST = {
   id: 'quest_20260921_0925',
   title: '今週のクエスト',
@@ -4470,36 +4473,52 @@ class Store {
   }
 
   // 現在進行中、または直近の目標クエストを取得
-  getActiveTargetQuest(now = new Date()) {
+  // refDate: 判定基準日時（Date または 'YYYY-MM-DD' 文字列。デフォルトは現在日時）
+  getActiveTargetQuest(refDate = new Date()) {
     const quests = this.getTargetQuests();
     if (!quests || quests.length === 0) return null;
-    const nowMs = (now instanceof Date ? now : new Date(now)).getTime();
 
-    // 1. 現在進行中（startAt <= now < endAt）
+    let nowMs;
+    if (refDate instanceof Date) {
+      nowMs = refDate.getTime();
+    } else if (typeof refDate === 'string') {
+      const clean = refDate.trim();
+      nowMs = clean.includes('T') ? new Date(clean).getTime() : new Date(`${clean}T12:00:00+09:00`).getTime();
+    } else {
+      nowMs = Date.now();
+    }
+    if (isNaN(nowMs)) nowMs = Date.now();
+
+    // 1. 指定日時時点で進行中（startAt <= refDate < endAt）
     const activeList = quests.filter(q => {
       const s = new Date(q.startAt).getTime();
       const e = new Date(q.endAt).getTime();
-      return nowMs >= s && nowMs < e;
+      return !isNaN(s) && !isNaN(e) && nowMs >= s && nowMs < e;
     });
     if (activeList.length > 0) {
       // 終了日時が最も近いものを優先
       return activeList.sort((a, b) => new Date(a.endAt) - new Date(b.endAt))[0];
     }
 
-    // 2. 直近に終了したもの、または未来のもの
-    // 現在時刻より未来で開始が最も近いもの
+    // 2. 指定日時より未来で開始が最も近いもの（準備中・予定クエスト）
     const futureList = quests.filter(q => new Date(q.startAt).getTime() > nowMs);
     if (futureList.length > 0) {
       return futureList.sort((a, b) => new Date(a.startAt) - new Date(b.startAt))[0];
     }
 
-    // 過去に終了した直近のもの
-    const pastList = quests.filter(q => new Date(q.endAt).getTime() <= nowMs);
-    if (pastList.length > 0) {
-      return pastList.sort((a, b) => new Date(b.endAt) - new Date(a.endAt))[0];
+    // 3. 直近で終了したばかりのもの（終了後24時間以内のみ結果確認として表示）
+    // 24時間以上経過した過去クエストは無期限にアクティブ扱いせず null を返す（未設定状態に戻す）
+    const ONE_DAY_MS = 24 * 3600 * 1000;
+    const recentEndedList = quests.filter(q => {
+      const e = new Date(q.endAt).getTime();
+      return !isNaN(e) && nowMs >= e && (nowMs - e) <= ONE_DAY_MS;
+    });
+    if (recentEndedList.length > 0) {
+      return recentEndedList.sort((a, b) => new Date(b.endAt) - new Date(a.endAt))[0];
     }
 
-    return quests[0] || null;
+    // 進行中・直近未来・直近終了（24h以内）のいずれにも該当しない場合は null（未設定）
+    return null;
   }
 
   // 目標クエストを作成または更新
@@ -4670,8 +4689,9 @@ class Store {
   }
 
   // 後方互換メソッド: 今週のクエスト設定オブジェクトを取得
-  getCurrentWeekQuest() {
-    const active = this.getActiveTargetQuest();
+  // ※アクティブな目標クエストがない場合は null を返す（旧固定80回フォールバック完全撤廃）
+  getCurrentWeekQuest(refDate = new Date()) {
+    const active = this.getActiveTargetQuest(refDate);
     if (active) {
       const endDate = new Date(active.endAt);
       const m = endDate.getMonth() + 1;
@@ -4687,33 +4707,52 @@ class Store {
         deadlineText: `${m}/${d} ${h}:${mi}まで`
       };
     }
-    return CURRENT_WEEK_QUEST;
+    return null;
   }
 
   // 後方互換メソッド: 指定日時がクエスト期間内か判定
+  // ※アクティブな目標クエストがない場合は false を返す（旧固定80回フォールバック完全撤廃）
   isDateTimeInQuestPeriod(dateStr, timeStr, quest = null) {
-    const targetQuest = quest || this.getActiveTargetQuest() || CURRENT_WEEK_QUEST;
     if (!dateStr) return false;
     const cleanDate = String(dateStr).replace(/\//g, '-');
+    const targetQuest = quest || this.getActiveTargetQuest(cleanDate);
+    if (!targetQuest) return false;
+
     const cleanTime = (timeStr && timeStr.length >= 5) ? timeStr.slice(0, 5) : '12:00';
     const isoStr = `${cleanDate}T${cleanTime}:00+09:00`;
     const t = new Date(isoStr).getTime();
     const start = new Date(targetQuest.startAt).getTime();
     const end = new Date(targetQuest.endAt).getTime();
-    return t >= start && t < end;
+    return !isNaN(t) && !isNaN(start) && !isNaN(end) && t >= start && t < end;
   }
 
   // 後方互換メソッド: クエスト期間内の実配達件数を集計
+  // ※アクティブな目標クエストがない場合は 0 を返す（旧固定80回フォールバック完全撤廃）
   countQuestDeliveries(quest = null) {
-    const targetQuest = quest || this.getActiveTargetQuest() || CURRENT_WEEK_QUEST;
+    const targetQuest = quest || this.getActiveTargetQuest();
+    if (!targetQuest) return 0;
     return this.countTargetQuestDeliveries(targetQuest);
   }
 
   // 後方互換メソッド: 今週のクエスト進捗データを取得
-  getQuestProgress(quest = null) {
-    const targetQuest = quest || this.getActiveTargetQuest();
+  // ※アクティブな目標クエストがない場合は未設定オブジェクトを返す（旧固定80回フォールバック完全撤廃）
+  getQuestProgress(questOrDate = null) {
+    let targetQuest = null;
+    let evalDate = new Date();
+
+    if (questOrDate && typeof questOrDate === 'object' && questOrDate.id) {
+      targetQuest = questOrDate;
+    } else if (typeof questOrDate === 'string' && this.getTargetQuestById(questOrDate)) {
+      targetQuest = this.getTargetQuestById(questOrDate);
+    } else {
+      if (typeof questOrDate === 'string' && /^\d{4}-\d{2}-\d{2}/.test(questOrDate)) {
+        evalDate = new Date(`${questOrDate}T12:00:00+09:00`);
+      }
+      targetQuest = this.getActiveTargetQuest(evalDate);
+    }
+
     if (targetQuest) {
-      return this.calculateTargetQuestProgress(targetQuest);
+      return this.calculateTargetQuestProgress(targetQuest, evalDate);
     }
     return {
       questId: null,
@@ -4752,25 +4791,31 @@ class Store {
     } catch (e) {}
   }
 
-  // クエスト進捗手動設定
-  setQuestProgressCount(count, quest = CURRENT_WEEK_QUEST) {
+  // クエスト進捗手動設定（アクティブ目標クエスト対象）
+  setQuestProgressCount(count, quest = null) {
+    const targetQuest = quest || this.getActiveTargetQuest();
+    if (!targetQuest) return 0;
     const targetCount = Math.max(0, Number(count) || 0);
-    const logDeliveriesCount = this.countQuestDeliveries(quest);
+    const logDeliveriesCount = this.countTargetQuestDeliveries(targetQuest);
     const manualAdjust = targetCount - logDeliveriesCount;
-    this.saveQuestProgress(quest.id, manualAdjust);
+    this.saveQuestProgress(targetQuest.id, manualAdjust);
     return targetCount;
   }
 
   // クエスト進捗をインクリメント（＋1）
-  incrementQuestProgress(quest = CURRENT_WEEK_QUEST) {
-    const progress = this.getQuestProgress(quest);
-    return this.setQuestProgressCount(progress.currentCount + 1, quest);
+  incrementQuestProgress(quest = null) {
+    const targetQuest = quest || this.getActiveTargetQuest();
+    if (!targetQuest) return 0;
+    const progress = this.getQuestProgress(targetQuest);
+    return this.setQuestProgressCount(progress.currentCount + 1, targetQuest);
   }
 
   // クエスト進捗をデクリメント（－1、0未満にはしない）
-  decrementQuestProgress(quest = CURRENT_WEEK_QUEST) {
-    const progress = this.getQuestProgress(quest);
-    return this.setQuestProgressCount(Math.max(0, progress.currentCount - 1), quest);
+  decrementQuestProgress(quest = null) {
+    const targetQuest = quest || this.getActiveTargetQuest();
+    if (!targetQuest) return 0;
+    const progress = this.getQuestProgress(targetQuest);
+    return this.setQuestProgressCount(Math.max(0, progress.currentCount - 1), targetQuest);
   }
 
   // 日別属性の判定（将来の属性拡張に対応する構造化メタデータ）

@@ -391,7 +391,7 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
       const {store}=require(${JSON.stringify(path.join(root, 'js', 'store.js'))});
       const x=store.getCalculatedMetrics(store.getDailyLog('2026-09-22'));
       const w=store.getRevenueSummary('2026-09-22').thisWeek;
-      console.log(JSON.stringify({total:x.totalSales,count:x.count,sec:x.workSeconds,week:w.officialSales,q:store.getQuestProgress().currentCount}));`);
+      console.log(JSON.stringify({total:x.totalSales,count:x.count,sec:x.workSeconds,week:w.officialSales,q:store.getQuestProgress('2026-09-22').currentCount}));`);
     check(m.total === 9243 && m.count === 25 && m.sec === 26060 && m.week === 13533 && m.q === 35, `アプリ計算: 9/22 ¥9,243 / 25件 / 7:14:20 / 今週 ¥13,533 / クエスト 35件（=${JSON.stringify(m)}）`);
   }
 

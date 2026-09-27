@@ -891,7 +891,7 @@ function report(root, date) {
     const {TRIP_MAP_CATALOG}=require(${JSON.stringify(path.join(root, 'js', 'trip-maps.js'))});
     const s=m.store, d=${JSON.stringify(date)};
     const log=s.getDailyLog(d); const x=s.getCalculatedMetrics(log);
-    const r=s.getRevenueSummary(d); const a=s.getAnalytics(); const q=s.getQuestProgress();
+    const r=s.getRevenueSummary(d); const a=s.getAnalytics(); const q=s.getQuestProgress(d);
     const logs=s.getAllDailyLogs();
     const ids=logs.flatMap(l=>(l.deliveries||[]).map(t=>t.id));
     const month=logs.filter(l=>l.date.startsWith(d.slice(0,7)));
