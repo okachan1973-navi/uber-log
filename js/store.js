@@ -3132,6 +3132,204 @@ const CONFIRMED_SEED_DATA = {
         "source": "official-import-v1",
         "importedAt": "2026-09-27T10:23:14.143Z"
       }
+    },
+    "2026-09-28": {
+      "date": "2026-09-28",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 39.88,
+      "tripsCount": 9,
+      "officialPoints": 13,
+      "deliveriesCount": 13,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_0928_1",
+          "index": 1,
+          "completedAt": "08:06",
+          "restaurant": "松のや 九条店 Matsunoya Kujo",
+          "area": "大阪市港区市岡元町1丁目",
+          "fee": 320,
+          "distanceKm": 1.88,
+          "durationStr": "15分38秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0928_2",
+          "index": 2,
+          "completedAt": "08:50",
+          "restaurant": "マクドナルド ＪＲ野田駅前店 McDonald's JR NODA EKI-MAE",
+          "area": "大阪市北区中之島6丁目",
+          "fee": 796,
+          "distanceKm": 5.68,
+          "durationStr": "35分44秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0928_3",
+          "index": 3,
+          "completedAt": "09:08",
+          "restaurant": "やよい軒 野田阪神店",
+          "area": "大阪市西淀川区姫島2丁目",
+          "fee": 1296,
+          "distanceKm": 10.15,
+          "durationStr": "55分29秒",
+          "points": 3,
+          "memo": "トリプル配達（3件完了/3pt）"
+        },
+        {
+          "id": "del_0928_4",
+          "index": 4,
+          "completedAt": "09:11",
+          "restaurant": "スターバックス コーヒー 肥後橋南店 Starbucks Coffee Higobashi Minami",
+          "area": "大阪市北区中之島4丁目",
+          "fee": 422,
+          "distanceKm": 4.22,
+          "durationStr": "26分15秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0928_5",
+          "index": 5,
+          "completedAt": "10:35",
+          "restaurant": "マクドナルド 高見プラザ店 McDonald's TAKAMI PLAZA",
+          "area": "大阪市福島区海老江8丁目",
+          "fee": 704,
+          "distanceKm": 5.42,
+          "durationStr": "31分47秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0928_6",
+          "index": 6,
+          "completedAt": "11:17",
+          "restaurant": "ローソン 此花千鳥橋",
+          "area": "大阪市港区波除5丁目",
+          "fee": 586,
+          "distanceKm": 4.65,
+          "durationStr": "26分24秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0928_7",
+          "index": 7,
+          "completedAt": "12:14",
+          "restaurant": "バーガーキング 九条店 Burger King Kujo",
+          "area": "大阪市西区川口3丁目",
+          "fee": 424,
+          "baseFee": 320,
+          "tip": 104,
+          "distanceKm": 1.59,
+          "durationStr": "11分29秒",
+          "points": 1,
+          "memo": "最終売上¥424（基本料金¥320＋チップ¥104）"
+        },
+        {
+          "id": "del_0928_8",
+          "index": 8,
+          "completedAt": "12:49",
+          "restaurant": "バーガーキング 九条店 Burger King Kujo",
+          "area": "大阪市大正区泉尾3丁目",
+          "fee": 383,
+          "distanceKm": 3.94,
+          "durationStr": "23分4秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0928_9",
+          "index": 9,
+          "completedAt": "14:03",
+          "restaurant": "京都北白川 ラーメン魁力屋 イオンモール大阪ドームシティ店",
+          "area": "大阪市大正区泉尾1丁目",
+          "fee": 415,
+          "distanceKm": 2.35,
+          "durationStr": "14分32秒",
+          "points": 1,
+          "memo": ""
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_0928_1",
+          "time": "11:44",
+          "title": "クエスト",
+          "amount": 75,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥75」「1 回乗車クエスト ¥75」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0928_2",
+          "time": "11:44",
+          "title": "クエスト",
+          "amount": 225,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥225」「1 回乗車クエスト ¥225」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0928_3",
+          "time": "12:26",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "12:25",
+          "note": "公式一覧は 12:25「1 回乗車クエスト ¥150」（達成表示）と 12:26「クエスト ¥150」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0928_4",
+          "time": "13:13",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥150」「1 回乗車クエスト ¥150」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0928_5",
+          "time": "14:18",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥150」「1 回乗車クエスト ¥150」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0928_6",
+          "time": "14:18",
+          "title": "クエスト",
+          "amount": 650,
+          "isDuplicateIgnored": false,
+          "questName": "6回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥650」「6 回乗車クエスト ¥650」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        }
+      ],
+      "sales": {
+        "delivery": 5346,
+        "quest": 1400,
+        "adjustment": 0,
+        "other": 0,
+        "total": 6746
+      },
+      "expenses": [],
+      "officialImport": {
+        "source": "official-import-v1",
+        "importedAt": "2026-09-28T07:50:54.577Z"
+      }
     }
   },
   "targetQuests": [

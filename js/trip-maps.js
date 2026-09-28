@@ -1285,6 +1285,69 @@ const TRIP_MAP_CATALOG = {
     "cropped": true,
     "box": [29, 160, 407, 370],
     "origFile": "スクリーンショット 2026-09-27 192017.png"
+  },
+  "del_0928_1": {
+    "map": "assets/maps/map_del_0928_1.png",
+    "full": "assets/maps/full_del_0928_1.png",
+    "cropped": true,
+    "box": [44, 158, 422, 368],
+    "origFile": "スクリーンショット 2026-09-28 164637.png"
+  },
+  "del_0928_2": {
+    "map": "assets/maps/map_del_0928_2.png",
+    "full": "assets/maps/full_del_0928_2.png",
+    "cropped": true,
+    "box": [31, 155, 409, 365],
+    "origFile": "スクリーンショット 2026-09-28 164651.png"
+  },
+  "del_0928_3": {
+    "map": "assets/maps/map_del_0928_3.png",
+    "full": "assets/maps/full_del_0928_3.png",
+    "cropped": true,
+    "box": [31, 150, 409, 360],
+    "origFile": "スクリーンショット 2026-09-28 164707.png"
+  },
+  "del_0928_4": {
+    "map": "assets/maps/map_del_0928_4.png",
+    "full": "assets/maps/full_del_0928_4.png",
+    "cropped": true,
+    "box": [29, 157, 407, 367],
+    "origFile": "スクリーンショット 2026-09-28 164723.png"
+  },
+  "del_0928_5": {
+    "map": "assets/maps/map_del_0928_5.png",
+    "full": "assets/maps/full_del_0928_5.png",
+    "cropped": true,
+    "box": [18, 159, 396, 369],
+    "origFile": "スクリーンショット 2026-09-28 164754.png"
+  },
+  "del_0928_6": {
+    "map": "assets/maps/map_del_0928_6.png",
+    "full": "assets/maps/full_del_0928_6.png",
+    "cropped": true,
+    "box": [38, 154, 416, 364],
+    "origFile": "スクリーンショット 2026-09-28 164805.png"
+  },
+  "del_0928_7": {
+    "map": "assets/maps/map_del_0928_7.png",
+    "full": "assets/maps/full_del_0928_7.png",
+    "cropped": true,
+    "box": [44, 160, 422, 370],
+    "origFile": "スクリーンショット 2026-09-28 164821.png"
+  },
+  "del_0928_8": {
+    "map": "assets/maps/map_del_0928_8.png",
+    "full": "assets/maps/full_del_0928_8.png",
+    "cropped": true,
+    "box": [38, 156, 416, 366],
+    "origFile": "スクリーンショット 2026-09-28 164844.png"
+  },
+  "del_0928_9": {
+    "map": "assets/maps/map_del_0928_9.png",
+    "full": "assets/maps/full_del_0928_9.png",
+    "cropped": true,
+    "box": [30, 159, 408, 369],
+    "origFile": "スクリーンショット 2026-09-28 164858.png"
   }
 };
 
