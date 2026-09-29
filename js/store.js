@@ -3330,6 +3330,423 @@ const CONFIRMED_SEED_DATA = {
         "source": "official-import-v1",
         "importedAt": "2026-09-28T07:50:54.577Z"
       }
+    },
+    "2026-09-29": {
+      "date": "2026-09-29",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 52.09,
+      "tripsCount": 17,
+      "officialPoints": 23,
+      "deliveriesCount": 23,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_0929_1",
+          "index": 1,
+          "completedAt": "07:29",
+          "restaurant": "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE",
+          "area": "大阪市梅香1丁目",
+          "fee": 611,
+          "distanceKm": 3.15,
+          "durationStr": "18分8秒",
+          "points": 1,
+          "memo": "公式配達先表記: 1-chōme 27 Osaka Baika Japan"
+        },
+        {
+          "id": "del_0929_2",
+          "index": 2,
+          "completedAt": "08:26",
+          "restaurant": "モスバーガー ＪＲ野田店 Mos Burger JR NODA",
+          "area": "大阪市此花区春日出中2丁目",
+          "fee": 2032,
+          "distanceKm": 12.65,
+          "durationStr": "1時間10分",
+          "points": 4,
+          "memo": "4件完了/4pt"
+        },
+        {
+          "id": "del_0929_3",
+          "index": 3,
+          "completedAt": "09:43",
+          "restaurant": "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE",
+          "area": "大阪市福島区吉野5丁目",
+          "fee": 566,
+          "distanceKm": 3.27,
+          "durationStr": "14分58秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0929_4",
+          "index": 4,
+          "completedAt": "09:46",
+          "restaurant": "吉野家 JR西九条駅店 Yoshinoya JR NISHIKUJO-EKI",
+          "area": "大阪市福島区野田5丁目",
+          "fee": 398,
+          "distanceKm": 2.22,
+          "durationStr": "14分18秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0929_5",
+          "index": 5,
+          "completedAt": "11:12",
+          "restaurant": "マクドナルド 九条店",
+          "area": "大阪市西区境川1丁目",
+          "fee": 479,
+          "distanceKm": 1.69,
+          "durationStr": "18分33秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0929_6",
+          "index": 6,
+          "completedAt": "11:25",
+          "restaurant": "カレーハウス CoCo壱番屋 フォレオ大阪ドームシティ店 Curry House CoCo Ichibanya Foleo-Oskadomecity",
+          "area": "大阪市西区九条1丁目",
+          "fee": 406,
+          "distanceKm": 3.28,
+          "durationStr": "21分40秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0929_7",
+          "index": 7,
+          "completedAt": "11:50",
+          "restaurant": "ウエルシア大阪九条店",
+          "area": "大阪市西区千代崎1丁目",
+          "fee": 320,
+          "distanceKm": 2.06,
+          "durationStr": "13分39秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0929_8",
+          "index": 8,
+          "completedAt": "11:57",
+          "restaurant": "ほっかほっか亭 南堀江4丁目店 Hokkahokka-tei minamihorie4chome",
+          "area": "大阪市西区本田2丁目",
+          "fee": 320,
+          "distanceKm": 2.25,
+          "durationStr": "17分34秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0929_9",
+          "index": 9,
+          "completedAt": "12:25",
+          "restaurant": "マクドナルド 九 条 店 McDonald's KUJO",
+          "area": "大阪市西区本田2丁目",
+          "fee": 320,
+          "distanceKm": 1.27,
+          "durationStr": "9分48秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0929_10",
+          "index": 10,
+          "completedAt": "13:51",
+          "restaurant": "やよい軒 九条店",
+          "area": "大阪市港区市岡3丁目",
+          "fee": 320,
+          "distanceKm": 2.88,
+          "durationStr": "18分57秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0929_11",
+          "index": 11,
+          "completedAt": "14:21",
+          "restaurant": "マクドナルド 九 条 店 McDonald's KUJO",
+          "area": "大阪市西区九条南2丁目",
+          "fee": 320,
+          "distanceKm": 1.51,
+          "durationStr": "11分14秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0929_12",
+          "index": 12,
+          "completedAt": "14:59",
+          "restaurant": "マクドナルド 九 条 店 McDonald's KUJO",
+          "area": "大阪市西区九条1丁目",
+          "fee": 320,
+          "distanceKm": 0.69,
+          "durationStr": "7分31秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0929_13",
+          "index": 13,
+          "completedAt": "15:15",
+          "restaurant": "マクドナルド 九 条 店 McDonald's KUJO",
+          "area": "大阪市西区川口1丁目",
+          "fee": 320,
+          "distanceKm": 1.51,
+          "durationStr": "12分5秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0929_14",
+          "index": 14,
+          "completedAt": "15:23",
+          "restaurant": "バーガーキング 九条店 Burger King Kujo",
+          "area": "大阪市西区千代崎",
+          "fee": 320,
+          "distanceKm": 2.41,
+          "durationStr": "14分1秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0929_15",
+          "index": 15,
+          "completedAt": "15:33",
+          "restaurant": "ケンタッキーフライドチキン イオンモール大阪ドームシティ店",
+          "area": "大阪市西区九条3丁目",
+          "fee": 755,
+          "distanceKm": 4.18,
+          "durationStr": "29分52秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_0929_16",
+          "index": 16,
+          "completedAt": "15:56",
+          "restaurant": "びっくりドンキー フォレオ大阪ドームシティ店 Bikkuri donkey Foleo Oska Dome City",
+          "area": "大阪市西区九条1丁目",
+          "fee": 379,
+          "distanceKm": 3.48,
+          "durationStr": "20分50秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_0929_17",
+          "index": 17,
+          "completedAt": "16:00",
+          "restaurant": "グルメシティ 九条店",
+          "area": "大阪市西区川口2丁目",
+          "fee": 395,
+          "distanceKm": 3.59,
+          "durationStr": "25分28秒",
+          "points": 1,
+          "memo": ""
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_0929_1",
+          "time": "11:24",
+          "title": "クエスト",
+          "amount": 450,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "11:23",
+          "note": "公式一覧は 11:23「1 回乗車クエスト ¥450」（達成表示）と 11:24「クエスト ¥450」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_2",
+          "time": "11:31",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "11:30",
+          "note": "公式一覧は 11:30「1 回乗車クエスト ¥150」（達成表示）と 11:31「クエスト ¥150」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_3",
+          "time": "11:45",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_4",
+          "time": "11:52",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_5",
+          "time": "12:04",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_6",
+          "time": "12:16",
+          "title": "クエスト",
+          "amount": 650,
+          "isDuplicateIgnored": false,
+          "questName": "6回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥650」「6 回乗車クエスト ¥650」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_7",
+          "time": "12:16",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_8",
+          "time": "12:36",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "12:35",
+          "note": "公式一覧は 12:35「1 回乗車クエスト ¥300」（達成表示）と 12:36「クエスト ¥300」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_9",
+          "time": "14:10",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_10",
+          "time": "14:33",
+          "title": "クエスト",
+          "amount": 450,
+          "isDuplicateIgnored": false,
+          "questName": "3回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "14:32",
+          "note": "公式一覧は 14:32「3 回乗車クエスト ¥450」（達成表示）と 14:33「クエスト ¥450」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_11",
+          "time": "14:33",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "14:32",
+          "note": "公式一覧は 14:32「1 回乗車クエスト ¥300」（達成表示）と 14:33「クエスト ¥300」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_12",
+          "time": "15:07",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥150」「1 回乗車クエスト ¥150」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_13",
+          "time": "15:28",
+          "title": "クエスト",
+          "amount": 50,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥50」「1 回乗車クエスト ¥50」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_14",
+          "time": "15:42",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_15",
+          "time": "16:07",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_16",
+          "time": "16:12",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_17",
+          "time": "16:27",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_0929_18",
+          "time": "16:51",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "16:50",
+          "note": "公式一覧は 16:50「1 回乗車クエスト ¥100」（達成表示）と 16:51「クエスト ¥100」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        }
+      ],
+      "sales": {
+        "delivery": 8581,
+        "quest": 4500,
+        "adjustment": 0,
+        "other": 0,
+        "total": 13081
+      },
+      "expenses": [],
+      "officialImport": {
+        "source": "official-import-v1",
+        "importedAt": "2026-09-29T09:10:51.418Z"
+      }
     }
   },
   "targetQuests": [
