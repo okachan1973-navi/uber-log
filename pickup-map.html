@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0d12">
+  <title>大阪西部Uber配達マップ</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0d12'/><circle cx='50' cy='50' r='36' fill='%2306C167'/><text x='50' y='60' font-size='34' font-weight='900' fill='%23000' text-anchor='middle'>U</text></svg>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="css/pickup-map.css?v=20260930_map1">
+</head>
+<body>
+  <div class="pm-app">
+    <header class="pm-header">
+      <a class="pm-back" href="index.html" title="UBER LOGへ戻る">← UBER LOG</a>
+      <h1 class="pm-title">岡ちゃん専用・大阪西部Uber配達マップ</h1>
+      <button id="pm-panel-toggle" class="pm-panel-toggle" type="button" aria-expanded="true">一覧</button>
+    </header>
+
+    <aside id="pm-panel" class="pm-panel">
+      <div id="pm-alert" class="pm-alert" hidden></div>
+
+      <section class="pm-section">
+        <label class="pm-label" for="pm-search">店舗検索</label>
+        <input id="pm-search" class="pm-input" type="search" placeholder="例: 九条 / マクドナルド / ローソン" autocomplete="off">
+      </section>
+
+      <section class="pm-section">
+        <div class="pm-label">回数</div>
+        <div id="pm-tier-filter" class="pm-chips" role="group" aria-label="回数フィルター">
+          <button type="button" class="pm-chip active" data-tier="all">すべて</button>
+          <button type="button" class="pm-chip tier-high" data-tier="high">10回以上</button>
+          <button type="button" class="pm-chip tier-mid" data-tier="mid">5〜9回</button>
+          <button type="button" class="pm-chip tier-low" data-tier="low">1〜4回</button>
+        </div>
+        <div class="pm-label pm-label-sub">カテゴリ</div>
+        <div id="pm-cat-filter" class="pm-chips" role="group" aria-label="カテゴリフィルター"></div>
+      </section>
+
+      <section class="pm-section pm-stats" id="pm-stats"></section>
+
+      <section class="pm-section">
+        <div class="pm-label">表示レイヤー</div>
+        <label class="pm-check"><input type="checkbox" id="pm-layer-stores" checked> 店舗ピン</label>
+        <label class="pm-check"><input type="checkbox" id="pm-layer-points" checked> 重要地点（安治川トンネル・安治川大橋）</label>
+      </section>
+
+      <section class="pm-section pm-ranking-section">
+        <div class="pm-label">ピックアップ回数ランキング <span id="pm-rank-count" class="pm-muted"></span></div>
+        <ol id="pm-ranking" class="pm-ranking"></ol>
+      </section>
+
+      <section class="pm-section">
+        <details id="pm-review" class="pm-review">
+          <summary>要確認店舗（座標未確定） <span id="pm-review-count"></span></summary>
+          <ul id="pm-review-list" class="pm-review-list"></ul>
+        </details>
+      </section>
+    </aside>
+
+    <main class="pm-map-wrap">
+      <div id="pm-map" class="pm-map" aria-label="地図"></div>
+      <div class="pm-legend" aria-hidden="true">
+        <span><i class="pm-dot tier-high"></i>10回以上</span>
+        <span><i class="pm-dot tier-mid"></i>5〜9回</span>
+        <span><i class="pm-dot tier-low"></i>1〜4回</span>
+      </div>
+    </main>
+
+    <footer id="pm-footer" class="pm-footer"></footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="js/store.js?v=20260930_map1"></script>
+  <script src="js/pickup-stores.js?v=20260930_map1"></script>
+  <script src="data/uber_pickup_stores.js?v=20260930_map1"></script>
+  <script src="js/pickup-map.js?v=20260930_map1"></script>
+</body>
+</html>

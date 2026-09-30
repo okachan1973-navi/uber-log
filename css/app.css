@@ -2620,6 +2620,17 @@ body {
   color: var(--color-uber-green);
 }
 
+/* 別ページへのリンク（<a>）もボタンと同じ見た目にする */
+a.nav-btn {
+  text-decoration: none;
+  min-width: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-btn .nav-label {
+  white-space: nowrap;
+}
+
 .nav-icon {
   font-size: 20px;
 }

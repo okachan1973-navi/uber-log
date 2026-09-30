@@ -105,3 +105,14 @@ Uber Eats配達員向けの実運用ダッシュボードおよび意思決定�
 
 ### ファイル直接起動 (`file://`)
 `index.html` を直接ブラウザ（Edge / Chrome / Safari）で開いても、CORSエラーやESモジュール制約を受けないクラシックスクリプト形式を採用しており、コンソールエラー0件で完全動作します。
+
+---
+
+## 8. 配達マップ（ピックアップ店舗）
+
+`pickup-map.html`（UBER LOG 下部ナビの「🗺️ 地図」から開く。地図ページ左上の「← UBER LOG」で戻る）。`js/store.js` の配達実績を開くたびに店舗単位で再集計し、事前調査して固定保存した住所・緯度経度で実地図（国土地理院 地図タイル／OSM 切替）にピンを立てる。地図表示時に外部ジオコーディングはしない。
+
+- 店舗マスタ正本: `data/uber_pickup_stores.json`（`name_keys` が表記ゆれの統合ルール。座標未確定は `coordinate_status: needs_review` で座標なし）
+- 重要地点・ルート: `data/uber_map_points.json`（安治川トンネル・安治川大橋。`routes` に避けたいルート等を追加可能）
+- 再集計・検証・出力: `node tools/pickup-map/build-stores.js`（`--check` 検証のみ / `--verify-geo` 国土地理院逆ジオコーダで区・町名を再確認）
+- テスト: `node tools/pickup-map/spec/pickup-map-tests.js`

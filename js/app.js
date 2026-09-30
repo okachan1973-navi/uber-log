@@ -47,7 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 1. タブナビゲーション
 function initTabs() {
-  const navBtns = document.querySelectorAll('.nav-btn');
+  // data-tab を持つものだけがタブ（「地図」は別ページへのリンク）
+  const navBtns = document.querySelectorAll('.nav-btn[data-tab]');
   const tabContents = document.querySelectorAll('.tab-content');
 
   navBtns.forEach(btn => {

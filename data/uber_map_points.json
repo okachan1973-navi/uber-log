@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "description": "店舗とは別レイヤーの重要地点・ルート。座標は OpenStreetMap の実データと国土地理院逆ジオコーダで区・町名を確認済み。routes には今後「自転車で避けたいルート」「重要な横断ポイント」を追加できる。",
+  "point_types": {
+    "crossing": { "label": "横断ポイント", "color": "#a855f7" },
+    "tunnel": { "label": "トンネル", "color": "#a855f7" },
+    "bridge": { "label": "橋", "color": "#14b8a6" },
+    "caution": { "label": "注意地点", "color": "#f59e0b" }
+  },
+  "route_types": {
+    "crossing": { "label": "横断ルート", "color": "#a855f7", "dash": "6 6" },
+    "bridge": { "label": "橋", "color": "#14b8a6", "dash": null },
+    "avoid": { "label": "自転車で避けたいルート", "color": "#ef4444", "dash": "2 6" }
+  },
+  "points": [
+    {
+      "id": "ajikawa_tunnel_s",
+      "type": "tunnel",
+      "name": "安治川トンネル 南口（西区側）",
+      "latitude": 34.679024,
+      "longitude": 135.467585,
+      "area": "大阪市西区安治川一丁目",
+      "description": "安治川の川底をくぐる歩行者・自転車用トンネルの西区側立坑（エレベーター）。",
+      "source": "OSM way/149399130「安治川トンネル（南）」; 国土地理院逆ジオコーダ 27106 安治川一丁目"
+    },
+    {
+      "id": "ajikawa_tunnel_n",
+      "type": "tunnel",
+      "name": "安治川トンネル 北口（此花区側）",
+      "latitude": 34.679716,
+      "longitude": 135.467138,
+      "area": "大阪市此花区西九条二丁目",
+      "description": "安治川トンネルの此花区西九条側立坑（エレベーター）。",
+      "source": "OSM way/150507670「安治川トンネル（北）」; 国土地理院逆ジオコーダ 27104 西九条二丁目"
+    },
+    {
+      "id": "ajikawa_ohashi_s",
+      "type": "bridge",
+      "name": "安治川大橋 南側（港区波除）",
+      "latitude": 34.67523,
+      "longitude": 135.458359,
+      "area": "大阪市港区波除六丁目",
+      "description": "国道43号の安治川大橋・港区側。",
+      "source": "OSM way/147101048（国道43号 bridge=yes）端点; 国土地理院逆ジオコーダ 27107 波除六丁目"
+    },
+    {
+      "id": "ajikawa_ohashi_n",
+      "type": "bridge",
+      "name": "安治川大橋 北側（此花区春日出南）",
+      "latitude": 34.677889,
+      "longitude": 135.456813,
+      "area": "大阪市此花区春日出南一丁目",
+      "description": "国道43号の安治川大橋・此花区側。",
+      "source": "OSM way/147101048（国道43号 bridge=yes）端点; 国土地理院逆ジオコーダ 27104 春日出南一丁目"
+    }
+  ],
+  "routes": [
+    {
+      "id": "ajikawa_tunnel",
+      "type": "crossing",
+      "name": "安治川トンネル（西区安治川 ⇄ 安治川 ⇄ 此花区西九条）",
+      "description": "川底の歩行者・自転車トンネル。西区安治川側（南）と此花区西九条側（北）を結ぶ。",
+      "coordinates": [[34.679024, 135.467585], [34.679716, 135.467138]],
+      "source": "OSM way/34938707（安治川隧道 footway tunnel=yes）と立坑位置"
+    },
+    {
+      "id": "ajikawa_ohashi",
+      "type": "bridge",
+      "name": "安治川大橋（国道43号）",
+      "description": "港区波除 ⇄ 此花区春日出南。",
+      "coordinates": [[34.67523, 135.458359], [34.677889, 135.456813]],
+      "source": "OSM way/147101048"
+    }
+  ]
+}
