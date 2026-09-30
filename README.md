@@ -115,4 +115,6 @@ Uber Eats配達員向けの実運用ダッシュボードおよび意思決定�
 - 店舗マスタ正本: `data/uber_pickup_stores.json`（`name_keys` が表記ゆれの統合ルール。座標未確定は `coordinate_status: needs_review` で座標なし）
 - 重要地点・ルート: `data/uber_map_points.json`（安治川トンネル・安治川大橋。`routes` に避けたいルート等を追加可能）
 - 再集計・検証・出力: `node tools/pickup-map/build-stores.js`（`--check` 検証のみ / `--verify-geo` 国土地理院逆ジオコーダで区・町名を再確認）
-- テスト: `node tools/pickup-map/spec/pickup-map-tests.js`
+- ナビ: 店舗詳細（ピン・検索候補・ランキングのどこから開いても同じ）の「🚲 現在地から自転車で行く」で Google Maps を開く。目的地は店名ではなく保存済み緯度経度、出発地は指定せず Google Maps 側の現在地、`travelmode=bicycling`。座標未確認の店舗はボタンを出さず「座標未確認のためルート案内できません」。iPhoneのホーム画面アプリ表示では Google Maps アプリ（`comgooglemaps://`）を先に試し、開かなければウェブ版へ切り替える。
+- 現在地: 地図左上の「◎」を押したときだけ1回取得（常時監視なし）。拒否されても地図は通常どおり使える。
+- テスト: `node tools/pickup-map/spec/pickup-map-tests.js`（単体）／ `node tools/pickup-map/spec/pickup-map-e2e.js`（Edge で iPhone相当 320/360/390/430px を実際にタップして確認。ネット接続が必要）

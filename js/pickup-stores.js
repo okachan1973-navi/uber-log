@@ -113,7 +113,34 @@
     return 'low';
   }
 
-  const api = { normalizeDisplayName, restaurantKey, aggregatePickups, pickupTier, listDeliveries };
+  // ---- Google Maps 自転車ルート ----
+  // 目的地は店名ではなく店舗マスタの保存済み緯度経度（同名店舗への誤誘導防止）。
+  // 出発地は指定しない → Google Maps 側が「現在地」を出発地にする。
+
+  /** 座標確認済みで、ルート案内に使える緯度経度を返す（使えなければ null） */
+  function routeDestination(store) {
+    if (!store || store.coordinate_status !== 'confirmed') return null;
+    const lat = store.latitude, lng = store.longitude;
+    if (typeof lat !== 'number' || typeof lng !== 'number' || !isFinite(lat) || !isFinite(lng)) return null;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180 || (lat === 0 && lng === 0)) return null;
+    return lat.toFixed(6) + ',' + lng.toFixed(6);
+  }
+
+  /** Google Maps URLs（公式のクロスプラットフォーム形式）。PC・Android・iPhone Safari で使う */
+  function googleMapsBikeUrl(store) {
+    const dest = routeDestination(store);
+    if (!dest) return null;
+    return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest) + '&travelmode=bicycling';
+  }
+
+  /** iOS の Google Maps アプリ用 URL スキーム（ホーム画面から開いたアプリ表示時に使う） */
+  function googleMapsAppUrl(store) {
+    const dest = routeDestination(store);
+    if (!dest) return null;
+    return 'comgooglemaps://?daddr=' + encodeURIComponent(dest) + '&directionsmode=bicycling';
+  }
+
+  const api = { normalizeDisplayName, restaurantKey, aggregatePickups, pickupTier, listDeliveries, routeDestination, googleMapsBikeUrl, googleMapsAppUrl };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PickupStores = api;
 })(typeof window !== 'undefined' ? window : globalThis);
