@@ -223,6 +223,11 @@ async function run() {
     console.log('\n[UBER LOG 下部ナビ（6項目）]');
     for (const [w, h] of SIZES) {
       const p = await openPage(b, `${base}/index.html`, { width: w, height: h, ready: '!!document.querySelector(".bottom-nav")' });
+      // UBER LOG は初回・更新時に Service Worker が有効になった瞬間に自動リロードする（index.html の controllerchange）。
+      // リロード途中を測ったりタップが打ち消されたりしないよう、実際の利用と同じく有効化とリロードの完了を待つ
+      for (let i = 0; i < 40; i++) { try { if (await p.ev(`!('serviceWorker' in navigator) || !!navigator.serviceWorker.controller`)) break; } catch (e) { /* リロード中 */ } await sleep(250); }
+      await sleep(1000);
+      for (let i = 0; i < 40; i++) { try { if (await p.ev('document.readyState === "complete" && !!document.querySelector(".bottom-nav")')) break; } catch (e) { /* リロード中 */ } await sleep(250); }
       const nav = await p.ev(`(() => { const items = [...document.querySelectorAll('.bottom-nav .nav-btn')]; return { vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth,
         items: items.map(b => ({ label: b.querySelector('.nav-label').textContent, w: Math.round(b.getBoundingClientRect().width), over: b.querySelector('.nav-label').scrollWidth > b.querySelector('.nav-label').clientWidth, right: b.getBoundingClientRect().right, href: b.getAttribute('href') })) }; })()`);
       const labels = nav.items.map(i => i.label).join(' ');
