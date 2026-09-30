@@ -202,6 +202,26 @@
     return out;
   }
 
+  // ---- 一覧用の表示 ----
+  // canonical_name = 店舗の正式な識別名（検索・集計・店舗詳細・地図で使う。変えない）
+  // display_name   = 一覧でブランド見出しの下に出す名前（ブランド名を除いた支店名）
+  // address_short  = 一覧用の短い住所（区＋町名）。正式住所 address はそのまま残す
+
+  /** 一覧用の表示名: ブランド店は支店名、ブランドのない店は正式名のまま */
+  function listDisplayName(store) {
+    if (store && store.brand_id && store.branch_name) return store.branch_name;
+    return store ? store.canonical_name : '';
+  }
+
+  /** 一覧用の短縮住所: 「大阪府大阪市西区九条1-14-19」→「西区九条」（都道府県・市・丁目・番地・号を省く） */
+  function shortAddress(address) {
+    if (!address) return '';
+    const a = String(address).normalize('NFKC').replace(/\s+/g, '');
+    const m = a.match(/(?:.+?[都道府県])?(?:.+?市)?([^市]+?区)(.+?)(?=[0-9]|[一二三四五六七八九十]+丁目|番地|$)/);
+    if (!m) return a.replace(/^.+?[都道府県]/, '').replace(/^.+?市/, '').replace(/[0-9-]+.*$/, '');
+    return m[1] + m[2].replace(/[（(].*$/, '');
+  }
+
   // ---- 並び順 ----
   const collator = typeof Intl !== 'undefined' && Intl.Collator ? new Intl.Collator('ja', { numeric: true, sensitivity: 'base' }) : null;
   const collate = (a, b) => collator ? collator.compare(a, b) : (a < b ? -1 : a > b ? 1 : 0);
@@ -260,7 +280,7 @@
 
   const api = {
     normalizeDisplayName, restaurantKey, aggregatePickups, pickupTier, listDeliveries, routeDestination, googleMapsBikeUrl, googleMapsAppUrl,
-    resolveBrand, brandDisplayName, annotateBrand, nameSortKey, compareByName, compareByCount, defaultSortFor, addressKey, groupSites, confirmedBounds
+    resolveBrand, brandDisplayName, annotateBrand, listDisplayName, shortAddress, nameSortKey, compareByName, compareByCount, defaultSortFor, addressKey, groupSites, confirmedBounds
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PickupStores = api;

@@ -248,6 +248,49 @@ test('初期表示範囲: 確認済み全店舗が入り、余白は範囲の数
   assert.strictEqual(PS.confirmedBounds([], 0.04), null);
 });
 
+test('一覧用 display_name: ブランド店は支店名（ブランド名を繰り返さない）、正式名 canonical_name は不変', () => {
+  master.stores.forEach(s => {
+    assert.ok(s.display_name, s.canonical_name);
+    if (s.brand_id) {
+      assert.ok(!s.display_name.replace(/\s/g, '').startsWith(s.brand_name.replace(/\s/g, '')), `${s.canonical_name} → ${s.display_name}`);
+      assert.ok(s.canonical_name.includes(s.display_name.replace(/^[（(]/, '').replace(/[）)]$/, '')) || /支店名なし/.test(s.display_name), s.canonical_name);
+    } else {
+      assert.strictEqual(s.display_name, s.canonical_name);
+    }
+  });
+  assert.strictEqual(byName('KFC イオンモール大阪ドームシティ店').display_name, 'イオンモール大阪ドームシティ店');
+  assert.strictEqual(byName('バーガーキング 九条店').display_name, '九条店');
+  assert.strictEqual(byName('Uberダイレクト アカカベ薬局 野田阪神店').display_name, '野田阪神店');
+  assert.strictEqual(byName('Uberダイレクト アカカベ薬局 野田阪神店').brand_name, 'アカカベ薬局');
+});
+
+test('ブランド判定: ミスタードーナツとピザハット、ローソンとローソンストア100は別ブランド', () => {
+  assert.strictEqual(byName('ミスタードーナツ 福島大開ショップ').brand_id, 'mister_donut');
+  assert.deepStrictEqual(master.stores.filter(s => s.brand_id === 'pizza_hut').map(s => s.display_name).sort(), ['大阪ナインモール九条店', '阿波座店'].sort());
+  assert.deepStrictEqual(master.stores.filter(s => s.brand_id === 'lawson_store100').map(s => s.display_name).sort(), ['西区京町堀店', '西区新町店']);
+  assert.strictEqual(master.stores.filter(s => s.brand_id === 'lawson').length, 5);
+  assert.ok(master.stores.filter(s => s.brand_id === 'lawson').every(s => !/ストア100/.test(s.canonical_name)));
+  // 全店舗: 判定し直しても同じブランド（データとロジックが一致）
+  master.stores.forEach(s => { const r = PS.resolveBrand(s.canonical_name, brandsDef); assert.strictEqual(r ? r.brand.id : null, s.brand_id, s.canonical_name); });
+});
+
+test('一覧用 address_short: 区＋町名（大阪府・大阪市・丁目・番地を省く）、正式住所は残す', () => {
+  assert.strictEqual(PS.shortAddress('大阪府大阪市西区千代崎3-13-1'), '西区千代崎');
+  assert.strictEqual(PS.shortAddress('大阪府大阪市西区千代崎3丁目13-1'), '西区千代崎');
+  assert.strictEqual(PS.shortAddress('大阪市西区九条1丁目14-19'), '西区九条');
+  assert.strictEqual(PS.shortAddress('大阪府大阪市北区大深町1-18'), '北区大深町');
+  assert.strictEqual(PS.shortAddress('大阪府大阪市西区九条南1-12-33'), '西区九条南');
+  assert.strictEqual(PS.shortAddress('大阪府大阪市北区曽根崎新地1-7-29'), '北区曽根崎新地');
+  assert.strictEqual(PS.shortAddress('大阪府大阪市中央区難波千日前14-2'), '中央区難波千日前');
+  assert.strictEqual(PS.shortAddress(''), '');
+  master.stores.filter(s => s.address).forEach(s => {
+    assert.ok(/^[^0-9０-９]+区[^0-9０-９]+$/.test(s.address_short) && !/大阪府|大阪市|丁目/.test(s.address_short), `${s.canonical_name}: ${s.address_short}`);
+    assert.ok(s.address.startsWith('大阪府大阪市'), '正式住所は残っている: ' + s.canonical_name);
+    assert.ok(s.address.includes(s.address_short.replace(/区/, '区')), s.canonical_name);
+  });
+  assert.strictEqual(master.stores.filter(s => s.address_short).length, 98);
+});
+
 test('data/uber_pickup_stores.js が JSON と同期している', () => {
   const js = fs.readFileSync(path.join(ROOT, 'data', 'uber_pickup_stores.js'), 'utf8');
   const m = js.match(/window\.UBER_PICKUP_STORE_MASTER = (.*);\n/);

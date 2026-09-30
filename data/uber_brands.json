@@ -44,7 +44,7 @@
 
     { "id": "welcia", "name": "ウエルシア", "aliases": ["ウエルシア"], "category": "drug_super" },
     { "id": "kokumin", "name": "コクミンドラッグ", "aliases": ["コクミンドラッグ", "コクミン"], "category": "drug_super" },
-    { "id": "akakabe", "name": "アカカベ", "aliases": ["アカカベ", "Uberダイレクトアカカベ", "ドラッグアカカベ"], "category": "drug_super" },
+    { "id": "akakabe", "name": "アカカベ薬局", "aliases": ["Uberダイレクトアカカベ薬局", "アカカベ薬局", "ドラッグアカカベ", "Uberダイレクトアカカベ", "アカカベ"], "category": "drug_super" },
     { "id": "codeli", "name": "CoDeLi", "reading": "コデリ", "aliases": ["CoDeLi", "CoDeli", "コデリ"], "category": "drug_super" },
     { "id": "gourmet_city", "name": "グルメシティ", "aliases": ["グルメシティ"], "category": "drug_super" },
 

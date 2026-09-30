@@ -159,8 +159,16 @@ async function storeId(p, name) {
 async function listState(p) {
   return p.ev(`(() => ({
     sort: document.querySelector('#pm-sort [aria-checked="true"]').dataset.sort,
-    items: [...document.querySelectorAll('#pm-ranking .pm-rank-item')].map(li => ({ id: li.dataset.id, brand: li.dataset.brand, name: li.querySelector('.pm-rank-name').firstChild.textContent.trim(), count: +li.querySelector('.pm-rank-count').textContent })),
-    heads: [...document.querySelectorAll('#pm-ranking .pm-brand-head')].map(h => h.firstChild.textContent.trim()),
+    items: [...document.querySelectorAll('#pm-ranking .pm-rank-item')].map(li => {
+      const s = window.__pickupMap.data.byId.get(li.dataset.id);
+      return { id: li.dataset.id, brand: li.dataset.brand, name: s.canonical_name, shown: li.querySelector('.pm-rank-title').textContent.trim(), sub: li.querySelector('.pm-rank-sub').textContent.trim(), inBrand: li.classList.contains('in-brand'), count: parseInt(li.querySelector('.pm-rank-count').textContent, 10) };
+    }),
+    heads: [...document.querySelectorAll('#pm-ranking .pm-brand-head')].map(h => h.querySelector('.pm-brand-name').textContent.trim()),
+    // 見出しごとに、その下の行（次の見出しまでの in-brand 行）
+    groups: (() => { const out = []; let cur = null; [...document.querySelectorAll('#pm-ranking > li')].forEach(li => {
+      if (li.classList.contains('pm-brand-head')) { cur = { brand: li.dataset.brand, name: li.querySelector('.pm-brand-name').textContent.trim(), rows: [] }; out.push(cur); }
+      else if (li.classList.contains('in-brand') && cur) cur.rows.push({ brand: li.dataset.brand, shown: li.querySelector('.pm-rank-title').textContent.trim() });
+      else if (li.classList.contains('solo')) cur = null; }); return out; })(),
     chips: [...document.querySelectorAll('#pm-cat-filter .pm-chip')].map(c => c.textContent.trim())
   }))()`);
 }
@@ -225,8 +233,11 @@ async function run() {
       await p.tapSel('#pm-cat-filter [data-cat="fastfood"]');
       await sleep(250);
       ls = await listState(p);
-      check('ファーストフード: 名称順でブランドごとにまとまり見出し付き', ls.sort === 'name' && brandsContiguous(ls.items) && ls.heads.join('/') === 'KFC/バーガーキング/ピザハット/モスバーガー', { heads: ls.heads, items: ls.items.map(i => i.name) });
-      check('ファーストフード: KFC表記に統一', ls.items.filter(i => i.brand === 'kfc').every(i => /^KFC /.test(i.name)) && ls.items.filter(i => i.brand === 'kfc').length === 2 && !ls.items.some(i => /ケンタッキー/.test(i.name)), ls.items.map(i => i.name));
+      check('ファーストフード: 名称順・1店舗のブランドにも見出し（ミスタードーナツはピザハットと別）', ls.sort === 'name' && brandsContiguous(ls.items) && ls.heads.join('/') === 'KFC/バーガーキング/ピザハット/ミスタードーナツ/モスバーガー', { heads: ls.heads });
+      const pizza = ls.groups.find(g => g.brand === 'pizza_hut'), misdo = ls.groups.find(g => g.brand === 'mister_donut');
+      check('ピザハットの下はピザハットだけ、ミスタードーナツは自分の見出しの下', pizza.rows.every(r => r.brand === 'pizza_hut') && pizza.rows.length === 2 && misdo.rows.length === 1 && misdo.rows[0].shown === '福島大開ショップ', { pizza, misdo });
+      const kfc = ls.groups.find(g => g.brand === 'kfc');
+      check('ファーストフード: KFC見出しの下は支店名だけ（正式名はKFC表記）', kfc.name === 'KFC' && kfc.rows.map(r => r.shown).join('/') === 'イオンモール大阪ドームシティ店/うめきたグリーンプレイス店' && ls.items.filter(i => i.brand === 'kfc').every(i => /^KFC /.test(i.name)) && !ls.items.some(i => /ケンタッキー/.test(i.name)), kfc);
       await p.tapSel('#pm-sort [data-sort="count"]');
       await sleep(250);
       ls = await listState(p);
@@ -236,6 +247,7 @@ async function run() {
       await sleep(250);
       ls = await listState(p);
       check('マクドナルド: 既定は回数順（九条店18回が先頭）', ls.sort === 'count' && ls.items[0].name === 'マクドナルド 九条店' && ls.items.every((it, i, a) => i === 0 || a[i - 1].count >= it.count) && ls.items.length === 13, ls.items.slice(0, 3));
+      check('マクドナルド回数順: 見出し1つ＋支店名（「マクドナルド」を繰り返さない）', ls.heads.join() === 'マクドナルド' && ls.items[0].shown === '九条店' && ls.items.every(i => i.inBrand && !/マクドナルド/.test(i.shown)), ls.items.slice(0, 3));
       await p.tapSel('#pm-sort [data-sort="name"]');
       await sleep(250);
       ls = await listState(p);
@@ -245,7 +257,24 @@ async function run() {
       check('並び順はカテゴリごとに記憶（ファーストフードは回数順のまま）', (await listState(p)).sort === 'count');
       await p.tapSel('#pm-cat-filter [data-cat="all"]');
       await sleep(250);
-      check('すべてに戻すと名称順', (await listState(p)).sort === 'name');
+      ls = await listState(p);
+      check('すべてに戻すと名称順', ls.sort === 'name');
+
+      // 全101店舗: 見出しの下はそのブランドの店だけ・ブランド名を繰り返さない・短縮住所
+      const brandNames = await p.ev(`Object.fromEntries(window.__pickupMap.data.stores.filter(s => s.brand_id).map(s => [s.brand_id, s.brand_name]))`);
+      const mixed = ls.groups.filter(g => g.rows.some(r => r.brand !== g.brand));
+      const dup = ls.groups.flatMap(g => g.rows.filter(r => r.shown.startsWith(g.name) || r.shown.replace(/\s/g, '').startsWith(g.name.replace(/\s/g, ''))).map(r => g.name + ':' + r.shown));
+      check('全店舗: 見出しの下に別ブランドが混ざらない・ブランド名の重複表示なし', ls.items.length === 101 && mixed.length === 0 && dup.length === 0 && ls.items.filter(i => i.brand).every(i => i.inBrand) && ls.groups.every(g => g.name === brandNames[g.brand]), { mixed, dup });
+      const lawson = ls.groups.find(g => g.brand === 'lawson'), l100 = ls.groups.find(g => g.brand === 'lawson_store100');
+      check('ローソンとローソンストア100は別グループ', lawson && l100 && lawson.name === 'ローソン' && l100.name === 'ローソンストア100' && lawson.rows.length === 5 && l100.rows.map(r => r.shown).sort().join('/') === '西区京町堀店/西区新町店', { lawson, l100 });
+      const badShort = ls.items.filter(i => i.name !== undefined && !/要確認/.test(i.sub) && !/^[^0-9０-９]+区[^0-9０-９]+$/.test(i.sub) || /大阪府|大阪市|丁目/.test(i.sub));
+      check('一覧の住所は「区＋町名」（大阪府・大阪市・丁目・番地なし）', badShort.length === 0 && ls.items.find(i => i.name === 'KFC イオンモール大阪ドームシティ店').sub === '西区千代崎', badShort.slice(0, 5));
+      const typo = await p.ev(`(() => { const li = document.querySelector('#pm-ranking .pm-rank-item.in-brand'); const t = li.querySelector('.pm-rank-title'), s = li.querySelector('.pm-rank-sub'), h = document.querySelector('#pm-ranking .pm-brand-head'), c = li.querySelector('.pm-rank-count');
+        const lum = el => { const m = getComputedStyle(el).color.match(/\\d+/g).map(Number); return 0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]; };
+        const overlap = [...document.querySelectorAll('#pm-ranking .pm-rank-item')].filter(li => { const a = li.querySelector('.pm-rank-title').getBoundingClientRect(), b = li.querySelector('.pm-rank-count').getBoundingClientRect(); return a.right > b.left + 0.5; }).length;
+        return { title: parseFloat(getComputedStyle(t).fontSize), sub: parseFloat(getComputedStyle(s).fontSize), head: parseFloat(getComputedStyle(h).fontSize), lumTitle: lum(t), lumSub: lum(s), overlap, rowRight: Math.max(...[...document.querySelectorAll('#pm-ranking .pm-rank-item')].map(li => li.getBoundingClientRect().right)), vw: document.documentElement.clientWidth }; })()`);
+      check('文字: ブランド名15px・店舗名15.5px・住所13px、住所は明るいが店舗名より控えめ', typo.head >= 15 && typo.title >= 15 && typo.sub >= 13 && typo.lumSub > 150 && typo.lumSub < typo.lumTitle, typo);
+      check('長い店舗名でも回数と重ならず画面内', typo.overlap === 0 && typo.rowRight <= typo.vw, typo);
 
       // 同一拠点（松屋 九条店 / 松のや 九条店）
       await p.tapSel(`.pm-rank-item[data-id="${await storeId(p, '松屋 九条店')}"]`);

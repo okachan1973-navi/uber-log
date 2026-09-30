@@ -174,6 +174,11 @@ function rebuild(master, dailyLogs, brandsDef) {
   }, brandsDef));
 
   const all = stores.concat(added).sort(PickupStores.compareByCount);
+  // 一覧用（canonical_name・address は変えない）
+  all.forEach(s => {
+    s.display_name = PickupStores.listDisplayName(s);
+    s.address_short = PickupStores.shortAddress(s.address) || null;
+  });
   const sites = buildSites(all);
   const siteOf = new Map();
   sites.forEach(site => site.store_ids.forEach(id => siteOf.set(id, site.site_id)));

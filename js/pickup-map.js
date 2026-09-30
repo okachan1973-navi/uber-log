@@ -79,6 +79,9 @@
       hasCoord: PS.routeDestination(s) !== null,
       routeUrl: PS.googleMapsBikeUrl(s),
       routeAppUrl: PS.googleMapsAppUrl(s),
+      // 一覧用（正式名 canonical_name・正式住所 address は検索・店舗詳細・ルートでそのまま使う）
+      display_name: s.display_name || PS.listDisplayName(s),
+      address_short: s.address_short || PS.shortAddress(s.address),
       search: fold([s.canonical_name, s.address, s.same_building].concat(s.original_names || []).join(' '))
     }));
     stores.sort((a, b) => b.pickup_count - a.pickup_count || a.canonical_name.localeCompare(b.canonical_name, 'ja'));
@@ -300,14 +303,20 @@
     return visible;
   }
 
-  function rankRowHtml(s, cls) {
+  /** 1行: ブランド見出しの下なら支店名（display_name）、それ以外は正式名。住所は一覧用の短縮住所 */
+  function rankRowHtml(s, inBrand) {
+    const name = inBrand ? s.display_name : s.canonical_name;
     return `<span class="pm-rank-no">${s.rank}位</span>
-        <span class="pm-rank-name">${esc(s.canonical_name)}${s.hasCoord ? '' : '<span class="pm-badge-review">要確認</span>'}
-          <span class="pm-rank-sub">${esc(s.address || s.notes || '住所未登録')}</span></span>
-        <span class="pm-rank-count tier-${s.tier}">${s.pickup_count}</span>`;
+        <span class="pm-rank-name"><span class="pm-rank-title">${esc(name)}</span>
+          <span class="pm-rank-sub">${s.hasCoord ? '' : '<span class="pm-badge-review">要確認</span>'}${esc(s.address_short || '住所未確認')}</span></span>
+        <span class="pm-rank-count tier-${s.tier}">${s.pickup_count}<small>回</small></span>`;
   }
 
-  /** 店舗一覧: 名称順ならブランドごとにまとめ、同じブランドが2店舗以上あれば見出しを付ける */
+  /**
+   * 店舗一覧
+   * - 名称順: ブランド店は1店舗でも必ずブランド見出しの下（支店名だけ表示）。ブランドのない店は見出しなしの単独行（正式名）
+   * - 回数順: 回数の多い順に混ざるので正式名で表示。ただし一覧が1ブランドだけ（例: マクドナルド）なら見出し＋支店名
+   */
   function renderRanking(list) {
     const ol = $('pm-ranking');
     const sort = effectiveSort();
@@ -316,17 +325,20 @@
     ol.classList.toggle('sort-name', sort === 'name'); // 名称順では「○位」（回数の順位）を出さない
     if (!list.length) { ol.innerHTML = '<li class="pm-empty">該当する店舗はありません</li>'; return; }
     const sorted = list.slice().sort(sort === 'count' ? PS.compareByCount : PS.compareByName);
-    const brandCount = new Map();
-    sorted.forEach(s => { if (s.brand_id) brandCount.set(s.brand_id, (brandCount.get(s.brand_id) || 0) + 1); });
+    const brands = new Set(sorted.map(s => s.brand_id || ('__solo_' + s.id)));
+    const singleBrand = brands.size === 1 && !!sorted[0].brand_id;
+    const grouped = sort === 'name' || singleBrand;
+    const head = s => {
+      const group = sorted.filter(x => x.brand_id === s.brand_id);
+      return `<li class="pm-brand-head" role="presentation" data-brand="${esc(s.brand_id)}"><span class="pm-brand-name">${esc(s.brand_name)}</span><small>${group.length}店舗・${group.reduce((a, x) => a + x.pickup_count, 0)}回</small></li>`;
+    };
     let prevBrand = null;
     ol.innerHTML = sorted.map(s => {
-      let head = '';
-      if (sort === 'name' && s.brand_id && s.brand_id !== prevBrand && brandCount.get(s.brand_id) > 1) {
-        const group = sorted.filter(x => x.brand_id === s.brand_id);
-        head = `<li class="pm-brand-head" role="presentation">${esc(s.brand_name)}<small>${group.length}店舗・${group.reduce((a, x) => a + x.pickup_count, 0)}回</small></li>`;
-      }
-      prevBrand = s.brand_id;
-      return head + `<li class="pm-rank-item${s.hasCoord ? '' : ' no-coord'}${s.id === state.selectedId ? ' selected' : ''}" data-id="${esc(s.id)}" data-brand="${esc(s.brand_id || '')}" tabindex="0" role="button">${rankRowHtml(s)}</li>`;
+      const inBrand = grouped && !!s.brand_id;
+      const h = inBrand && s.brand_id !== prevBrand ? head(s) : '';
+      prevBrand = inBrand ? s.brand_id : null;
+      const cls = ['pm-rank-item', inBrand ? 'in-brand' : 'solo', s.hasCoord ? '' : 'no-coord', s.id === state.selectedId ? 'selected' : ''].filter(Boolean).join(' ');
+      return h + `<li class="${cls}" data-id="${esc(s.id)}" data-brand="${esc(s.brand_id || '')}" tabindex="0" role="button">${rankRowHtml(s, inBrand)}</li>`;
     }).join('');
   }
 
