@@ -239,10 +239,11 @@
     gsiStd.addTo(map);
     L.control.layers({ '地理院 標準地図': gsiStd, '地理院 淡色地図': gsiPale, 'OpenStreetMap': osm }, null, { position: 'topright' }).addTo(map);
     L.control.scale({ imperial: false, position: 'bottomright' }).addTo(map);
-    addLocateControl();
     storeLayer = L.layerGroup().addTo(map);
     pointLayer = L.layerGroup().addTo(map);
     hereLayer = L.layerGroup().addTo(map);
+    // ◎ 現在地（js/map-locate.js を配達マップ・ルート判断マップで共用）
+    window.MapLocate.addLocateControl(map, { id: 'pm-locate', layer: hereLayer, toast });
     // 画面サイズに合わせてポップアップが画面外に出ないようにする
     // 狭い地図では、開いている間だけ四隅のボタン（ズーム・現在地・レイヤー）を隠して店舗詳細に重ならないようにする
     const container = map.getContainer();
@@ -252,51 +253,6 @@
       e.popup.update();
     });
     map.on('popupclose', () => container.classList.remove('pm-popup-open'));
-  }
-
-  // ---- 現在地（押したときだけ1回取得。常時監視はしない） ----
-  function addLocateControl() {
-    const Locate = L.Control.extend({
-      options: { position: 'topleft' },
-      onAdd() {
-        const wrap = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-        const btn = L.DomUtil.create('button', 'pm-locate-btn', wrap);
-        btn.type = 'button';
-        btn.id = 'pm-locate';
-        btn.title = '現在地を表示';
-        btn.setAttribute('aria-label', '現在地を表示');
-        btn.textContent = '◎';
-        L.DomEvent.disableClickPropagation(wrap);
-        L.DomEvent.on(btn, 'click', () => locateOnce(btn));
-        return wrap;
-      }
-    });
-    new Locate().addTo(map);
-  }
-
-  function locateOnce(btn) {
-    if (!('geolocation' in navigator)) { toast('この端末では現在地を取得できません'); return; }
-    if (window.isSecureContext === false) { toast('現在地は公開版（https）で開いたときに使えます'); return; }
-    btn.classList.add('busy');
-    btn.disabled = true;
-    navigator.geolocation.getCurrentPosition(pos => {
-      btn.classList.remove('busy');
-      btn.disabled = false;
-      const ll = [pos.coords.latitude, pos.coords.longitude];
-      const acc = Math.round(pos.coords.accuracy || 0);
-      hereLayer.clearLayers();
-      if (acc > 0) L.circle(ll, { radius: acc, color: '#2563eb', weight: 1, fillColor: '#3b82f6', fillOpacity: 0.12, interactive: false }).addTo(hereLayer);
-      L.marker(ll, { icon: L.divIcon({ className: 'pm-here-dot', html: '<div></div>', iconSize: [18, 18], iconAnchor: [9, 9] }), interactive: false, keyboard: false, zIndexOffset: -1000 }).addTo(hereLayer);
-      map.flyTo(ll, Math.max(map.getZoom(), 16), { duration: 0.6 });
-      toast(`現在地を表示しました（誤差 約${acc}m）`, 2500);
-    }, err => {
-      btn.classList.remove('busy');
-      btn.disabled = false;
-      const msg = err && err.code === 1 ? '位置情報の利用が許可されていません（地図はそのまま使えます）'
-        : err && err.code === 3 ? '現在地の取得がタイムアウトしました。もう一度押してください'
-          : '現在地を取得できませんでした';
-      toast(msg, 4500);
-    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
   }
 
   function renderPoints() {

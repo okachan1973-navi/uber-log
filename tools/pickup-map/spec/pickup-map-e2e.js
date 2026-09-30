@@ -21,6 +21,9 @@ const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleW
 const SIZES = [[320, 568], [360, 740], [390, 844], [430, 932]];
 const shotsIdx = process.argv.indexOf('--shots');
 const SHOTS = shotsIdx > 0 ? process.argv[shotsIdx + 1] : null;
+// --base https://okachan1973-navi.github.io/uber-log で公開版を対象に実行（省略時はローカルのファイルを配信して実行）
+const baseIdx = process.argv.indexOf('--base');
+const BASE = baseIdx > 0 ? process.argv[baseIdx + 1].replace(/\/$/, '') : null;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 let failures = 0, passes = 0;
@@ -44,10 +47,13 @@ function startServer() {
 
 // ---- DevTools Protocol ----
 async function launchBrowser(profileDir) {
-  const port = 9400 + Math.floor(Math.random() * 400);
-  const proc = spawn(EDGE, ['--headless=new', '--disable-gpu', '--no-first-run', '--lang=ja', `--remote-debugging-port=${port}`, `--user-data-dir=${profileDir}`, 'about:blank'], { stdio: 'ignore' });
+  // ポートは Edge に空きを選ばせる（固定・乱数ポートだと残っている別の Edge とぶつかって止まることがある）
+  const proc = spawn(EDGE, ['--headless=new', '--disable-gpu', '--no-first-run', '--lang=ja', '--remote-debugging-port=0', `--user-data-dir=${profileDir}`, 'about:blank'], { stdio: 'ignore' });
   let info;
-  for (let i = 0; i < 60 && !info; i++) { try { info = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json(); } catch (e) { await sleep(250); } }
+  for (let i = 0; i < 80 && !info; i++) {
+    await sleep(250);
+    try { const port = fs.readFileSync(path.join(profileDir, 'DevToolsActivePort'), 'utf8').split('\n')[0].trim(); info = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json(); } catch (e) { /* 起動待ち */ }
+  }
   if (!info) throw new Error('Edge を起動できません: ' + EDGE);
   const ws = new WebSocket(info.webSocketDebuggerUrl);
   await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
@@ -183,8 +189,9 @@ function checkRouteUrl(label, href, exp) {
 
 async function run() {
   if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
-  const server = await startServer();
-  const base = `http://127.0.0.1:${server.address().port}`;
+  const server = BASE ? null : await startServer();
+  const base = BASE || `http://127.0.0.1:${server.address().port}`;
+  console.log('対象: ' + base);
   const profile = fs.mkdtempSync(path.join(require('os').tmpdir(), 'pm-e2e-'));
   const b = await launchBrowser(profile);
   await b.send('Target.setDiscoverTargets', { discover: true });
@@ -194,7 +201,7 @@ async function run() {
       const p = await openPage(b, `${base}/pickup-map.html`, { width: w, height: h });
 
       const layout = await p.ev(`(() => { const m = document.getElementById('pm-map').getBoundingClientRect(); const s = document.querySelector('.pm-input').getBoundingClientRect();
-        return { vw: innerWidth, sw: document.documentElement.scrollWidth, mapH: m.height, mapTop: m.top, searchH: s.height, searchFont: getComputedStyle(document.querySelector('.pm-input')).fontSize,
+        return { vw: document.documentElement.clientWidth, iw: innerWidth, sw: document.documentElement.scrollWidth, mapH: m.height, mapTop: m.top, searchH: s.height, searchFont: getComputedStyle(document.querySelector('.pm-input')).fontSize,
           pins: document.querySelectorAll('.leaflet-marker-icon.pm-pin').length, footer: document.getElementById('pm-footer').textContent,
           locate: document.getElementById('pm-locate').getBoundingClientRect().height, zoomBtn: document.querySelector('.leaflet-control-zoom-in').getBoundingClientRect().height }; })()`);
       check('横スクロールなし', layout.sw <= layout.vw, layout);
@@ -280,7 +287,7 @@ async function run() {
       const opened = tab.get();
       check('ルートボタンをタップ → Google Maps が開く', !!opened, opened);
       if (opened) { checkRouteUrl('タップで開いたURL', opened.url, exp); await b.send('Target.closeTarget', { targetId: opened.targetId }); }
-      check('タップ後も地図ページはそのまま残る', await p.ev('location.pathname') === '/pickup-map.html');
+      check('タップ後も地図ページはそのまま残る', /\/pickup-map\.html$/.test(await p.ev('location.pathname')));
 
       // ② ランキング → 店舗詳細 → ルート
       await p.ev(`(() => { const i = document.getElementById('pm-search'); i.value = ''; i.dispatchEvent(new Event('input')); i.blur(); document.querySelector('.leaflet-popup-close-button') && document.querySelector('.leaflet-popup-close-button').click(); })()`);
@@ -377,10 +384,12 @@ async function run() {
   } finally {
     try { b.ws.close(); } catch (e) { /* */ }
     b.proc.kill();
-    server.close();
+    if (server) server.close();
   }
   console.log(`\n${passes} passed, ${failures} failed`);
   process.exit(failures ? 1 : 0);
 }
 
+// どこかで止まっても無限に待たない
+setTimeout(() => { console.log('ERROR: テストが時間内に終わりませんでした（15分）'); process.exit(2); }, 15 * 60 * 1000).unref();
 run().catch(e => { console.error(e); process.exit(1); });

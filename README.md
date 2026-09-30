@@ -119,3 +119,16 @@ Uber Eats配達員向けの実運用ダッシュボードおよび意思決定�
 - ナビ: 店舗詳細（ピン・検索候補・ランキングのどこから開いても同じ）の「🚲 現在地から自転車で行く」で Google Maps を開く。目的地は店名ではなく保存済み緯度経度、出発地は指定せず Google Maps 側の現在地、`travelmode=bicycling`。座標未確認の店舗はボタンを出さず「座標未確認のためルート案内できません」。iPhoneのホーム画面アプリ表示では Google Maps アプリ（`comgooglemaps://`）を先に試し、開かなければウェブ版へ切り替える。
 - 現在地: 地図左上の「◎」を押したときだけ1回取得（常時監視なし）。拒否されても地図は通常どおり使える。
 - テスト: `node tools/pickup-map/spec/pickup-map-tests.js`（単体）／ `node tools/pickup-map/spec/pickup-map-e2e.js`（Edge で iPhone相当 320/360/390/430px を実際にタップして確認。ネット接続が必要）
+---
+
+## 9. ルート判断マップ（🧭 ルート）
+
+`route-judge.html`（UBER LOG 下部ナビの「🧭 ルート」）。案件（現在地 → PICK → DROP）が安治川を越えるか、越えるならどの横断ポイントが近いかを確認する。店舗の配達マップ（🗺️ 地図）とは別画面。
+
+- 操作: 「PICK」を押して地図をタップ → 自動で「DROP」に切り替わるので地図をタップ（ドラッグで調整可）。「🏪」で店舗マスタの店を PICK にできる。「◎」で現在地（押したときだけ1回取得）。案件は端末内に保存され、「↺」でクリア。
+- 地理データ正本: `data/uber_route_geo.json`（OSM の堂島川・安治川の中心線、横断ポイント4か所の入口座標、将来の注意地点 `cautions` の枠）。変更後は `node tools/route-judge/build-geo.js` で `data/uber_route_geo.js` を再生成。
+  - 安治川トンネル: 南口（西区安治川一丁目）／北口（此花区西九条二丁目）、立坑エレベーター
+  - 安治川大橋（国道43号）: 橋の歩道＋両端のスロープ付き階段（南: 港区波除六丁目／北: 此花区春日出南一丁目）。**⚠ 自転車押し歩きあり**
+  - 天保山渡船・上流回り（中之島西端）: 参考
+- 計算: `js/route-judge-core.js`（岸の判定・横断判定・横断ポイント別の直線目安距離）。道路の経路計算ではない。
+- テスト: `node tools/route-judge/spec/route-judge-tests.js`（単体）／ `node tools/route-judge/spec/route-judge-e2e.js`（Edge で iPhone相当 320/360/390/430px を実際にタップ）
