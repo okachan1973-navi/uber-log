@@ -140,7 +140,128 @@
     return 'comgooglemaps://?daddr=' + encodeURIComponent(dest) + '&directionsmode=bicycling';
   }
 
-  const api = { normalizeDisplayName, restaurantKey, aggregatePickups, pickupTier, listDeliveries, routeDestination, googleMapsBikeUrl, googleMapsAppUrl };
+  // ---- ブランド ----
+  // data/uber_brands.json の定義で「店名の先頭がどのブランドか」を判定する。店舗ごとの個別指定はしない。
+  const TAGLINE_PREFIX = /^(【[^】]*】)+/; // 「【伝説のクロックムッシュ】サンドイッチ九条店」のような宣伝文句
+  const lowerKey = s => restaurantKey(s).toLowerCase();
+  // 別名は空白・大小文字の違いだけ吸収（英字だけの別名 "KFC" 等を消さないよう restaurantKey の英語併記除去は使わない）
+  const aliasKey = s => String(s || '').normalize('NFKC').replace(/[　\s]+/g, '').toLowerCase();
+
+  /** 店名 → { brand, alias }（最も長く一致した別名を採用。例: ローソンストア100 は ローソン より優先） */
+  function resolveBrand(name, brandsDef) {
+    const brands = (brandsDef && brandsDef.brands) || [];
+    const key = lowerKey(name);
+    const candidates = [key, key.replace(TAGLINE_PREFIX, '')];
+    let best = null;
+    brands.forEach(b => (b.aliases || [b.name]).forEach(a => {
+      const ak = aliasKey(a);
+      if (!ak || (best && ak.length <= best.aliasKey.length)) return;
+      if (candidates.some(c => c.startsWith(ak))) best = { brand: b, alias: a, aliasKey: ak };
+    }));
+    return best;
+  }
+
+  /** 表示名から先頭のブランド別名を取り除いた残り（支店名）。空白・大小文字の違いは無視 */
+  function stripAlias(displayName, alias) {
+    const disp = normalizeDisplayName(displayName);
+    const target = aliasKey(alias);
+    let i = 0, j = 0;
+    const lead = disp.match(TAGLINE_PREFIX);
+    if (lead && !aliasKey(disp).startsWith(target)) i = lead[0].length;
+    while (i < disp.length && j < target.length) {
+      const c = disp[i].toLowerCase();
+      if (/\s/.test(c)) { i++; continue; }
+      if (c !== target[j]) return null;
+      i++; j++;
+    }
+    return j === target.length ? disp.slice(i).trim() : null;
+  }
+
+  /** ブランドの表記統一（display 指定があるブランドだけ）。例: ケンタッキーフライドチキン ○○店 → KFC ○○店 */
+  function brandDisplayName(name, match) {
+    if (!match || !match.brand.display) return name;
+    const rest = stripAlias(name, match.alias);
+    if (rest === null) return name;
+    if (!rest) return match.brand.display;
+    return /^[（(【]/.test(rest) ? match.brand.display + rest : match.brand.display + ' ' + rest;
+  }
+
+  /** 店舗にブランド情報（brand_id / brand_name / brand_reading / branch_name）を付ける */
+  function annotateBrand(store, brandsDef) {
+    const match = resolveBrand(store.canonical_name, brandsDef);
+    const out = Object.assign({}, store);
+    if (!match) {
+      out.brand_id = null; out.brand_name = null; out.brand_reading = null; out.branch_name = null;
+      return out;
+    }
+    out.canonical_name = brandDisplayName(store.canonical_name, match);
+    out.brand_id = match.brand.id;
+    out.brand_name = match.brand.name;
+    out.brand_reading = match.brand.reading || null;
+    out.branch_name = stripAlias(store.canonical_name, match.alias) || '';
+    return out;
+  }
+
+  // ---- 並び順 ----
+  const collator = typeof Intl !== 'undefined' && Intl.Collator ? new Intl.Collator('ja', { numeric: true, sensitivity: 'base' }) : null;
+  const collate = (a, b) => collator ? collator.compare(a, b) : (a < b ? -1 : a > b ? 1 : 0);
+
+  /** 名称順の第1キー: ブランドがあればブランドの読み（無ければブランド名）、無ければ宣伝文句を除いた店名 */
+  function nameSortKey(store) {
+    if (store.brand_id) return store.brand_reading || store.brand_name;
+    return normalizeDisplayName(store.canonical_name).replace(TAGLINE_PREFIX, '').replace(/^Uberダイレクト\s*/, '');
+  }
+
+  /** 名称順: 同じブランドが必ず連続し、ブランド内は支店名順 */
+  function compareByName(a, b) {
+    return collate(nameSortKey(a), nameSortKey(b))
+      || String(a.brand_id || '').localeCompare(String(b.brand_id || ''))
+      || collate(a.branch_name != null && a.brand_id ? a.branch_name : a.canonical_name, b.branch_name != null && b.brand_id ? b.branch_name : b.canonical_name)
+      || String(a.id).localeCompare(String(b.id));
+  }
+
+  /** 回数順: pickup_count の多い順、同数は名称順 */
+  function compareByCount(a, b) {
+    return (b.pickup_count || 0) - (a.pickup_count || 0) || compareByName(a, b);
+  }
+
+  /** カテゴリの既定の並び順（data/uber_brands.json の default_sort） */
+  function defaultSortFor(category, brandsDef) {
+    const d = (brandsDef && brandsDef.default_sort) || {};
+    return d[category] || d['*'] || 'name';
+  }
+
+  // ---- 同一拠点（同じ住所の店舗） ----
+  const addressKey = a => String(a || '').normalize('NFKC').replace(/[　\s]+/g, '').replace(/[‐－―ー−]/g, '-');
+
+  /** 住所が完全に一致する店舗のグループ（2店舗以上）。pickup_count は合算しない */
+  function groupSites(stores) {
+    const map = new Map();
+    stores.forEach(s => {
+      if (!s.address) return;
+      const k = addressKey(s.address);
+      if (!map.has(k)) map.set(k, []);
+      map.get(k).push(s);
+    });
+    return Array.from(map.entries()).filter(([, list]) => list.length > 1).map(([key, list]) => ({ key, stores: list }));
+  }
+
+  // ---- 初期表示範囲 ----
+  /** 座標確認済み店舗が全部入る範囲（上下左右に少し余白）。[[南, 西], [北, 東]] */
+  function confirmedBounds(stores, padRatio) {
+    const pts = stores.filter(s => routeDestination(s) !== null);
+    if (!pts.length) return null;
+    let s = 90, w = 180, n = -90, e = -180;
+    pts.forEach(p => { s = Math.min(s, p.latitude); n = Math.max(n, p.latitude); w = Math.min(w, p.longitude); e = Math.max(e, p.longitude); });
+    const pad = padRatio == null ? 0.04 : padRatio;
+    const dy = (n - s) * pad, dx = (e - w) * pad;
+    return [[s - dy, w - dx], [n + dy, e + dx]];
+  }
+
+  const api = {
+    normalizeDisplayName, restaurantKey, aggregatePickups, pickupTier, listDeliveries, routeDestination, googleMapsBikeUrl, googleMapsAppUrl,
+    resolveBrand, brandDisplayName, annotateBrand, nameSortKey, compareByName, compareByCount, defaultSortFor, addressKey, groupSites, confirmedBounds
+  };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PickupStores = api;
 })(typeof window !== 'undefined' ? window : globalThis);

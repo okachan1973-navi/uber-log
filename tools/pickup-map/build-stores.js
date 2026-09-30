@@ -19,6 +19,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const MASTER_JSON = path.join(ROOT, 'data', 'uber_pickup_stores.json');
 const POINTS_JSON = path.join(ROOT, 'data', 'uber_map_points.json');
 const BUNDLE_JS = path.join(ROOT, 'data', 'uber_pickup_stores.js');
+const BRANDS_JSON = path.join(ROOT, 'data', 'uber_brands.json');
 
 const PickupStores = require(path.join(ROOT, 'js', 'pickup-stores.js'));
 
@@ -33,23 +34,51 @@ const OSAKA_WARD_CODES = {
   '27123': '淀川区', '27124': '鶴見区', '27125': '住之江区', '27126': '平野区', '27127': '北区', '27128': '中央区'
 };
 
-// カテゴリ判定（category_override があればそちらを優先）
-const CATEGORY_RULES = [
-  ['mcdonalds', /^マクドナルド/],
-  ['convenience', /セブン|7-Eleven|ローソン/],
-  ['gyudon_teishoku', /すき家|吉野家|松屋|松のや|なか卯|やよい軒|かつ丼|オリジン|ほっかほっか亭|弁当|宇奈とと|とりげん|おむすび|おにぎり|PACKN/],
-  ['cafe', /スターバックス|ブルーボトル|COFFEE|珈琲|エッグスンシングス|クロワッサン|ベーカリー|アサイー|サンドイッチ|my ?bowl|マイボウル/i],
-  ['fastfood', /バーガーキング|ケンタッキー|KFC|モスバーガー|ピザハット|ミスタードーナツ|銀だこ|たこ家/],
-  ['drug_super', /ウエルシア|コクミン|アカカベ|グルメシティ|CoDeLi/]
+// カテゴリ判定の優先順:
+//   ①店舗の category_override（理由は category_note）
+//   ②data/uber_brands.json のブランドのカテゴリ（チェーン店）
+//   ③店舗マスタに既に入っているカテゴリ（過去の判定を勝手に変えない）
+//   ④新しく追加された店舗だけ、下の業態キーワードで目安を付ける ⑤その他
+// キーワードは誤判定しにくい語だけ（「パン」「Cafe」等は「ラホンパン」「オムライスCafe」を誤判定するので使わない）
+const CATEGORY_KEYWORD_RULES = [
+  ['gyudon_teishoku', /牛丼|定食|弁当|かつ丼|おむすび|おにぎり/],
+  ['cafe', /COFFEE|珈琲|コーヒー|ベーカリー|アサイー|サンドイッチ|クロワッサン/i],
+  ['fastfood', /ハンバーガー|フライドチキン/],
+  ['drug_super', /ドラッグ|薬局/]
 ];
-const CATEGORY_LABELS = {
-  mcdonalds: 'マクドナルド', convenience: 'コンビニ', gyudon_teishoku: '牛丼・定食・弁当', cafe: 'カフェ・パン',
-  fastfood: 'ファストフード', drug_super: 'ドラッグ・スーパー', other: 'その他'
-};
 
-function categorize(name) {
-  for (const [cat, re] of CATEGORY_RULES) if (re.test(name)) return cat;
+function loadBrands() {
+  return JSON.parse(fs.readFileSync(BRANDS_JSON, 'utf8'));
+}
+
+function categorize(name, brandsDef, existing) {
+  const b = PickupStores.resolveBrand(name, brandsDef || loadBrands());
+  if (b && b.brand.category) return b.brand.category;
+  const known = new Set(((brandsDef || loadBrands()).categories || []).map(c => c.id));
+  if (existing && known.has(existing)) return existing;
+  for (const [cat, re] of CATEGORY_KEYWORD_RULES) if (re.test(name)) return cat;
   return 'other';
+}
+
+function categoryLabels(brandsDef) {
+  const out = {};
+  (brandsDef.categories || []).forEach(c => { out[c.id] = c.label; });
+  return out;
+}
+
+/** 同じ住所の店舗を「同一拠点」としてまとめる（pickup_count は店舗ごとのまま） */
+function buildSites(stores) {
+  return PickupStores.groupSites(stores).map(g => {
+    const labels = new Set(g.stores.map(s => s.same_building).filter(Boolean));
+    const site = {
+      site_id: 'site_' + fnvId(g.key).slice(3),
+      label: labels.size === 1 ? [...labels][0] : g.stores[0].address,
+      address: g.stores[0].address,
+      store_ids: g.stores.map(s => s.id),
+      brands: [...new Set(g.stores.map(s => s.brand_name || s.canonical_name))]
+    };
+    return site;
+  }).sort((a, b) => a.address.localeCompare(b.address, 'ja'));
 }
 
 function fnvId(s) {
@@ -103,15 +132,16 @@ async function fetchReverse(lat, lng) {
   return null;
 }
 
-function rebuild(master, dailyLogs) {
+function rebuild(master, dailyLogs, brandsDef) {
+  brandsDef = brandsDef || loadBrands();
   const agg = PickupStores.aggregatePickups(dailyLogs, master);
   const byId = new Map(agg.stores.map(s => [s.id, s]));
   const today = new Date().toISOString().slice(0, 10);
 
   const stores = master.stores.map(st => {
     const a = byId.get(st.id);
-    const next = Object.assign({}, st);
-    next.category = st.category_override || categorize(st.canonical_name);
+    const next = PickupStores.annotateBrand(st, brandsDef);
+    next.category = st.category_override || categorize(st.canonical_name, brandsDef, st.category);
     next.pickup_count = a ? a.pickup_count : 0;
     next.first_pickup = a ? a.first_pickup : null;
     next.last_pickup = a ? a.last_pickup : null;
@@ -121,11 +151,11 @@ function rebuild(master, dailyLogs) {
   });
 
   // 未登録の店名 → 新店舗として追加（座標は入れない）
-  const added = agg.unregistered.map(u => ({
+  const added = agg.unregistered.map(u => PickupStores.annotateBrand({
     id: fnvId(u.name_keys[0]),
     canonical_name: u.canonical_name,
     name_keys: u.name_keys,
-    category: categorize(u.canonical_name),
+    category: categorize(u.canonical_name, brandsDef),
     address: null,
     latitude: null,
     longitude: null,
@@ -141,9 +171,13 @@ function rebuild(master, dailyLogs) {
     last_pickup: u.last_pickup,
     active_days: u.active_days,
     original_names: u.original_names
-  }));
+  }, brandsDef));
 
-  const all = stores.concat(added).sort((x, y) => y.pickup_count - x.pickup_count || x.canonical_name.localeCompare(y.canonical_name, 'ja'));
+  const all = stores.concat(added).sort(PickupStores.compareByCount);
+  const sites = buildSites(all);
+  const siteOf = new Map();
+  sites.forEach(site => site.store_ids.forEach(id => siteOf.set(id, site.site_id)));
+  all.forEach(s => { s.site_id = siteOf.get(s.id) || null; });
   const dates = Object.keys(dailyLogs).sort();
   const summary = {
     period: { from: dates[0] || null, to: dates[dates.length - 1] || null, days: dates.length },
@@ -154,7 +188,15 @@ function rebuild(master, dailyLogs) {
     needs_review_count: all.filter(s => s.pickup_count > 0 && s.coordinate_status !== 'confirmed').length,
     trips_without_restaurant: agg.missingName.length
   };
-  return { master: Object.assign({}, master, { generated_from: 'js/store.js CONFIRMED_SEED_DATA.dailyLogs', summary, category_labels: CATEGORY_LABELS, stores: all }), added, agg };
+  const next = Object.assign({}, master, {
+    generated_from: 'js/store.js CONFIRMED_SEED_DATA.dailyLogs',
+    summary,
+    category_order: (brandsDef.categories || []).map(c => c.id),
+    category_labels: categoryLabels(brandsDef),
+    stores: all,
+    sites
+  });
+  return { master: next, added, agg };
 }
 
 function validate(result, dailyLogs) {
@@ -216,29 +258,48 @@ function validate(result, dailyLogs) {
     if (buildings.size !== 1 || buildings.has('')) warnings.push(`E: 同一座標の店舗に same_building 未設定: ${list.map(x => x.canonical_name).join(' / ')}`);
   });
 
+  // 同一拠点: same_building の表示名が同じ店舗は住所も完全一致していること（住所が違う店舗はまとめない）
+  const byLabel = new Map();
+  master.stores.filter(st => st.same_building).forEach(st => {
+    if (!byLabel.has(st.same_building)) byLabel.set(st.same_building, []);
+    byLabel.get(st.same_building).push(st);
+  });
+  byLabel.forEach((list, label) => {
+    const addrs = new Set(list.map(st => PickupStores.addressKey(st.address)));
+    if (addrs.size !== 1) errors.push(`E: 同一拠点「${label}」に住所の違う店舗が含まれる: ${list.map(st => `${st.canonical_name}(${st.address})`).join(' / ')}`);
+  });
+  (master.sites || []).forEach(site => {
+    const members = master.stores.filter(st => st.site_id === site.site_id);
+    if (members.length < 2 || new Set(members.map(st => PickupStores.addressKey(st.address))).size !== 1) errors.push(`E: 同一拠点 ${site.label} の構成が不正`);
+  });
+
   // 未登録店舗
   result.added.forEach(a => warnings.push(`新店舗: 「${a.canonical_name}」${a.pickup_count}回（needs_review で追加）`));
   if (agg.unregistered.length && !result.added.length) errors.push('未登録店舗の追加に失敗');
   return { errors, warnings };
 }
 
-function writeOutputs(master, points) {
-  const json = JSON.stringify(master, null, 2) + '\n';
-  fs.writeFileSync(MASTER_JSON, json);
-  const bundle = [
+function bundleText(master, points, brandsDef) {
+  return [
     '// 自動生成ファイル（tools/pickup-map/build-stores.js）。直接編集しないこと。',
-    '// 正本: data/uber_pickup_stores.json（店舗マスタ）/ data/uber_map_points.json（重要地点）',
+    '// 正本: data/uber_pickup_stores.json（店舗マスタ）/ data/uber_brands.json（ブランド・カテゴリ）/ data/uber_map_points.json（重要地点）',
     'window.UBER_PICKUP_STORE_MASTER = ' + JSON.stringify(master) + ';',
+    'window.UBER_BRANDS = ' + JSON.stringify(brandsDef) + ';',
     'window.UBER_MAP_POINTS = ' + JSON.stringify(points) + ';',
     ''
   ].join('\n');
-  fs.writeFileSync(BUNDLE_JS, bundle);
+}
+
+function writeOutputs(master, points, brandsDef) {
+  fs.writeFileSync(MASTER_JSON, JSON.stringify(master, null, 2) + '\n');
+  fs.writeFileSync(BUNDLE_JS, bundleText(master, points, brandsDef));
 }
 
 async function main() {
   const args = new Set(process.argv.slice(2));
   const master = JSON.parse(fs.readFileSync(MASTER_JSON, 'utf8'));
   const points = JSON.parse(fs.readFileSync(POINTS_JSON, 'utf8'));
+  const brandsDef = loadBrands();
   const dailyLogs = loadSeedLogs();
 
   if (args.has('--verify-geo')) {
@@ -257,7 +318,7 @@ async function main() {
     }
   }
 
-  const result = rebuild(master, dailyLogs);
+  const result = rebuild(master, dailyLogs, brandsDef);
   const { errors, warnings } = validate(result, dailyLogs);
   const s = result.master.summary;
 
@@ -277,14 +338,15 @@ async function main() {
   if (args.has('--check')) {
     const current = fs.readFileSync(MASTER_JSON, 'utf8');
     const next = JSON.stringify(result.master, null, 2) + '\n';
-    if (current !== next) { console.log('ERROR data/uber_pickup_stores.json が最新の store.js と不一致（build-stores.js を実行）'); process.exit(1); }
+    if (current !== next) { console.log('ERROR data/uber_pickup_stores.json が最新の store.js / ブランド定義と不一致（build-stores.js を実行）'); process.exit(1); }
+    if (fs.readFileSync(BUNDLE_JS, 'utf8') !== bundleText(result.master, points, brandsDef)) { console.log('ERROR data/uber_pickup_stores.js が JSON と不一致（build-stores.js を実行）'); process.exit(1); }
     process.exit(errors.length ? 1 : 0);
   }
   if (errors.length) { console.log('検証エラーのため書き出しを中止'); process.exit(1); }
-  writeOutputs(result.master, points);
+  writeOutputs(result.master, points, brandsDef);
   console.log('書き出し: data/uber_pickup_stores.json, data/uber_pickup_stores.js');
 }
 
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
 
-module.exports = { rebuild, validate, categorize, parseOsakaAddress, reverseMatchesAddress, OSAKA_WARD_CODES };
+module.exports = { rebuild, validate, categorize, loadBrands, buildSites, parseOsakaAddress, reverseMatchesAddress, OSAKA_WARD_CODES };

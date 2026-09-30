@@ -11,8 +11,9 @@
   const master = window.UBER_PICKUP_STORE_MASTER;
   const mapPoints = window.UBER_MAP_POINTS || { points: [], routes: [], point_types: {}, route_types: {} };
   const PS = window.PickupStores;
+  const brandsDef = window.UBER_BRANDS || { categories: [], brands: [], default_sort: {} };
 
-  const WEST_OSAKA_CENTER = [34.6765, 135.4735];
+  const BOUNDS_PAD = 0.04; // 確認済み店舗の範囲に付ける余白（範囲の4%）
   const MOBILE_MQ = '(max-width: 820px)';
   // size: ピンの見た目 / hit: タップ領域（見た目より少し広い透明の枠）
   const TIER_STYLE = {
@@ -20,7 +21,8 @@
     mid: { color: '#f97316', size: 36, hit: [42, 50], label: '5〜9回' },
     low: { color: '#3b82f6', size: 26, hit: [38, 42], label: '1〜4回' }
   };
-  const CATEGORY_ORDER = ['mcdonalds', 'convenience', 'gyudon_teishoku', 'cafe', 'fastfood', 'drug_super', 'other'];
+  // カテゴリの並びは data/uber_brands.json の categories 順（マクドナルド → ファーストフード → …）
+  const CATEGORY_ORDER = (master && master.category_order) || (brandsDef.categories || []).map(c => c.id);
   const STATUS_LABEL = { confirmed: '座標確認済み', needs_review: '要確認', unknown: '未登録' };
   const EVIDENCE_LABEL = { official: '公式店舗情報', map_directory: '地図・店舗情報サイト', delivery_listing: 'デリバリー掲載情報' };
   const SUGGEST_LIMIT = 8;
@@ -31,8 +33,10 @@
   const fold = s => String(s || '').normalize('NFKC').toLowerCase().replace(/\s+/g, '');
   const isMobile = () => window.matchMedia(MOBILE_MQ).matches;
 
-  const state = { tier: 'all', category: 'all', query: '', selectedId: null, suggestIndex: -1 };
-  let map, storeLayer, pointLayer, hereLayer;
+  // sortByCategory: 利用者が選んだ並び順（カテゴリごとに記憶）。未選択ならカテゴリの既定（マクドナルドは回数順、他は名称順）
+  const state = { tier: 'all', category: 'all', query: '', selectedId: null, suggestIndex: -1, sortByCategory: {} };
+  let map, storeLayer, pointLayer, hereLayer, dataRef;
+  const effectiveSort = () => state.sortByCategory[state.category] || PS.defaultSortFor(state.category, brandsDef);
   const markers = new Map();
 
   function showAlert(html, info) {
@@ -63,7 +67,14 @@
   function buildData() {
     const logs = getConfirmedSeedData().dailyLogs;
     const agg = PS.aggregatePickups(logs, master);
-    const stores = agg.stores.concat(agg.unregistered).map(s => Object.assign(s, {
+    // マスタ未登録の新しい店名も、ブランド定義があればブランド・カテゴリ・表示名を自動で付ける
+    const unregistered = agg.unregistered.map(u => {
+      const a = PS.annotateBrand(u, brandsDef);
+      const b = PS.resolveBrand(u.canonical_name, brandsDef);
+      a.category = b && b.brand.category ? b.brand.category : 'other';
+      return a;
+    });
+    const stores = agg.stores.concat(unregistered).map(s => Object.assign(s, {
       tier: PS.pickupTier(s.pickup_count),
       hasCoord: PS.routeDestination(s) !== null,
       routeUrl: PS.googleMapsBikeUrl(s),
@@ -75,7 +86,15 @@
     let rank = 0, prev = null;
     stores.forEach((s, i) => { if (s.pickup_count !== prev) { rank = i + 1; prev = s.pickup_count; } s.rank = rank; });
     const dates = Object.keys(logs).sort();
-    return { agg, stores, byId: new Map(stores.map(s => [s.id, s])), period: { from: dates[0], to: dates[dates.length - 1] } };
+    // 同一拠点（同じ住所の店舗）: pickup_count は合算せず、店舗の並びだけ持つ
+    const siteLabels = new Map((master.sites || []).map(x => [x.site_id, x.label]));
+    const sites = new Map();
+    stores.filter(s => s.site_id).forEach(s => {
+      if (!sites.has(s.site_id)) sites.set(s.site_id, { label: siteLabels.get(s.site_id) || s.address, stores: [] });
+      sites.get(s.site_id).stores.push(s);
+    });
+    sites.forEach(site => site.stores.sort(PS.compareByName));
+    return { agg, stores, sites, byId: new Map(stores.map(s => [s.id, s])), period: { from: dates[0], to: dates[dates.length - 1] } };
   }
 
   // 同じ建物（同一座標）の店舗は表示位置だけ円周上に少しずらす（保存座標・ルートの目的地は変えない）
@@ -165,7 +184,7 @@
       <div class="pm-pop-addr">${esc(s.address || '住所未登録')}</div>
       ${routeButtonHtml(s)}
       <div class="pm-pop-dates">初回 ${esc(formatStamp(s.first_pickup))} ／ 最終 ${esc(formatStamp(s.last_pickup))}</div>
-      ${s.same_building ? `<div class="pm-pop-note">同一建物: ${esc(s.same_building)}${s.displayShifted ? '（重なり回避のため表示位置のみずらしています。ルートは正しい住所へ）' : ''}</div>` : ''}
+      ${siteHtml(s)}
       ${s.notes && !s.hasCoord ? `<div class="pm-pop-note">${esc(s.notes)}</div>` : ''}
       <details><summary>詳細・根拠</summary>
         <dl>
@@ -179,6 +198,17 @@
         <div>Uber上の表記:</div><ul>${names}</ul>
       </details>
     </div>`;
+  }
+
+  /** 同一拠点（同じ住所）のほかの店舗。タップでその店舗の詳細へ */
+  function siteHtml(s) {
+    const site = s.site_id && dataRef && dataRef.sites.get(s.site_id);
+    if (!site) return '';
+    const rows = site.stores.map(x => x.id === s.id
+      ? `<li><span class="here">${esc(x.canonical_name)}（この店舗）</span><span>${x.pickup_count}回</span></li>`
+      : `<li><button type="button" class="pm-site-link" data-focus-id="${esc(x.id)}">${esc(x.canonical_name)}</button><span>${x.pickup_count}回</span></li>`).join('');
+    return `<div class="pm-pop-site"><b>同一拠点</b>（同じ住所に${site.stores.length}店舗・回数は店舗ごと）<br>${esc(site.label)}
+      <ul>${rows}</ul>${s.displayShifted ? '<div>※ピンは重ならないよう表示位置だけずらしています。ルートは正しい住所へ案内します。</div>' : ''}</div>`;
   }
 
   function popupSizeOptions() {
@@ -195,7 +225,8 @@
 
   // ---- 地図 ----
   function initMap() {
-    map = L.map('pm-map', { zoomControl: true });
+    // zoomSnap 0.5: 初期表示を店舗範囲にぴったり近づける（＋−ボタンは従来どおり1段ずつ）
+    map = L.map('pm-map', { zoomControl: true, zoomSnap: 0.5, zoomDelta: 1 });
     const gsiStd = L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
       maxZoom: 18, attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>'
     });
@@ -209,8 +240,6 @@
     L.control.layers({ '地理院 標準地図': gsiStd, '地理院 淡色地図': gsiPale, 'OpenStreetMap': osm }, null, { position: 'topright' }).addTo(map);
     L.control.scale({ imperial: false, position: 'bottomright' }).addTo(map);
     addLocateControl();
-    // 九条〜西九条〜弁天町を中心に大阪西部を初期表示
-    map.setView(WEST_OSAKA_CENTER, isMobile() ? 13 : 14);
     storeLayer = L.layerGroup().addTo(map);
     pointLayer = L.layerGroup().addTo(map);
     hereLayer = L.layerGroup().addTo(map);
@@ -322,11 +351,31 @@
         <span class="pm-rank-count tier-${s.tier}">${s.pickup_count}</span>`;
   }
 
+  /** 店舗一覧: 名称順ならブランドごとにまとめ、同じブランドが2店舗以上あれば見出しを付ける */
   function renderRanking(list) {
     const ol = $('pm-ranking');
+    const sort = effectiveSort();
+    syncSortUi(sort);
     $('pm-rank-count').textContent = `${list.length}店舗 / ${list.reduce((a, s) => a + s.pickup_count, 0)}回`;
+    ol.classList.toggle('sort-name', sort === 'name'); // 名称順では「○位」（回数の順位）を出さない
     if (!list.length) { ol.innerHTML = '<li class="pm-empty">該当する店舗はありません</li>'; return; }
-    ol.innerHTML = list.map(s => `<li class="pm-rank-item${s.hasCoord ? '' : ' no-coord'}${s.id === state.selectedId ? ' selected' : ''}" data-id="${esc(s.id)}" tabindex="0" role="button">${rankRowHtml(s)}</li>`).join('');
+    const sorted = list.slice().sort(sort === 'count' ? PS.compareByCount : PS.compareByName);
+    const brandCount = new Map();
+    sorted.forEach(s => { if (s.brand_id) brandCount.set(s.brand_id, (brandCount.get(s.brand_id) || 0) + 1); });
+    let prevBrand = null;
+    ol.innerHTML = sorted.map(s => {
+      let head = '';
+      if (sort === 'name' && s.brand_id && s.brand_id !== prevBrand && brandCount.get(s.brand_id) > 1) {
+        const group = sorted.filter(x => x.brand_id === s.brand_id);
+        head = `<li class="pm-brand-head" role="presentation">${esc(s.brand_name)}<small>${group.length}店舗・${group.reduce((a, x) => a + x.pickup_count, 0)}回</small></li>`;
+      }
+      prevBrand = s.brand_id;
+      return head + `<li class="pm-rank-item${s.hasCoord ? '' : ' no-coord'}${s.id === state.selectedId ? ' selected' : ''}" data-id="${esc(s.id)}" data-brand="${esc(s.brand_id || '')}" tabindex="0" role="button">${rankRowHtml(s)}</li>`;
+    }).join('');
+  }
+
+  function syncSortUi(sort) {
+    $('pm-sort').querySelectorAll('.pm-seg-btn').forEach(b => b.setAttribute('aria-checked', String(b.dataset.sort === sort)));
   }
 
   function selectInList(id) {
@@ -469,6 +518,17 @@
       e.preventDefault();
       focusStore(data, li.dataset.id);
     };
+    $('pm-sort').addEventListener('click', e => {
+      const b = e.target.closest('[data-sort]'); if (!b) return;
+      state.sortByCategory[state.category] = b.dataset.sort;
+      applyFilters(data);
+    });
+    // 店舗詳細の「同一拠点」から別の店舗へ
+    document.addEventListener('click', e => {
+      const b = e.target.closest('.pm-site-link'); if (!b) return;
+      e.preventDefault();
+      focusStore(data, b.dataset.focusId);
+    });
     $('pm-ranking').addEventListener('click', onPick);
     $('pm-ranking').addEventListener('keydown', onPick);
     $('pm-layer-stores').addEventListener('change', e => { e.target.checked ? storeLayer.addTo(map) : map.removeLayer(storeLayer); });
@@ -485,19 +545,24 @@
     if (typeof L === 'undefined') { showAlert('地図ライブラリ（Leaflet）を読み込めませんでした。ネット接続を確認してください。'); return; }
     if (!master || !PS || typeof getConfirmedSeedData !== 'function') { showAlert('店舗マスタまたは store.js を読み込めませんでした。'); return; }
     const data = buildData();
+    dataRef = data;
     if (data.agg.totalPickups !== data.agg.totalTrips) {
       showAlert(`集計不一致: トリップ ${data.agg.totalTrips} 件に対しピックアップ ${data.agg.totalPickups} 件（店名なし ${data.agg.missingName.length} 件）`);
     } else if (data.agg.unregistered.length) {
       showAlert(`店舗マスタ未登録の新しい店名が ${data.agg.unregistered.length} 件あります（要確認に表示）。<br><code>node tools/pickup-map/build-stores.js</code> で登録してください。`, true);
     }
     initMap();
+    // 初期表示: 座標確認済みの全店舗（最北・最南・最東・最西）が収まる範囲＋少しの余白。パン・ズームは自由
+    const initialBounds = PS.confirmedBounds(data.stores, BOUNDS_PAD);
+    if (initialBounds) map.fitBounds(initialBounds, { padding: [6, 6] });
+    else map.setView([34.6765, 135.4735], 13);
     renderPoints();
     renderMarkers(data.stores);
     renderCategoryChips(data);
     renderStats(data);
     bindUi(data);
     applyFilters(data);
-    window.__pickupMap = { data, map, markers }; // 自動テスト用
+    window.__pickupMap = { data, map, markers, initialBounds, state }; // 自動テスト用
   }
 
   document.addEventListener('DOMContentLoaded', init);

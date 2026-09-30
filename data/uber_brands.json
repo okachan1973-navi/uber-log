@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "description": "チェーンブランドの定義。店舗名（空白除去後）が aliases のどれかで始まればそのブランド。display があれば表示名の先頭をその表記に統一する（Uber上の原文は original_names に残る）。reading は名称順で使う読み（英字ブランドを自然な位置に並べるため）。category はそのブランドの全店舗に適用。ここに無い店舗は店名から自動判定し、名称順では店名の先頭（＝ブランド名）でまとまる。",
+  "categories": [
+    { "id": "mcdonalds", "label": "マクドナルド" },
+    { "id": "fastfood", "label": "ファーストフード" },
+    { "id": "convenience", "label": "コンビニ" },
+    { "id": "gyudon_teishoku", "label": "牛丼・定食・弁当" },
+    { "id": "cafe", "label": "カフェ・パン" },
+    { "id": "drug_super", "label": "ドラッグ・スーパー" },
+    { "id": "other", "label": "その他" }
+  ],
+  "default_sort": { "mcdonalds": "count", "*": "name" },
+  "brands": [
+    { "id": "mcdonalds", "name": "マクドナルド", "aliases": ["マクドナルド", "McDonald's"], "category": "mcdonalds" },
+
+    { "id": "burger_king", "name": "バーガーキング", "aliases": ["バーガーキング", "BurgerKing"], "category": "fastfood" },
+    { "id": "kfc", "name": "KFC", "display": "KFC", "reading": "ケーエフシー", "aliases": ["ケンタッキーフライドチキン", "ケンタッキー", "KFC"], "category": "fastfood" },
+    { "id": "mos_burger", "name": "モスバーガー", "aliases": ["モスバーガー", "MOSBURGER"], "category": "fastfood" },
+    { "id": "mister_donut", "name": "ミスタードーナツ", "aliases": ["ミスタードーナツ", "ミスド"], "category": "fastfood" },
+    { "id": "pizza_hut", "name": "ピザハット", "aliases": ["ピザハット", "PizzaHut"], "category": "fastfood" },
+    { "id": "lotteria", "name": "ロッテリア", "aliases": ["ロッテリア"], "category": "fastfood" },
+    { "id": "freshness", "name": "フレッシュネスバーガー", "aliases": ["フレッシュネスバーガー"], "category": "fastfood" },
+
+    { "id": "seven_eleven", "name": "セブン-イレブン", "display": "セブン-イレブン", "aliases": ["セブン-イレブン", "セブンイレブン", "7-Eleven", "7-ELEVEN"], "category": "convenience" },
+    { "id": "lawson_store100", "name": "ローソンストア100", "aliases": ["ローソンストア100"], "category": "convenience" },
+    { "id": "lawson", "name": "ローソン", "aliases": ["ローソン"], "category": "convenience" },
+    { "id": "familymart", "name": "ファミリーマート", "aliases": ["ファミリーマート", "ファミマ"], "category": "convenience" },
+
+    { "id": "sukiya", "name": "すき家", "aliases": ["すき家"], "category": "gyudon_teishoku" },
+    { "id": "yoshinoya", "name": "吉野家", "reading": "よしのや", "aliases": ["吉野家"], "category": "gyudon_teishoku" },
+    { "id": "matsuya", "name": "松屋", "reading": "まつや", "aliases": ["松屋"], "category": "gyudon_teishoku" },
+    { "id": "matsunoya", "name": "松のや", "reading": "まつのや", "aliases": ["松のや"], "category": "gyudon_teishoku" },
+    { "id": "nakau", "name": "なか卯", "aliases": ["なか卯"], "category": "gyudon_teishoku" },
+    { "id": "yayoiken", "name": "やよい軒", "aliases": ["やよい軒"], "category": "gyudon_teishoku" },
+    { "id": "hokkahokkatei", "name": "ほっかほっか亭", "aliases": ["ほっかほっか亭"], "category": "gyudon_teishoku" },
+    { "id": "origin", "name": "キッチンオリジン", "aliases": ["キッチンオリジン", "オリジン弁当"], "category": "gyudon_teishoku" },
+    { "id": "unatoto", "name": "宇奈とと", "reading": "うなとと", "aliases": ["宇奈とと", "名代宇奈とと"], "category": "gyudon_teishoku" },
+
+    { "id": "starbucks", "name": "スターバックス コーヒー", "display": "スターバックス コーヒー", "aliases": ["スターバックスコーヒー", "スターバックス", "Starbucks"], "category": "cafe" },
+    { "id": "blue_bottle", "name": "ブルーボトルコーヒー", "aliases": ["ブルーボトルコーヒー", "BlueBottle"], "category": "cafe" },
+    { "id": "eggs_n_things", "name": "エッグスンシングス", "aliases": ["エッグスンシングス"], "category": "cafe" },
+    { "id": "le_croissant", "name": "ル・クロワッサン", "aliases": ["ル・クロワッサン"], "category": "cafe" },
+
+    { "id": "welcia", "name": "ウエルシア", "aliases": ["ウエルシア"], "category": "drug_super" },
+    { "id": "kokumin", "name": "コクミンドラッグ", "aliases": ["コクミンドラッグ", "コクミン"], "category": "drug_super" },
+    { "id": "akakabe", "name": "アカカベ", "aliases": ["アカカベ", "Uberダイレクトアカカベ", "ドラッグアカカベ"], "category": "drug_super" },
+    { "id": "codeli", "name": "CoDeLi", "reading": "コデリ", "aliases": ["CoDeLi", "CoDeli", "コデリ"], "category": "drug_super" },
+    { "id": "gourmet_city", "name": "グルメシティ", "aliases": ["グルメシティ"], "category": "drug_super" },
+
+    { "id": "sushiro", "name": "スシロー", "aliases": ["スシロー"], "category": "other" },
+    { "id": "kappa_sushi", "name": "かっぱ寿司", "reading": "かっぱずし", "aliases": ["かっぱ寿司"], "category": "other" },
+    { "id": "gusto", "name": "ガスト", "aliases": ["ガスト"], "category": "other" },
+    { "id": "cocoichi", "name": "カレーハウス CoCo壱番屋", "display": "カレーハウス CoCo壱番屋", "reading": "ココイチバンヤ", "aliases": ["カレーハウスCoCo壱番屋", "CoCo壱番屋", "ココイチ"], "category": "other" },
+    { "id": "bikkuri_donkey", "name": "びっくりドンキー", "aliases": ["びっくりドンキー"], "category": "other" },
+    { "id": "ohsho", "name": "餃子の王将", "reading": "ぎょうざのおうしょう", "aliases": ["餃子の王将"], "category": "other" },
+    { "id": "tenkaippin", "name": "天下一品", "reading": "てんかいっぴん", "aliases": ["天下一品"], "category": "other" },
+    { "id": "kushikatsu_tanaka", "name": "串カツ田中", "reading": "くしかつたなか", "aliases": ["串カツ田中"], "category": "other" },
+    { "id": "gindaco", "name": "築地銀だこ", "reading": "つきじぎんだこ", "aliases": ["築地銀だこ", "銀だこ"], "category": "other" },
+    { "id": "kairikiya", "name": "京都北白川ラーメン魁力屋", "reading": "きょうときたしらかわらーめんかいりきや", "aliases": ["京都北白川ラーメン魁力屋", "ラーメン魁力屋", "魁力屋"], "category": "other" },
+    { "id": "kiou", "name": "らーめん亀王", "aliases": ["らーめん亀王", "九州らーめん亀王"], "category": "other" }
+  ]
+}

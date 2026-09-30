@@ -145,6 +145,30 @@ async function popupState(p) {
   })()`);
 }
 
+async function storeId(p, name) {
+  return p.ev(`window.__pickupMap.data.stores.find(s => s.canonical_name === ${JSON.stringify(name)}).id`);
+}
+
+/** 店舗一覧の現在の表示（見出し・店舗・並び順ボタン） */
+async function listState(p) {
+  return p.ev(`(() => ({
+    sort: document.querySelector('#pm-sort [aria-checked="true"]').dataset.sort,
+    items: [...document.querySelectorAll('#pm-ranking .pm-rank-item')].map(li => ({ id: li.dataset.id, brand: li.dataset.brand, name: li.querySelector('.pm-rank-name').firstChild.textContent.trim(), count: +li.querySelector('.pm-rank-count').textContent })),
+    heads: [...document.querySelectorAll('#pm-ranking .pm-brand-head')].map(h => h.firstChild.textContent.trim()),
+    chips: [...document.querySelectorAll('#pm-cat-filter .pm-chip')].map(c => c.textContent.trim())
+  }))()`);
+}
+
+function brandsContiguous(items) {
+  const seen = new Set(); let prev = null;
+  for (const it of items) {
+    if (!it.brand) { prev = null; continue; }
+    if (it.brand !== prev && seen.has(it.brand)) return false;
+    seen.add(it.brand); prev = it.brand;
+  }
+  return true;
+}
+
 async function expectedUrl(p, id) {
   return p.ev(`(() => { const s = window.__pickupMap.data.byId.get(${JSON.stringify(id)}); return { url: s.routeUrl, lat: s.latitude, lng: s.longitude, name: s.canonical_name }; })()`);
 }
@@ -180,6 +204,55 @@ async function run() {
       check('データ状態 189 pickups / 101 stores / 98 / 3', /189 pickups \/ 101 stores.*確認済み 98 \/ 要確認 3/.test(layout.footer) && layout.pins === 98, layout.footer);
       check('◎現在地・ズームボタン 40px以上', layout.locate >= 40 && layout.zoomBtn >= 40, layout);
 
+      // 初期表示範囲: 確認済み全店舗が収まり、それ以上は広げていない
+      const bounds = await p.ev(`(() => { const m = window.__pickupMap; const vb = m.map.getBounds(); const ib = L.latLngBounds(m.initialBounds);
+        const all = m.data.stores.filter(s => s.hasCoord).every(s => vb.contains([s.latitude, s.longitude]));
+        return { all, zoom: m.map.getZoom(), fitZoom: m.map.getBoundsZoom(ib, false, L.point(12, 12)), containsIb: vb.contains(ib), ib: m.initialBounds }; })()`);
+      check('初期表示: 確認済み98店舗すべてが画面内', bounds.all && bounds.containsIb, bounds);
+      check('初期表示: 全店舗が入る最大のズーム（必要以上に広域でない）', bounds.zoom === bounds.fitZoom && bounds.zoom >= 11, bounds);
+
+      // カテゴリ順・並び順
+      let ls = await listState(p);
+      check('カテゴリ順: すべて → マクドナルド → ファーストフード', ls.chips[0] === 'すべて' && ls.chips[1] === 'マクドナルド' && ls.chips[2] === 'ファーストフード', ls.chips);
+      check('既定は名称順・同じブランドが連続', ls.sort === 'name' && brandsContiguous(ls.items) && ls.items.length === 101, { sort: ls.sort, n: ls.items.length });
+      await p.tapSel('#pm-cat-filter [data-cat="fastfood"]');
+      await sleep(250);
+      ls = await listState(p);
+      check('ファーストフード: 名称順でブランドごとにまとまり見出し付き', ls.sort === 'name' && brandsContiguous(ls.items) && ls.heads.join('/') === 'KFC/バーガーキング/ピザハット/モスバーガー', { heads: ls.heads, items: ls.items.map(i => i.name) });
+      check('ファーストフード: KFC表記に統一', ls.items.filter(i => i.brand === 'kfc').every(i => /^KFC /.test(i.name)) && ls.items.filter(i => i.brand === 'kfc').length === 2 && !ls.items.some(i => /ケンタッキー/.test(i.name)), ls.items.map(i => i.name));
+      await p.tapSel('#pm-sort [data-sort="count"]');
+      await sleep(250);
+      ls = await listState(p);
+      const desc = ls.items.every((it, i, a) => i === 0 || a[i - 1].count >= it.count);
+      check('回数順に切替: 多い順・見出しなし', ls.sort === 'count' && desc && ls.heads.length === 0, ls.items.map(i => i.name + i.count));
+      await p.tapSel('#pm-cat-filter [data-cat="mcdonalds"]');
+      await sleep(250);
+      ls = await listState(p);
+      check('マクドナルド: 既定は回数順（九条店18回が先頭）', ls.sort === 'count' && ls.items[0].name === 'マクドナルド 九条店' && ls.items.every((it, i, a) => i === 0 || a[i - 1].count >= it.count) && ls.items.length === 13, ls.items.slice(0, 3));
+      await p.tapSel('#pm-sort [data-sort="name"]');
+      await sleep(250);
+      ls = await listState(p);
+      check('マクドナルドも名称順に切替できる', ls.sort === 'name' && ls.items.length === 13 && ls.items[0].name !== 'マクドナルド 九条店', ls.items.slice(0, 3));
+      await p.tapSel('#pm-cat-filter [data-cat="fastfood"]');
+      await sleep(250);
+      check('並び順はカテゴリごとに記憶（ファーストフードは回数順のまま）', (await listState(p)).sort === 'count');
+      await p.tapSel('#pm-cat-filter [data-cat="all"]');
+      await sleep(250);
+      check('すべてに戻すと名称順', (await listState(p)).sort === 'name');
+
+      // 同一拠点（松屋 九条店 / 松のや 九条店）
+      await p.tapSel(`.pm-rank-item[data-id="${await storeId(p, '松屋 九条店')}"]`);
+      await sleep(1600);
+      const site = await p.ev(`(() => { const box = document.querySelector('.leaflet-popup .pm-pop-site'); return box ? { text: box.textContent.replace(/\\s+/g, ' '), links: [...box.querySelectorAll('.pm-site-link')].map(b => b.textContent) } : null; })()`);
+      check('松屋 九条店: 同一拠点に松のや 九条店（回数は別々 2回/3回）', !!site && /九条1-14-26/.test(site.text) && site.links.join() === '松のや 九条店' && /松屋 九条店（この店舗）2回/.test(site.text) && /松のや 九条店3回/.test(site.text), site);
+      await p.tapSel('.leaflet-popup .pm-site-link');
+      await sleep(1600);
+      const sitePop = await popupState(p);
+      check('同一拠点のリンク → 松のや 九条店の詳細（ルートボタン付き）', !!sitePop && sitePop.name === '松のや 九条店' && !!sitePop.href, sitePop);
+      await p.ev(`void window.__pickupMap.map.closePopup()`);
+      await p.ev(`window.scrollTo(0, 0)`);
+      await sleep(300);
+
       // ① 検索 → 候補 → 店舗詳細 → ルート
       await p.tapSel('#pm-search');
       await p.s('Input.insertText', { text: '九条' });
@@ -212,11 +285,11 @@ async function run() {
       // ② ランキング → 店舗詳細 → ルート
       await p.ev(`(() => { const i = document.getElementById('pm-search'); i.value = ''; i.dispatchEvent(new Event('input')); i.blur(); document.querySelector('.leaflet-popup-close-button') && document.querySelector('.leaflet-popup-close-button').click(); })()`);
       await sleep(300);
-      await p.tapSel('.pm-rank-item:nth-child(2)');
+      await p.tapSel(`.pm-rank-item[data-id="${await storeId(p, 'バーガーキング 九条店')}"]`);
       await sleep(1800);
       pop = await popupState(p);
       const mapTop = await p.ev(`document.getElementById('pm-map').getBoundingClientRect().top`);
-      check('ランキング2位タップ → 地図へ戻り店舗詳細が開く', !!pop && pop.name === 'バーガーキング 九条店' && mapTop >= -1 && mapTop < 140, { pop, mapTop });
+      check('店舗一覧タップ → 地図へ戻り店舗詳細が開く', !!pop && pop.name === 'バーガーキング 九条店' && mapTop >= -1 && mapTop < 140, { pop, mapTop });
       check('ランキング→店舗詳細が画面内・ボタン押せる', !!pop && pop.inViewport && pop.btnVisible && pop.btnH >= 44 && pop.covered.length === 0, pop);
       // ×で閉じると地図のボタンが戻る
       await p.tapSel('.leaflet-popup-close-button');
@@ -271,7 +344,7 @@ async function run() {
       await sleep(1500);
       const r = await p.ev(`({ dot: !!document.querySelector('.pm-here-dot'), toast: document.getElementById('pm-toast').textContent, pins: document.querySelectorAll('.leaflet-marker-icon.pm-pin').length })`);
       check('拒否 → メッセージ表示・現在地マーカーなし', !r.dot && /許可されていません/.test(r.toast), r);
-      await p.tapSel('.pm-rank-item:nth-child(1)');
+      await p.tapSel(`.pm-rank-item[data-id="${await storeId(p, 'マクドナルド 九条店')}"]`);
       await sleep(1600);
       const pop = await popupState(p);
       check('拒否後も店舗選択・ルートボタンは普通に使える', r.pins === 98 && !!pop && !!pop.href, pop);
@@ -282,7 +355,7 @@ async function run() {
     console.log('\n[ホーム画面アプリ表示（standalone）390x844]');
     {
       const p = await openPage(b, `${base}/pickup-map.html`, { width: 390, height: 844, standalone: true });
-      await p.tapSel('.pm-rank-item:nth-child(1)');
+      await p.tapSel(`.pm-rank-item[data-id="${await storeId(p, 'マクドナルド 九条店')}"]`);
       await sleep(1600);
       const pop = await popupState(p);
       const exp = await expectedUrl(p, pop.id);

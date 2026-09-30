@@ -61,7 +61,7 @@ test('G: 9/28時点の上位店舗は指示書の手動集計と一致', () => {
   assert.strictEqual(count('スシロー 辰巳橋店'), 6);
   assert.strictEqual(count('マクドナルド JR野田駅前店'), 6);
   assert.strictEqual(count('マクドナルド 弁天町駅前店'), 6);
-  assert.strictEqual(count('ケンタッキーフライドチキン イオンモール大阪ドームシティ店'), 5);
+  assert.strictEqual(count('KFC イオンモール大阪ドームシティ店'), 5);
 });
 
 test('新しい店名は既存店舗に混ぜず needs_review で追加される', () => {
@@ -141,6 +141,111 @@ test('Google Maps: 座標なし・要確認・不正座標ではURLを作らな�
   assert.strictEqual(PS.googleMapsBikeUrl(Object.assign({}, base, { latitude: 0, longitude: 0 })), null);
   assert.strictEqual(PS.googleMapsBikeUrl(Object.assign({}, base, { latitude: '34.6' })), null);
   assert.strictEqual(PS.googleMapsBikeUrl(null), null);
+});
+
+// ---- カテゴリ・ブランド・並び順・同一拠点・初期表示範囲 ----
+const brandsDef = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'uber_brands.json'), 'utf8'));
+const byName = n => master.stores.find(s => s.canonical_name === n);
+
+test('カテゴリ順: マクドナルド → ファーストフード（マクドナルドは独立カテゴリ）', () => {
+  assert.deepStrictEqual(master.category_order.slice(0, 2), ['mcdonalds', 'fastfood']);
+  assert.ok(master.stores.filter(s => s.brand_id === 'mcdonalds').every(s => s.category === 'mcdonalds'));
+  assert.strictEqual(master.stores.filter(s => s.category === 'mcdonalds').length, 13);
+});
+
+test('ファーストフード: BK・KFC・モス・ミスド・ピザハットだけ（たこ焼き店は入れない）', () => {
+  const ff = master.stores.filter(s => s.category === 'fastfood');
+  assert.deepStrictEqual([...new Set(ff.map(s => s.brand_id))].sort(), ['burger_king', 'kfc', 'mister_donut', 'mos_burger', 'pizza_hut']);
+  assert.strictEqual(byName('たこ家 輝 西九条店').category, 'other');
+  assert.strictEqual(byName('築地銀だこ イオンモール大阪ドームシティ店').category, 'other');
+});
+
+test('KFC表記統一: 表示名はKFC、Uber上の原文は original_names に残る', () => {
+  const kfc = master.stores.filter(s => s.brand_id === 'kfc');
+  assert.deepStrictEqual(kfc.map(s => s.canonical_name).sort(), ['KFC うめきたグリーンプレイス店', 'KFC イオンモール大阪ドームシティ店']);
+  assert.ok(!master.stores.some(s => /ケンタッキー/.test(s.canonical_name)));
+  assert.ok(byName('KFC イオンモール大阪ドームシティ店').original_names.some(n => /ケンタッキーフライドチキン/.test(n)));
+  assert.ok(PS.aggregatePickups(dailyLogs, master).stores.find(s => s.canonical_name === 'KFC イオンモール大阪ドームシティ店').pickup_count === 6);
+});
+
+test('今後の新店舗もブランドで自動整理（KFC表記・カテゴリ・連続配置）', () => {
+  const mk = (id, name, n) => PS.annotateBrand({ id, canonical_name: name, pickup_count: n }, brandsDef);
+  const a = mk('x1', 'ケンタッキーフライドチキン 弁天町店', 1);
+  assert.strictEqual(a.canonical_name, 'KFC 弁天町店');
+  assert.strictEqual(PS.resolveBrand('ケンタッキー 野田店', brandsDef).brand.id, 'kfc');
+  assert.strictEqual(PS.resolveBrand('ローソンストア100 九条店', brandsDef).brand.id, 'lawson_store100');
+  assert.strictEqual(PS.resolveBrand('ローソン 九条店', brandsDef).brand.id, 'lawson');
+  assert.strictEqual(PS.resolveBrand('7-Eleven 大阪九条店', brandsDef).brand.id, 'seven_eleven');
+  assert.strictEqual(PS.resolveBrand('魚屋のおむすび丸徳', brandsDef), null);
+  const list = [mk('y1', 'やよい軒 弁天町店', 1), mk('b1', 'バーガーキング 野田店', 9), mk('y2', 'やよい軒 あ店', 5), mk('m1', '松のや 野田店', 2), mk('m2', '松屋 野田店', 2), mk('y3', 'やよい軒 九条店', 3)];
+  const sorted = list.slice().sort(PS.compareByName).map(s => s.id);
+  const pos = id => sorted.indexOf(id);
+  const ys = ['y1', 'y2', 'y3'].map(pos).sort((x, y) => x - y);
+  assert.strictEqual(ys[2] - ys[0], 2, 'やよい軒の3店舗が連続: ' + sorted.join(','));
+});
+
+test('名称順: どのカテゴリでも同じブランドが連続し、ブランド内は支店名順', () => {
+  master.category_order.forEach(cat => {
+    const list = master.stores.filter(s => s.category === cat).sort(PS.compareByName);
+    const seen = new Set(); let prev = null;
+    list.forEach(s => {
+      if (!s.brand_id) { prev = null; return; }
+      assert.ok(s.brand_id === prev || !seen.has(s.brand_id), `${cat}: ${s.brand_id} が離れて並ぶ`);
+      seen.add(s.brand_id); prev = s.brand_id;
+    });
+  });
+  const ff = master.stores.filter(s => s.category === 'fastfood').sort(PS.compareByName).map(s => s.canonical_name);
+  assert.deepStrictEqual(ff, [
+    'KFC イオンモール大阪ドームシティ店', 'KFC うめきたグリーンプレイス店',
+    'バーガーキング 九条店', 'バーガーキング 御堂筋本町店',
+    'ピザハット 阿波座店', 'ピザハット 大阪ナインモール九条店',
+    'ミスタードーナツ 福島大開ショップ',
+    'モスバーガー JR福島駅前店', 'モスバーガー JR野田店', 'モスバーガー 市岡みなと通り店'
+  ]);
+});
+
+test('回数順: 多い順、同数は名称順', () => {
+  const list = master.stores.slice().sort(PS.compareByCount);
+  for (let i = 1; i < list.length; i++) {
+    const a = list[i - 1], b = list[i];
+    assert.ok(a.pickup_count > b.pickup_count || (a.pickup_count === b.pickup_count && PS.compareByName(a, b) < 0), `${a.canonical_name} / ${b.canonical_name}`);
+  }
+  const six = list.filter(s => s.pickup_count === 6).map(s => s.canonical_name);
+  assert.deepStrictEqual(six, six.slice().sort((x, y) => PS.compareByName(byName(x), byName(y))));
+  assert.strictEqual(list[0].canonical_name, 'マクドナルド 九条店');
+});
+
+test('既定の並び順: マクドナルドは回数順、それ以外は名称順', () => {
+  assert.strictEqual(PS.defaultSortFor('mcdonalds', brandsDef), 'count');
+  ['all', 'fastfood', 'convenience', 'gyudon_teishoku', 'cafe', 'drug_super', 'other'].forEach(c => assert.strictEqual(PS.defaultSortFor(c, brandsDef), 'name', c));
+});
+
+test('同一拠点: 松屋 九条店と松のや 九条店は同住所で同じ拠点、回数は別々', () => {
+  const ya = byName('松屋 九条店'), noya = byName('松のや 九条店'), tenma = byName('松屋 天満橋店');
+  assert.strictEqual(ya.address, noya.address);
+  assert.ok(ya.site_id && ya.site_id === noya.site_id);
+  assert.strictEqual(tenma.site_id, null, '住所の違う松屋 天満橋店はまとめない');
+  assert.strictEqual(ya.pickup_count, 2);
+  assert.strictEqual(noya.pickup_count, 3);
+  assert.notStrictEqual(ya.id, noya.id);
+  const site = master.sites.find(x => x.site_id === ya.site_id);
+  assert.deepStrictEqual(site.store_ids.sort(), [ya.id, noya.id].sort());
+  // 松屋と松のやが同じ住所にある拠点は1件だけ
+  const mixed = master.sites.filter(x => x.store_ids.map(id => master.stores.find(s => s.id === id).brand_id).some(b => b === 'matsuya') && x.store_ids.map(id => master.stores.find(s => s.id === id).brand_id).some(b => b === 'matsunoya'));
+  assert.strictEqual(mixed.length, 1);
+  // どの拠点も全店舗の住所が完全一致
+  master.sites.forEach(x => assert.strictEqual(new Set(x.store_ids.map(id => PS.addressKey(master.stores.find(s => s.id === id).address))).size, 1, x.label));
+});
+
+test('初期表示範囲: 確認済み全店舗が入り、余白は範囲の数%だけ', () => {
+  const conf = master.stores.filter(s => s.coordinate_status === 'confirmed');
+  const [[s, w], [n, e]] = PS.confirmedBounds(master.stores, 0.04);
+  conf.forEach(st => assert.ok(st.latitude >= s && st.latitude <= n && st.longitude >= w && st.longitude <= e, st.canonical_name));
+  const lats = conf.map(x => x.latitude), lngs = conf.map(x => x.longitude);
+  const spanLat = Math.max(...lats) - Math.min(...lats), spanLng = Math.max(...lngs) - Math.min(...lngs);
+  assert.ok(Math.abs((n - s) - spanLat * 1.08) < 1e-9 && Math.abs((e - w) - spanLng * 1.08) < 1e-9);
+  assert.ok(n - s < 0.1 && e - w < 0.15, '大阪西部の範囲に収まる（府全体ではない）');
+  assert.strictEqual(PS.confirmedBounds([], 0.04), null);
 });
 
 test('data/uber_pickup_stores.js が JSON と同期している', () => {

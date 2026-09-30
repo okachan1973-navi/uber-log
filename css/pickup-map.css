@@ -173,7 +173,23 @@ body {
 .pm-check { display: flex; align-items: center; gap: 8px; min-height: 36px; cursor: pointer; }
 .pm-check input { accent-color: var(--color-uber-green); width: 18px; height: 18px; }
 
+.pm-list-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; min-width: 0; }
+.pm-list-title { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pm-seg { display: inline-flex; flex: none; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 10px; padding: 2px; }
+.pm-seg-btn {
+  border: none; background: transparent; color: var(--text-muted); font: inherit; font-size: 12.5px; font-weight: 700;
+  min-height: 34px; padding: 4px 11px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+}
+.pm-seg-btn[aria-checked="true"] { background: var(--bg-card-subtle); color: #d1fae5; box-shadow: inset 0 0 0 1px var(--color-uber-green); }
+
 .pm-ranking { list-style: none; margin: 0; padding: 0; }
+.pm-brand-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+  margin: 10px 0 2px; padding: 0 8px 3px; border-bottom: 1px solid var(--border-color);
+  font-size: 12px; font-weight: 800; color: var(--text-muted);
+}
+.pm-brand-head:first-child { margin-top: 0; }
+.pm-brand-head small { font-weight: 400; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 .pm-rank-item {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr) auto;
@@ -187,6 +203,8 @@ body {
 }
 .pm-rank-item:hover, .pm-rank-item:focus-visible { background: var(--bg-card-subtle); border-color: var(--border-color); outline: none; }
 .pm-rank-item.selected { border-color: var(--color-uber-green); background: rgba(6, 193, 103, 0.10); }
+.pm-ranking.sort-name .pm-rank-item { grid-template-columns: minmax(0, 1fr) auto; }
+.pm-ranking.sort-name .pm-rank-no { display: none; }
 .pm-rank-no { color: var(--text-dim); font-variant-numeric: tabular-nums; text-align: right; font-size: 12px; }
 .pm-rank-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pm-rank-sub { display: block; font-size: 11px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -299,6 +317,14 @@ body {
 .pm-pop details { margin-top: 6px; color: #4b5563; font-size: 12px; }
 .pm-pop details summary { cursor: pointer; min-height: 32px; display: flex; align-items: center; color: #374151; font-weight: 700; }
 .pm-pop details ul { margin: 2px 0; padding-left: 18px; }
+.pm-pop-site { margin-top: 8px; font-size: 12px; background: #eef2ff; border-radius: 8px; padding: 6px 8px; color: #1e1b4b; }
+.pm-pop-site b { font-weight: 800; }
+.pm-pop-site ul { list-style: none; margin: 4px 0 0; padding: 0; }
+.pm-pop-site li { display: flex; justify-content: space-between; gap: 8px; }
+.pm-pop-site button {
+  border: none; background: none; padding: 5px 0; min-height: 32px; font: inherit; color: #1d4ed8; text-decoration: underline; cursor: pointer; text-align: left;
+}
+.pm-pop-site .here { padding: 5px 0; font-weight: 700; }
 .pm-pop .pm-pop-note { margin-top: 6px; font-size: 12px; color: #92400e; background: #fef3c7; border-radius: 6px; padding: 4px 6px; }
 
 /* ---- スマホ ---- */
