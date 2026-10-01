@@ -11,7 +11,7 @@
   background: rgba(10, 13, 18, 0.97);
   border-bottom: 1px solid rgba(48, 54, 61, 0.6);
 }
-.dc-search { position: relative; display: flex; gap: 8px; align-items: stretch; }
+.dc-search { position: relative; display: flex; align-items: stretch; }
 .dc-input {
   flex: 1;
   min-width: 0;
@@ -33,24 +33,10 @@
 .dc-input::-webkit-search-cancel-button { display: none; }
 .dc-input:focus { outline: none; border-color: var(--color-uber-green); }
 .dc-clear {
-  position: absolute; right: 70px; top: 50%; transform: translateY(-50%);
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
   width: 40px; height: 40px; border: none; border-radius: 50%; background: transparent;
   color: var(--text-muted); font-size: 24px; line-height: 1; cursor: pointer;
 }
-.dc-mic {
-  flex: none;
-  width: 58px;
-  min-height: 54px;
-  border-radius: 14px;
-  border: 2px solid var(--border-color);
-  background: var(--bg-card-subtle);
-  font-size: 26px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.dc-mic.on { border-color: #ef4444; background: rgba(239, 68, 68, 0.18); animation: dc-pulse 1s ease-in-out infinite; }
-@keyframes dc-pulse { 50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.25); } }
-.dc-voice { margin-top: 6px; padding: 6px 10px; border-radius: 10px; background: rgba(59, 130, 246, 0.15); color: #bfdbfe; font-size: 14px; }
 
 /* 区ボタン: 大きく、入りきらなければ横スクロール（ページ全体は横スクロールしない） */
 .dc-wards {

@@ -2,7 +2,7 @@
  * 地雷タブ: DROP先照合ツール
  * Uber Driver の案件表示中に、DROP先のマンション名・町名・住所を数秒で照合する。
  * データ: window.UBER_DROP_BUILDINGS（data/uber_drop_buildings.js） 検索: window.DropCheck（js/drop-check-core.js）
- * 音声: Web Speech API（使える端末だけ）。使えなければ検索欄にフォーカスしてキーボードの音声入力🎤を案内する。
+ * 音声: 専用ボタンは持たず、iPhone キーボードの音声入力🎤を使う（入力イベントでそのまま即時検索される）。
  */
 (function () {
   'use strict';
@@ -148,87 +148,11 @@
 
   function setQuery(text) {
     const input = $('dc-query');
-    input.value = text;
+    if (input.value !== text) input.value = text; // 入力中（日本語変換・キーボード音声入力）の欄は書き換えない
     state.query = text;
     state.openId = null;
     $('dc-clear').hidden = !text;
     renderList();
-  }
-
-  // ---- 音声検索 ----
-  let recog = null;
-  let listening = false;
-  let voiceBroken = false; // 権限拒否など → 以後はキーボード音声入力へ案内
-
-  function voiceStatus(msg, ms) {
-    const el = $('dc-voice');
-    if (!msg) { el.hidden = true; el.textContent = ''; return; }
-    el.textContent = msg;
-    el.hidden = false;
-    clearTimeout(voiceStatus.t);
-    if (ms) voiceStatus.t = setTimeout(() => { el.hidden = true; }, ms);
-  }
-
-  function keyboardDictationHint(reason) {
-    const input = $('dc-query');
-    input.focus();
-    voiceStatus((reason ? reason + ' ' : '') + 'キーボードのマイク🎤ボタンで音声入力できます', 6000);
-  }
-
-  function speechCtor() {
-    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
-  }
-
-  // iPhone のホーム画面アプリでは SpeechRecognition が「存在するが動かない」ことが報告されているので、
-  // 最初からキーボードの音声入力へ案内する（タップ操作の中で検索欄にフォーカス → キーボードが開く）
-  function isIosStandalone() {
-    const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    const standalone = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-    return ios && standalone;
-  }
-
-  function startVoice() {
-    const SR = speechCtor();
-    if (!SR || voiceBroken) { keyboardDictationHint(); return; }
-    if (isIosStandalone()) { keyboardDictationHint('ホーム画面アプリでは音声検索を使えないため、'); return; }
-    if (listening && recog) { try { recog.stop(); } catch (e) { /* noop */ } return; }
-    try {
-      recog = new SR();
-      recog.lang = 'ja-JP';
-      recog.interimResults = true;
-      recog.continuous = false;
-      recog.maxAlternatives = 1;
-    } catch (e) { voiceBroken = true; keyboardDictationHint('この端末では音声検索を使えません。'); return; }
-    let started = false; // この回の聞き取りが始まったか（終わった後の listening=false と区別する）
-    recog.onstart = () => { started = true; listening = true; $('dc-mic').classList.add('on'); voiceStatus('🎙️ 聞き取り中…「ライズ」「西区 ライズ」のように話してください'); };
-    recog.onresult = e => {
-      let text = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) text += e.results[i][0].transcript;
-      text = text.replace(/[。、．.]+$/g, '').trim();
-      if (text) setQuery(text);
-    };
-    recog.onerror = e => {
-      const code = e && e.error;
-      if (code === 'not-allowed' || code === 'service-not-allowed') { voiceBroken = true; keyboardDictationHint('マイク・音声認識が許可されていません。'); }
-      else if (code === 'no-speech') voiceStatus('聞き取れませんでした。もう一度🎙️を押してください', 4000);
-      else if (code === 'aborted') voiceStatus('', 0);
-      else keyboardDictationHint('音声検索を開始できませんでした。');
-    };
-    recog.onend = () => {
-      listening = false;
-      $('dc-mic').classList.remove('on');
-      if (!$('dc-voice').textContent.startsWith('聞き取れ') && !$('dc-voice').textContent.includes('キーボード')) voiceStatus('', 0);
-    };
-    try { recog.start(); } catch (e) { voiceBroken = true; keyboardDictationHint('音声検索を開始できませんでした。'); return; }
-    // 反応しない環境（API はあるが何も起きない）で待たせない: 2秒以内に聞き取りが始まらなければ止めて案内
-    const r = recog;
-    setTimeout(() => {
-      if (recog === r && !started) {
-        try { r.abort(); } catch (e) { /* noop */ }
-        voiceBroken = true;
-        voiceStatus('音声検索が反応しませんでした。検索欄をタップしてキーボードのマイク🎤で入力してください', 7000);
-      }
-    }, 2000);
   }
 
   // ---- 操作 ----
@@ -237,7 +161,6 @@
     input.addEventListener('input', () => setQuery(input.value));
     input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } }); // 検索キーでキーボードを閉じて結果を広く見せる
     $('dc-clear').addEventListener('click', () => { setQuery(''); input.focus(); });
-    $('dc-mic').addEventListener('click', startVoice);
     $('dc-wards').addEventListener('click', e => {
       const b = e.target.closest('[data-ward]'); if (!b || b.disabled) return;
       const w = b.dataset.ward;
@@ -317,7 +240,6 @@
     buildings = DATA.buildings.slice();
     personal = D.createPersonalStore(typeof localStorage !== 'undefined' ? localStorage : null);
     personal.load();
-    if (!speechCtor()) $('dc-mic').setAttribute('aria-label', '音声入力（キーボードのマイクを使う）');
     bind();
     render();
     window.__dropCheck = { state, buildings, setQuery, render, personal }; // 自動テスト用

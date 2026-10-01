@@ -144,5 +144,6 @@ Uber Driver に案件が出ている数秒間に、DROP先のマンション名�
   - 保存先: **端末のみ**（localStorage `uber_drop_personal_v1`、物件 id ごとに rating / note / tags[将来の理由タグ] / 日時 / 物件名の控え）。Supabase には同期しない（別端末・ブラウザのデータ消去では引き継がれない）。将来は `uber_metadata` の1キーとしてテーブル変更なしで同期できる形。
   - Excel 再取込: 基礎データ（`data/uber_drop_buildings.*`）に本人データを持たないので消えない。取込時は前回の id を引き継ぐ（同じ名前、または同じ区・所在地が1件だけ一致）。万一 id が変わっても本人データに控えた物件名で付け直す。
 - 検索: マンション名・読み・区・町名（読み含む）・住所・階数・備考。全角半角・カナかな・空白・曾/曽を吸収、複数語は AND、区名を含む入力（「西区ライズ」）は区で絞る。区ボタン（同じ区を再タップで解除）。読みのあいうえお順。
-- 音声: 端末の Web Speech API が使えれば 🎙️ で聞き取り→検索欄に反映。使えない・権限拒否のときは検索欄にフォーカスしてキーボードのマイク🎤を案内（文字検索は常に使える）。
+- 音声: 専用ボタンは無し。検索欄をタップして iPhone キーボードのマイク🎤で話すと、入力された文字でそのまま即時検索される。
+- 検索欄の属性: `type="search"` `name="dc-search"` `autocomplete="off"` ほか。iPhone の「連絡先を自動入力」を出しにくくするため、name・placeholder・ラベルに「名前」「住所」等の語を使わない（Safari は `autocomplete="off"` を無視するため完全には抑止できない）。
 - テスト: `node tools/drop-check/spec/drop-check-tests.js`（単体）／ `node tools/drop-check/spec/drop-check-e2e.js`（Edge で iPhone相当 320/360/390/402/430px）／ `python tools/drop-check/import_excel.py --check`（データが Excel と一致）

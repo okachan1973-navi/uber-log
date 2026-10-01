@@ -2,7 +2,8 @@
 /**
  * 地雷タブ（DROP先照合）のブラウザテスト（Microsoft Edge ヘッドレス + DevTools Protocol, iPhone相当）
  *   node tools/drop-check/spec/drop-check-e2e.js [--shots <dir>] [--base <公開URL>]
- * 実機の音声認識は使えないため、音声は「疑似の音声認識」「音声認識なし」「権限拒否」の3通りで確認する。
+ * 音声は iPhone キーボードの音声入力🎤を使う（専用ボタンなし）。実機の音声入力は使えないため、
+ * 確定文字の一括挿入（insertText）と変換中→確定（IME composition）で「入力した瞬間に検索される」ことを確認する。
  */
 'use strict';
 
@@ -108,17 +109,6 @@ async function openApp(b, base, { width, height, initScript }) {
   return { s, ev, tap, tapSel, type, results, shot, close, errors };
 }
 
-const FAKE_SR = (transcript, error) => `
-  window.webkitSpeechRecognition = window.SpeechRecognition = class {
-    start() {
-      setTimeout(() => { this.onstart && this.onstart(); }, 30);
-      ${error ? `setTimeout(() => { this.onerror && this.onerror({ error: ${JSON.stringify(error)} }); this.onend && this.onend(); }, 80);`
-    : `setTimeout(() => { this.onresult && this.onresult({ resultIndex: 0, results: [[{ transcript: ${JSON.stringify(transcript)} }]] }); this.onend && this.onend(); }, 120);`}
-    }
-    stop() { this.onend && this.onend(); }
-  };`;
-const NO_SR = 'Object.defineProperty(window, "SpeechRecognition", { value: undefined, configurable: true }); Object.defineProperty(window, "webkitSpeechRecognition", { value: undefined, configurable: true });';
-
 async function run() {
   if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
   const server = BASE ? null : await startServer();
@@ -128,18 +118,21 @@ async function run() {
   try {
     for (const [w, h] of SIZES) {
       console.log(`\n[${w}x${h} iPhone相当]`);
-      const p = await openApp(b, base, { width: w, height: h, initScript: NO_SR });
+      const p = await openApp(b, base, { width: w, height: h });
       await p.tapSel('.bottom-nav [data-tab="avoidance"]', false);
       await sleep(400);
-      const lay = await p.ev(`(() => { const q = document.getElementById('dc-query').getBoundingClientRect(), m = document.getElementById('dc-mic').getBoundingClientRect(); const chips = [...document.querySelectorAll('.dc-ward')]; const first = document.querySelector('#dc-list .dc-row');
+      const lay = await p.ev(`(() => { const q = document.getElementById('dc-query').getBoundingClientRect(), box = document.querySelector('.dc-sticky'); const cs = getComputedStyle(box); const chips = [...document.querySelectorAll('.dc-ward')]; const first = document.querySelector('#dc-list .dc-row');
         return { active: document.getElementById('tab-avoidance').classList.contains('active'), vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth,
-          qH: q.height, qFont: parseFloat(getComputedStyle(document.getElementById('dc-query')).fontSize), micW: m.width, micH: m.height, micRight: m.right,
+          qH: q.height, qW: q.width, qRight: q.right, inner: box.getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight),
+          qFont: parseFloat(getComputedStyle(document.getElementById('dc-query')).fontSize),
+          mic: !!document.getElementById('dc-mic') || !!document.getElementById('dc-voice') || /🎙/.test(document.getElementById('drop-check').innerHTML),
           chipMinH: Math.min(...chips.map(c => c.getBoundingClientRect().height)), chipLabels: chips.map(c => c.childNodes[0].textContent),
           firstRowTop: first.getBoundingClientRect().top, firstRowH: first.getBoundingClientRect().height, nameFont: parseFloat(getComputedStyle(document.querySelector('.dc-name')).fontSize), total: document.querySelectorAll('#dc-list .dc-item').length }; })()`);
       check('下部ナビ「地雷」→ DROP先照合が開く（全44件）', lay.active && lay.total === 44, lay);
-      check('横スクロールなし・🎙️が画面内', lay.sw <= lay.vw && lay.micRight <= lay.vw, lay);
+      check('専用🎙️ボタン・音声案内表示が無い', !lay.mic, lay);
+      check('検索欄は横幅いっぱい・横スクロールなし', Math.abs(lay.qW - lay.inner) < 1 && lay.qRight <= lay.vw && lay.sw <= lay.vw, lay);
       check('検索欄は大きく（高さ50px以上）・文字16px以上（iPhoneで自動ズームしない）', lay.qH >= 50 && lay.qFont >= 16, lay);
-      check('🎙️・区ボタンは押しやすい大きさ（44px以上）', lay.micW >= 48 && lay.micH >= 50 && lay.chipMinH >= 44, lay);
+      check('区ボタンは押しやすい大きさ（44px以上）', lay.chipMinH >= 44, lay);
       check('区ボタン: すべて・西区・港区・此花区・福島区・北区・中央区・その他', lay.chipLabels.join(',') === 'すべて,西区,港区,此花区,福島区,北区,中央区,その他', lay.chipLabels);
       check('最初の物件がスクロールなしで見える・名前は17px以上', lay.firstRowTop < h * 0.6 && lay.firstRowH >= 60 && lay.nameFont >= 17, lay);
       await p.shot(`${w}_1_open`);
@@ -202,12 +195,26 @@ async function run() {
       check('下までスクロールしても検索欄はヘッダー直下に残る', sc.qTop >= sc.hdrBottom - 1 && sc.qTop < sc.hdrBottom + 20, sc);
       check('最後の内容が下部ナビに隠れない', sc.legacyBottom <= sc.navTop + 1, sc);
 
-      // 音声: 音声認識なし → 検索欄にフォーカスしてキーボードの音声入力を案内
+      // ひらがな・区＋名前（キーボード入力）
       await p.ev('window.scrollTo(0, 0)');
-      await p.tapSel('#dc-mic', false);
-      await sleep(250);
-      const fb = await p.ev(`({ focused: document.activeElement && document.activeElement.id, msg: document.getElementById('dc-voice').textContent, shown: !document.getElementById('dc-voice').hidden })`);
-      check('🎙️（音声認識が無い端末）→ 検索欄にフォーカス・キーボードのマイク🎤を案内', fb.focused === 'dc-query' && fb.shown && /キーボードのマイク/.test(fb.msg), fb);
+      await p.type('らいず'); r = await p.results();
+      check('ひらがな「らいず」→ 阿波座ライズタワーズ', r.names.join() === '阿波座ライズタワーズ フラッグ46', r);
+      await p.type('西区 ライズ'); r = await p.results();
+      check('区＋名前「西区 ライズ」→ 1件', r.names.join() === '阿波座ライズタワーズ フラッグ46', r);
+      // キーボードの音声入力🎤: 確定文字がまとめて入る → その場で検索に反映
+      await p.type('西区ライズ。'); r = await p.results();
+      check('キーボード音声入力相当（「西区ライズ。」を一括入力）→ 即時に1件', r.names.join() === '阿波座ライズタワーズ フラッグ46', r);
+      // 変換中（未確定）→ 確定 でも入力が途切れず、確定文字で検索される
+      await p.ev(`(() => { const i = document.getElementById('dc-query'); i.value = ''; i.dispatchEvent(new Event('input')); })()`);
+      await p.tapSel('#dc-query', false);
+      await p.s('Input.imeSetComposition', { text: 'あっぷる', selectionStart: 4, selectionEnd: 4 });
+      await sleep(150);
+      await p.s('Input.insertText', { text: 'アップル' });
+      await sleep(200);
+      r = await p.results();
+      const qv = await p.ev(`document.getElementById('dc-query').value`);
+      check('日本語変換（あっぷる→アップル確定）→ 欄の文字が崩れず即時に1件', qv === 'アップル' && r.names.join() === '淀屋橋アップルタワーレジデンス', { qv, r });
+      await p.tapSel('#dc-clear', false);
 
       // 従来の地雷DB（実走事例3件）が残っている
       await p.tapSel('#avoidance-legacy > summary');
@@ -225,7 +232,7 @@ async function run() {
 
     for (const [w, h] of [[390, 844], [320, 568]]) {
       console.log(`\n[本人評価・本人メモ ${w}x${h}]`);
-      const p = await openApp(b, base, { width: w, height: h, initScript: NO_SR });
+      const p = await openApp(b, base, { width: w, height: h });
       await p.ev(`(() => { try { localStorage.removeItem('uber_drop_personal_v1'); } catch (e) {} })()`);
       await p.tapSel('.bottom-nav [data-tab="avoidance"]', false);
       await sleep(300);
@@ -305,67 +312,13 @@ async function run() {
       await p.close();
     }
 
-    console.log('\n[音声認識あり（疑似）390x844]');
+    console.log('\n[検索欄の属性（連絡先の自動入力を出しにくくする）390x844]');
     {
-      const p = await openApp(b, base, { width: 390, height: 844, initScript: FAKE_SR('西区ライズ。') });
-      await p.tapSel('.bottom-nav [data-tab="avoidance"]', false);
-      await sleep(300);
-      await p.tapSel('#dc-mic', false);
-      await sleep(600);
-      const r = await p.ev(`({ q: document.getElementById('dc-query').value, names: [...document.querySelectorAll('#dc-list .dc-name')].map(e => e.textContent), micOn: document.getElementById('dc-mic').classList.contains('on') })`);
-      check('🎙️ →「西区ライズ。」と発話 → 検索欄に反映・阿波座ライズタワーズ1件', r.q === '西区ライズ' && r.names.join() === '阿波座ライズタワーズ フラッグ46' && !r.micOn, r);
-      await sleep(2000);
-      const after = await p.ev(`document.getElementById('dc-voice').textContent`);
-      check('正常に聞き取れたときは「反応しませんでした」を出さない', !/反応しませんでした/.test(after), after);
-      await p.shot('voice_ok');
-      check('JavaScript エラーなし', p.errors.length === 0, p.errors);
-      await p.close();
-    }
-
-    console.log('\n[ホーム画面アプリ表示（音声認識APIはあるが使えない環境）390x844]');
-    {
-      const p = await openApp(b, base, { width: 390, height: 844, initScript: FAKE_SR('西区ライズ') + 'Object.defineProperty(navigator, "standalone", { get: () => true });' });
-      await p.tapSel('.bottom-nav [data-tab="avoidance"]', false);
-      await sleep(300);
-      await p.tapSel('#dc-mic', false);
-      await sleep(400);
-      const r = await p.ev(`({ focused: document.activeElement && document.activeElement.id, msg: document.getElementById('dc-voice').textContent, q: document.getElementById('dc-query').value })`);
-      check('ホーム画面アプリ → 音声認識を使わず検索欄にフォーカス・キーボードのマイク🎤を案内', r.focused === 'dc-query' && /ホーム画面アプリ/.test(r.msg) && /キーボードのマイク/.test(r.msg) && r.q === '', r);
-      check('JavaScript エラーなし', p.errors.length === 0, p.errors);
-      await p.close();
-    }
-
-    console.log('\n[音声認識APIはあるが反応しない（疑似）390x844]');
-    {
-      const silent = 'window.webkitSpeechRecognition = window.SpeechRecognition = class { start() {} stop() {} abort() { window.__aborted = true; } };';
-      const p = await openApp(b, base, { width: 390, height: 844, initScript: silent });
-      await p.tapSel('.bottom-nav [data-tab="avoidance"]', false);
-      await sleep(300);
-      await p.tapSel('#dc-mic', false);
-      await sleep(2600);
-      const r = await p.ev(`({ msg: document.getElementById('dc-voice').textContent, aborted: !!window.__aborted, micOn: document.getElementById('dc-mic').classList.contains('on') })`);
-      check('2秒反応がなければ止めて「検索欄をタップしてキーボードのマイク🎤」を案内', r.aborted && /反応しませんでした/.test(r.msg) && /キーボードのマイク/.test(r.msg) && !r.micOn, r);
-      await p.tapSel('#dc-mic', false);
-      await sleep(300);
-      const r2 = await p.ev(`({ focused: document.activeElement && document.activeElement.id })`);
-      check('もう一度🎙️ → 検索欄にフォーカス（キーボード音声入力へ）', r2.focused === 'dc-query', r2);
-      await p.type('アップル');
-      check('文字検索は正常', (await p.results()).names.join() === '淀屋橋アップルタワーレジデンス');
-      check('JavaScript エラーなし', p.errors.length === 0, p.errors);
-      await p.close();
-    }
-
-    console.log('\n[音声認識の権限拒否（疑似）390x844]');
-    {
-      const p = await openApp(b, base, { width: 390, height: 844, initScript: FAKE_SR('', 'not-allowed') });
-      await p.tapSel('.bottom-nav [data-tab="avoidance"]', false);
-      await sleep(300);
-      await p.tapSel('#dc-mic', false);
-      await sleep(500);
-      const r = await p.ev(`({ focused: document.activeElement && document.activeElement.id, msg: document.getElementById('dc-voice').textContent })`);
-      check('権限拒否 → 落ちずにキーボードの音声入力へ案内', r.focused === 'dc-query' && /許可されていません/.test(r.msg) && /キーボードのマイク/.test(r.msg), r);
-      await p.type('ライズ');
-      check('拒否後も文字検索は正常', (await p.results()).names.join() === '阿波座ライズタワーズ フラッグ46');
+      const p = await openApp(b, base, { width: 390, height: 844 });
+      const a = await p.ev(`(() => { const i = document.getElementById('dc-query'); const at = {}; [...i.attributes].forEach(x => { at[x.name] = x.value; }); return at; })()`);
+      check('type=search・autocomplete=off・自動修正/大文字化/スペルチェック off', a.type === 'search' && a.autocomplete === 'off' && a.autocorrect === 'off' && a.autocapitalize === 'off' && a.spellcheck === 'false', a);
+      const words = [a.name, a.placeholder, a['aria-label'], a.id].join(' ');
+      check('name・placeholder・ラベルに連絡先と推測される語（名前・氏名・住所・電話・name・address 等）を含まない', !/名前|氏名|住所|電話|メール|name|address|street|city|zip|postal|phone|tel|email|contact/i.test(words), words);
       check('JavaScript エラーなし', p.errors.length === 0, p.errors);
       await p.close();
     }
