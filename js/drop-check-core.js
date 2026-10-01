@@ -7,7 +7,7 @@
 (function (root) {
   'use strict';
 
-  const WARD_ORDER = ['西区', '港区', '此花区', '福島区', '北区', '中央区'];
+  const WARD_ORDER = ['西区', '港区', '此花区', '福島区', '北区', '中央区', '浪速区'];
 
   function kataToHira(s) {
     return s.replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));

@@ -13,6 +13,8 @@ const ROOT = path.resolve(__dirname, '..', '..', '..');
 const D = require(path.join(ROOT, 'js', 'drop-check-core.js'));
 const DATA = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'uber_drop_buildings.json'), 'utf8'));
 const B = DATA.buildings;
+const EX = B.filter(b => !b.origin); // Excel 由来
+const ADD = B.filter(b => b.origin === 'additions.json'); // Excel に無い追加分（浪速区）
 const names = list => list.map(b => b.name);
 const s = (query, ward) => D.search(B, { query, ward });
 
@@ -23,19 +25,69 @@ function test(name, fn) {
 
 console.log('drop-check tests');
 
-test('Excelの全44物件を欠落なく取込（区別集計シートと一致）', () => {
-  assert.strictEqual(B.length, 44);
+test('Excelの全44物件を欠落なく取込（区別集計シートと一致）＋追加分8件で計52件', () => {
+  assert.strictEqual(EX.length, 44);
   assert.strictEqual(DATA.source.rows, 44);
   assert.deepStrictEqual(DATA.source.ward_counts_sheet, { 西区: 8, 福島区: 6, 港区: 4, 北区: 13, 此花区: 3, 中央区: 10 });
   const counts = {};
-  B.forEach(b => { counts[b.ward] = (counts[b.ward] || 0) + 1; });
+  EX.forEach(b => { counts[b.ward] = (counts[b.ward] || 0) + 1; });
   assert.deepStrictEqual(counts, DATA.source.ward_counts_sheet);
-  assert.deepStrictEqual(B.map(b => b.excel_row), Array.from({ length: 44 }, (_, i) => i + 2), 'Excel 2〜45行目を順に取込');
-  assert.strictEqual(new Set(B.map(b => b.id)).size, 44);
+  assert.deepStrictEqual(EX.map(b => b.excel_row), Array.from({ length: 44 }, (_, i) => i + 2), 'Excel 2〜45行目を順に取込');
+  assert.deepStrictEqual(B.slice(0, 44), EX, 'Excel 分が先、追加分は後ろ');
+  assert.strictEqual(ADD.length, 8);
+  assert.strictEqual(DATA.source.additions.rows, 8);
+  assert.strictEqual(B.length, 52);
+  assert.strictEqual(new Set(B.map(b => b.id)).size, 52);
+});
+
+test('浪速区の追加8件: 名称・所在地・階数は2つの公開情報で確認済み・一般目安なし・Excel 由来の物件と重複しない', () => {
+  assert.deepStrictEqual(ADD.map(b => [b.name, b.town, b.chome, b.floors]), [
+    ['ザ・なんばタワーレジデンス・イン・なんばパークス', '難波中', 2, 46],
+    ['ローレルタワー難波', '湊町', 1, 39],
+    ['ルネッサなんばタワー', '湊町', 2, 38],
+    ['なんばグランドマスターズタワー', '敷津東', 2, 33],
+    ['THE CROSS CITY TOWER', '敷津東', 2, 30],
+    ['ローレルコート難波', '湊町', 1, 28],
+    ['なんばセントラルプラザリバーガーデン', '湊町', 2, 25],
+    ['エグゼレジデンスタワー', '日本橋', 3, 23]
+  ]);
+  ADD.forEach(b => {
+    assert.strictEqual(b.ward, '浪速区', b.name);
+    assert.strictEqual(b.ward_reading, 'なにわく');
+    assert.ok(b.address.startsWith('大阪市浪速区' + b.town), b.name);
+    assert.strictEqual(b.excel_level, null, '一般目安（要注意など）は付けない: ' + b.name);
+    assert.strictEqual(b.excel_row, null);
+    assert.ok(b.sources.length >= 2 && b.sources.every(u => /^https:\/\//.test(u)), b.name);
+    assert.ok(!('my' in b), '本人データは持たない（未検証から開始）');
+    assert.strictEqual(D.ratingInfo(b, DATA).verified, false);
+  });
+  assert.strictEqual(ADD.find(b => b.name === 'ローレルタワー難波').address, '大阪市浪速区湊町1丁目', '番地が確認できないものは丁目まで');
+  const key = n => n.normalize('NFKC').toLowerCase().replace(/[\s・･\-‐―’'".,]/g, '');
+  assert.strictEqual(new Set(B.map(b => key(b.name))).size, 52, '名前の表記ゆれを除いても重複なし');
+  const addrs = B.filter(b => /丁目\d/.test(b.address)).map(b => b.ward + b.address);
+  assert.strictEqual(new Set(addrs).size, addrs.length, '同じ番地の物件なし');
+});
+
+test('取込: 追加分が Excel の物件と重複したら中止する（同名・表記ゆれ・同じ番地）', () => {
+  const { execFileSync } = require('child_process');
+  const py = `
+import sys, json
+sys.path.insert(0, sys.argv[1])
+import import_excel as m
+ex = [{'ward': '西区', 'name': '阿波座ライズタワーズ フラッグ46', 'address': '大阪市西区江之子島2丁目1-37'}]
+print(json.dumps([
+  len(m.find_duplicates([{'ward': '西区', 'name': '阿波座ライズタワーズ・フラッグ４６', 'address': '大阪市西区江之子島2丁目'}], ex)),
+  len(m.find_duplicates([{'ward': '西区', 'name': '別名タワー', 'address': '大阪市西区江之子島2丁目1-37'}], ex)),
+  len(m.find_duplicates([{'ward': '浪速区', 'name': 'ローレルタワー難波', 'address': '大阪市浪速区湊町1丁目'}], ex)),
+  len(m.find_duplicates([{'ward': '浪速区', 'name': 'A', 'address': '大阪市浪速区湊町1丁目'}, {'ward': '浪速区', 'name': 'B', 'address': '大阪市浪速区湊町1丁目'}], ex))
+]))
+`;
+  const out = execFileSync('python', ['-c', py, path.join(ROOT, 'tools', 'drop-check')], { env: Object.assign({}, process.env, { PYTHONIOENCODING: 'utf-8' }) }).toString();
+  assert.deepStrictEqual(JSON.parse(out), [1, 1, 0, 0], '同名（全角数字・中黒の違い）と同番地は重複、丁目までの一致だけでは重複にしない');
 });
 
 test('Excelの全列を保持（区・マンション名・所在地・階数・Uber目安・備考・情報源）', () => {
-  B.forEach(b => {
+  EX.forEach(b => {
     ['ward', 'name', 'address', 'floors', 'excel_level', 'note', 'source_url'].forEach(k => assert.ok(k in b, `${b.name}: ${k}`));
     assert.ok(b.name && b.address && b.ward && Number.isInteger(b.floors), b.name);
     assert.ok(/^https?:\/\//.test(b.source_url), b.name);
@@ -44,7 +96,7 @@ test('Excelの全列を保持（区・マンション名・所在地・階数・
   const rise = B.find(b => b.name === '阿波座ライズタワーズ フラッグ46');
   assert.deepStrictEqual([rise.ward, rise.address, rise.floors, rise.excel_level, rise.town, rise.chome], ['西区', '大阪市西区江之子島2丁目1-37', 46, '要注意', '江之子島', 2]);
   assert.strictEqual(B.find(b => b.name === 'シティタワー大阪本町').note, '855戸級');
-  assert.strictEqual(B.filter(b => b.note).length, 9);
+  assert.strictEqual(EX.filter(b => b.note).length, 9);
 });
 
 test('基礎データ（Excel由来）に本人データを持たない・本人評価は3段階＋未検証は評価ではない', () => {
@@ -142,7 +194,7 @@ test('検索結果・区フィルターに本人評価とメモが反映（メ�
   assert.strictEqual(hit.my.note, '館内歩く');
   assert.strictEqual(D.search(v, { query: '', ward: '西区' }).find(x => x.id === rise.id).my.rating, 'avoid');
   assert.deepStrictEqual(D.search(v, { query: '館内歩く' }).map(x => x.name), ['阿波座ライズタワーズ フラッグ46']);
-  assert.strictEqual(D.search(v, { query: '' }).length, 44, '評価しても44件のまま');
+  assert.strictEqual(D.search(v, { query: '' }).length, 52, '評価しても52件のまま');
 });
 
 test('Excel再取込で本人データが消えない（id は名前・住所の変更でも引き継ぐ／控えの名前でも付け直す）', () => {
@@ -181,12 +233,13 @@ wb.save(dst)
   const savedBefore = st.raw[D.PERSONAL_KEY];
   execFileSync('python', [path.join(ROOT, 'tools', 'drop-check', 'import_excel.py'), xlsx, '--out-dir', tmp], { env });
   const next = JSON.parse(fs.readFileSync(path.join(tmp, 'uber_drop_buildings.json'), 'utf8')).buildings;
-  assert.strictEqual(next.length, 45);
+  assert.strictEqual(next.length, 53, 'Excel 45件（1件追加）＋浪速区8件');
   const nRise = next.find(b => b.name === '阿波座ライズタワーズ・フラッグ46（表記変更）');
   const nHorie = next.find(b => b.name === 'シエリアタワー大阪堀江');
   assert.strictEqual(nRise.id, rise.id, '名前の表記が変わっても同じ区・所在地なら同じ id');
   assert.strictEqual(nHorie.id, horie.id, '番地が変わっても同じ名前なら同じ id');
-  assert.ok(B.every(b => next.some(n => n.id === b.id)), '既存44件の id はすべて残る');
+  assert.ok(B.every(b => next.some(n => n.id === b.id)), '既存52件（浪速区を含む）の id はすべて残る');
+  assert.strictEqual(next.filter(b => b.ward === '浪速区').length, 8, '再取込しても浪速区の追加分は残る');
   assert.strictEqual(st.raw[D.PERSONAL_KEY], savedBefore, '取込は本人データ（端末保存）に触れない');
   const v = D.attachPersonal(next, p.all());
   assert.deepStrictEqual([v.find(x => x.id === rise.id).my.rating, v.find(x => x.id === rise.id).my.note], ['avoid', '館内長い']);
@@ -205,18 +258,19 @@ test('全物件に読み（あいうえお順用）と町名の読み', () => {
   });
 });
 
-test('区フィルター: 西区8・福島区6・港区4・北区13・此花区3・中央区10、その他0', () => {
+test('区フィルター: 西区8・福島区6・港区4・北区13・此花区3・中央区10・浪速区8、その他0', () => {
   assert.strictEqual(s('', '西区').length, 8);
   assert.strictEqual(s('', '福島区').length, 6);
   assert.strictEqual(s('', '港区').length, 4);
   assert.strictEqual(s('', '北区').length, 13);
   assert.strictEqual(s('', '此花区').length, 3);
   assert.strictEqual(s('', '中央区').length, 10);
+  assert.strictEqual(s('', '浪速区').length, 8);
   assert.strictEqual(s('', 'other').length, 0);
-  assert.strictEqual(s('', 'all').length, 44);
+  assert.strictEqual(s('', 'all').length, 52);
   assert.ok(s('', '西区').every(b => b.ward === '西区'));
   const chips = D.wardChips(B);
-  assert.deepStrictEqual(chips.map(c => c.label), ['西区', '港区', '此花区', '福島区', '北区', '中央区', 'その他']);
+  assert.deepStrictEqual(chips.map(c => c.label), ['西区', '港区', '此花区', '福島区', '北区', '中央区', '浪速区', 'その他']);
 });
 
 test('あいうえお順（読み順）', () => {
@@ -238,7 +292,7 @@ test('マンション名の部分一致（カタカナ・ひらがな・全角�
   assert.deepStrictEqual(names(s('ザ・タワー大阪')), ['ザ・タワー大阪']);
   assert.deepStrictEqual(names(s('ザタワー大阪')), ['ザ・タワー大阪']);
   assert.ok(s('ザ タワー大阪').length === 2, '空白は AND（ザ・ファインタワー大阪肥後橋 も一致）');
-  assert.ok(s('シティタワー').length === 5);
+  assert.ok(s('シティタワー').length === 6, '5件＋THE CROSS CITY TOWER（読み くろす してぃ たわー）');
 });
 
 test('町名・住所での検索（読み・旧字体も）', () => {
@@ -267,6 +321,21 @@ test('区フィルター＋検索の併用・区名を含む音声入力', () =>
   s('ライズ'); s('北浜');
   assert.strictEqual(JSON.stringify(B), before, '検索でデータを書き換えない');
   assert.ok(s('シティタワー', '北区').every(b => b.ward === '北区'));
+});
+
+test('浪速区の検索（区・町名・難波/なんば・湊町・住所・区＋名前）', () => {
+  assert.strictEqual(s('浪速区').length, 8);
+  assert.strictEqual(s('なにわく').length, 8, '区の読み');
+  assert.deepStrictEqual(names(s('難波')).sort(), ['ザ・なんばタワーレジデンス・イン・なんばパークス', 'ローレルコート難波', 'ローレルタワー難波'].sort());
+  assert.deepStrictEqual(names(s('なんば')).sort(), ['ザ・なんばタワーレジデンス・イン・なんばパークス', 'なんばグランドマスターズタワー', 'なんばセントラルプラザリバーガーデン', 'ルネッサなんばタワー', 'ローレルコート難波', 'ローレルタワー難波'].sort());
+  assert.deepStrictEqual(names(s('湊町')).sort(), ['なんばセントラルプラザリバーガーデン', 'ルネッサなんばタワー', 'ローレルコート難波', 'ローレルタワー難波'].sort());
+  assert.deepStrictEqual(names(s('みなとまち')).length, 4);
+  assert.deepStrictEqual(names(s('敷津東2丁目')).sort(), ['THE CROSS CITY TOWER', 'なんばグランドマスターズタワー'].sort());
+  assert.deepStrictEqual(names(s('日本橋3丁目4-9')), ['エグゼレジデンスタワー']);
+  assert.deepStrictEqual(names(s('にっぽんばし')), ['エグゼレジデンスタワー']);
+  assert.deepStrictEqual(names(s('浪速区 クロス')), ['THE CROSS CITY TOWER']);
+  assert.deepStrictEqual(names(s('くろすしてぃ')), ['THE CROSS CITY TOWER']);
+  assert.deepStrictEqual(names(s('リバーガーデン', '浪速区')), ['なんばセントラルプラザリバーガーデン']);
 });
 
 test('data/uber_drop_buildings.js が JSON と同期', () => {

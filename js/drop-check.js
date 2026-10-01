@@ -49,39 +49,32 @@
       const on = r.code === code;
       return `<button type="button" class="dc-rbtn r-${code}${on ? ' on' : ''}" data-rate="${code}" aria-pressed="${on}">${lv.icon}<span>${esc(lv.label)}</span></button>`;
     }).join('');
-    const status = r.verified ? `本人確認済み・${fmtDate(my.rating_updated_at)}更新` : `${r.icon} 未検証`;
+    // 未検証は ⚪ で分かるので文字の状態表示はしない。評価済みなら更新日だけ控えめに
+    const status = r.verified ? `${fmtDate(my.rating_updated_at)}更新` : '';
     const clearBtn = r.verified
       ? `<button type="button" class="dc-unrate" data-unrate="1">${state.confirmClear === b.id ? 'もう一度押すと未検証に戻ります' : '未検証に戻す'}</button>` : '';
     const savedMsg = state.saved && state.saved.id === b.id ? `<span class="dc-saved" role="status">${esc(state.saved.msg)}</span>` : '';
+    const sub = clearBtn || savedMsg || status ? `<div class="dc-edit-sub">${clearBtn}${savedMsg || (status ? `<span class="dc-upd">${esc(status)}</span>` : '')}</div>` : '';
     return `<div class="dc-edit">
-      <div class="dc-edit-h"><b>本人評価</b><span>${esc(status)}</span></div>
       <div class="dc-rbtns" role="group" aria-label="本人評価">${btns}</div>
-      <div class="dc-edit-sub">${clearBtn}${savedMsg}</div>
-      <label class="dc-edit-h" for="dc-memo-${esc(b.id)}"><b>本人メモ</b><span class="dc-memo-count${over ? ' over' : ''}" data-count>${len}/${D.NOTE_MAX}文字</span></label>
+      ${sub}
       <div class="dc-memo">
         <input id="dc-memo-${esc(b.id)}" class="dc-memo-input" type="text" enterkeyhint="done" autocomplete="off" value="${esc(draft)}"
-               placeholder="例: EVまで遠い・3階経由" aria-describedby="dc-memo-help-${esc(b.id)}">
+               placeholder="本人メモ（${D.NOTE_MAX}文字まで）" aria-label="本人メモ">
         <button type="button" class="dc-memo-save" data-memo-save="1"${over ? ' disabled' : ''}>保存</button>
       </div>
-      <div id="dc-memo-help-${esc(b.id)}" class="dc-memo-help">次の案件で役立つ短いメモ（1行・${D.NOTE_MAX}文字まで）。空にして保存すると削除</div>
+      <div class="dc-memo-count${over ? ' over' : ''}" data-count>${len}/${D.NOTE_MAX}文字</div>
     </div>`;
   }
 
+  // 詳細: 物件名・所在地（正式名称）＋本人評価・本人メモだけ。一般目安・階数・備考・情報源はデータに残し、現場画面では見せない
   function detailHtml(b) {
-    const rows = [
-      ['正式名称', esc(b.name)],
-      ['所在地', esc(b.address)],
-      ['階数', b.floors != null ? esc(b.floors) + '階' : '—'],
-      ['一般目安', b.excel_level ? esc(b.excel_level) + '<small>（Excel 一覧の一般的な目安。本人評価ではありません）</small>' : '—'],
-      ['備考', esc(b.note || '—')],
-      ['情報源', b.source_url ? `<a href="${esc(b.source_url)}" target="_blank" rel="noopener">${esc(decodeURI(b.source_url).replace(/^https?:\/\//, '').slice(0, 48))}…</a>` : '—']
-    ];
     const rel = relatedBenchmarks(b);
-    const relHtml = rel.length ? `<div class="dc-rel"><b>参考：同じ町（${esc(b.town)}${b.chome ? esc(b.chome) + '丁目' : ''}）への実走記録</b>${rel.map(bm => {
+    const relHtml = rel.length ? `<div class="dc-rel"><b>同じ町への実走記録</b>${rel.map(bm => {
       const st = ((window.AVOIDANCE_DATABASE || {}).evaluationStatuses || {})[bm.status] || {};
-      return `<div>${esc(bm.date)} ${esc(bm.title)} ${esc(st.icon || '')}${esc(st.label || bm.status)}<small>${esc(bm.memo || '')}</small></div>`;
+      return `<div>${esc(bm.date)} ${esc(bm.title)} ${esc(st.icon || '')}${esc(st.label || bm.status)}</div>`;
     }).join('')}</div>` : '';
-    return `${editorHtml(b)}<dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>${relHtml}`;
+    return `<div class="dc-addr">${esc(b.address)}</div>${editorHtml(b)}${relHtml}`;
   }
 
   function renderList() {
@@ -95,18 +88,14 @@
       return res;
     }
     $('dc-count').textContent = `${label ? label + ' ' : ''}${res.length}件${!q && state.ward === 'all' ? '（全件）' : ''}`;
-    // 一覧カード: ①本人評価（確認済みなら最も目立たせる）②物件名 ③区・町・階数 ④本人メモ1行。Excel の一般目安は控えめ
+    // 一覧カード（2行）: 1行目＝区＋町名＋丁目（控えめ）と「詳細評価」、2行目＝本人評価の丸アイコン＋物件名。評価の文字は出さない
     $('dc-list').innerHTML = res.map(b => {
       const r = D.ratingInfo(b, DATA);
       const open = state.openId === b.id;
-      const memo = b.my && b.my.note;
-      return `<li class="dc-item${open ? ' open' : ''}${r.verified ? ' rated r-' + r.code : ''}" data-id="${esc(b.id)}">
+      return `<li class="dc-item${open ? ' open' : ''}" data-id="${esc(b.id)}" data-rating="${r.code || 'none'}">
         <button type="button" class="dc-row" aria-expanded="${open}">
-          <span class="dc-top"><span class="dc-rate r-${r.code || 'none'}">${r.icon} ${esc(r.label)}</span><span class="dc-more">${open ? '閉じる ▴' : '詳細・評価 ▾'}</span></span>
-          <span class="dc-name">${esc(b.name)}</span>
-          <span class="dc-sub">${esc(b.ward)} ${esc(b.town || '')}${b.chome ? esc(b.chome) + '丁目' : ''}${b.floors != null ? `<b>${esc(b.floors)}階</b>` : ''}</span>
-          ${memo ? `<span class="dc-memo-line">「${esc(memo)}」</span>` : ''}
-          <span class="dc-tags">${b.excel_level ? `<span class="dc-lvl">一般目安:${esc(b.excel_level)}</span>` : ''}${b.note ? `<span class="dc-note">${esc(b.note)}</span>` : ''}</span>
+          <span class="dc-top"><span class="dc-sub">${esc(b.ward)} ${esc(b.town || '')}${b.chome ? esc(b.chome) + '丁目' : ''}</span><span class="dc-more">${open ? '閉じる' : '詳細評価'}</span></span>
+          <span class="dc-name"><span class="dc-dot" role="img" aria-label="${esc(r.label)}">${r.icon}</span>${esc(b.name)}</span>
         </button>
         <div class="dc-detail"${open ? '' : ' hidden'}>${open ? detailHtml(b) : ''}</div>
       </li>`;

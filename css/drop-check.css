@@ -65,16 +65,16 @@
 
 .dc-count { margin: 10px 2px 6px; font-size: 14px; color: var(--text-muted); font-weight: 600; }
 
-/* 物件一覧: 一瞬で読める最小限の情報 */
+/* 物件一覧: 1件2行（住所＋詳細評価 / 丸アイコン＋物件名）。件数が増えても一覧で探せるように */
 .dc-list { list-style: none; margin: 0; padding: 0; }
-.dc-item { margin-bottom: 8px; border: 1px solid var(--border-color); border-radius: 14px; background: var(--bg-card); overflow: hidden; }
+.dc-item { margin-bottom: 5px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); overflow: hidden; }
 .dc-item.open { border-color: #6e7681; }
 .dc-row {
   display: grid;
-  gap: 3px;
+  gap: 1px;
   width: 100%;
-  min-height: 64px;
-  padding: 11px 14px;
+  min-height: 52px;
+  padding: 6px 12px 7px;
   border: none;
   background: transparent;
   color: inherit;
@@ -82,52 +82,35 @@
   text-align: left;
   cursor: pointer;
 }
-/* 本人評価: 確認済みはカード左端の色＋大きなバッジで最優先、未検証は控えめ */
-.dc-top { display: flex; align-items: center; gap: 8px; }
-.dc-item.rated { border-left-width: 6px; }
-.dc-item.rated.r-ok { border-left-color: #22c55e; }
-.dc-item.rated.r-caution { border-left-color: #eab308; }
-.dc-item.rated.r-avoid { border-left-color: #ef4444; }
-.dc-memo-line { font-size: 15px; font-weight: 700; color: #fef3c7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dc-name { font-size: 18px; font-weight: 800; line-height: 1.3; color: var(--text-main); overflow-wrap: anywhere; }
-.dc-sub { font-size: 15px; color: #c9d1d9; }
-.dc-sub b { margin-left: 8px; color: #fde68a; font-weight: 800; }
-.dc-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 2px; font-size: 13px; }
-.dc-rate { padding: 2px 10px; border-radius: 999px; font-size: 15px; font-weight: 800; white-space: nowrap; }
-.dc-rate.r-none { padding: 1px 8px; font-size: 13px; font-weight: 600; background: rgba(110, 118, 129, 0.18); color: #9da7b3; }
-.dc-rate.r-ok { background: rgba(34, 197, 94, 0.2); color: #bbf7d0; }
-.dc-rate.r-caution { background: rgba(234, 179, 8, 0.22); color: #fef08a; }
-.dc-rate.r-avoid { background: rgba(239, 68, 68, 0.25); color: #fecaca; }
-.dc-lvl, .dc-note { color: var(--text-muted); }
-.dc-note::before { content: "・"; }
-.dc-more { margin-left: auto; color: #93c5fd; font-weight: 700; }
+.dc-top { display: flex; align-items: baseline; gap: 8px; }
+.dc-sub { min-width: 0; font-size: 13px; line-height: 1.35; color: #8b949e; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dc-more { flex: none; margin-left: auto; font-size: 13px; line-height: 1.35; color: #93c5fd; font-weight: 700; }
+.dc-name { font-size: 17px; font-weight: 800; line-height: 1.3; color: var(--text-main); overflow-wrap: anywhere; }
+.dc-dot { margin-right: 6px; font-size: 15px; }
 
-.dc-detail { padding: 2px 14px 12px; border-top: 1px solid var(--border-color); font-size: 15px; }
-.dc-detail dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; margin: 10px 0 0; }
-.dc-detail dt { color: var(--text-muted); white-space: nowrap; }
-.dc-detail dd { margin: 0; overflow-wrap: anywhere; }
-.dc-detail small { display: block; color: var(--text-dim); font-size: 12px; }
-.dc-detail a { color: #93c5fd; }
-/* 詳細の中の本人評価・本人メモ編集（別画面に移らない） */
-.dc-edit { margin: 10px 0 4px; padding: 10px; border-radius: 12px; background: #0d1117; border: 1px solid var(--border-color); }
-.dc-edit-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 2px 0 6px; font-size: 14px; color: var(--text-muted); }
-.dc-edit-h b { flex: none; white-space: nowrap; color: var(--text-main); font-size: 15px; }
-.dc-edit-h > span { text-align: right; }
+/* 詳細評価: 所在地・本人評価・本人メモだけ（一般目安・階数・備考・情報源は現場画面では見せない） */
+.dc-detail { padding: 0 12px 10px; border-top: 1px solid var(--border-color); font-size: 15px; }
+.dc-addr { margin: 6px 0; font-size: 13px; color: #9da7b3; overflow-wrap: anywhere; }
+.dc-edit { margin: 0; }
 .dc-rbtns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .dc-rbtn {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  min-height: 60px; padding: 6px 4px; border-radius: 12px;
+  display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 4px;
+  min-height: 50px; padding: 4px; border-radius: 12px;
   border: 2px solid var(--border-color); background: var(--bg-card-subtle); color: var(--text-main);
-  font: inherit; font-size: 22px; line-height: 1.1; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  font: inherit; font-size: 18px; line-height: 1.1; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 .dc-rbtn span { font-size: 15px; font-weight: 800; white-space: nowrap; }
+@media (max-width: 380px) { .dc-rbtn { flex-direction: column; gap: 0; font-size: 16px; } .dc-rbtn span { font-size: 14px; } }
 .dc-rbtn.on.r-ok { border-color: #22c55e; background: rgba(34, 197, 94, 0.22); }
 .dc-rbtn.on.r-caution { border-color: #eab308; background: rgba(234, 179, 8, 0.22); }
 .dc-rbtn.on.r-avoid { border-color: #ef4444; background: rgba(239, 68, 68, 0.25); }
-.dc-edit-sub { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 30px; margin: 4px 0 8px; }
+.dc-edit-sub { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 32px; }
 .dc-unrate { border: none; background: none; padding: 6px 0; color: #9da7b3; font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
-.dc-saved { margin-left: auto; color: #86efac; font-size: 13px; font-weight: 700; }
-.dc-memo { display: flex; gap: 8px; }
+.dc-saved, .dc-upd { margin-left: auto; font-size: 13px; }
+.dc-saved { color: #86efac; font-weight: 700; }
+.dc-upd { color: var(--text-dim); }
+.dc-memo { display: flex; gap: 8px; margin-top: 8px; }
+.dc-edit-sub + .dc-memo { margin-top: 0; }
 .dc-memo-input {
   flex: 1; min-width: 0; min-height: 48px; padding: 10px 12px; border-radius: 10px;
   border: 2px solid var(--border-color); background: #161b22; color: var(--text-main);
@@ -140,11 +123,10 @@
   background: var(--color-uber-green); color: #04120a; font: inherit; font-size: 16px; font-weight: 800; cursor: pointer;
 }
 .dc-memo-save:disabled { background: #3d444d; color: #8b949e; }
-.dc-memo-count { font-variant-numeric: tabular-nums; }
+.dc-memo-count { margin-top: 2px; text-align: right; font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 .dc-memo-count.over { color: #f87171; font-weight: 800; }
-.dc-memo-help { margin-top: 4px; font-size: 12px; color: var(--text-dim); }
-.dc-rel { margin-top: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35); font-size: 14px; }
-.dc-rel > div { margin-top: 4px; }
+.dc-rel { margin-top: 6px; padding: 6px 10px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35); font-size: 13px; }
+.dc-rel > div { margin-top: 2px; }
 
 .dc-none { padding: 18px 16px; border: 2px dashed #6e7681; border-radius: 14px; text-align: center; }
 .dc-none b { display: block; font-size: 20px; margin-bottom: 4px; }

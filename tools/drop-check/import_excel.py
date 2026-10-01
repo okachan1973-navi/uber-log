@@ -12,6 +12,8 @@
   なければ同じ区・同じ所在地の物件（1件だけ一致）の id を引き継ぐ。どちらも無い物件だけ新しい id。
 - 「Uber目安」は Excel 作成時の一般的な目安で、本人の実体験評価ではない。
 - 区別集計シートがあれば件数と照合し、一致しなければ中止する。
+- Excel に無い物件（浪速区など）は tools/drop-check/additions.json に書き、Excel の後ろに合流させる（Excel は変えない）。
+  Excel の物件と同じ名前（表記ゆれ・空白・中黒を除いて比較）や、同じ区・同じ番地の物件があれば重複として中止する。
 """
 import hashlib
 import json
@@ -26,6 +28,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT_JSON = os.path.join(ROOT, 'data', 'uber_drop_buildings.json')
 OUT_JS = os.path.join(ROOT, 'data', 'uber_drop_buildings.js')
 READINGS = os.path.join(os.path.dirname(__file__), 'readings.json')
+ADDITIONS = os.path.join(os.path.dirname(__file__), 'additions.json')
 DEFAULT_XLSX = os.path.join(os.path.expanduser('~'), 'Desktop', '大阪市_タワマン一覧_Uber配達用.xlsx')
 
 HEADER_MAP = {'区': 'ward', 'マンション名': 'name', '所在地': 'address', '階数': 'floors', 'Uber目安': 'excel_level', '備考': 'note', '情報源': 'source_url'}
@@ -74,6 +77,28 @@ def keep_id(name, ward, address, previous, used):
     return None
 
 
+def dup_key(name):
+    """重複確認用の名前キー（全角半角・大小・空白・中黒・記号を無視）"""
+    n = unicodedata.normalize('NFKC', name or '').lower()
+    return re.sub(r'[\s・･\-‐―’\'".,]', '', n)
+
+
+def find_duplicates(additions, buildings):
+    """追加分と Excel 分（および追加分どうし）の重複: 同じ名前キー、または同じ区・同じ番地（丁目の後に番地がある所在地）"""
+    dups = []
+    seen = list(buildings)
+    for a in additions:
+        for b in seen:
+            same_name = dup_key(a['name']) == dup_key(b['name'])
+            addr_a = unicodedata.normalize('NFKC', a.get('address') or '')
+            addr_b = unicodedata.normalize('NFKC', b.get('address') or '')
+            same_addr = a['ward'] == b['ward'] and addr_a == addr_b and re.search(r'丁目\d', addr_a)
+            if same_name or same_addr:
+                dups.append(f'{a["name"]}（{a.get("address")}） ⇔ {b["name"]}（{b.get("address")}）')
+        seen.append(a)
+    return dups
+
+
 def main():
     argv = list(sys.argv[1:])
     out_dir = None
@@ -104,20 +129,17 @@ def main():
     used = set()
     warnings = []
     buildings = []
-    for i, row in enumerate(rows[1:], start=2):
-        if not any(v not in (None, '') for v in row):
-            continue
-        rec = {header[j]: row[j] for j in range(len(header)) if header[j]}
-        b = {HEADER_MAP[k]: rec.get(k) for k in HEADER_MAP}
+
+    def make_building(b, seq, origin, extra=None, sources=None):
         b = {k: (v.strip() if isinstance(v, str) else v) for k, v in b.items()}
         for k in ('note', 'source_url', 'excel_level'):
-            if b[k] in ('', None):
+            if b.get(k) in ('', None):
                 b[k] = None
         if isinstance(b['floors'], float) and b['floors'].is_integer():
             b['floors'] = int(b['floors'])
         bid = keep_id(b['name'], b['ward'], b['address'], previous, used) or stable_id(b['name'], b['address'])
         if bid in used:
-            bid = stable_id(b['name'] + '#' + str(i), b['address'])
+            bid = stable_id(b['name'] + '#' + str(seq), b['address'])
         used.add(bid)
         town, chome = split_address(b['address'], b['ward'])
         name_reading = readings['names'].get(b['name'])
@@ -127,7 +149,7 @@ def main():
         town_reading = readings['towns'].get(town)
         if not town_reading:
             warnings.append(f'町名の読み未登録: {town}（{b["name"]}）')
-        buildings.append({
+        rec = {
             'id': bid,
             'ward': b['ward'],
             'ward_reading': readings['wards'].get(b['ward']),
@@ -141,26 +163,54 @@ def main():
             'excel_level': b['excel_level'],
             'note': b['note'],
             'source_url': b['source_url'],
-            'excel_extra': {h: rec.get(h) for h in extra_cols} or None,
-            'excel_row': i
-        })
+            'excel_extra': extra,
+            'excel_row': seq if origin == 'excel' else None
+        }
+        if origin != 'excel':
+            rec['origin'] = origin
+            rec['sources'] = sources or []
+        return rec
 
-    # 区別集計シートと照合
+    for i, row in enumerate(rows[1:], start=2):
+        if not any(v not in (None, '') for v in row):
+            continue
+        rec = {header[j]: row[j] for j in range(len(header)) if header[j]}
+        b = {HEADER_MAP[k]: rec.get(k) for k in HEADER_MAP}
+        buildings.append(make_building(b, i, 'excel', {h: rec.get(h) for h in extra_cols} or None))
+
+    # 区別集計シートと照合（Excel 分だけ）
     summary = None
     for sh in wb.worksheets[1:]:
         srows = list(sh.iter_rows(values_only=True))
         if srows and srows[0][:2] == ('区', '件数'):
             summary = {r[0]: r[1] for r in srows[1:] if r and r[0]}
+    excel_counts = {}
+    for b in buildings:
+        excel_counts[b['ward']] = excel_counts.get(b['ward'], 0) + 1
+    if summary is not None and summary != excel_counts:
+        sys.exit(f'区別集計シートと件数が一致しません: シート={summary} / 取込={excel_counts}')
+    excel_rows = len(buildings)
+
+    # Excel に無い物件の追加分（重複があれば中止）
+    additions = []
+    if os.path.exists(ADDITIONS):
+        with open(ADDITIONS, encoding='utf-8') as f:
+            additions = json.load(f).get('buildings', [])
+    dups = find_duplicates(additions, buildings)
+    if dups:
+        sys.exit('追加分が既存の物件と重複しています: ' + ' / '.join(dups))
+    for n, a in enumerate(additions, start=1):
+        b = {k: a.get(k) for k in HEADER_MAP.values()}
+        buildings.append(make_building(b, 'add' + str(n), 'additions.json', None, a.get('sources')))
     counts = {}
     for b in buildings:
         counts[b['ward']] = counts.get(b['ward'], 0) + 1
-    if summary is not None and summary != counts:
-        sys.exit(f'区別集計シートと件数が一致しません: シート={summary} / 取込={counts}')
 
     data = {
         'schema_version': 1,
         'description': 'DROP先照合用の物件リスト（高層マンション等）。配達に時間がかかる可能性があるため確認したい物件で、「地雷」の確定ではない。本人評価・本人メモはこのファイルに入れず、アプリの端末保存（uber_drop_personal_v1）に物件 id ごとに持つ。',
-        'source': {'file': os.path.basename(xlsx), 'sheet': ws.title, 'rows': len(buildings), 'ward_counts_sheet': summary},
+        'source': {'file': os.path.basename(xlsx), 'sheet': ws.title, 'rows': excel_rows, 'ward_counts_sheet': summary,
+                   'additions': {'file': 'tools/drop-check/additions.json', 'rows': len(additions)}},
         # 本人評価は3段階（本人確認済みの物件だけ）。「未検証」は評価ではなく、評価が無い状態
         'rating_levels': {
             'ok': {'label': '問題なし', 'icon': '🟢'},

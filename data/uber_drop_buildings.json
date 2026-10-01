@@ -12,6 +12,10 @@
       "北区": 13,
       "此花区": 3,
       "中央区": 10
+    },
+    "additions": {
+      "file": "tools/drop-check/additions.json",
+      "rows": 8
     }
   },
   "rating_levels": {
@@ -780,6 +784,182 @@
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市中央区のタワーマンション/",
       "excel_extra": null,
       "excel_row": 45
+    },
+    {
+      "id": "bld_8d7d03e223",
+      "ward": "浪速区",
+      "ward_reading": "なにわく",
+      "name": "ザ・なんばタワーレジデンス・イン・なんばパークス",
+      "reading": "ざ なんばたわーれじでんす いん なんばぱーくす",
+      "address": "大阪市浪速区難波中2丁目10-52",
+      "town": "難波中",
+      "town_reading": "なんばなか",
+      "chome": 2,
+      "floors": 46,
+      "excel_level": null,
+      "note": null,
+      "source_url": "https://tawaman.jp/property/osaka-naniwa/the-namba-tower-residence-in-namba-parks.html",
+      "excel_extra": null,
+      "excel_row": null,
+      "origin": "additions.json",
+      "sources": [
+        "https://tawaman.jp/property/osaka-naniwa/the-namba-tower-residence-in-namba-parks.html",
+        "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/"
+      ]
+    },
+    {
+      "id": "bld_7555f0a223",
+      "ward": "浪速区",
+      "ward_reading": "なにわく",
+      "name": "ローレルタワー難波",
+      "reading": "ろーれるたわー なんば",
+      "address": "大阪市浪速区湊町1丁目",
+      "town": "湊町",
+      "town_reading": "みなとまち",
+      "chome": 1,
+      "floors": 39,
+      "excel_level": null,
+      "note": null,
+      "source_url": "https://tawaman.jp/property/osaka-naniwa/laurel-tower-namba.html",
+      "excel_extra": null,
+      "excel_row": null,
+      "origin": "additions.json",
+      "sources": [
+        "https://tawaman.jp/property/osaka-naniwa/laurel-tower-namba.html",
+        "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/"
+      ]
+    },
+    {
+      "id": "bld_33ed1bcf94",
+      "ward": "浪速区",
+      "ward_reading": "なにわく",
+      "name": "ルネッサなんばタワー",
+      "reading": "るねっさ なんばたわー",
+      "address": "大阪市浪速区湊町2丁目2-10",
+      "town": "湊町",
+      "town_reading": "みなとまち",
+      "chome": 2,
+      "floors": 38,
+      "excel_level": null,
+      "note": null,
+      "source_url": "https://tawaman.jp/property/osaka-naniwa/renessa-namba-tower.html",
+      "excel_extra": null,
+      "excel_row": null,
+      "origin": "additions.json",
+      "sources": [
+        "https://tawaman.jp/property/osaka-naniwa/renessa-namba-tower.html",
+        "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/"
+      ]
+    },
+    {
+      "id": "bld_542505e0c3",
+      "ward": "浪速区",
+      "ward_reading": "なにわく",
+      "name": "なんばグランドマスターズタワー",
+      "reading": "なんば ぐらんどますたーずたわー",
+      "address": "大阪市浪速区敷津東2丁目1-24",
+      "town": "敷津東",
+      "town_reading": "しきつひがし",
+      "chome": 2,
+      "floors": 33,
+      "excel_level": null,
+      "note": null,
+      "source_url": "https://tawaman.jp/property/osaka-naniwa/namba-grand-masters-tower.html",
+      "excel_extra": null,
+      "excel_row": null,
+      "origin": "additions.json",
+      "sources": [
+        "https://tawaman.jp/property/osaka-naniwa/namba-grand-masters-tower.html",
+        "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/"
+      ]
+    },
+    {
+      "id": "bld_600a9d096f",
+      "ward": "浪速区",
+      "ward_reading": "なにわく",
+      "name": "THE CROSS CITY TOWER",
+      "reading": "ざ くろす してぃ たわー",
+      "address": "大阪市浪速区敷津東2丁目4-17",
+      "town": "敷津東",
+      "town_reading": "しきつひがし",
+      "chome": 2,
+      "floors": 30,
+      "excel_level": null,
+      "note": null,
+      "source_url": "https://tawaman.jp/property/osaka-naniwa/the-cross-city-tower.html",
+      "excel_extra": null,
+      "excel_row": null,
+      "origin": "additions.json",
+      "sources": [
+        "https://tawaman.jp/property/osaka-naniwa/the-cross-city-tower.html",
+        "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/"
+      ]
+    },
+    {
+      "id": "bld_9213a54b72",
+      "ward": "浪速区",
+      "ward_reading": "なにわく",
+      "name": "ローレルコート難波",
+      "reading": "ろーれるこーと なんば",
+      "address": "大阪市浪速区湊町1丁目4-36",
+      "town": "湊町",
+      "town_reading": "みなとまち",
+      "chome": 1,
+      "floors": 28,
+      "excel_level": null,
+      "note": null,
+      "source_url": "https://tawaman.jp/property/osaka-naniwa/laurel-court-namba.html",
+      "excel_extra": null,
+      "excel_row": null,
+      "origin": "additions.json",
+      "sources": [
+        "https://tawaman.jp/property/osaka-naniwa/laurel-court-namba.html",
+        "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/"
+      ]
+    },
+    {
+      "id": "bld_c1d43c7b5f",
+      "ward": "浪速区",
+      "ward_reading": "なにわく",
+      "name": "なんばセントラルプラザリバーガーデン",
+      "reading": "なんば せんとらるぷらざ りばーがーでん",
+      "address": "大阪市浪速区湊町2丁目2-5",
+      "town": "湊町",
+      "town_reading": "みなとまち",
+      "chome": 2,
+      "floors": 25,
+      "excel_level": null,
+      "note": "A棟・B棟・C棟",
+      "source_url": "https://tawaman.jp/property/osaka-naniwa/namba-central-plaza-river-garden.html",
+      "excel_extra": null,
+      "excel_row": null,
+      "origin": "additions.json",
+      "sources": [
+        "https://tawaman.jp/property/osaka-naniwa/namba-central-plaza-river-garden.html",
+        "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/"
+      ]
+    },
+    {
+      "id": "bld_f5db70a54f",
+      "ward": "浪速区",
+      "ward_reading": "なにわく",
+      "name": "エグゼレジデンスタワー",
+      "reading": "えぐぜれじでんすたわー",
+      "address": "大阪市浪速区日本橋3丁目4-9",
+      "town": "日本橋",
+      "town_reading": "にっぽんばし",
+      "chome": 3,
+      "floors": 23,
+      "excel_level": null,
+      "note": null,
+      "source_url": "https://tawaman.jp/property/osaka-naniwa/exe-residence-tower.html",
+      "excel_extra": null,
+      "excel_row": null,
+      "origin": "additions.json",
+      "sources": [
+        "https://tawaman.jp/property/osaka-naniwa/exe-residence-tower.html",
+        "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/"
+      ]
     }
   ]
 }
