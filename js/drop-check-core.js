@@ -7,7 +7,9 @@
 (function (root) {
   'use strict';
 
-  const WARD_ORDER = ['西区', '港区', '此花区', '福島区', '北区', '中央区', '浪速区'];
+  // 区ボタンの並び（本人が配達で使いやすい順）と表示用の短い名前。検索・絞り込みは正式な区名のまま
+  const WARD_ORDER = ['西区', '此花区', '港区', '福島区', '浪速区', '北区', '中央区'];
+  const WARD_SHORT = { all: '全', 西区: '西', 此花区: '此花', 港区: '港', 福島区: '福島', 浪速区: '浪速', 北区: '北', 中央区: '中央', other: '他' };
 
   function kataToHira(s) {
     return s.replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
@@ -94,9 +96,9 @@
   function wardChips(buildings) {
     const counts = {};
     buildings.forEach(b => { counts[b.ward] = (counts[b.ward] || 0) + 1; });
-    const chips = WARD_ORDER.map(w => ({ id: w, label: w, count: counts[w] || 0 }));
+    const chips = WARD_ORDER.map(w => ({ id: w, label: w, short: WARD_SHORT[w], count: counts[w] || 0 }));
     const other = Object.keys(counts).filter(w => !WARD_ORDER.includes(w)).reduce((s, w) => s + counts[w], 0);
-    chips.push({ id: 'other', label: 'その他', count: other });
+    chips.push({ id: 'other', label: 'その他', short: WARD_SHORT.other, count: other });
     return chips;
   }
 
@@ -222,7 +224,7 @@
     try { storage.setItem(VIEW_KEY, JSON.stringify({ sort: SORTS.includes(sort) ? sort : 'name' })); return true; } catch (e) { return false; }
   }
 
-  const api = { WARD_ORDER, RATING_GROUP_ORDER, groupByRating, VIEW_KEY, loadSort, saveSort, normalize, haystack, parseQuery, search, wardChips, ratingInfo, byReading,
+  const api = { WARD_ORDER, WARD_SHORT, RATING_GROUP_ORDER, groupByRating, VIEW_KEY, loadSort, saveSort, normalize, haystack, parseQuery, search, wardChips, ratingInfo, byReading,
     PERSONAL_KEY, RATINGS, NOTE_MAX, noteLength, createPersonalStore, attachPersonal };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DropCheck = api;

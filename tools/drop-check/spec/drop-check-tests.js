@@ -270,7 +270,11 @@ test('区フィルター: 西区8・福島区6・港区4・北区13・此花区3
   assert.strictEqual(s('', 'all').length, 52);
   assert.ok(s('', '西区').every(b => b.ward === '西区'));
   const chips = D.wardChips(B);
-  assert.deepStrictEqual(chips.map(c => c.label), ['西区', '港区', '此花区', '福島区', '北区', '中央区', '浪速区', 'その他']);
+  assert.deepStrictEqual(chips.map(c => c.label), ['西区', '此花区', '港区', '福島区', '浪速区', '北区', '中央区', 'その他'], '配達で使う順');
+  assert.deepStrictEqual(chips.map(c => c.short), ['西', '此花', '港', '福島', '浪速', '北', '中央', '他'], '表示は短い名前');
+  assert.strictEqual(D.WARD_SHORT.all, '全');
+  assert.deepStrictEqual(chips.map(c => c.count), [8, 3, 4, 6, 8, 13, 10, 0]);
+  assert.deepStrictEqual(names(s('', '此花区')), names(s('此花区')), '絞り込み・検索は正式な区名のまま');
 });
 
 test('あいうえお順（読み順）', () => {

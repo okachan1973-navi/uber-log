@@ -133,9 +133,15 @@ async function run() {
       check('検索欄は横幅いっぱい・横スクロールなし', Math.abs(lay.qW - lay.inner) < 1 && lay.qRight <= lay.vw && lay.sw <= lay.vw, lay);
       check('検索欄は大きく（高さ50px以上）・文字16px以上（iPhoneで自動ズームしない）', lay.qH >= 50 && lay.qFont >= 16, lay);
       check('区ボタンは押しやすい大きさ（44px以上）', lay.chipMinH >= 44, lay);
-      check('区ボタン: すべて・西区・港区・此花区・福島区・北区・中央区・浪速区・その他', lay.chipLabels.join(',') === 'すべて,西区,港区,此花区,福島区,北区,中央区,浪速区,その他', lay.chipLabels);
+      check('区ボタン: 全・西・此花・港・福島・浪速・北・中央・他（配達で使う順・「区」なし）', lay.chipLabels.join(',') === '全,西,此花,港,福島,浪速,北,中央,他', lay.chipLabels);
+      const chipRow = await p.ev(`(() => { const box = document.getElementById('dc-wards'); const bs = [...box.querySelectorAll('.dc-ward')]; const R = bs.map(b => b.getBoundingClientRect());
+        return { fits: box.scrollWidth <= box.clientWidth, oneRow: R.every(r => Math.abs(r.top - R[0].top) < 1), minW: Math.min(...R.map(r => r.width)), minH: Math.min(...R.map(r => r.height)),
+          font: Math.min(...bs.map(b => parseFloat(getComputedStyle(b).fontSize))), aria: bs.map(b => b.getAttribute('aria-label')).slice(0, 3) }; })()`);
+      check('区ボタンは1列（2段にしない）・タップ領域 幅36px以上×高さ44px以上・文字16px', chipRow.oneRow && chipRow.minW >= 36 && chipRow.minH >= 44 && chipRow.font >= 16, chipRow);
+      check('読み上げは正式な区名＋件数（すべて 52件・西区 8件…）', chipRow.aria.join() === 'すべて 52件,西区 8件,此花区 3件', chipRow.aria);
+      if (w >= 390) check('390px以上: 9個すべて横スクロールなしで1画面に収まる', chipRow.fits, chipRow);
       const chipBox = await p.ev(`(() => { const box = document.getElementById('dc-wards'); const last = [...box.querySelectorAll('.dc-ward')].pop(); box.scrollLeft = box.scrollWidth; const r = last.getBoundingClientRect(); const out = { overflowX: getComputedStyle(box).overflowX, lastRight: r.right, vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth }; box.scrollLeft = 0; return out; })()`);
-      check('区ボタンは横スクロールで最後（その他）まで届く・ページは横スクロールしない', chipBox.overflowX === 'auto' && chipBox.lastRight <= chipBox.vw + 1 && chipBox.sw <= chipBox.vw, chipBox);
+      check('区ボタンは最後（他）まで届く（狭い画面は横スクロール）・ページは横スクロールしない', chipBox.overflowX === 'auto' && chipBox.lastRight <= chipBox.vw + 1 && chipBox.sw <= chipBox.vw, chipBox);
       check('最初の物件がスクロールなしで見える・名前は17px以上・押しやすい高さ（44px以上）', lay.firstRowTop < h * 0.6 && lay.firstRowH >= 44 && lay.nameFont >= 17, lay);
       const cards = await p.ev(`(() => { const its = [...document.querySelectorAll('#dc-list .dc-item')]; const pitch = its.map(i => i.getBoundingClientRect().height + parseFloat(getComputedStyle(i).marginBottom));
         const nav = document.querySelector('.bottom-nav').getBoundingClientRect(); const it = its.find(li => li.querySelector('.dc-name').textContent === '阿波座ライズタワーズ フラッグ46');

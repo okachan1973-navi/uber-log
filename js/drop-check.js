@@ -23,9 +23,10 @@
 
   // ---- 表示 ----
   function renderWards() {
-    const chips = [{ id: 'all', label: 'すべて', count: buildings.length }].concat(D.wardChips(buildings));
+    // 表示は短い名前（全・西・此花…）だけで1列に収める。件数は選んだ後に一覧上部へ出る。読み上げは正式名＋件数
+    const chips = [{ id: 'all', label: 'すべて', short: D.WARD_SHORT.all, count: buildings.length }].concat(D.wardChips(buildings));
     $('dc-wards').innerHTML = chips.map(c => `<button type="button" class="dc-ward${state.ward === c.id ? ' on' : ''}" data-ward="${esc(c.id)}"
-      aria-pressed="${state.ward === c.id}" ${c.count ? '' : 'disabled'}>${esc(c.label)}<small>${c.count}</small></button>`).join('');
+      aria-pressed="${state.ward === c.id}" aria-label="${esc(c.label)} ${c.count}件" ${c.count ? '' : 'disabled'}>${esc(c.short)}</button>`).join('');
   }
 
   // 参考: 同じ町（丁目）への実走記録（従来の地雷DBの実走事例）。物件の評価は変えない

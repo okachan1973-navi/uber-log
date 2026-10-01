@@ -38,16 +38,18 @@
   color: var(--text-muted); font-size: 24px; line-height: 1; cursor: pointer;
 }
 
-/* 区ボタン: 大きく、入りきらなければ横スクロール（ページ全体は横スクロールしない） */
+/* 区ボタン: 短い名前（全・西・此花…）で1列。幅が足りる画面では横幅いっぱいに均等に広がり、
+   足りない画面だけ従来どおり横スクロール（ページ全体は横スクロールしない） */
 .dc-wards {
-  display: flex; gap: 8px; margin-top: 8px;
+  display: flex; gap: 3px; margin: 8px -8px 0;
   overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none;
 }
 .dc-wards::-webkit-scrollbar { display: none; }
 .dc-ward {
-  flex: none;
+  flex: 1 0 auto;
+  min-width: 36px;
   min-height: 46px;
-  padding: 6px 14px;
+  padding: 6px 4px;
   border-radius: 12px;
   border: 1px solid var(--border-color);
   background: var(--bg-card-subtle);
@@ -58,9 +60,7 @@
   cursor: pointer;
   white-space: nowrap;
 }
-.dc-ward small { margin-left: 5px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
 .dc-ward.on { background: rgba(6, 193, 103, 0.2); border-color: var(--color-uber-green); color: #d1fae5; }
-.dc-ward.on small { color: #a7f3d0; }
 .dc-ward:disabled { opacity: 0.4; }
 
 .dc-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 2px 4px; }
