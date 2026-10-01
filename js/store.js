@@ -3747,6 +3747,92 @@ const CONFIRMED_SEED_DATA = {
         "source": "official-import-v1",
         "importedAt": "2026-09-29T09:10:51.418Z"
       }
+    },
+    "2026-10-01": {
+      "date": "2026-10-01",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 14.14,
+      "tripsCount": 5,
+      "officialPoints": 7,
+      "deliveriesCount": 7,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_1001_1",
+          "index": 1,
+          "completedAt": "09:29",
+          "restaurant": "マクドナルド 九条店 McDonald's KUJO",
+          "area": "大阪市西区本田2丁目",
+          "fee": 320,
+          "distanceKm": 2.14,
+          "durationStr": "16分7秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_1001_2",
+          "index": 2,
+          "completedAt": "09:50",
+          "restaurant": "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE",
+          "area": "大阪市西区境川2丁目",
+          "fee": 469,
+          "distanceKm": 3.32,
+          "durationStr": "23分2秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_1001_3",
+          "index": 3,
+          "completedAt": "11:11",
+          "restaurant": "マクドナルド 九条店 McDonald's KUJO",
+          "area": "大阪市西区立売堀6丁目",
+          "fee": 320,
+          "distanceKm": 1.38,
+          "durationStr": "10分59秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_1001_4",
+          "index": 4,
+          "completedAt": "11:35",
+          "restaurant": "餃子の王将 大阪九条",
+          "area": "大阪市西区南堀江4丁目",
+          "fee": 394,
+          "distanceKm": 1.54,
+          "durationStr": "13分27秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）"
+        },
+        {
+          "id": "del_1001_5",
+          "index": 5,
+          "completedAt": "13:00",
+          "restaurant": "京都北白川 ラーメン魁力屋 イオンモール大阪ドームシティ店",
+          "area": "大阪市浪速区敷津西",
+          "fee": 805,
+          "distanceKm": 5.76,
+          "durationStr": "34分7秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）／配達先に丁目表記なし（表示どおり）"
+        }
+      ],
+      "quests": [],
+      "sales": {
+        "delivery": 2308,
+        "quest": 0,
+        "adjustment": 0,
+        "other": 0,
+        "total": 2308
+      },
+      "expenses": [],
+      "officialImport": {
+        "source": "official-import-v1",
+        "importedAt": "2026-10-01T07:48:25.217Z"
+      }
     }
   },
   "targetQuests": [
