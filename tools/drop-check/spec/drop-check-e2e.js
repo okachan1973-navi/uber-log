@@ -181,7 +181,12 @@ async function run() {
       await p.type('島屋');
       await p.tapSel('#dc-list .dc-item:first-child .dc-row');
       let d = await p.ev(`(() => { const it = document.querySelector('#dc-list .dc-item:first-child'); const det = it.querySelector('.dc-detail'); return { open: !det.hidden, text: det.textContent.replace(/\\s+/g, ' '), link: !!det.querySelector('a[href^="https://"]'), rel: det.querySelector('.dc-rel') ? det.querySelector('.dc-rel').textContent.replace(/\\s+/g, ' ') : null, expanded: it.querySelector('.dc-row').getAttribute('aria-expanded') }; })()`);
-      check('タップで詳細を開く（所在地・階数・Uber目安・備考・情報源・本人評価 未検証）', d.open && d.expanded === 'true' && ['所在地', '階数', 'Uber目安', '備考', '情報源', '未検証'].every(k => d.text.includes(k)) && d.link, d.text.slice(0, 160));
+      check('タップで詳細を開く（本人評価・本人メモ・所在地・階数・一般目安・備考・情報源）', d.open && d.expanded === 'true' && ['本人評価', '未検証', '本人メモ', '所在地', '階数', '一般目安', '備考', '情報源'].every(k => d.text.includes(k)) && d.link, d.text.slice(0, 200));
+      const ed = await p.ev(`(() => { const it = document.querySelector('#dc-list .dc-item:first-child'); const bs = [...it.querySelectorAll('.dc-rbtn')].map(x => x.getBoundingClientRect()); const inp = it.querySelector('.dc-memo-input'); const sv = it.querySelector('.dc-memo-save').getBoundingClientRect();
+        return { labels: [...it.querySelectorAll('.dc-rbtn')].map(x => x.textContent.trim()), minH: Math.min(...bs.map(r => r.height)), sameRow: bs.every(r => Math.abs(r.top - bs[0].top) < 1), right: Math.max(...bs.map(r => r.right), sv.right), vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth,
+          inputFont: parseFloat(getComputedStyle(inp).fontSize), inputH: inp.getBoundingClientRect().height, saveH: sv.height, unrate: !!it.querySelector('[data-unrate]'), count: it.querySelector('[data-count]').textContent }; })()`);
+      check('評価ボタン3つ（🟢問題なし・🟡注意・🔴避けたい）が1列で押しやすい・未検証には「戻す」なし', ed.labels.join(',') === '🟢問題なし,🟡注意,🔴避けたい' && ed.minH >= 56 && ed.sameRow && ed.right <= ed.vw && ed.sw <= ed.vw && !ed.unrate, ed);
+      check('メモ欄: 1行・文字17px（自動ズームしない）・保存ボタン44px以上・「0/20文字」表示', ed.inputFont >= 16 && ed.inputH >= 44 && ed.saveH >= 44 && ed.count === '0/20文字', ed);
       check('詳細に「同じ町への実走記録」（9/17 モス→島屋6丁目）を参考表示', !!d.rel && /島屋6丁目/.test(d.rel) && /モスバーガー/.test(d.rel), d.rel);
       await p.shot(`${w}_4_detail`);
       await p.tapSel('#dc-list .dc-item:first-child .dc-row');
@@ -214,6 +219,88 @@ async function run() {
       await p.tapSel('.bottom-nav [data-tab="today"]', false);
       const other = await p.ev(`({ today: document.getElementById('tab-today').classList.contains('active'), avoid: document.getElementById('tab-avoidance').classList.contains('active'), nav: [...document.querySelectorAll('.bottom-nav .nav-label')].map(e => e.textContent).join(' ') })`);
       check('稼働タブへ戻れる・下部ナビ6項目のまま', other.today && !other.avoid && other.nav === '稼働 履歴 分析 地雷 地図 ルート', other);
+      check('JavaScript エラーなし', p.errors.length === 0, p.errors);
+      await p.close();
+    }
+
+    for (const [w, h] of [[390, 844], [320, 568]]) {
+      console.log(`\n[本人評価・本人メモ ${w}x${h}]`);
+      const p = await openApp(b, base, { width: w, height: h, initScript: NO_SR });
+      await p.ev(`(() => { try { localStorage.removeItem('uber_drop_personal_v1'); } catch (e) {} })()`);
+      await p.tapSel('.bottom-nav [data-tab="avoidance"]', false);
+      await sleep(300);
+      const card = async () => p.ev(`(() => { const it = [...document.querySelectorAll('#dc-list .dc-item')].find(li => li.querySelector('.dc-name').textContent === '阿波座ライズタワーズ フラッグ46'); if (!it) return null;
+        return { rate: it.querySelector('.dc-rate').textContent.trim(), cls: it.className, memo: it.querySelector('.dc-memo-line') ? it.querySelector('.dc-memo-line').textContent : null, saved: it.querySelector('.dc-saved') ? it.querySelector('.dc-saved').textContent : null,
+          on: [...it.querySelectorAll('.dc-rbtn.on')].map(x => x.dataset.rate), unrate: it.querySelector('[data-unrate]') ? it.querySelector('[data-unrate]').textContent : null, open: it.classList.contains('open') }; })()`);
+      const sel = '#dc-list .dc-item:first-child';
+      // 物件検索 → タップ → 「避けたい」
+      await p.type('ライズ');
+      await p.tapSel(`${sel} .dc-row`);
+      let c = await card();
+      check('検索→物件をタップ → 詳細が開き「⚪ 未検証」', c.open && c.rate === '⚪ 未検証' && c.on.length === 0, c);
+      await p.tapSel(`${sel} [data-rate="avoid"]`);
+      c = await card();
+      check('「🔴 避けたい」をタップ → 一覧のカードに即反映（左端も赤）・保存メッセージ', c.rate === '🔴 避けたい' && /rated/.test(c.cls) && /r-avoid/.test(c.cls) && c.on.join() === 'avoid' && /避けたい.*保存/.test(c.saved) && c.unrate === '未検証に戻す', c);
+      await p.shot(`rate_${w}_avoid`);
+      // 本人メモ
+      await p.tapSel(`${sel} .dc-memo-input`);
+      await p.s('Input.insertText', { text: '3階経由・館内長い' });
+      await sleep(150);
+      const cnt = await p.ev(`document.querySelector('${sel} [data-count]').textContent`);
+      check('メモ入力中は文字数を表示（9/20文字）', cnt === '9/20文字', cnt);
+      await p.tapSel(`${sel} [data-memo-save]`);
+      c = await card();
+      check('保存 → 一覧カードに「3階経由・館内長い」を1行表示', c.memo === '「3階経由・館内長い」' && /メモを保存/.test(c.saved), c);
+      const vis = await p.ev(`(() => { const it = document.querySelector('${sel}'); const badge = it.querySelector('.dc-rate').getBoundingClientRect(); const st = document.querySelector('.dc-sticky').getBoundingClientRect(); return { badgeTop: badge.top, stickyBottom: st.bottom, vh: innerHeight }; })()`);
+      check('保存後、カード先頭（本人評価バッジ）が検索欄の下に見えている', vis.badgeTop >= vis.stickyBottom && vis.badgeTop < vis.vh * 0.6, vis);
+      await p.shot(`rate_${w}_memo`);
+      // 別の評価へ変更・メモ変更
+      await p.tapSel(`${sel} [data-rate="ok"]`);
+      c = await card();
+      check('評価を「🟢 問題なし」に変更', c.rate === '🟢 問題なし' && /r-ok/.test(c.cls) && c.on.join() === 'ok', c);
+      await p.ev(`(() => { const i = document.querySelector('${sel} .dc-memo-input'); i.value = ''; i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+      await p.tapSel(`${sel} .dc-memo-input`);
+      await p.s('Input.insertText', { text: 'EV速い' });
+      await p.s('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13 });
+      await sleep(200);
+      c = await card();
+      check('メモ変更（キーボードの完了キーでも保存）', c.memo === '「EV速い」', c);
+      // 文字数上限
+      await p.ev(`(() => { const i = document.querySelector('${sel} .dc-memo-input'); i.value = ''; i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+      await p.tapSel(`${sel} .dc-memo-input`);
+      await p.s('Input.insertText', { text: 'あいうえおかきくけこさしすせそたちつてとな' });
+      await sleep(150);
+      const lim = await p.ev(`({ count: document.querySelector('${sel} [data-count]').textContent, over: document.querySelector('${sel} [data-count]').classList.contains('over'), disabled: document.querySelector('${sel} [data-memo-save]').disabled })`);
+      check('21文字 → 「21/20文字」を赤表示・保存ボタン無効', lim.count === '21/20文字' && lim.over && lim.disabled, lim);
+      await p.ev(`(() => { const i = document.querySelector('${sel} .dc-memo-input'); i.value = 'EV速い'; i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+      // 再読み込みしても残る
+      await p.s('Page.reload', {});
+      for (let i = 0; i < 40; i++) { await sleep(250); try { if (await p.ev('document.readyState === "complete" && !!window.__dropCheck')) break; } catch (e) { /* 読み込み中 */ } }
+      await p.tapSel('.bottom-nav [data-tab="avoidance"]', false);
+      await sleep(300);
+      await p.type('ライズ');
+      c = await card();
+      check('再読み込み後も評価とメモが残る（🟢 問題なし・「EV速い」）', c.rate === '🟢 問題なし' && c.memo === '「EV速い」', c);
+      // 区フィルター・検索結果でも反映、件数は44のまま
+      await p.ev(`(() => { const i = document.getElementById('dc-query'); i.value = ''; i.dispatchEvent(new Event('input')); })()`);
+      await p.tapSel('.dc-ward[data-ward="西区"]');
+      c = await card();
+      const n = await p.ev(`document.querySelectorAll('#dc-list .dc-item').length`);
+      check('区フィルター（西区）でも本人評価・メモを表示・8件のまま', c.rate === '🟢 問題なし' && c.memo === '「EV速い」' && n === 8, { c, n });
+      await p.tapSel('.dc-ward[data-ward="all"]');
+      check('全件は44件のまま', await p.ev(`document.querySelectorAll('#dc-list .dc-item').length`) === 44);
+      // 未検証に戻す（2回押し）
+      await p.type('ライズ');
+      await p.tapSel(`${sel} .dc-row`);
+      await p.tapSel(`${sel} [data-unrate]`);
+      c = await card();
+      check('「未検証に戻す」1回目は確認表示だけ（評価はそのまま）', c.rate === '🟢 問題なし' && c.unrate === 'もう一度押すと未検証に戻ります', c);
+      await p.tapSel(`${sel} [data-unrate]`);
+      c = await card();
+      const stored = await p.ev(`JSON.parse(localStorage.getItem('uber_drop_personal_v1')).items`);
+      const rec = Object.values(stored)[0];
+      check('2回目で未検証に戻る（評価 null・メモは残る）', c.rate === '⚪ 未検証' && !/rated/.test(c.cls) && c.memo === '「EV速い」' && rec.rating === null && rec.note === 'EV速い', { c, rec });
+      check('横スクロールなし', await p.ev('document.documentElement.scrollWidth <= document.documentElement.clientWidth'));
       check('JavaScript エラーなし', p.errors.length === 0, p.errors);
       await p.close();
     }

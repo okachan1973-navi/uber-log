@@ -100,15 +100,103 @@
     return chips;
   }
 
-  /** 本人評価の表示（Excel 掲載だけでは評価しない＝未評価は「未検証」） */
-  function ratingInfo(b, levels) {
-    const r = b.my && b.my.rating;
-    const lv = (levels || {})[r];
-    if (r && lv) return { code: r, icon: lv.icon, label: lv.label };
-    return { code: null, icon: '🟡', label: '未検証' };
+  // ---- 本人評価・本人メモ（基礎データとは別に保存。Excel を取り込み直しても消えない） ----
+  // 保存形式（端末の localStorage: uber_drop_personal_v1。将来 Supabase の uber_metadata に1キーで載せられる形）
+  // { schema, updated_at, items: { [物件id]: { rating: 'ok'|'caution'|'avoid'|null, note: string|null,
+  //   tags: [] /* 将来の理由タグ用 */, verified_at, rating_updated_at, note_updated_at, updated_at,
+  //   ref: { name, ward, address } /* 物件名の控え。万一 id が変わっても名前で付け直せる */ } } }
+  const PERSONAL_KEY = 'uber_drop_personal_v1';
+  const PERSONAL_SCHEMA = 'uber_drop_personal/1';
+  const RATINGS = ['ok', 'caution', 'avoid'];
+  const NOTE_MAX = 20;
+
+  /** 文字数（日本語・絵文字も1文字として数える） */
+  function noteLength(s) { return Array.from(String(s || '').normalize('NFC')).length; }
+
+  /** 保存先（localStorage と同じ getItem/setItem を持つもの）を受け取って本人データを読み書きする */
+  function createPersonalStore(storage, now) {
+    const clock = now || (() => new Date().toISOString());
+    let data = null;
+    const empty = () => ({ schema: PERSONAL_SCHEMA, updated_at: null, items: {} });
+    function load() {
+      try {
+        const raw = storage && storage.getItem(PERSONAL_KEY);
+        const d = raw ? JSON.parse(raw) : null;
+        data = d && d.schema === PERSONAL_SCHEMA && d.items ? d : empty();
+      } catch (e) { data = empty(); }
+      return data;
+    }
+    function persist() {
+      data.updated_at = clock();
+      try { storage && storage.setItem(PERSONAL_KEY, JSON.stringify(data)); return true; } catch (e) { return false; }
+    }
+    function touch(b) {
+      if (!data) load();
+      const cur = data.items[b.id] || { rating: null, note: null, tags: [], verified_at: null, rating_updated_at: null, note_updated_at: null, updated_at: null };
+      cur.ref = { name: b.name, ward: b.ward, address: b.address };
+      data.items[b.id] = cur;
+      return cur;
+    }
+    function tidy(id) {
+      const it = data.items[id];
+      if (it && !it.rating && !it.note && !(it.tags && it.tags.length)) delete data.items[id];
+    }
+    return {
+      load,
+      all() { return (data || load()).items; },
+      get(id) { return (data || load()).items[id] || null; },
+      /** 本人評価を付ける・変える（初めて付けた時点で本人確認済み） */
+      setRating(b, rating) {
+        if (!RATINGS.includes(rating)) throw new Error('評価は ok / caution / avoid のいずれか');
+        const it = touch(b);
+        const t = clock();
+        if (!it.verified_at) it.verified_at = t;
+        it.rating = rating; it.rating_updated_at = t; it.updated_at = t;
+        return persist();
+      },
+      /** 未検証に戻す（評価だけ消す。メモは残す） */
+      clearRating(b) {
+        if (!data) load();
+        const it = data.items[b.id];
+        if (!it) return true;
+        const t = clock();
+        it.rating = null; it.verified_at = null; it.rating_updated_at = t; it.updated_at = t;
+        tidy(b.id);
+        return persist();
+      },
+      /** 本人メモ（1行・最大 NOTE_MAX 文字。空なら削除） */
+      setNote(b, note) {
+        const text = String(note || '').replace(/[\r\n]+/g, ' ').trim();
+        if (noteLength(text) > NOTE_MAX) throw new Error(`メモは${NOTE_MAX}文字まで`);
+        const it = touch(b);
+        const t = clock();
+        it.note = text || null; it.note_updated_at = t; it.updated_at = t;
+        tidy(b.id);
+        return persist();
+      }
+    };
   }
 
-  const api = { WARD_ORDER, normalize, haystack, parseQuery, search, wardChips, ratingInfo, byReading };
+  /** 物件に本人データ（my）を付けた表示用の配列を作る。id が見つからない記録は物件名の控えで付け直す */
+  function attachPersonal(buildings, items) {
+    const its = items || {};
+    const byId = new Set(buildings.map(b => b.id));
+    const orphanByName = {};
+    Object.keys(its).forEach(id => { if (!byId.has(id) && its[id].ref && its[id].ref.name) orphanByName[normalize(its[id].ref.name)] = its[id]; });
+    return buildings.map(b => Object.assign({}, b, { my: its[b.id] || orphanByName[normalize(b.name)] || null }));
+  }
+
+  /** 本人評価の表示（評価が無ければ「未検証」＝評価ではない状態） */
+  function ratingInfo(b, data) {
+    const r = b.my && b.my.rating;
+    const lv = ((data && data.rating_levels) || {})[r];
+    if (r && lv) return { code: r, icon: lv.icon, label: lv.label, verified: true };
+    const u = (data && data.unverified) || { icon: '⚪', label: '未検証' };
+    return { code: null, icon: u.icon, label: u.label, verified: false };
+  }
+
+  const api = { WARD_ORDER, normalize, haystack, parseQuery, search, wardChips, ratingInfo, byReading,
+    PERSONAL_KEY, RATINGS, NOTE_MAX, noteLength, createPersonalStore, attachPersonal };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DropCheck = api;
 })(typeof window !== 'undefined' ? window : globalThis);

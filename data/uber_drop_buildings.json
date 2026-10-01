@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "description": "DROP先照合用の物件リスト（高層マンション等）。配達に時間がかかる可能性があるため確認したい物件で、「地雷」の確定ではない。本人の実体験評価は my.rating（A=避けたい実体験あり / B=注意 / C=未検証、null=未評価）。",
+  "description": "DROP先照合用の物件リスト（高層マンション等）。配達に時間がかかる可能性があるため確認したい物件で、「地雷」の確定ではない。本人評価・本人メモはこのファイルに入れず、アプリの端末保存（uber_drop_personal_v1）に物件 id ごとに持つ。",
   "source": {
     "file": "大阪市_タワマン一覧_Uber配達用.xlsx",
     "sheet": "タワマン一覧",
@@ -15,18 +15,22 @@
     }
   },
   "rating_levels": {
-    "A": {
-      "label": "避けたい（実体験）",
-      "icon": "🔴"
+    "ok": {
+      "label": "問題なし",
+      "icon": "🟢"
     },
-    "B": {
+    "caution": {
       "label": "注意",
-      "icon": "🟠"
-    },
-    "C": {
-      "label": "未検証",
       "icon": "🟡"
+    },
+    "avoid": {
+      "label": "避けたい",
+      "icon": "🔴"
     }
+  },
+  "unverified": {
+    "label": "未検証",
+    "icon": "⚪"
   },
   "buildings": [
     {
@@ -44,13 +48,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 2,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 2
     },
     {
       "id": "bld_c029fa3c02",
@@ -67,13 +65,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 3,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 3
     },
     {
       "id": "bld_6f8fa804c3",
@@ -90,13 +82,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 4,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 4
     },
     {
       "id": "bld_e8fb0e3c89",
@@ -113,13 +99,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 5,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 5
     },
     {
       "id": "bld_103bc13b3d",
@@ -136,13 +116,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 6,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 6
     },
     {
       "id": "bld_1ea5013975",
@@ -159,13 +133,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 7,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 7
     },
     {
       "id": "bld_d3e1d1e4cb",
@@ -182,13 +150,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 8,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 8
     },
     {
       "id": "bld_cd2d5410a5",
@@ -205,13 +167,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 9,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 9
     },
     {
       "id": "bld_6a96d4fee8",
@@ -228,13 +184,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市福島区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 10,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 10
     },
     {
       "id": "bld_dd755ebf19",
@@ -251,13 +201,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市福島区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 11,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 11
     },
     {
       "id": "bld_c08b0906b1",
@@ -274,13 +218,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市福島区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 12,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 12
     },
     {
       "id": "bld_1af6404cde",
@@ -297,13 +235,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市福島区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 13,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 13
     },
     {
       "id": "bld_5bf323c6d2",
@@ -320,13 +252,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市福島区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 14,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 14
     },
     {
       "id": "bld_5f96b5ad79",
@@ -343,13 +269,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市福島区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 15,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 15
     },
     {
       "id": "bld_5db21bc2cf",
@@ -366,13 +286,7 @@
       "note": "弁天町",
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市住之江区・港区・此花区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 16,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 16
     },
     {
       "id": "bld_5fa50a029b",
@@ -389,13 +303,7 @@
       "note": "弁天町",
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 17,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 17
     },
     {
       "id": "bld_03d0484b64",
@@ -412,13 +320,7 @@
       "note": "弁天町",
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 18,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 18
     },
     {
       "id": "bld_11785677ca",
@@ -435,13 +337,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市住之江区・港区・此花区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 19,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 19
     },
     {
       "id": "bld_32363ee47b",
@@ -458,13 +354,7 @@
       "note": null,
       "source_url": "https://tawaman.jp/ranking/osaka-kita.html",
       "excel_extra": null,
-      "excel_row": 20,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 20
     },
     {
       "id": "bld_5e65bf3b70",
@@ -481,13 +371,7 @@
       "note": null,
       "source_url": "https://tawaman.jp/ranking/osaka-kita.html",
       "excel_extra": null,
-      "excel_row": 21,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 21
     },
     {
       "id": "bld_38344d124d",
@@ -504,13 +388,7 @@
       "note": null,
       "source_url": "https://tawaman.jp/ranking/osaka-kita.html",
       "excel_extra": null,
-      "excel_row": 22,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 22
     },
     {
       "id": "bld_7696609a61",
@@ -527,13 +405,7 @@
       "note": null,
       "source_url": "https://tawaman.jp/ranking/osaka-kita.html",
       "excel_extra": null,
-      "excel_row": 23,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 23
     },
     {
       "id": "bld_1fd1448790",
@@ -550,13 +422,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 24,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 24
     },
     {
       "id": "bld_ea5236f27b",
@@ -573,13 +439,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 25,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 25
     },
     {
       "id": "bld_30427b5e54",
@@ -596,13 +456,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 26,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 26
     },
     {
       "id": "bld_4835da7bf8",
@@ -619,13 +473,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 27,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 27
     },
     {
       "id": "bld_810e873cf4",
@@ -642,13 +490,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 28,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 28
     },
     {
       "id": "bld_343a275532",
@@ -665,13 +507,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 29,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 29
     },
     {
       "id": "bld_fa8a846011",
@@ -688,13 +524,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 30,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 30
     },
     {
       "id": "bld_f6ff02e3f8",
@@ -711,13 +541,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 31,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 31
     },
     {
       "id": "bld_0455f75c47",
@@ -734,13 +558,7 @@
       "note": null,
       "source_url": "https://www.tower.ne.jp/大阪市内の全タワーマンション一覧/",
       "excel_extra": null,
-      "excel_row": 32,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 32
     },
     {
       "id": "bld_73df1d540b",
@@ -757,13 +575,7 @@
       "note": "USJ周辺",
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市住之江区・港区・此花区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 33,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 33
     },
     {
       "id": "bld_6b4148f093",
@@ -780,13 +592,7 @@
       "note": "USJ周辺",
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市住之江区・港区・此花区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 34,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 34
     },
     {
       "id": "bld_fe33411933",
@@ -803,13 +609,7 @@
       "note": "USJ周辺",
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市住之江区・港区・此花区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 35,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 35
     },
     {
       "id": "bld_5fdfb5f5e0",
@@ -826,13 +626,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市中央区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 36,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 36
     },
     {
       "id": "bld_832fd0c0a4",
@@ -849,13 +643,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市中央区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 37,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 37
     },
     {
       "id": "bld_140157314f",
@@ -872,13 +660,7 @@
       "note": "855戸級",
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市中央区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 38,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 38
     },
     {
       "id": "bld_8a8a1906a5",
@@ -895,13 +677,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市中央区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 39,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 39
     },
     {
       "id": "bld_077f093b82",
@@ -918,13 +694,7 @@
       "note": "511戸",
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市中央区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 40,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 40
     },
     {
       "id": "bld_7266479cdf",
@@ -941,13 +711,7 @@
       "note": "311戸",
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市中央区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 41,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 41
     },
     {
       "id": "bld_a482df37c8",
@@ -964,13 +728,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市中央区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 42,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 42
     },
     {
       "id": "bld_1702af6860",
@@ -987,13 +745,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市中央区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 43,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 43
     },
     {
       "id": "bld_a33487ff74",
@@ -1010,13 +762,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市中央区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 44,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 44
     },
     {
       "id": "bld_dfe3b6fb6f",
@@ -1033,13 +779,7 @@
       "note": null,
       "source_url": "https://osaka-tower.com/大阪市エリア別タワーマンション一覧/大阪市中央区のタワーマンション/",
       "excel_extra": null,
-      "excel_row": 45,
-      "my": {
-        "rating": null,
-        "note": null,
-        "visits": null,
-        "last_visit": null
-      }
+      "excel_row": 45
     }
   ]
 }

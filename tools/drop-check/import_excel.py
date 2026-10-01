@@ -6,8 +6,11 @@
 
 - Excel は読み取りのみ（変更・削除しない）。全列を保持する。
 - 読み（あいうえお順・ひらがな検索用）は tools/drop-check/readings.json から付ける。
-- 再取込しても、本人が付けた評価・メモ（my）と id は物件ごとに引き継ぐ。
-- 「Uber目安」は Excel 作成時の一般的な目安で、本人の実体験評価ではない（my.rating は初期 null＝未検証）。
+- 本人評価・本人メモはここ（基礎データ）には入れない。アプリ側の別保存（localStorage: uber_drop_personal_v1）に
+  物件 id ごとに持つので、Excel を何度取り込み直しても消えない。
+- そのため id は再取込でも変わらないようにする: 前回のデータに同じ名前の物件があればその id、
+  なければ同じ区・同じ所在地の物件（1件だけ一致）の id を引き継ぐ。どちらも無い物件だけ新しい id。
+- 「Uber目安」は Excel 作成時の一般的な目安で、本人の実体験評価ではない。
 - 区別集計シートがあれば件数と照合し、一致しなければ中止する。
 """
 import hashlib
@@ -51,17 +54,37 @@ def split_address(address, ward):
     return (m3.group(1) if m3 else rest), None
 
 
-def load_existing():
-    if not os.path.exists(OUT_JSON):
-        return {}
-    with open(OUT_JSON, encoding='utf-8') as f:
-        data = json.load(f)
-    return {b['id']: b for b in data.get('buildings', [])}
+def load_existing(path):
+    if not os.path.exists(path):
+        return []
+    with open(path, encoding='utf-8') as f:
+        return json.load(f).get('buildings', [])
+
+
+def keep_id(name, ward, address, previous, used):
+    """前回の id を引き継ぐ（名前一致 → 区＋所在地が1件だけ一致）。本人データの紐付けを守るため"""
+    n = unicodedata.normalize('NFKC', name)
+    by_name = [b for b in previous if unicodedata.normalize('NFKC', b['name']) == n and b['id'] not in used]
+    if by_name:
+        return by_name[0]['id']
+    a = unicodedata.normalize('NFKC', address or '')
+    by_addr = [b for b in previous if b['ward'] == ward and unicodedata.normalize('NFKC', b.get('address') or '') == a and b['id'] not in used]
+    if len(by_addr) == 1:
+        return by_addr[0]['id']
+    return None
 
 
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith('--')]
-    check = '--check' in sys.argv
+    argv = list(sys.argv[1:])
+    out_dir = None
+    if '--out-dir' in argv:  # テスト用: 書き出し先（と前回データの読み込み元）を変える
+        i = argv.index('--out-dir')
+        out_dir = argv[i + 1]
+        argv = argv[:i] + argv[i + 2:]
+    args = [a for a in argv if not a.startswith('--')]
+    check = '--check' in argv
+    out_json = os.path.join(out_dir, 'uber_drop_buildings.json') if out_dir else OUT_JSON
+    out_js = os.path.join(out_dir, 'uber_drop_buildings.js') if out_dir else OUT_JS
     xlsx = args[0] if args else DEFAULT_XLSX
     if not os.path.exists(xlsx):
         sys.exit('Excel が見つかりません: ' + xlsx)
@@ -77,7 +100,8 @@ def main():
         sys.exit('Excel の列が足りません: ' + ', '.join(missing))
     extra_cols = [h for h in header if h and h not in HEADER_MAP]
 
-    existing = load_existing()
+    previous = load_existing(out_json)
+    used = set()
     warnings = []
     buildings = []
     for i, row in enumerate(rows[1:], start=2):
@@ -91,7 +115,10 @@ def main():
                 b[k] = None
         if isinstance(b['floors'], float) and b['floors'].is_integer():
             b['floors'] = int(b['floors'])
-        bid = stable_id(b['name'], b['address'])
+        bid = keep_id(b['name'], b['ward'], b['address'], previous, used) or stable_id(b['name'], b['address'])
+        if bid in used:
+            bid = stable_id(b['name'] + '#' + str(i), b['address'])
+        used.add(bid)
         town, chome = split_address(b['address'], b['ward'])
         name_reading = readings['names'].get(b['name'])
         if not name_reading:
@@ -100,7 +127,6 @@ def main():
         town_reading = readings['towns'].get(town)
         if not town_reading:
             warnings.append(f'町名の読み未登録: {town}（{b["name"]}）')
-        old = existing.get(bid, {})
         buildings.append({
             'id': bid,
             'ward': b['ward'],
@@ -116,9 +142,7 @@ def main():
             'note': b['note'],
             'source_url': b['source_url'],
             'excel_extra': {h: rec.get(h) for h in extra_cols} or None,
-            'excel_row': i,
-            # 本人評価（将来ここに実体験を記録する）。Excel 掲載だけでは評価しない
-            'my': old.get('my') or {'rating': None, 'note': None, 'visits': None, 'last_visit': None}
+            'excel_row': i
         })
 
     # 区別集計シートと照合
@@ -135,13 +159,15 @@ def main():
 
     data = {
         'schema_version': 1,
-        'description': 'DROP先照合用の物件リスト（高層マンション等）。配達に時間がかかる可能性があるため確認したい物件で、「地雷」の確定ではない。本人の実体験評価は my.rating（A=避けたい実体験あり / B=注意 / C=未検証、null=未評価）。',
+        'description': 'DROP先照合用の物件リスト（高層マンション等）。配達に時間がかかる可能性があるため確認したい物件で、「地雷」の確定ではない。本人評価・本人メモはこのファイルに入れず、アプリの端末保存（uber_drop_personal_v1）に物件 id ごとに持つ。',
         'source': {'file': os.path.basename(xlsx), 'sheet': ws.title, 'rows': len(buildings), 'ward_counts_sheet': summary},
+        # 本人評価は3段階（本人確認済みの物件だけ）。「未検証」は評価ではなく、評価が無い状態
         'rating_levels': {
-            'A': {'label': '避けたい（実体験）', 'icon': '🔴'},
-            'B': {'label': '注意', 'icon': '🟠'},
-            'C': {'label': '未検証', 'icon': '🟡'}
+            'ok': {'label': '問題なし', 'icon': '🟢'},
+            'caution': {'label': '注意', 'icon': '🟡'},
+            'avoid': {'label': '避けたい', 'icon': '🔴'}
         },
+        'unverified': {'label': '未検証', 'icon': '⚪'},
         'buildings': buildings
     }
     text = json.dumps(data, ensure_ascii=False, indent=2) + '\n'
@@ -151,14 +177,14 @@ def main():
         print('WARN ' + w)
     print(f'物件 {len(buildings)} 件 / 区別 {counts}')
     if check:
-        same = os.path.exists(OUT_JSON) and open(OUT_JSON, encoding='utf-8').read() == text and os.path.exists(OUT_JS) and open(OUT_JS, encoding='utf-8').read() == js
+        same = os.path.exists(out_json) and open(out_json, encoding='utf-8').read() == text and os.path.exists(out_js) and open(out_js, encoding='utf-8').read() == js
         print('data/uber_drop_buildings.* は Excel と一致' if same else 'ERROR data/uber_drop_buildings.* が Excel と不一致（import_excel.py を実行）')
         sys.exit(0 if same else 1)
-    with open(OUT_JSON, 'w', encoding='utf-8', newline='\n') as f:
+    with open(out_json, 'w', encoding='utf-8', newline='\n') as f:
         f.write(text)
-    with open(OUT_JS, 'w', encoding='utf-8', newline='\n') as f:
+    with open(out_js, 'w', encoding='utf-8', newline='\n') as f:
         f.write(js)
-    print('書き出し: data/uber_drop_buildings.json, data/uber_drop_buildings.js')
+    print('書き出し: ' + out_json + ', ' + out_js)
 
 
 if __name__ == '__main__':

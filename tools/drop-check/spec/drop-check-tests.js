@@ -47,15 +47,155 @@ test('Excelの全列を保持（区・マンション名・所在地・階数・
   assert.strictEqual(B.filter(b => b.note).length, 9);
 });
 
-test('Excel掲載だけで評価しない（本人評価は全件 未評価＝🟡未検証）', () => {
-  B.forEach(b => {
-    assert.strictEqual(b.my.rating, null, b.name);
-    const r = D.ratingInfo(b, DATA.rating_levels);
-    assert.deepStrictEqual([r.icon, r.label], ['🟡', '未検証']);
-  });
-  const a = D.ratingInfo({ my: { rating: 'A' } }, DATA.rating_levels);
-  assert.strictEqual(a.label, '避けたい（実体験）', '将来 A 評価を付けたときの表示');
+test('基礎データ（Excel由来）に本人データを持たない・本人評価は3段階＋未検証は評価ではない', () => {
+  B.forEach(b => assert.ok(!('my' in b), b.name));
+  assert.deepStrictEqual(Object.keys(DATA.rating_levels), ['ok', 'caution', 'avoid']);
+  assert.deepStrictEqual(Object.values(DATA.rating_levels).map(v => v.icon + v.label), ['🟢問題なし', '🟡注意', '🔴避けたい']);
+  assert.deepStrictEqual(D.RATINGS, ['ok', 'caution', 'avoid']);
+  assert.ok(!D.RATINGS.includes('unverified'), '未検証は4段階目の評価ではない');
+  const u = D.ratingInfo(B[0], DATA);
+  assert.deepStrictEqual([u.icon, u.label, u.verified, u.code], ['⚪', '未検証', false, null]);
   assert.ok(!/地雷|絶対|拒否/.test(JSON.stringify(DATA.rating_levels)));
+});
+
+// ---- 本人評価・本人メモ（保存・読み込み） ----
+function memStorage() { const m = {}; return { getItem: k => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); }, raw: m }; }
+let tick = 0;
+const clock = () => new Date(Date.UTC(2026, 9, 2, 0, 0, tick++)).toISOString();
+
+test('未検証 → 問題なし／注意／避けたい（初めて付けた時点で本人確認済み）', () => {
+  ['ok', 'caution', 'avoid'].forEach((code, i) => {
+    const st = memStorage();
+    const p = D.createPersonalStore(st, clock);
+    const b = B[i];
+    assert.strictEqual(p.get(b.id), null);
+    assert.strictEqual(p.setRating(b, code), true);
+    const it = p.get(b.id);
+    assert.strictEqual(it.rating, code);
+    assert.ok(it.verified_at && it.rating_updated_at);
+    assert.deepStrictEqual(it.ref, { name: b.name, ward: b.ward, address: b.address });
+    const v = D.attachPersonal(B, p.all()).find(x => x.id === b.id);
+    const r = D.ratingInfo(v, DATA);
+    assert.deepStrictEqual([r.code, r.verified, r.label], [code, true, DATA.rating_levels[code].label]);
+  });
+  assert.throws(() => D.createPersonalStore(memStorage()).setRating(B[0], 'unverified'));
+});
+
+test('評価の変更・未検証に戻す（評価だけ消えメモは残る）', () => {
+  const st = memStorage();
+  const p = D.createPersonalStore(st, clock);
+  const b = B[5];
+  p.setRating(b, 'ok');
+  const firstVerified = p.get(b.id).verified_at;
+  p.setRating(b, 'avoid');
+  assert.strictEqual(p.get(b.id).rating, 'avoid');
+  assert.strictEqual(p.get(b.id).verified_at, firstVerified, '確認日は最初のまま');
+  p.setNote(b, 'EVまで遠い');
+  p.clearRating(b);
+  assert.strictEqual(p.get(b.id).rating, null);
+  assert.strictEqual(p.get(b.id).verified_at, null);
+  assert.strictEqual(p.get(b.id).note, 'EVまで遠い');
+  assert.strictEqual(D.ratingInfo(D.attachPersonal(B, p.all()).find(x => x.id === b.id), DATA).label, '未検証');
+  p.setNote(b, '');
+  assert.strictEqual(p.get(b.id), null, '評価もメモも無くなった記録は消す');
+});
+
+test('本人メモ: 保存・変更・20文字まで・1行（改行は空白）', () => {
+  const p = D.createPersonalStore(memStorage(), clock);
+  const b = B[7];
+  assert.strictEqual(D.NOTE_MAX, 20);
+  p.setNote(b, '3階経由');
+  assert.strictEqual(p.get(b.id).note, '3階経由');
+  p.setNote(b, ' インターホン2回\n館内歩く ');
+  assert.strictEqual(p.get(b.id).note, 'インターホン2回 館内歩く');
+  p.setNote(b, 'あ'.repeat(20));
+  assert.strictEqual(D.noteLength(p.get(b.id).note), 20);
+  assert.throws(() => p.setNote(b, 'あ'.repeat(21)), /20文字/);
+  assert.strictEqual(p.get(b.id).note, 'あ'.repeat(20), '上限超えは保存しない');
+  assert.strictEqual(D.noteLength('EV🚲遠い'), 5, '絵文字も1文字');
+});
+
+test('保存した評価・メモは読み込み直しても残る（localStorage 相当）', () => {
+  const st = memStorage();
+  const p1 = D.createPersonalStore(st, clock);
+  p1.setRating(B[10], 'avoid');
+  p1.setNote(B[10], '入口迷う');
+  const saved = JSON.parse(st.raw[D.PERSONAL_KEY]);
+  assert.strictEqual(saved.schema, 'uber_drop_personal/1');
+  assert.ok(Array.isArray(saved.items[B[10].id].tags), '将来の理由タグ用の欄');
+  const p2 = D.createPersonalStore(st, clock);
+  p2.load();
+  assert.deepStrictEqual([p2.get(B[10].id).rating, p2.get(B[10].id).note], ['avoid', '入口迷う']);
+  const broken = memStorage(); broken.setItem(D.PERSONAL_KEY, '{壊れたデータ');
+  const p3 = D.createPersonalStore(broken, clock);
+  assert.deepStrictEqual(p3.load().items, {}, '壊れていても落ちない');
+});
+
+test('検索結果・区フィルターに本人評価とメモが反映（メモでも検索できる）', () => {
+  const p = D.createPersonalStore(memStorage(), clock);
+  const rise = B.find(b => b.name === '阿波座ライズタワーズ フラッグ46');
+  p.setRating(rise, 'avoid');
+  p.setNote(rise, '館内歩く');
+  const v = D.attachPersonal(B, p.all());
+  const hit = D.search(v, { query: 'ライズ' })[0];
+  assert.strictEqual(D.ratingInfo(hit, DATA).code, 'avoid');
+  assert.strictEqual(hit.my.note, '館内歩く');
+  assert.strictEqual(D.search(v, { query: '', ward: '西区' }).find(x => x.id === rise.id).my.rating, 'avoid');
+  assert.deepStrictEqual(D.search(v, { query: '館内歩く' }).map(x => x.name), ['阿波座ライズタワーズ フラッグ46']);
+  assert.strictEqual(D.search(v, { query: '' }).length, 44, '評価しても44件のまま');
+});
+
+test('Excel再取込で本人データが消えない（id は名前・住所の変更でも引き継ぐ／控えの名前でも付け直す）', () => {
+  const { execFileSync } = require('child_process');
+  const os = require('os');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'dc-reimport-'));
+  fs.copyFileSync(path.join(ROOT, 'data', 'uber_drop_buildings.json'), path.join(tmp, 'uber_drop_buildings.json'));
+  const xlsx = path.join(tmp, 'changed.xlsx');
+  // 元の Excel は読むだけ。一時コピーで「名前の表記変更」「番地の変更」「物件の追加」をした版を作る
+  const py = `
+import openpyxl, sys, shutil
+src = sys.argv[1]; dst = sys.argv[2]
+shutil.copyfile(src, dst)
+wb = openpyxl.load_workbook(dst)
+ws = wb.worksheets[0]
+ws.cell(row=3, column=2).value = '阿波座ライズタワーズ・フラッグ46（表記変更）'
+ws.cell(row=4, column=3).value = '大阪市西区南堀江3丁目16-99'
+ws.append(['西区', 'テスト追加タワー', '大阪市西区九条1丁目', 30, '注意', None, 'https://example.invalid/'])
+s = wb.worksheets[1]
+for r in range(2, s.max_row + 1):
+    if s.cell(row=r, column=1).value == '西区':
+        s.cell(row=r, column=2).value = 9
+wb.save(dst)
+`;
+  const env = Object.assign({}, process.env, { PYTHONIOENCODING: 'utf-8' });
+  const excelPath = path.join(require('os').homedir(), 'Desktop', '大阪市_タワマン一覧_Uber配達用.xlsx');
+  const before = fs.statSync(excelPath).mtimeMs;
+  execFileSync('python', ['-c', py, excelPath, xlsx], { env });
+  // 取込前に本人データを付けておく（端末保存は基礎データと別）
+  const st = memStorage();
+  const p = D.createPersonalStore(st, clock);
+  const rise = B.find(b => b.name === '阿波座ライズタワーズ フラッグ46');
+  const horie = B.find(b => b.name === 'シエリアタワー大阪堀江');
+  p.setRating(rise, 'avoid'); p.setNote(rise, '館内長い');
+  p.setRating(horie, 'ok');
+  const savedBefore = st.raw[D.PERSONAL_KEY];
+  execFileSync('python', [path.join(ROOT, 'tools', 'drop-check', 'import_excel.py'), xlsx, '--out-dir', tmp], { env });
+  const next = JSON.parse(fs.readFileSync(path.join(tmp, 'uber_drop_buildings.json'), 'utf8')).buildings;
+  assert.strictEqual(next.length, 45);
+  const nRise = next.find(b => b.name === '阿波座ライズタワーズ・フラッグ46（表記変更）');
+  const nHorie = next.find(b => b.name === 'シエリアタワー大阪堀江');
+  assert.strictEqual(nRise.id, rise.id, '名前の表記が変わっても同じ区・所在地なら同じ id');
+  assert.strictEqual(nHorie.id, horie.id, '番地が変わっても同じ名前なら同じ id');
+  assert.ok(B.every(b => next.some(n => n.id === b.id)), '既存44件の id はすべて残る');
+  assert.strictEqual(st.raw[D.PERSONAL_KEY], savedBefore, '取込は本人データ（端末保存）に触れない');
+  const v = D.attachPersonal(next, p.all());
+  assert.deepStrictEqual([v.find(x => x.id === rise.id).my.rating, v.find(x => x.id === rise.id).my.note], ['avoid', '館内長い']);
+  assert.strictEqual(v.find(x => x.id === horie.id).my.rating, 'ok');
+  // 万一 id が変わっても、本人データに控えた物件名で付け直す
+  const renamedId = B.map(b => (b.id === horie.id ? Object.assign({}, b, { id: 'bld_new_id' }) : b));
+  assert.strictEqual(D.attachPersonal(renamedId, p.all()).find(x => x.id === 'bld_new_id').my.rating, 'ok');
+  assert.strictEqual(fs.statSync(excelPath).mtimeMs, before, '元の Excel は変更しない');
+  fs.rmSync(tmp, { recursive: true, force: true });
 });
 
 test('全物件に読み（あいうえお順用）と町名の読み', () => {
