@@ -216,7 +216,13 @@ async function run() {
       check('地図の高さが画面の50%以上', layout.mapH >= h * 0.5, { mapH: layout.mapH, h });
       check('検索欄が地図の上（スクロールせず届く）', layout.mapTop < h * 0.3 && layout.searchH >= 44, layout);
       check('検索欄の文字16px以上（iPhoneの自動ズーム防止）', parseFloat(layout.searchFont) >= 16, layout.searchFont);
-      check('データ状態 189 pickups / 101 stores / 98 / 3', /189 pickups \/ 101 stores.*確認済み 98 \/ 要確認 3/.test(layout.footer) && layout.pins === 98, layout.footer);
+      // 件数は固定せず、開いたページの store.js（正本）と店舗マスタから期待値を出す（取込で件数が増えても壊れない）
+      const truth = await p.ev(`(() => { const logs = getConfirmedSeedData().dailyLogs; const trips = Object.values(logs).reduce((a, l) => a + (Array.isArray(l.deliveries) ? l.deliveries.length : 0), 0);
+        const s = window.UBER_PICKUP_STORE_MASTER.summary; return { trips, days: Object.keys(logs).length, master: s }; })()`);
+      const expFooter = `${truth.trips} pickups / ${truth.master.store_count} stores`;
+      check(`画面の件数 = store.js の件数（${truth.trips} pickups / ${truth.master.store_count} stores / 確認済み ${truth.master.confirmed_count} / 要確認 ${truth.master.needs_review_count}）`,
+        layout.footer.startsWith(expFooter) && layout.footer.includes(`確認済み ${truth.master.confirmed_count} / 要確認 ${truth.master.needs_review_count}`) && layout.pins === truth.master.confirmed_count, { footer: layout.footer, truth });
+      check('店舗マスタが最新の store.js と一致（取込後に build-stores.js 済み）', truth.master.total_trips === truth.trips && truth.master.total_pickups === truth.trips && truth.master.period.days === truth.days, truth);
       check('◎現在地・ズームボタン 40px以上', layout.locate >= 40 && layout.zoomBtn >= 40, layout);
 
       // 初期表示範囲: 確認済み全店舗が収まり、それ以上は広げていない

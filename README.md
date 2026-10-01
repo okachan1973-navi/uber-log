@@ -132,3 +132,14 @@ Uber Eats配達員向けの実運用ダッシュボードおよび意思決定�
   - 天保山渡船・上流回り（中之島西端）: 参考
 - 計算: `js/route-judge-core.js`（岸の判定・横断判定・横断ポイント別の直線目安距離）。道路の経路計算ではない。
 - テスト: `node tools/route-judge/spec/route-judge-tests.js`（単体）／ `node tools/route-judge/spec/route-judge-e2e.js`（Edge で iPhone相当 320/360/390/430px を実際にタップ）
+---
+
+## 10. 地雷タブ: DROP先照合（タワマン等）
+
+Uber Driver に案件が出ている数秒間に、DROP先のマンション名・町名・住所を照合する（サブ端末の iPhone で使う想定）。下部ナビ「地雷」を開くと最上部に表示。従来の地雷DB（原則回避ポリシー・実走事例の3段階評価・Supabase同期）は同じタブの下に「📋 実走事例・地雷DB（従来）」として折りたたんで残している。
+
+- データ: `data/uber_drop_buildings.json`（正本）/ `.js`（ブラウザ用）。Excel「大阪市_タワマン一覧_Uber配達用.xlsx」から `python tools/drop-check/import_excel.py [Excelのパス]` で生成（Excel は読み取りのみ。区別集計シートと件数照合。再取込しても本人評価 `my` は引き継ぐ）。読みは `tools/drop-check/readings.json`。
+- 位置づけ: 「配達に時間がかかる可能性があるため確認したい物件」。Excel の「Uber目安」は一般的な目安で、本人評価ではない。本人評価 `my.rating`（A=避けたい実体験 / B=注意 / C=未検証）は初期すべて未評価＝🟡未検証。
+- 検索: マンション名・読み・区・町名（読み含む）・住所・階数・備考。全角半角・カナかな・空白・曾/曽を吸収、複数語は AND、区名を含む入力（「西区ライズ」）は区で絞る。区ボタン（同じ区を再タップで解除）。読みのあいうえお順。
+- 音声: 端末の Web Speech API が使えれば 🎙️ で聞き取り→検索欄に反映。使えない・権限拒否のときは検索欄にフォーカスしてキーボードのマイク🎤を案内（文字検索は常に使える）。
+- テスト: `node tools/drop-check/spec/drop-check-tests.js`（単体）／ `node tools/drop-check/spec/drop-check-e2e.js`（Edge で iPhone相当 320/360/390/402/430px）／ `python tools/drop-check/import_excel.py --check`（データが Excel と一致）

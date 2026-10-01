@@ -30,10 +30,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 18,
+      "pickup_count": 20,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-09-29 15:15",
-      "active_days": 10,
+      "last_pickup": "2026-10-01 11:11",
+      "active_days": 11,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
         "マクドナルド 九　条　店 McDonald's KUJO",
@@ -134,6 +134,50 @@
       "site_id": null,
       "display_name": "みなと通夕凪店",
       "address_short": "港区磯路"
+    },
+    {
+      "id": "st_76kdj3",
+      "canonical_name": "マクドナルド 阪神西九条駅前店",
+      "name_keys": [
+        "マクドナルド阪神西九条駅前店"
+      ],
+      "category": "mcdonalds",
+      "address": "大阪府大阪市此花区西九条1-32-17",
+      "latitude": 34.681774,
+      "longitude": 135.466171,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市此花区西九条一丁目３２番１７号",
+      "address_source": "crewrecruiting.mcdonalds.co.jp/map/27845",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市此花区西九条一丁目３２番１７号",
+        "osm_nearest": {
+          "id": "node/1539450680",
+          "name": "マクドナルド 阪神西九条駅前店 マクドナルド",
+          "distance_m": 22
+        },
+        "reverse": {
+          "muniCd": "27104",
+          "lv01Nm": "西九条一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 7,
+      "first_pickup": "2026-09-22 17:07",
+      "last_pickup": "2026-10-01 09:50",
+      "active_days": 5,
+      "original_names": [
+        "マクドナルド 阪神西九条駅前店",
+        "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE"
+      ],
+      "brand_id": "mcdonalds",
+      "brand_name": "マクドナルド",
+      "brand_reading": null,
+      "branch_name": "阪神西九条駅前店",
+      "site_id": null,
+      "display_name": "阪神西九条駅前店",
+      "address_short": "此花区西九条"
     },
     {
       "id": "st_1tevs71",
@@ -269,50 +313,6 @@
       "site_id": null,
       "display_name": "JR野田駅前店",
       "address_short": "福島区野田"
-    },
-    {
-      "id": "st_76kdj3",
-      "canonical_name": "マクドナルド 阪神西九条駅前店",
-      "name_keys": [
-        "マクドナルド阪神西九条駅前店"
-      ],
-      "category": "mcdonalds",
-      "address": "大阪府大阪市此花区西九条1-32-17",
-      "latitude": 34.681774,
-      "longitude": 135.466171,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市此花区西九条一丁目３２番１７号",
-      "address_source": "crewrecruiting.mcdonalds.co.jp/map/27845",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市此花区西九条一丁目３２番１７号",
-        "osm_nearest": {
-          "id": "node/1539450680",
-          "name": "マクドナルド 阪神西九条駅前店 マクドナルド",
-          "distance_m": 22
-        },
-        "reverse": {
-          "muniCd": "27104",
-          "lv01Nm": "西九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 6,
-      "first_pickup": "2026-09-22 17:07",
-      "last_pickup": "2026-09-29 09:43",
-      "active_days": 4,
-      "original_names": [
-        "マクドナルド 阪神西九条駅前店",
-        "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE"
-      ],
-      "brand_id": "mcdonalds",
-      "brand_name": "マクドナルド",
-      "brand_reading": null,
-      "branch_name": "阪神西九条駅前店",
-      "site_id": null,
-      "display_name": "阪神西九条駅前店",
-      "address_short": "此花区西九条"
     },
     {
       "id": "st_189ay5t",
@@ -491,6 +491,50 @@
       "site_id": null,
       "display_name": "南堀江関西スーパー店",
       "address_short": "西区南堀江"
+    },
+    {
+      "id": "st_qpn587",
+      "canonical_name": "京都北白川ラーメン魁力屋 イオンモール大阪ドームシティ店",
+      "name_keys": [
+        "京都北白川ラーメン魁力屋イオンモール大阪ドームシティ店"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市西区千代崎3-13-1",
+      "latitude": 34.6703688,
+      "longitude": 135.477939,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "OSM relation/14378487 建物中心（住所 千代崎3-13-1 は丁目までしか測位できないため）",
+      "address_source": "shop.kairikiya.co.jp/stores/123",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区千代崎三丁目",
+        "osm_nearest": {
+          "id": "node/13866919752",
+          "name": "ラーメン魁力屋 イオンモール大阪ドームシティ店 ラーメン魁力屋",
+          "distance_m": 100
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "千代崎三丁目"
+        }
+      },
+      "same_building": "イオンモール大阪ドームシティ",
+      "notes": null,
+      "pickup_count": 3,
+      "first_pickup": "2026-09-22 10:28",
+      "last_pickup": "2026-10-01 13:00",
+      "active_days": 3,
+      "original_names": [
+        "京都北白川 ラーメン魁力屋 イオンモール大阪ドームシティ店",
+        "京都北白川ラーメン魁力屋 イオンモール大阪ドームシティ店"
+      ],
+      "brand_id": "kairikiya",
+      "brand_name": "京都北白川ラーメン魁力屋",
+      "brand_reading": "きょうときたしらかわらーめんかいりきや",
+      "branch_name": "イオンモール大阪ドームシティ店",
+      "site_id": "site_c4h33y",
+      "display_name": "イオンモール大阪ドームシティ店",
+      "address_short": "西区千代崎"
     },
     {
       "id": "st_6snect",
@@ -793,48 +837,47 @@
       "address_short": "港区南市岡"
     },
     {
-      "id": "st_qpn587",
-      "canonical_name": "京都北白川ラーメン魁力屋 イオンモール大阪ドームシティ店",
+      "id": "st_1omw10z",
+      "canonical_name": "餃子の王将 大阪九条",
       "name_keys": [
-        "京都北白川ラーメン魁力屋イオンモール大阪ドームシティ店"
+        "餃子の王将大阪九条"
       ],
       "category": "other",
-      "address": "大阪府大阪市西区千代崎3-13-1",
-      "latitude": 34.6703688,
-      "longitude": 135.477939,
+      "address": "大阪府大阪市西区九条1-12-10",
+      "latitude": 34.674976,
+      "longitude": 135.47583,
       "coordinate_status": "confirmed",
-      "coordinate_source": "OSM relation/14378487 建物中心（住所 千代崎3-13-1 は丁目までしか測位できないため）",
-      "address_source": "shop.kairikiya.co.jp/stores/123",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１２番１０号",
+      "address_source": "map.ohsho.co.jp/b/ohsho/info/1252/",
       "address_evidence": "official",
       "geocode_check": {
-        "gsi_title": "大阪府大阪市西区千代崎三丁目",
+        "gsi_title": "大阪府大阪市西区九条一丁目１２番１０号",
         "osm_nearest": {
-          "id": "node/13866919752",
-          "name": "ラーメン魁力屋 イオンモール大阪ドームシティ店 ラーメン魁力屋",
-          "distance_m": 100
+          "id": "node/1619040549",
+          "name": "餃子の王将 九条店 餃子の王将",
+          "distance_m": 2
         },
         "reverse": {
           "muniCd": "27106",
-          "lv01Nm": "千代崎三丁目"
+          "lv01Nm": "九条一丁目"
         }
       },
-      "same_building": "イオンモール大阪ドームシティ",
+      "same_building": null,
       "notes": null,
       "pickup_count": 2,
-      "first_pickup": "2026-09-22 10:28",
-      "last_pickup": "2026-09-28 14:03",
+      "first_pickup": "2026-09-22 14:07",
+      "last_pickup": "2026-10-01 11:35",
       "active_days": 2,
       "original_names": [
-        "京都北白川 ラーメン魁力屋 イオンモール大阪ドームシティ店",
-        "京都北白川ラーメン魁力屋 イオンモール大阪ドームシティ店"
+        "餃子の王将 大阪九条"
       ],
-      "brand_id": "kairikiya",
-      "brand_name": "京都北白川ラーメン魁力屋",
-      "brand_reading": "きょうときたしらかわらーめんかいりきや",
-      "branch_name": "イオンモール大阪ドームシティ店",
-      "site_id": "site_c4h33y",
-      "display_name": "イオンモール大阪ドームシティ店",
-      "address_short": "西区千代崎"
+      "brand_id": "ohsho",
+      "brand_name": "餃子の王将",
+      "brand_reading": "ぎょうざのおうしょう",
+      "branch_name": "大阪九条",
+      "site_id": null,
+      "display_name": "大阪九条",
+      "address_short": "西区九条"
     },
     {
       "id": "st_3qz4cs",
@@ -2022,49 +2065,6 @@
       "site_id": null,
       "display_name": "西九条",
       "address_short": "此花区西九条"
-    },
-    {
-      "id": "st_1omw10z",
-      "canonical_name": "餃子の王将 大阪九条",
-      "name_keys": [
-        "餃子の王将大阪九条"
-      ],
-      "category": "other",
-      "address": "大阪府大阪市西区九条1-12-10",
-      "latitude": 34.674976,
-      "longitude": 135.47583,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１２番１０号",
-      "address_source": "map.ohsho.co.jp/b/ohsho/info/1252/",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１２番１０号",
-        "osm_nearest": {
-          "id": "node/1619040549",
-          "name": "餃子の王将 九条店 餃子の王将",
-          "distance_m": 2
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-22 14:07",
-      "last_pickup": "2026-09-22 14:07",
-      "active_days": 1,
-      "original_names": [
-        "餃子の王将 大阪九条"
-      ],
-      "brand_id": "ohsho",
-      "brand_name": "餃子の王将",
-      "brand_reading": "ぎょうざのおうしょう",
-      "branch_name": "大阪九条",
-      "site_id": null,
-      "display_name": "大阪九条",
-      "address_short": "西区九条"
     },
     {
       "id": "st_ofymaz",
@@ -4320,11 +4320,11 @@
   "summary": {
     "period": {
       "from": "2026-09-10",
-      "to": "2026-09-29",
-      "days": 16
+      "to": "2026-10-01",
+      "days": 17
     },
-    "total_trips": 189,
-    "total_pickups": 189,
+    "total_trips": 194,
+    "total_pickups": 194,
     "store_count": 101,
     "confirmed_count": 98,
     "needs_review_count": 3,
