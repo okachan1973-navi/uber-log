@@ -138,14 +138,17 @@ async function run() {
       check('区ボタンは横スクロールで最後（その他）まで届く・ページは横スクロールしない', chipBox.overflowX === 'auto' && chipBox.lastRight <= chipBox.vw + 1 && chipBox.sw <= chipBox.vw, chipBox);
       check('最初の物件がスクロールなしで見える・名前は17px以上・押しやすい高さ（44px以上）', lay.firstRowTop < h * 0.6 && lay.firstRowH >= 44 && lay.nameFont >= 17, lay);
       const cards = await p.ev(`(() => { const its = [...document.querySelectorAll('#dc-list .dc-item')]; const pitch = its.map(i => i.getBoundingClientRect().height + parseFloat(getComputedStyle(i).marginBottom));
-        const nav = document.querySelector('.bottom-nav').getBoundingClientRect(); const it = its.find(li => li.querySelector('.dc-name').lastChild.textContent === '阿波座ライズタワーズ フラッグ46');
+        const nav = document.querySelector('.bottom-nav').getBoundingClientRect(); const it = its.find(li => li.querySelector('.dc-name').textContent === '阿波座ライズタワーズ フラッグ46');
         const rows = it.querySelector('.dc-row'); const sub = it.querySelector('.dc-sub'), name = it.querySelector('.dc-name'), more = it.querySelector('.dc-more');
         const text = its.map(i => i.querySelector('.dc-row').textContent).join(' ');
         return { avg: pitch.reduce((a, b) => a + b, 0) / pitch.length, max: Math.max(...pitch), visible: its.filter(i => i.getBoundingClientRect().bottom <= nav.top).length,
           sub: sub.textContent, more: more.textContent, dot: it.querySelector('.dc-dot').textContent, subFont: parseFloat(getComputedStyle(sub).fontSize), nameFont: parseFloat(getComputedStyle(name).fontSize),
-          subAboveName: sub.getBoundingClientRect().bottom <= name.getBoundingClientRect().top + 1, moreRight: more.getBoundingClientRect().right <= rows.getBoundingClientRect().right,
+          nameText: name.textContent, layout: (() => { const R = e => e.getBoundingClientRect(); const n = R(name), m = R(more), s = R(sub), d = R(it.querySelector('.dc-dot')), row = R(rows);
+            return { nameTopLeft: n.left < m.left && Math.abs(n.top - m.top) < 8, subBelowName: s.top >= n.bottom - 1 && Math.abs(s.left - n.left) < 1, moreRight: m.right <= row.right && m.left > n.left,
+              dotBelowMore: d.top >= m.bottom - 1 && Math.abs(d.right - m.right) < 2, dotSmall: d.height <= n.height }; })(),
+          sub2: sub.textContent,
           words: ['未検証', '問題なし', '注意', '避けたい', '一般目安', '要注意', '階', '備考', '情報源', 'tower.ne.jp'].filter(k => text.includes(k)), memoLine: !!document.querySelector('#dc-list .dc-memo-line') }; })()`);
-      check('一覧カードは2行（1行目＝区 町名丁目＋「詳細評価」、2行目＝丸アイコン＋物件名）', cards.sub === '西区 江之子島2丁目' && cards.more === '詳細評価' && cards.dot === '⚪' && cards.subAboveName && cards.moreRight && cards.subFont < cards.nameFont, cards);
+      check('一覧カード: 左上＝物件名（アイコンなし）・左下＝区 町名丁目・右上＝詳細評価・右下＝丸アイコン', cards.nameText === '阿波座ライズタワーズ フラッグ46' && cards.sub === '西区 江之子島2丁目' && cards.more === '詳細評価' && cards.dot === '⚪' && Object.values(cards.layout).every(Boolean) && cards.subFont < cards.nameFont, cards);
       check('一覧カードは約半分の高さ（1件あたり70px以下・旧 約126px）', cards.avg <= 70, cards);
       check('一覧に評価の文字・一般目安・階数・備考・情報源・メモを出さない', cards.words.length === 0 && !cards.memoLine, cards.words);
       await p.shot(`${w}_1_open`);
@@ -345,6 +348,90 @@ async function run() {
       const rec = Object.values(stored)[0];
       check('2回目で未検証に戻る（⚪・評価 null・メモは残る）', c.rate === '⚪' && c.cls === 'none' && c.memo === 'EV速い' && c.memoInput === 'EV速い' && rec.rating === null && rec.note === 'EV速い', { c, rec });
       check('横スクロールなし', await p.ev('document.documentElement.scrollWidth <= document.documentElement.clientWidth'));
+      check('JavaScript エラーなし', p.errors.length === 0, p.errors);
+      await p.close();
+    }
+
+    for (const [w, h] of [[390, 844], [320, 568]]) {
+      console.log(`\n[表示順 名前順／評価別 ${w}x${h}]`);
+      const p = await openApp(b, base, { width: w, height: h });
+      await p.ev(`(() => { try { localStorage.removeItem('uber_drop_personal_v1'); localStorage.removeItem('uber_drop_view_v1'); } catch (e) {} })()`);
+      await p.s('Page.reload', {});
+      for (let i = 0; i < 40; i++) { await sleep(250); try { if (await p.ev('document.readyState === "complete" && !!window.__dropCheck')) break; } catch (e) { /* 読み込み中 */ } }
+      await p.tapSel('.bottom-nav [data-tab="avoidance"]', false);
+      await sleep(300);
+      // 一覧の並び（見出しごとに区切る）
+      const listed = () => p.ev(`(() => { const out = { headers: [], groups: [], flat: [] }; let g = null;
+        [...document.getElementById('dc-list').children].forEach(li => {
+          if (li.classList.contains('dc-group-h')) { g = { code: li.dataset.group, text: li.textContent.trim(), names: [], dots: [] }; out.groups.push(g); out.headers.push(li.textContent.trim()); }
+          else if (li.classList.contains('dc-item')) { const nm = li.querySelector('.dc-name').textContent; out.flat.push(nm); if (g) { g.names.push(nm); g.dots.push(li.dataset.rating); } }
+        }); return out; })()`);
+      const nameOrder = await p.ev(`window.DropCheck.search(window.__dropCheck.buildings, {}).map(b => b.name)`);
+      const sortUi = await p.ev(`(() => { const bs = [...document.querySelectorAll('#dc-sort [data-sort]')]; return { labels: bs.map(b => b.textContent), pressed: bs.map(b => b.getAttribute('aria-pressed')), minH: Math.min(...bs.map(b => b.getBoundingClientRect().height)), right: Math.max(...bs.map(b => b.getBoundingClientRect().right)), vw: document.documentElement.clientWidth }; })()`);
+      check('表示切替［名前順］［評価別］・初期は名前順・押しやすい（44px以上）・画面内', sortUi.labels.join() === '名前順,評価別' && sortUi.pressed.join() === 'true,false' && sortUi.minH >= 44 && sortUi.right <= sortUi.vw, sortUi);
+      let L = await listed();
+      check('名前順: 見出しなし・52件を五十音順（従来どおり）', L.headers.length === 0 && L.flat.length === 52 && L.flat.join('/') === nameOrder.join('/'), L.flat.slice(0, 5));
+
+      // 本人評価を付ける（避けたい1・注意2・問題なし1）
+      await p.ev(`(() => { const dc = window.__dropCheck; const by = n => dc.buildings.find(b => b.name === n);
+        dc.personal.setRating(by('阿波座ライズタワーズ フラッグ46'), 'avoid'); dc.personal.setRating(by('ジオタワー新町'), 'caution'); dc.personal.setRating(by('ローレルタワー難波'), 'caution');
+        dc.personal.setRating(by('ザ・タワー大阪'), 'ok'); dc.render(); })()`);
+      await p.tapSel('#dc-sort [data-sort="rating"]', false);
+      L = await listed();
+      const inNameOrder = names => names.join('/') === nameOrder.filter(n => names.includes(n)).join('/');
+      check('評価別: 🔴避けたい→🟡注意→🟢問題なし→⚪未検証 の4グループ（件数つき）', L.headers.join(',') === '🔴 避けたい（1）,🟡 注意（2）,🟢 問題なし（1）,⚪ 未検証（48）', L.headers);
+      check('評価別: 各グループに正しい物件（丸アイコンと一致）・合計52件', L.groups[0].names.join() === '阿波座ライズタワーズ フラッグ46' && L.groups[1].names.slice().sort().join() === ['ジオタワー新町', 'ローレルタワー難波'].sort().join() && L.groups[2].names.join() === 'ザ・タワー大阪'
+        && L.groups.every(g => g.dots.every(d => d === g.code)) && L.flat.length === 52, L.groups.map(g => [g.code, g.names.length]));
+      check('評価別: 各グループ内は五十音順', L.groups.every(g => inNameOrder(g.names)), L.groups.map(g => g.names.slice(0, 3)));
+      const rs = await p.ev(`(() => { const its = [...document.querySelectorAll('#dc-list .dc-item')]; const pitch = its.map(i => i.getBoundingClientRect().height + parseFloat(getComputedStyle(i).marginBottom)); return { avg: pitch.reduce((a, b) => a + b, 0) / pitch.length, sw: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth }; })()`);
+      check('評価別でもカードは70px以下・横スクロールなし', rs.avg <= 70 && rs.sw <= rs.vw, rs);
+      await p.shot(`sort_${w}_rating`);
+
+      // 区フィルター＋評価別
+      await p.tapSel('.dc-ward[data-ward="西区"]');
+      L = await listed();
+      check('西区＋評価別: 西区8件だけを 🔴1・🟡1・⚪6 に分類', L.headers.join(',') === '🔴 避けたい（1）,🟡 注意（1）,⚪ 未検証（6）' && L.flat.length === 8, L.headers);
+      await p.tapSel('.dc-ward[data-ward="西区"]');
+      await p.tapSel('.dc-ward[data-ward="浪速区"]');
+      L = await listed();
+      check('浪速区＋評価別: 🟡1・⚪7', L.headers.join(',') === '🟡 注意（1）,⚪ 未検証（7）' && L.groups[0].names.join() === 'ローレルタワー難波', L.headers);
+      await p.tapSel('.dc-ward[data-ward="浪速区"]');
+      // 検索＋評価別（該当のあるグループだけ）
+      await p.type('タワー大阪');
+      L = await listed();
+      check('検索＋評価別: 該当があるグループの見出しだけ表示', L.headers.length >= 1 && L.groups.every(g => g.names.length > 0) && L.groups.some(g => g.code === 'ok' && g.names.includes('ザ・タワー大阪')) && !L.headers.some(h => /避けたい/.test(h)), L.headers);
+      await p.type('ライズ');
+      L = await listed();
+      check('検索1件＋評価別: 見出し1つ＋1件', L.headers.join() === '🔴 避けたい（1）' && L.flat.join() === '阿波座ライズタワーズ フラッグ46', L);
+
+      // 評価変更 → 正しいグループへ即移動・未検証に戻す → ⚪へ
+      await p.type('アップル');
+      await p.tapSel('#dc-list .dc-item .dc-row');
+      L = await listed();
+      check('評価前: ⚪グループ', L.groups.length === 1 && L.groups[0].code === 'none', L.headers);
+      await p.tapSel('#dc-list .dc-item [data-rate="ok"]');
+      L = await listed();
+      const stillOpen = await p.ev(`!!document.querySelector('#dc-list .dc-item.open [data-rate="ok"][aria-pressed="true"]')`);
+      check('🟢 をタップ → すぐ 🟢問題なし グループへ移動（詳細は開いたまま）', L.headers.join() === '🟢 問題なし（1）' && stillOpen, L.headers);
+      await p.tapSel('#dc-list .dc-item [data-unrate]');
+      await p.tapSel('#dc-list .dc-item [data-unrate]');
+      L = await listed();
+      check('未検証に戻す → ⚪未検証 グループへ移動', L.headers.join() === '⚪ 未検証（1）', L.headers);
+      await p.tapSel('#dc-clear', false);
+      L = await listed();
+      check('検索クリア → 🔴1・🟡2・🟢1・⚪48（アップルは⚪に戻った）', L.headers.join(',') === '🔴 避けたい（1）,🟡 注意（2）,🟢 問題なし（1）,⚪ 未検証（48）', L.headers);
+
+      // 再読み込み後も評価別のまま・本人データは別キーで無傷
+      await p.s('Page.reload', {});
+      for (let i = 0; i < 40; i++) { await sleep(250); try { if (await p.ev('document.readyState === "complete" && !!window.__dropCheck')) break; } catch (e) { /* 読み込み中 */ } }
+      await p.tapSel('.bottom-nav [data-tab="avoidance"]', false);
+      await sleep(300);
+      L = await listed();
+      const st = await p.ev(`({ view: localStorage.getItem('uber_drop_view_v1'), schema: JSON.parse(localStorage.getItem('uber_drop_personal_v1')).schema, n: Object.values(JSON.parse(localStorage.getItem('uber_drop_personal_v1')).items).filter(x => x.rating).length, pressed: document.querySelector('#dc-sort [data-sort="rating"]').getAttribute('aria-pressed') })`);
+      check('再読み込み後も評価別のまま（uber_drop_view_v1 に保存・本人データは別キーのまま）', st.view === '{"sort":"rating"}' && st.pressed === 'true' && st.schema === 'uber_drop_personal/1' && st.n === 4 && L.headers.length === 4, st);
+      await p.tapSel('#dc-sort [data-sort="name"]', false);
+      L = await listed();
+      check('名前順に戻す → 見出しなし・52件五十音順・保存も名前順', L.headers.length === 0 && L.flat.join('/') === nameOrder.join('/') && await p.ev(`localStorage.getItem('uber_drop_view_v1')`) === '{"sort":"name"}', L.headers);
       check('JavaScript エラーなし', p.errors.length === 0, p.errors);
       await p.close();
     }

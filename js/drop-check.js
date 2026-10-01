@@ -12,7 +12,9 @@
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-  const state = { ward: 'all', query: '', openId: null, drafts: {}, confirmClear: null, saved: null };
+  const state = { ward: 'all', query: '', openId: null, drafts: {}, confirmClear: null, saved: null, sort: 'name' };
+  // 端末保存（使えない環境では null。読み書きは core 側で try/catch）
+  const storage = () => { try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch (e) { return null; } };
   let buildings = [];
   // 本人評価・本人メモ: 端末保存（localStorage: uber_drop_personal_v1）。物件データ（Excel 由来）とは別に持つ
   let personal = null;
@@ -88,23 +90,36 @@
       return res;
     }
     $('dc-count').textContent = `${label ? label + ' ' : ''}${res.length}件${!q && state.ward === 'all' ? '（全件）' : ''}`;
-    // 一覧カード（2行）: 1行目＝区＋町名＋丁目（控えめ）と「詳細評価」、2行目＝本人評価の丸アイコン＋物件名。評価の文字は出さない
-    $('dc-list').innerHTML = res.map(b => {
+    // 一覧カード（2行）: 左上＝物件名（主役）、左下＝区＋町名＋丁目、右上＝「詳細評価」、右下＝本人評価の丸アイコン（文字なし・控えめ）
+    const card = b => {
       const r = D.ratingInfo(b, DATA);
       const open = state.openId === b.id;
       return `<li class="dc-item${open ? ' open' : ''}" data-id="${esc(b.id)}" data-rating="${r.code || 'none'}">
         <button type="button" class="dc-row" aria-expanded="${open}">
-          <span class="dc-top"><span class="dc-sub">${esc(b.ward)} ${esc(b.town || '')}${b.chome ? esc(b.chome) + '丁目' : ''}</span><span class="dc-more">${open ? '閉じる' : '詳細評価'}</span></span>
-          <span class="dc-name"><span class="dc-dot" role="img" aria-label="${esc(r.label)}">${r.icon}</span>${esc(b.name)}</span>
+          <span class="dc-name">${esc(b.name)}</span><span class="dc-more">${open ? '閉じる' : '詳細評価'}</span>
+          <span class="dc-sub">${esc(b.ward)} ${esc(b.town || '')}${b.chome ? esc(b.chome) + '丁目' : ''}</span><span class="dc-dot" role="img" aria-label="${esc(r.label)}">${r.icon}</span>
         </button>
         <div class="dc-detail"${open ? '' : ' hidden'}>${open ? detailHtml(b) : ''}</div>
       </li>`;
-    }).join('');
+    };
+    // 評価別: 🔴→🟡→🟢→⚪（順番は drop-check-core.js の RATING_GROUP_ORDER）。各グループ内は名前順のまま。空のグループは出さない
+    $('dc-list').innerHTML = state.sort === 'rating'
+      ? D.groupByRating(res, DATA).map(g => `<li class="dc-group-h" data-group="${g.code || 'none'}">${g.icon} ${esc(g.label)}（${g.items.length}）</li>${g.items.map(card).join('')}`).join('')
+      : res.map(card).join('');
     return res;
+  }
+
+  function renderSort() {
+    document.querySelectorAll('#dc-sort [data-sort]').forEach(b => {
+      const on = b.dataset.sort === state.sort;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
   }
 
   function render() {
     renderWards();
+    renderSort();
     return renderList();
   }
 
@@ -150,6 +165,13 @@
     input.addEventListener('input', () => setQuery(input.value));
     input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } }); // 検索キーでキーボードを閉じて結果を広く見せる
     $('dc-clear').addEventListener('click', () => { setQuery(''); input.focus(); });
+    $('dc-sort').addEventListener('click', e => {
+      const b = e.target.closest('[data-sort]'); if (!b || b.dataset.sort === state.sort) return;
+      state.sort = b.dataset.sort;
+      D.saveSort(storage(), state.sort);
+      renderSort();
+      renderList();
+    });
     $('dc-wards').addEventListener('click', e => {
       const b = e.target.closest('[data-ward]'); if (!b || b.disabled) return;
       const w = b.dataset.ward;
@@ -227,8 +249,9 @@
       return;
     }
     buildings = DATA.buildings.slice();
-    personal = D.createPersonalStore(typeof localStorage !== 'undefined' ? localStorage : null);
+    personal = D.createPersonalStore(storage());
     personal.load();
+    state.sort = D.loadSort(storage());
     bind();
     render();
     window.__dropCheck = { state, buildings, setQuery, render, personal }; // 自動テスト用

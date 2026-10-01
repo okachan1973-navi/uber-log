@@ -338,6 +338,46 @@ test('浪速区の検索（区・町名・難波/なんば・湊町・住所・�
   assert.deepStrictEqual(names(s('リバーガーデン', '浪速区')), ['なんばセントラルプラザリバーガーデン']);
 });
 
+test('評価別: 🔴→🟡→🟢→⚪ の順・各グループ内は名前順・空グループなし・評価変更で移動', () => {
+  assert.deepStrictEqual(D.RATING_GROUP_ORDER, ['avoid', 'caution', 'ok', null]);
+  const p = D.createPersonalStore(memStorage(), clock);
+  const by = n => B.find(b => b.name === n);
+  p.setRating(by('阿波座ライズタワーズ フラッグ46'), 'avoid');
+  p.setRating(by('ジオタワー新町'), 'caution');
+  p.setRating(by('ローレルタワー難波'), 'caution');
+  const list = () => D.search(D.attachPersonal(B, p.all()), { query: '' });
+  let g = D.groupByRating(list(), DATA);
+  assert.deepStrictEqual(g.map(x => [x.icon + x.label, x.items.length]), [['🔴避けたい', 1], ['🟡注意', 2], ['⚪未検証', 49]], '🟢 は0件なので出さない');
+  const all = names(list());
+  g.forEach(x => assert.deepStrictEqual(names(x.items), all.filter(n => names(x.items).includes(n)), x.label + ' は名前順'));
+  assert.strictEqual(g.reduce((s, x) => s + x.items.length, 0), 52);
+  p.setRating(by('ジオタワー新町'), 'ok');
+  g = D.groupByRating(list(), DATA);
+  assert.deepStrictEqual(g.map(x => x.code), ['avoid', 'caution', 'ok', null]);
+  assert.deepStrictEqual(names(g[2].items), ['ジオタワー新町'], '評価を変えると別グループへ');
+  p.clearRating(by('阿波座ライズタワーズ フラッグ46'));
+  g = D.groupByRating(list(), DATA);
+  assert.ok(names(g.find(x => x.code === null).items).includes('阿波座ライズタワーズ フラッグ46'), '未検証に戻すと ⚪ へ');
+  assert.deepStrictEqual(D.groupByRating(D.search(D.attachPersonal(B, p.all()), { ward: '浪速区' }), DATA).map(x => [x.code, x.items.length]), [['caution', 1], [null, 7]], '区フィルターと併用');
+  assert.deepStrictEqual(D.groupByRating(list(), DATA, [null, 'avoid', 'caution', 'ok']).map(x => x.code), [null, 'caution', 'ok'], '並び順は差し替えられる');
+});
+
+test('表示順（名前順／評価別）の保存は別キー・壊れていても名前順', () => {
+  const st = memStorage();
+  assert.strictEqual(D.loadSort(st), 'name', '初期は名前順');
+  assert.strictEqual(D.saveSort(st, 'rating'), true);
+  assert.strictEqual(D.VIEW_KEY, 'uber_drop_view_v1');
+  assert.notStrictEqual(D.VIEW_KEY, D.PERSONAL_KEY);
+  assert.strictEqual(D.loadSort(st), 'rating');
+  assert.deepStrictEqual(Object.keys(st.raw), ['uber_drop_view_v1'], '本人データのキーには触れない');
+  st.setItem(D.VIEW_KEY, '{壊れた');
+  assert.strictEqual(D.loadSort(st), 'name');
+  st.setItem(D.VIEW_KEY, '{"sort":"unknown"}');
+  assert.strictEqual(D.loadSort(st), 'name');
+  assert.strictEqual(D.loadSort(null), 'name', '保存先が無くても落ちない');
+  assert.strictEqual(D.saveSort(null, 'rating'), false);
+});
+
 test('data/uber_drop_buildings.js が JSON と同期', () => {
   const js = fs.readFileSync(path.join(ROOT, 'data', 'uber_drop_buildings.js'), 'utf8');
   const m = js.match(/window\.UBER_DROP_BUILDINGS = (.*);\n/);

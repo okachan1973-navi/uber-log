@@ -195,7 +195,34 @@
     return { code: null, icon: u.icon, label: u.label, verified: false };
   }
 
-  const api = { WARD_ORDER, normalize, haystack, parseQuery, search, wardChips, ratingInfo, byReading,
+  // 「評価別」表示のグループ順（null = 未検証）。並び順を変えるときはここだけ直す
+  const RATING_GROUP_ORDER = ['avoid', 'caution', 'ok', null];
+
+  /** 評価別にまとめる（各グループ内は渡された順＝五十音順のまま。空のグループは返さない） */
+  function groupByRating(list, data, order) {
+    const groups = (order || RATING_GROUP_ORDER).map(code => {
+      const lv = code ? ((data && data.rating_levels) || {})[code] : ((data && data.unverified) || { icon: '⚪', label: '未検証' });
+      return { code, icon: lv ? lv.icon : '', label: lv ? lv.label : String(code), items: [] };
+    });
+    list.forEach(b => {
+      const r = b.my && b.my.rating;
+      const g = groups.find(x => x.code === (RATINGS.includes(r) ? r : null));
+      if (g) g.items.push(b);
+    });
+    return groups.filter(g => g.items.length);
+  }
+
+  // 一覧の表示モード（名前順／評価別）。本人評価とは別キーで端末に保存
+  const VIEW_KEY = 'uber_drop_view_v1';
+  const SORTS = ['name', 'rating'];
+  function loadSort(storage) {
+    try { const v = JSON.parse(storage.getItem(VIEW_KEY) || 'null'); return v && SORTS.includes(v.sort) ? v.sort : 'name'; } catch (e) { return 'name'; }
+  }
+  function saveSort(storage, sort) {
+    try { storage.setItem(VIEW_KEY, JSON.stringify({ sort: SORTS.includes(sort) ? sort : 'name' })); return true; } catch (e) { return false; }
+  }
+
+  const api = { WARD_ORDER, RATING_GROUP_ORDER, groupByRating, VIEW_KEY, loadSort, saveSort, normalize, haystack, parseQuery, search, wardChips, ratingInfo, byReading,
     PERSONAL_KEY, RATINGS, NOTE_MAX, noteLength, createPersonalStore, attachPersonal };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.DropCheck = api;
