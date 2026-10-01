@@ -150,4 +150,7 @@ Uber Driver に案件が出ている数秒間に、DROP先のマンション名�
 - 検索: マンション名・読み・区・町名（読み含む）・住所・階数・備考。全角半角・カナかな・空白・曾/曽を吸収、複数語は AND、区名を含む入力（「西区ライズ」）は区で絞る。区ボタン（同じ区を再タップで解除）。読みのあいうえお順。
 - 音声: 専用ボタンは無し。検索欄をタップして iPhone キーボードのマイク🎤で話すと、入力された文字でそのまま即時検索される。
 - 検索欄の属性: `type="search"` `name="dc-search"` `autocomplete="off"` ほか。iPhone の「連絡先を自動入力」を出しにくくするため、name・placeholder・ラベルに「名前」「住所」等の語を使わない（Safari は `autocomplete="off"` を無視するため完全には抑止できない）。
-- テスト: `node tools/drop-check/spec/drop-check-tests.js`（単体）／ `node tools/drop-check/spec/drop-check-e2e.js`（Edge で iPhone相当 320/360/390/402/430px）／ `python tools/drop-check/import_excel.py --check`（データが Excel と一致）
+- データ管理（バックアップ）: 地雷タブの一覧の下「🗄️ データ管理（バックアップ）」（普段は閉じた1行）。この端末・このアプリの `uber_drop_personal_v1` を **読むだけ** で JSON に書き出す（`js/drop-backup.js`）。localStorage の変更・削除・統合はせず、Supabase とも通信しない。復元（インポート）機能は無い。
+  - 形式: `{ backup_schema: "uber_drop_backup/1", exported_at, exported_at_utc, app_version, device_memo, user_agent, display_mode, page_origin, source_storage_key, source_present, source_item_count, source_parse_error, source_read_error, source_data（保存内容をそのまま解釈したもの）, source_raw（保存されている文字列そのもの） }`
+  - ファイル名: `uber_drop_backup[_端末メモの英数字]_YYYY-MM-DD_HHMM.json`。0件（保存なし）でも書き出せる。iPhone で共有シートが使える場合は「共有して保存」から「ファイルに保存」も可。Safari とホーム画面アプリは保存が別なので、それぞれで書き出す。
+- テスト: `node tools/drop-check/spec/drop-check-tests.js`（単体）／ `node tools/drop-check/spec/drop-backup-tests.js`（バックアップ単体）／ `node tools/drop-check/spec/drop-check-e2e.js`（Edge で iPhone相当 320/360/390/402/430px）／ `python tools/drop-check/import_excel.py --check`（データが Excel と一致）

@@ -62,18 +62,24 @@ async function launch() {
   return { proc, ws, send, on: fn => listeners.push(fn) };
 }
 
-async function openApp(b, base, { width, height, initScript }) {
+async function openApp(b, base, { width, height, initScript, desktop }) {
   const { browserContextId } = await b.send('Target.createBrowserContext');
   const { targetId } = await b.send('Target.createTarget', { url: 'about:blank', browserContextId });
   const { sessionId } = await b.send('Target.attachToTarget', { targetId, flatten: true });
   const s = (m, p) => b.send(m, p, sessionId);
   const errors = [];
+  const requests = []; // Network.enable 後に送られた通信（URL）
+  b.on(m => { if (m.sessionId === sessionId && m.method === 'Network.requestWillBeSent') { const st = m.params.initiator && m.params.initiator.stack; const frames = []; for (let x = st; x; x = x.parent) (x.callFrames || []).forEach(c => frames.push(c.url)); requests.push({ url: m.params.request.url, from: frames }); } });
   b.on(m => { if (m.sessionId === sessionId && m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception ? m.params.exceptionDetails.exception.description : m.params.exceptionDetails.text); });
   await s('Page.enable');
   await s('Runtime.enable');
-  await s('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 3, mobile: true });
-  await s('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
-  await s('Emulation.setUserAgentOverride', { userAgent: IPHONE_UA, platform: 'iPhone' });
+  if (desktop) {
+    await s('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
+  } else {
+    await s('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 3, mobile: true });
+    await s('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+    await s('Emulation.setUserAgentOverride', { userAgent: IPHONE_UA, platform: 'iPhone' });
+  }
   if (initScript) await s('Page.addScriptToEvaluateOnNewDocument', { source: initScript });
   const ev = async expr => {
     const r = await s('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });
@@ -106,7 +112,7 @@ async function openApp(b, base, { width, height, initScript }) {
   const results = () => ev(`({ names: [...document.querySelectorAll('#dc-list .dc-name')].map(e => e.lastChild.textContent), none: document.querySelector('#dc-list .dc-none') ? document.querySelector('#dc-list .dc-none').textContent.replace(/\\s+/g, ' ').trim() : null, count: document.getElementById('dc-count').textContent })`);
   const shot = async name => { if (!SHOTS) return; const { data } = await s('Page.captureScreenshot', { format: 'png' }); fs.writeFileSync(path.join(SHOTS, name + '.png'), Buffer.from(data, 'base64')); };
   const close = async () => { await b.send('Target.closeTarget', { targetId }); await b.send('Target.disposeBrowserContext', { browserContextId }); };
-  return { s, ev, tap, tapSel, type, results, shot, close, errors };
+  return { s, ev, tap, tapSel, type, results, shot, close, errors, requests, browserContextId };
 }
 
 async function run() {
@@ -439,6 +445,74 @@ async function run() {
       L = await listed();
       check('名前順に戻す → 見出しなし・52件五十音順・保存も名前順', L.headers.length === 0 && L.flat.join('/') === nameOrder.join('/') && await p.ev(`localStorage.getItem('uber_drop_view_v1')`) === '{"sort":"name"}', L.headers);
       check('JavaScript エラーなし', p.errors.length === 0, p.errors);
+      await p.close();
+    }
+
+    for (const [label, w, h, desktop] of [['iPhone 12 Pro相当', 390, 844, false], ['iPhone SE相当', 320, 568, false], ['PC', 1280, 800, true]]) {
+      console.log(`\n[データ管理: JSONバックアップ書き出し ${label} ${w}x${h}]`);
+      const p = await openApp(b, base, { width: w, height: h, desktop });
+      const dl = fs.mkdtempSync(path.join(os.tmpdir(), 'dc-backup-dl-'));
+      await b.send('Browser.setDownloadBehavior', { behavior: 'allowAndName', downloadPath: dl, browserContextId: p.browserContextId, eventsEnabled: true });
+      const click = async sel => { if (desktop) { await p.ev(`document.querySelector(${JSON.stringify(sel)}).scrollIntoView({ block: 'center' }); document.querySelector(${JSON.stringify(sel)}).click()`); await sleep(200); } else await p.tapSel(sel); };
+      // 現行形式＋未知の項目を持つ本人データを入れて読み込み直す
+      const sample = { schema: 'uber_drop_personal/1', updated_at: '2026-10-01T12:00:05.000Z', extra_top: 1, items: {
+        bld_b64ef0b3d7: { rating: 'avoid', note: '館内長い', tags: ['t1'], verified_at: '2026-10-01T11:00:00.000Z', rating_updated_at: '2026-10-01T11:30:00.000Z', note_updated_at: '2026-10-01T11:31:00.000Z', updated_at: '2026-10-01T11:31:00.000Z', ref: { name: '大阪ひびきの街 ザ・サンクタスタワー', ward: '西区', address: '大阪市西区新町1丁目14-21' }, future: { x: [1, null] } },
+        bld_9213a54b72: { rating: null, note: 'メモのみ', tags: [], verified_at: null, rating_updated_at: '2026-10-01T10:00:00.000Z', note_updated_at: '2026-10-01T10:00:00.000Z', updated_at: '2026-10-01T10:00:00.000Z', ref: { name: 'ローレルコート難波', ward: '浪速区', address: '大阪市浪速区湊町1丁目4-36' } } } };
+      await p.ev(`localStorage.setItem('uber_drop_personal_v1', ${JSON.stringify(JSON.stringify(sample))}); localStorage.setItem('uber_drop_view_v1', '{"sort":"rating"}')`);
+      await p.s('Page.reload', {});
+      for (let i = 0; i < 40; i++) { await sleep(250); try { if (await p.ev('document.readyState === "complete" && !!window.__dropCheck && !!window.DropBackup')) break; } catch (e) { /* 読み込み中 */ } }
+      await click('.bottom-nav [data-tab="avoidance"]');
+      await sleep(300);
+      const ui0 = await p.ev(`(() => { const d = document.getElementById('dc-backup'); const sm = d.querySelector('summary').getBoundingClientRect(); const legacy = document.getElementById('avoidance-legacy');
+        return { closed: !d.open, summaryH: sm.height, summaryText: d.querySelector('summary').textContent.trim(), afterList: !!(document.getElementById('dc-list').compareDocumentPosition(d) & Node.DOCUMENT_POSITION_FOLLOWING), beforeLegacy: !!(d.compareDocumentPosition(legacy) & Node.DOCUMENT_POSITION_FOLLOWING), cards: document.querySelectorAll('#dc-list .dc-item').length }; })()`);
+      check('データ管理は一覧の下に閉じた1行だけ（メイン画面はそのまま・52件）', ui0.closed && ui0.summaryH <= 52 && ui0.afterList && ui0.beforeLegacy && ui0.cards === 52 && /データ管理/.test(ui0.summaryText), ui0);
+      const snap = () => p.ev(`JSON.stringify(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)]))`);
+      const before = await snap();
+      await click('#dc-backup > summary');
+      await sleep(200);
+      const ui1 = await p.ev(`(() => { const r = id => document.getElementById(id).getBoundingClientRect(); return { count: document.getElementById('dcb-count').textContent, memoH: r('dcb-memo').height, btnH: r('dcb-download').height, memoFont: parseFloat(getComputedStyle(document.getElementById('dcb-memo')).fontSize), right: Math.max(r('dcb-memo').right, r('dcb-download').right), vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth }; })()`);
+      check('開くと「DROP個人データ 2件」・端末メモ欄・書き出しボタン（44px以上・文字16px）・横スクロールなし', ui1.count === '2件' && ui1.memoH >= 44 && ui1.btnH >= 44 && ui1.memoFont >= 16 && ui1.right <= ui1.vw && ui1.sw <= ui1.vw, ui1);
+      await p.shot(`backup_${w}_open`);
+      // 端末メモありで書き出す（通信を記録）
+      await p.s('Network.enable');
+      p.requests.length = 0;
+      await p.ev(`(() => { const i = document.getElementById('dcb-memo'); i.value = '12ProHome'; })()`);
+      await click('#dcb-download');
+      let file = null;
+      for (let i = 0; i < 40 && !file; i++) { await sleep(200); const fs2 = fs.readdirSync(dl).filter(n => !/\.crdownload$/.test(n)); if (fs2.length) file = fs2[0]; }
+      const last = await p.ev('window.__dropBackupLast');
+      const stored = await p.ev(`localStorage.getItem('uber_drop_personal_v1')`);
+      const saved = file ? JSON.parse(fs.readFileSync(path.join(dl, file), 'utf8')) : null;
+      check('端末メモありで書き出し → ファイル名 uber_drop_backup_12ProHome_YYYY-MM-DD_HHMM.json', !!last && /^uber_drop_backup_12ProHome_\d{4}-\d\d-\d\d_\d{4}\.json$/.test(last.name), last && last.name);
+      check('実際にファイルが保存され、内容は画面で作った JSON と同じ', !!saved && JSON.stringify(saved) === JSON.stringify(JSON.parse(last.text)), file);
+      check('source_data は書き出し直前の localStorage 値と完全一致・source_raw は保存文字列そのもの', !!saved && JSON.stringify(saved.source_data) === JSON.stringify(JSON.parse(stored)) && saved.source_raw === stored && saved.source_item_count === 2 && saved.source_present === true, saved && Object.keys(saved));
+      check('rating・note・日時・ref・tags・未知の項目を保持', !!saved && saved.source_data.items.bld_b64ef0b3d7.rating === 'avoid' && saved.source_data.items.bld_b64ef0b3d7.note === '館内長い' && saved.source_data.items.bld_b64ef0b3d7.verified_at === '2026-10-01T11:00:00.000Z'
+        && saved.source_data.items.bld_b64ef0b3d7.ref.name === '大阪ひびきの街 ザ・サンクタスタワー' && saved.source_data.items.bld_b64ef0b3d7.tags[0] === 't1' && JSON.stringify(saved.source_data.items.bld_b64ef0b3d7.future) === '{"x":[1,null]}' && saved.source_data.extra_top === 1);
+      check('メタ情報（backup_schema・端末メモ・アプリ版・表示モード）', !!saved && saved.backup_schema === 'uber_drop_backup/1' && saved.device_memo === '12ProHome' && /^20261002_v\d+$/.test(saved.app_version) && saved.display_mode === 'browser' && saved.source_storage_key === 'uber_drop_personal_v1', saved && { m: saved.device_memo, v: saved.app_version });
+      check('書き出し後も localStorage は完全に同じ（全キー）', (await snap()) === before);
+      check('書き出しで通信しない（書き出し処理からの通信なし・Supabase や外部への通信なし）', !p.requests.some(r => r.from.some(u => /drop-backup\.js/.test(u))) && !p.requests.some(r => /supabase/i.test(r.url) || (!/^(blob|data):/.test(r.url) && new URL(r.url).origin !== new URL(base).origin)), p.requests);
+      check('書き出したことを表示', /書き出しました: uber_drop_backup_12ProHome_.*（2件）/.test(await p.ev(`document.getElementById('dcb-status').textContent`)));
+      // 一覧・評価別・区フィルター・評価変更はそのまま動く
+      const list = await p.ev(`({ headers: [...document.querySelectorAll('#dc-list .dc-group-h')].map(e => e.textContent), n: document.querySelectorAll('#dc-list .dc-item').length })`);
+      check('評価別（保存済みの表示モード）と本人評価がそのまま表示される', list.headers[0] === '🔴 避けたい（1）' && list.n === 52, list);
+      // 0件: 保存データなしでも書き出せる（端末メモなし）
+      await p.ev(`localStorage.removeItem('uber_drop_personal_v1')`);
+      await click('#dc-backup > summary'); await sleep(150); await click('#dc-backup > summary'); await sleep(200);
+      const zeroCount = await p.ev(`document.getElementById('dcb-count').textContent`);
+      const before0 = await snap();
+      await p.ev(`document.getElementById('dcb-memo').value = ''`);
+      fs.readdirSync(dl).forEach(n => fs.unlinkSync(path.join(dl, n)));
+      await click('#dcb-download');
+      let file0 = null;
+      for (let i = 0; i < 40 && !file0; i++) { await sleep(200); const fs2 = fs.readdirSync(dl).filter(n => !/\.crdownload$/.test(n)); if (fs2.length) file0 = fs2[0]; }
+      const last0 = await p.ev('window.__dropBackupLast');
+      const saved0 = file0 ? JSON.parse(fs.readFileSync(path.join(dl, file0), 'utf8')) : null;
+      check('0件（保存データなし）でも端末メモなしで書き出せる', zeroCount === '0件（保存データなし）' && /^uber_drop_backup_\d{4}-\d\d-\d\d_\d{4}\.json$/.test(last0.name) && !!saved0 && saved0.source_present === false && saved0.source_item_count === 0 && saved0.source_data === null && saved0.device_memo === null, { zeroCount, name: last0.name });
+      check('0件の書き出しでも localStorage を作らない・変えない', (await snap()) === before0 && await p.ev(`localStorage.getItem('uber_drop_personal_v1')`) === null);
+      check('復元（インポート）の操作は置かない', await p.ev(`!document.querySelector('#dc-backup input[type="file"]') && !/復元|インポート|読み込む/.test(document.getElementById('dc-backup').textContent)`));
+      check('横スクロールなし', await p.ev('document.documentElement.scrollWidth <= document.documentElement.clientWidth'));
+      check('JavaScript エラーなし', p.errors.length === 0, p.errors);
+      fs.rmSync(dl, { recursive: true, force: true });
       await p.close();
     }
 

@@ -146,6 +146,28 @@
 .dc-none span { color: var(--text-muted); font-size: 14px; }
 .dc-foot { margin: 10px 2px 0; color: var(--text-dim); font-size: 12px; }
 
+/* データ管理（バックアップ書き出し）: 普段は閉じた1行だけ */
+.dc-backup { margin-top: 12px; }
+.dc-backup > summary { min-height: 44px; display: flex; align-items: center; font-size: 14px; font-weight: 700; color: var(--text-muted); cursor: pointer; }
+.dcb-body { padding: 10px 12px 12px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); font-size: 14px; }
+.dcb-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.dcb-row b { flex: none; font-size: 16px; }
+.dcb-warn { margin: 6px 0 0; color: #fca5a5; font-size: 13px; }
+.dcb-label { display: block; margin: 10px 0 4px; color: var(--text-muted); font-size: 13px; }
+.dcb-memo {
+  width: 100%; min-height: 44px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border-color);
+  background: #0d1117; color: var(--text-main); font: inherit; font-size: 16px; /* iPhone で自動ズームしない */
+  -webkit-appearance: none; appearance: none; user-select: text; -webkit-user-select: text; box-sizing: border-box;
+}
+.dcb-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.dcb-btn {
+  flex: 1 1 140px; min-height: 44px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-card-subtle);
+  color: var(--text-main); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.dcb-status { margin: 8px 0 0; font-size: 13px; color: #86efac; overflow-wrap: anywhere; }
+.dcb-status:empty { display: none; }
+.dcb-help { margin: 8px 0 0; font-size: 12px; color: var(--text-dim); }
+
 /* 従来の地雷DB（実走事例・評価・同期）は折りたたんで残す */
 .dc-legacy { margin-top: 18px; border-top: 1px solid var(--border-color); padding-top: 8px; }
 .dc-legacy > summary { min-height: 44px; display: flex; align-items: center; font-weight: 700; color: var(--text-muted); cursor: pointer; }
