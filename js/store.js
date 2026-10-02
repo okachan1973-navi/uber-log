@@ -3833,6 +3833,92 @@ const CONFIRMED_SEED_DATA = {
         "source": "official-import-v1",
         "importedAt": "2026-10-01T07:48:25.217Z"
       }
+    },
+    "2026-10-02": {
+      "date": "2026-10-02",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 24.88,
+      "tripsCount": 5,
+      "officialPoints": 5,
+      "deliveriesCount": 5,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_1002_1",
+          "index": 1,
+          "completedAt": "07:34",
+          "restaurant": "スターバックス コーヒー JR弁天町駅店 Starbucks Coffee JR Bentencho Eki",
+          "area": "大阪市此花区西九条1丁目",
+          "fee": 495,
+          "distanceKm": 5.07,
+          "durationStr": "25分55秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_1002_2",
+          "index": 2,
+          "completedAt": "08:32",
+          "restaurant": "マクドナルド 高見プラザ店",
+          "area": "大阪市此花区伝法5丁目",
+          "fee": 490,
+          "distanceKm": 5.91,
+          "durationStr": "32分10秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_1002_3",
+          "index": 3,
+          "completedAt": "08:42",
+          "restaurant": "マクドナルド 高見プラザ店 McDonald's TAKAMI PLAZA",
+          "area": "大阪市此花区酉島3丁目",
+          "fee": 536,
+          "distanceKm": 8.56,
+          "durationStr": "40分7秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_1002_4",
+          "index": 4,
+          "completedAt": "09:52",
+          "restaurant": "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE",
+          "area": "大阪市此花区梅香3丁目",
+          "fee": 320,
+          "distanceKm": 1.51,
+          "durationStr": "12分4秒",
+          "points": 1,
+          "memo": ""
+        },
+        {
+          "id": "del_1002_5",
+          "index": 5,
+          "completedAt": "10:26",
+          "restaurant": "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY",
+          "area": "大阪市西区本田1丁目",
+          "fee": 372,
+          "distanceKm": 3.83,
+          "durationStr": "19分21秒",
+          "points": 1,
+          "memo": ""
+        }
+      ],
+      "quests": [],
+      "sales": {
+        "delivery": 2213,
+        "quest": 0,
+        "adjustment": 0,
+        "other": 0,
+        "total": 2213
+      },
+      "expenses": [],
+      "officialImport": {
+        "source": "official-import-v1",
+        "importedAt": "2026-10-02T06:25:26.775Z"
+      }
     }
   },
   "targetQuests": [

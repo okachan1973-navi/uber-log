@@ -1502,6 +1502,41 @@ const TRIP_MAP_CATALOG = {
     "cropped": true,
     "box": [38, 156, 416, 366],
     "origFile": "スクリーンショット 2026-10-01 164652.png"
+  },
+  "del_1002_1": {
+    "map": "assets/maps/map_del_1002_1.png",
+    "full": "assets/maps/full_del_1002_1.png",
+    "cropped": true,
+    "box": [41, 153, 419, 363],
+    "origFile": "スクリーンショット 2026-10-02 152219.png"
+  },
+  "del_1002_2": {
+    "map": "assets/maps/map_del_1002_2.png",
+    "full": "assets/maps/full_del_1002_2.png",
+    "cropped": true,
+    "box": [52, 157, 430, 367],
+    "origFile": "スクリーンショット 2026-10-02 152240.png"
+  },
+  "del_1002_3": {
+    "map": "assets/maps/map_del_1002_3.png",
+    "full": "assets/maps/full_del_1002_3.png",
+    "cropped": true,
+    "box": [51, 159, 429, 369],
+    "origFile": "スクリーンショット 2026-10-02 152318.png"
+  },
+  "del_1002_4": {
+    "map": "assets/maps/map_del_1002_4.png",
+    "full": "assets/maps/full_del_1002_4.png",
+    "cropped": true,
+    "box": [47, 159, 425, 369],
+    "origFile": "スクリーンショット 2026-10-02 152331.png"
+  },
+  "del_1002_5": {
+    "map": "assets/maps/map_del_1002_5.png",
+    "full": "assets/maps/full_del_1002_5.png",
+    "cropped": true,
+    "box": [56, 159, 434, 369],
+    "origFile": "スクリーンショット 2026-10-02 152341.png"
   }
 };
 
