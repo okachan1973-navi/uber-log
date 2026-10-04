@@ -4880,6 +4880,15 @@ function deduplicateQuests(questList = []) {
   const seenAmountPairs = new Map();
 
   questList.forEach((q) => {
+    // ユーザー確認済み等で明示的に両方計上（count_all）または重複除外対象外とされている場合は除外しない
+    if (q.decision === 'count_all' || q.allowDuplicate || q.keepSeparate) {
+      processed.push({
+        ...q,
+        isDuplicateIgnored: false
+      });
+      return;
+    }
+
     const rawTime = (q.time || '').replace(/頃/, '').trim();
     const amount = Number(q.amount) || 0;
     const title = (q.title || '').trim();
