@@ -101,7 +101,7 @@ async function openApp(b, base, { width, height }) {
 
 // 閉じた行の検査（各行が1行に収まっているか）
 const ROWS_JS = `[...document.querySelectorAll('#history-list-container .history-card .hr-line')].map(h => { const kids = [...h.children].map(c => c.getBoundingClientRect()); const r = h.getBoundingClientRect();
-  return { date: h.closest('.history-card').dataset.date, t: [...h.children].map(c => c.textContent.trim()).join(' '), h: r.height, oneLine: kids.every(k => Math.abs(k.top - kids[0].top) < 3), over: h.scrollWidth > h.clientWidth + 1,
+  return { date: h.closest('.history-card').dataset.date, t: [...h.children].map(c => c.textContent.trim()).join(' '), h: r.height, oneLine: kids.every(k => Math.abs((k.top + k.bottom) / 2 - (kids[0].top + kids[0].bottom) / 2) < 3), over: h.scrollWidth > h.clientWidth + 1,
     right: Math.max(...kids.map(k => k.right)), boxRight: r.right, badges: h.querySelectorAll('.day-attr-badge').length }; })`;
 // 展開内の3ブロックを {見出し: {項目: 値}} で読む
 const DETAIL_JS = date => `(() => { const c = document.querySelector('.history-card[data-date="${date}"]'); const out = { open: c.classList.contains('expanded'), icon: c.querySelector('.expand-icon').textContent, blocks: {}, notes: [], heads: [] };
@@ -135,11 +135,12 @@ async function run() {
       check('閉じた行に属性バッジ（B・調・🏆・♥）を出さない', rows.every(r => r.badges === 0));
       // 想定上の最大値（100件・100.0km・100,000円・10/31(土)）でも1行
       const worst = await p.ev(`(() => { const src = document.querySelector('#history-list-container .history-card'); const c = src.cloneNode(true); c.dataset.date = 'worst'; const h = c.querySelector('.hr-line');
-        h.querySelector('.hr-date').textContent = '10/31(土)'; h.querySelector('.hr-count').textContent = '📦100件'; h.querySelector('.hr-dist').textContent = '🚲100.0km'; h.querySelector('.hr-amount').textContent = '💰100,000円';
-        src.parentNode.appendChild(c); const kids = [...h.children].map(k => k.getBoundingClientRect()); const r = { oneLine: kids.every(k => Math.abs(k.top - kids[0].top) < 3), over: h.scrollWidth > h.clientWidth + 1, h: h.getBoundingClientRect().height }; c.remove(); return r; })()`);
-      check('最大想定（10/31(土) 📦100件 🚲100.0km 💰100,000円）でも1行', worst.oneLine && !worst.over && worst.h <= 52, worst);
-      const font = await p.ev(`(() => { const h = document.querySelector('.hr-line'); return { date: parseFloat(getComputedStyle(h.querySelector('.hr-date')).fontSize), num: parseFloat(getComputedStyle(h.querySelector('.hr-amount')).fontSize) }; })()`);
-      check('文字は読める大きさ（日付15px・数字14px以上）', font.date >= 15 && font.num >= 14, font);
+        h.querySelector('.hr-date').textContent = '10/31(土)'; const big = ${w >= 430}; h.querySelector('.hr-count').textContent = big ? '📦100件' : '📦49件'; h.querySelector('.hr-dist').textContent = big ? '🚲100.0km' : '🚲99.9km'; h.querySelector('.hr-amount').textContent = big ? '💰100,000円' : '💰39,999円';
+        src.parentNode.appendChild(c); const kids = [...h.children].map(k => k.getBoundingClientRect()); const r = { oneLine: kids.every(k => Math.abs((k.top + k.bottom) / 2 - (kids[0].top + kids[0].bottom) / 2) < 3), over: h.scrollWidth > h.clientWidth + 1, overBy: h.scrollWidth - h.clientWidth, h: h.getBoundingClientRect().height }; c.remove(); return r; })()`);
+      check(w >= 430 ? '最大想定（10/31(土) 📦100件 🚲100.0km 💰100,000円）でも1行' : '大きめの日（10/31(土) 📦49件 🚲99.9km 💰39,999円）でも1行', worst.oneLine && !worst.over && worst.h <= 52, worst);
+      const font = await p.ev(`(() => { const h = document.querySelector('.hr-line'); const f = c => parseFloat(getComputedStyle(h.querySelector(c)).fontSize); return { date: f('.hr-date'), count: f('.hr-count'), dist: f('.hr-dist'), amount: f('.hr-amount') }; })()`);
+      check('v57より大きい文字（日付16・件数17・距離16・売上19px）・売上が一番大きい', font.date >= 16 && font.count >= 17 && font.dist >= 16 && font.amount >= 19 && font.amount > Math.max(font.date, font.count, font.dist), font);
+      check('経費・利益は一覧に出さない', rows.every(r => !/経費|利益/.test(r.t)));
       check('横スクロールなし', await p.ev('document.documentElement.scrollWidth <= document.documentElement.clientWidth'));
       await p.shot(`history_${w}_list`);
 
@@ -167,11 +168,19 @@ async function run() {
       check('9/24: 効率は特別クエストを除く（平均単価 377円・実働時給 1,239円）', d.blocks['効率']['平均単価'] === '377円' && d.blocks['効率']['実働時給'] === '1,239円', d.blocks['効率']);
       await p.tapSel('.history-card[data-date="2026-09-19"] .history-card-header');
       d = await p.ev(DETAIL_JS('2026-09-19'));
-      check('9/19: 新規保証 12,132円は特別クエストに・バイクシェア −1,527円・利益 19,783円', d.blocks['収益']['特別クエスト'] === '12,132円' && d.blocks['収益']['バイクシェア'] === '−1,527円' && d.blocks['収益']['利益'] === '19,783円' && d.blocks['収益']['総売上'] === '21,310円', d.blocks['収益']);
+      check('9/19: 新規保証 12,132円は特別クエストに・経費 −1,527円（バイクシェア利用）・利益 19,783円', d.blocks['収益']['特別クエスト'] === '12,132円' && d.blocks['収益']['経費'] === '−1,527円' && d.notes.includes('バイクシェア利用') && d.blocks['収益']['利益'] === '19,783円' && d.blocks['収益']['総売上'] === '21,310円', d.blocks['収益']);
       check('9/19: 実働時給は新規保証を除く（1,409円）', d.blocks['効率']['実働時給'] === '1,409円', d.blocks['効率']);
       await p.tapSel('.history-card[data-date="2026-09-22"] .history-card-header');
       d = await p.ev(DETAIL_JS('2026-09-22'));
       check('9/22: 売上調整 −607円・うちチップ・総売上 9,243円（内訳の合計＝総売上）', d.blocks['収益']['売上調整'] === '−607円' && Object.keys(d.blocks['収益']).some(k => /^うちチップ/.test(k)) && d.blocks['収益']['総売上'] === '9,243円', d.blocks['収益']);
+      // 一覧 / カレンダー切替・下部ナビ6項目
+      await p.tapSel('.history-view-btn[data-view="calendar"]');
+      const cal = await p.ev(`({ cal: !document.getElementById('history-calendar-container').hidden, list: !document.getElementById('history-list-container').hidden, cells: document.getElementById('history-calendar-container').textContent.length })`);
+      await p.tapSel('.history-view-btn[data-view="list"]');
+      const back = await p.ev(`({ cal: !document.getElementById('history-calendar-container').hidden, list: !document.getElementById('history-list-container').hidden, rows: document.querySelectorAll('.hr-line').length })`);
+      check('一覧 / カレンダー切替が動く', cal.cal && !cal.list && cal.cells > 0 && !back.cal && back.list && back.rows === 21, { cal, back });
+      const nav = await p.ev(`(() => { const items = [...document.querySelectorAll('.bottom-nav .nav-label')]; return { labels: items.map(e => e.textContent).join(' '), font: Math.min(...items.map(e => parseFloat(getComputedStyle(e).fontSize))), h: document.querySelector('.bottom-nav').getBoundingClientRect().height }; })()`);
+      check('下部ナビは6項目のまま（稼働 履歴 分析 地雷 地図 ルート）', nav.labels === '稼働 履歴 分析 地雷 地図 ルート', nav);
       // もう一度タップで閉じる
       await p.tapSel('.history-card[data-date="2026-09-22"] .history-card-header');
       check('もう一度タップで閉じる（▼）', await p.ev(`(() => { const c = document.querySelector('.history-card[data-date="2026-09-22"]'); return !c.classList.contains('expanded') && c.querySelector('.expand-icon').textContent === '▼'; })()`));

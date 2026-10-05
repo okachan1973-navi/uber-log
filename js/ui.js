@@ -1573,6 +1573,7 @@ class UI {
       const normalQuestSales = (metrics.questSales || 0) - (metrics.specialQuestSales || 0);
       const specialNames = (metrics.specialQuests || []).map(sq => sq.name)
         .concat(metrics.guaranteeBonus > 0 ? [metrics.guaranteeBonusNote || '新規ドライバー保証'] : []);
+      const expenseNames = [...new Set((metrics.expenses || []).filter(e => Number(e.amount) > 0).map(e => e.category || e.memo || '').filter(Boolean))];
       // 効率は「通常分析売上」（regularSales: 特別クエスト・新規保証を除く。時給と同じ定義）で計算
       const reg = metrics.regularSales;
       const hasDist = distVal !== null && distVal > 0;
@@ -1593,8 +1594,10 @@ class UI {
         specialSales > 0 && specialNames.length ? `<div class="hd-note">${specialNames.join('・')}</div>` : '',
         metrics.adjustmentSales !== 0 ? row('売上調整', `${metrics.adjustmentSales < 0 ? '−' : ''}${yen(Math.abs(metrics.adjustmentSales))}`) : '',
         metrics.otherSales ? row('その他', yen(metrics.otherSales)) : '',
-        metrics.totalExpenses > 0 ? row('バイクシェア', `−${yen(metrics.totalExpenses)}`, 'hd-sep') : '',
-        metrics.totalExpenses > 0 && metrics.netProfit !== null ? row('利益', yen(metrics.netProfit)) : ''
+        // 経費がある日だけ「経費 → 利益」（売上・経費・利益の関係をここで確認する。一覧には出さない）
+        metrics.totalExpenses > 0 ? row('経費', `−${yen(metrics.totalExpenses)}`, 'hd-sep') : '',
+        metrics.totalExpenses > 0 && expenseNames.length ? `<div class="hd-note">${expenseNames.join('・')}</div>` : '',
+        metrics.totalExpenses > 0 && metrics.netProfit !== null ? row('利益', yen(metrics.netProfit), 'hd-profit') : ''
       ].join('');
       // 見出しアイコン（実機確認後に外す可能性あり。ここを空文字にすれば消える）
       const ICON = { revenue: '💰', work: '🚲', efficiency: '📊' };
@@ -1605,9 +1608,9 @@ class UI {
           <!-- 閉じた状態は必ず1行: 日付・件数・距離・総売上・▼（天候は保存データが無いため未表示。足すなら日付の次） -->
           <div class="history-card-header hr-line">
             <span class="hr-date">${shortDate}</span>
-            <span class="hr-count">📦${metrics.count}件</span>
-            <span class="hr-dist">🚲${distVal !== null ? km1(distVal) + 'km' : '--'}</span>
-            <span class="hr-amount">💰${metrics.totalSales !== null ? yen(metrics.totalSales) : '--'}</span>
+            <span class="hr-count"><span class="hr-ic">📦</span>${metrics.count}件</span>
+            <span class="hr-dist"><span class="hr-ic">🚲</span>${distVal !== null ? km1(distVal) + 'km' : '--'}</span>
+            <span class="hr-amount"><span class="hr-ic">💰</span>${metrics.totalSales !== null ? yen(metrics.totalSales) : '--'}</span>
             <span class="expand-icon">▼</span>
           </div>
 
