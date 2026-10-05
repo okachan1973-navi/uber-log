@@ -1644,6 +1644,40 @@ body {
   color: var(--text-main);
 }
 
+/* 履歴の閉じた行: 日付・📦件数・🚲距離・💰総売上・▼ を必ず1行（375px でも折り返さない）。
+   各項目は最小幅を揃えて右寄せにし、日をまたいで数字の縦位置がそろうようにする */
+.history-card-header.hr-line {
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 10px 8px 10px 12px;
+  white-space: nowrap;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-main);
+}
+.hr-line > span { flex: none; }
+.hr-date { min-width: 4.5em; font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+.hr-count, .hr-dist, .hr-amount { text-align: right; font-weight: 600; letter-spacing: -0.2px; }
+.hr-count { min-width: 3.9em; margin-left: auto; }
+.hr-dist { min-width: 4.9em; }
+.hr-amount { min-width: 6.1em; font-weight: 700; }
+.hr-line .expand-icon { margin-left: 2px; }
+
+/* 履歴の展開: 収益・稼働・効率（左＝項目名、右＝数値。数字の右端をそろえる） */
+.hd-blocks { padding: 12px 14px 4px; }
+.hd-block + .hd-block { margin-top: 16px; }
+.hd-head { margin-bottom: 6px; font-size: 14px; font-weight: 700; color: var(--text-muted); }
+.hd-icon { margin-right: 6px; }
+.hd-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 4px 2px; font-size: 15px; line-height: 1.4; }
+.hd-label { color: #c9d1d9; }
+.hd-val { font-variant-numeric: tabular-nums; color: var(--text-main); font-weight: 600; text-align: right; white-space: nowrap; }
+.hd-row.hd-total .hd-label { color: var(--text-main); font-weight: 700; }
+.hd-row.hd-total .hd-val { font-size: 17px; font-weight: 800; }
+.hd-row.hd-sub { padding-left: 14px; font-size: 13px; }
+.hd-row.hd-sub .hd-label, .hd-row.hd-sub .hd-val { color: var(--text-muted); font-weight: 500; }
+.hd-note { margin: -2px 2px 2px; text-align: right; font-size: 12px; color: var(--text-dim); }
+.hd-row.hd-sep { margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--border-color); }
+
 /* 展開内部ボディ */
 .history-card-body {
   display: none;

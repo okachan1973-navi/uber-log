@@ -1533,34 +1533,10 @@ class UI {
 
     container.innerHTML = activeLogs.map(log => {
       const metrics = store.getCalculatedMetrics(log);
-      const dateHtml = (typeof formatDateWithColoredWeekday === 'function') 
-        ? formatDateWithColoredWeekday(log.date, false) 
-        : ((typeof formatShortJapaneseDate === 'function') ? formatShortJapaneseDate(log.date, false) : formatJapaneseDate(log.date));
-
-      // 日別属性の取得と「+N」集約ロジック（3個までは個別表示、4個以上は先頭3個 + [+N] 集約）
-      const dayAttrs = (typeof store !== 'undefined' && store.getDayAttributes)
-        ? store.getDayAttributes(log.date)
-        : [];
-
-      let visibleAttrs = [];
-      let hiddenCount = 0;
-      if (dayAttrs.length <= 3) {
-        visibleAttrs = dayAttrs;
-      } else {
-        visibleAttrs = dayAttrs.slice(0, 3);
-        hiddenCount = dayAttrs.length - 3;
-      }
-
-      let dayAttrsHtml = visibleAttrs.map(attr => `
-        <span class="day-attr-badge ${attr.className}" title="${attr.fullName}">${attr.label}</span>
-      `).join('');
-
-      if (hiddenCount > 0) {
-        const hiddenNames = dayAttrs.slice(3).map(a => a.fullName).join(', ');
-        dayAttrsHtml += `
-          <span class="day-attr-badge attr-more" title="他${hiddenCount}件: ${hiddenNames}">+${hiddenCount}</span>
-        `;
-      }
+      // 日付は一覧性優先の短い形（10/5(月)）
+      const [, mm, dd] = log.date.split('-').map(Number);
+      const wdInfo = typeof getDayOfWeekInfo === 'function' ? getDayOfWeekInfo(log.date) : null;
+      const shortDate = `${mm}/${dd}(${wdInfo ? wdInfo.weekdayChar : ''})`;
 
       const tripCount = log.tripsCount || (log.deliveries ? log.deliveries.length : metrics.count);
       const deliverySectionTitle = (tripCount !== metrics.count)
@@ -1585,165 +1561,75 @@ class UI {
         return isNewest ? (idxB - idxA) : (idxA - idxB);
       });
 
-      // 日別詳細上部の距離・配達時間・時給サマリー
+      // ---- 数値（すべて store.getCalculatedMetrics の値。表示時だけ丸める） ----
+      const yen = n => `${Math.round(n).toLocaleString('ja-JP')}円`;
+      const km1 = n => (Math.round(n * 10) / 10).toFixed(1);
       const distVal = metrics.totalDistanceKm !== null ? metrics.totalDistanceKm : metrics.uberDeliveryDistanceKm;
-      const distText = distVal !== null ? `${distVal}km` : '未記録';
-      const workText = metrics.workMinutes !== null ? formatMinutes(metrics.workMinutes) : '未記録';
-      const wageText = metrics.hourlyWage !== null ? `¥${metrics.hourlyWage.toLocaleString()}` : null;
-
-      // 追加収支カード群（プラス収支 -> マイナス収支の順）
-      const additionalCards = [];
-
-      // 1. 特別収入カード（プラス）
-      if (metrics.guaranteeBonus > 0) {
-        additionalCards.push(`
-          <div class="balance-card card-bonus">
-            <div class="balance-card-left">
-              <span class="day-attr-badge attr-bonus attr-quest-trophy">🏆</span>
-              <div class="balance-card-info">
-                <span class="balance-card-title">特別収入（新規保証）</span>
-                ${metrics.milestone ? `<span class="balance-card-sub">${metrics.milestone}</span>` : ''}
-              </div>
-            </div>
-            <span class="balance-card-amount">+¥${metrics.guaranteeBonus.toLocaleString()}</span>
-          </div>
-        `);
-      }
-
-      // 2. 売上調整金カード（プラス／マイナス。Uber側の売上調整であり経費ではない）
-      if (metrics.adjustmentSales !== 0) {
-        const adj = metrics.adjustmentSales;
-        const adjSign = adj > 0 ? '+' : '-';
-        additionalCards.push(`
-          <div class="balance-card card-adjustment">
-            <div class="balance-card-left">
-              <span class="day-attr-badge attr-adjustment">調</span>
-              <div class="balance-card-info">
-                <span class="balance-card-title">売上調整金</span>
-              </div>
-            </div>
-            <span class="balance-card-amount">${adjSign}¥${Math.abs(adj).toLocaleString()}</span>
-          </div>
-        `);
-      }
-
-      // 1-2. 特別クエストカード（クエスト報酬に含まれる内訳。金額表記は 9/19 の特別収入と同じ「+¥」）
-      (metrics.specialQuests || []).forEach(sq => {
-        additionalCards.push(`
-          <div class="balance-card card-special-quest">
-            <div class="balance-card-left">
-              <span class="day-attr-badge attr-special-quest">🏆</span>
-              <div class="balance-card-info">
-                <span class="balance-card-title">${sq.name}</span>
-                <span class="balance-card-sub">特別クエスト（クエストに含む）</span>
-              </div>
-            </div>
-            <span class="balance-card-amount">+¥${sq.amount.toLocaleString()}</span>
-          </div>
-        `);
-      });
-
-      // 2-2. チップカード（配達報酬に含まれる内訳。総売上へ二重に加算しないため「+」を付けない）
-      if (metrics.tipSales > 0) {
-        additionalCards.push(`
-          <div class="balance-card card-tip">
-            <div class="balance-card-left">
-              <span class="day-attr-badge attr-tip">♥</span>
-              <div class="balance-card-info">
-                <span class="balance-card-title">チップ</span>
-                <span class="balance-card-sub">配達報酬に含む（${metrics.tipCount}件）</span>
-              </div>
-            </div>
-            <span class="balance-card-amount">¥${metrics.tipSales.toLocaleString()}</span>
-          </div>
-        `);
-      }
-
-      // 3. バイクシェア利用カード（マイナス）
-      if (metrics.totalExpenses > 0) {
-        additionalCards.push(`
-          <div class="balance-card card-bike">
-            <div class="balance-card-left">
-              <span class="day-attr-badge attr-bike">B</span>
-              <div class="balance-card-info">
-                <span class="balance-card-title">バイクシェア利用</span>
-              </div>
-            </div>
-            <span class="balance-card-amount">-¥${metrics.totalExpenses.toLocaleString()}</span>
-          </div>
-        `);
-      }
+      const workText = metrics.workMinutes !== null
+        ? (metrics.workMinutes >= 60 ? `${Math.floor(metrics.workMinutes / 60)}時間${String(metrics.workMinutes % 60).padStart(2, '0')}分` : `${metrics.workMinutes}分`)
+        : '--';
+      // 収益の内訳（合計＝総売上）。特別クエスト＝特別クエスト（questType: special）＋新規保証等の特別収入
+      const specialSales = (metrics.specialQuestSales || 0) + (metrics.guaranteeBonus || 0);
+      const normalQuestSales = (metrics.questSales || 0) - (metrics.specialQuestSales || 0);
+      const specialNames = (metrics.specialQuests || []).map(sq => sq.name)
+        .concat(metrics.guaranteeBonus > 0 ? [metrics.guaranteeBonusNote || '新規ドライバー保証'] : []);
+      // 効率は「通常分析売上」（regularSales: 特別クエスト・新規保証を除く。時給と同じ定義）で計算
+      const reg = metrics.regularSales;
+      const hasDist = distVal !== null && distVal > 0;
+      const eff = {
+        avgDist: hasDist && metrics.count > 0 ? `${km1(distVal / metrics.count)}km` : '--',
+        avgPrice: reg !== null && metrics.count > 0 ? yen(reg / metrics.count) : '--',
+        perKm: reg !== null && hasDist ? `${Math.round(reg / distVal).toLocaleString('ja-JP')}円/km` : '--',
+        hourly: metrics.hourlyWage !== null ? yen(metrics.hourlyWage) : '--'
+      };
+      // 1行（左＝項目名・右＝数値）。sub は控えめな内訳行
+      const row = (label, value, cls = '') => `<div class="hd-row${cls ? ' ' + cls : ''}"><span class="hd-label">${label}</span><span class="hd-val">${value}</span></div>`;
+      const revenueRows = [
+        row('総売上', metrics.totalSales !== null ? yen(metrics.totalSales) : '--', 'hd-total'),
+        row('配達報酬', metrics.deliverySales !== null ? yen(metrics.deliverySales) : '--'),
+        metrics.tipSales > 0 ? row(`うちチップ（${metrics.tipCount}件）`, yen(metrics.tipSales), 'hd-sub') : '',
+        row('クエスト', yen(normalQuestSales)),
+        row('特別クエスト', yen(specialSales)),
+        specialSales > 0 && specialNames.length ? `<div class="hd-note">${specialNames.join('・')}</div>` : '',
+        metrics.adjustmentSales !== 0 ? row('売上調整', `${metrics.adjustmentSales < 0 ? '−' : ''}${yen(Math.abs(metrics.adjustmentSales))}`) : '',
+        metrics.otherSales ? row('その他', yen(metrics.otherSales)) : '',
+        metrics.totalExpenses > 0 ? row('バイクシェア', `−${yen(metrics.totalExpenses)}`, 'hd-sep') : '',
+        metrics.totalExpenses > 0 && metrics.netProfit !== null ? row('利益', yen(metrics.netProfit)) : ''
+      ].join('');
+      // 見出しアイコン（実機確認後に外す可能性あり。ここを空文字にすれば消える）
+      const ICON = { revenue: '💰', work: '🚲', efficiency: '📊' };
+      const head = (key, title) => `<div class="hd-head">${ICON[key] ? `<span class="hd-icon">${ICON[key]}</span>` : ''}${title}</div>`;
 
       return `
         <div class="history-card" data-date="${log.date}">
-          <!-- 日付バー（新1行構成: 日付＋属性 / 可変余白 / 利益＋▼） -->
-          <div class="history-card-header">
-            <div class="history-header-left">
-              <div class="history-date-title">
-                ${dateHtml}
-              </div>
-              ${dayAttrsHtml ? `<div class="day-attributes">${dayAttrsHtml}</div>` : ''}
-            </div>
-            <div class="history-header-right">
-              ${metrics.netProfit !== null ? `
-              <div class="history-profit-item">
-                利益 <span class="h-sub-val val-profit">¥${metrics.netProfit.toLocaleString()}</span>
-              </div>` : ''}
-              <span class="expand-icon">▼</span>
-            </div>
+          <!-- 閉じた状態は必ず1行: 日付・件数・距離・総売上・▼（天候は保存データが無いため未表示。足すなら日付の次） -->
+          <div class="history-card-header hr-line">
+            <span class="hr-date">${shortDate}</span>
+            <span class="hr-count">📦${metrics.count}件</span>
+            <span class="hr-dist">🚲${distVal !== null ? km1(distVal) + 'km' : '--'}</span>
+            <span class="hr-amount">💰${metrics.totalSales !== null ? yen(metrics.totalSales) : '--'}</span>
+            <span class="expand-icon">▼</span>
           </div>
 
-          <!-- 展開内部（タップ時のみ展開表示） -->
+          <!-- 展開: その日の答え合わせ（収益・稼働・効率を縦に）＋配達明細 -->
           <div class="history-card-body">
-            <!-- ① 基本実績（全日統一） -->
-            <div class="history-stats-grid">
-              <div class="h-stat-col">
-                <span class="h-stat-label">配達</span>
-                <span class="h-stat-val">${metrics.count}件</span>
-              </div>
-              <div class="h-stat-col">
-                <span class="h-stat-label">売上</span>
-                <span class="h-stat-val" style="color:var(--color-uber-green);">${metrics.totalSales !== null ? `¥${metrics.totalSales.toLocaleString()}` : '--'}</span>
-              </div>
-              <div class="h-stat-col">
-                <span class="h-stat-label">通常報酬</span>
-                <span class="h-stat-val">${metrics.deliverySales !== null ? `¥${metrics.deliverySales.toLocaleString()}` : '--'}</span>
-              </div>
-              <div class="h-stat-col">
-                <span class="h-stat-label">クエスト</span>
-                <span class="h-stat-val">${metrics.questSales !== null ? `¥${metrics.questSales.toLocaleString()}` : '¥0'}</span>
-              </div>
+            <div class="hd-blocks">
+              <section class="hd-block hd-revenue">${head('revenue', '収益')}${revenueRows}</section>
+              <section class="hd-block hd-work">${head('work', '稼働')}
+                ${row('配達件数', `${metrics.count}件`)}
+                ${row('走行距離', distVal !== null ? `${km1(distVal)}km` : '--')}
+                ${row('実働時間', workText)}
+              </section>
+              <section class="hd-block hd-efficiency">${head('efficiency', '効率')}
+                ${row('平均距離', eff.avgDist)}
+                ${row('平均単価', eff.avgPrice)}
+                ${row('距離単価', eff.perKm)}
+                ${row('実働時給', eff.hourly)}
+              </section>
             </div>
 
             <div class="history-deliveries-detail">
-              <!-- ② 基本メトリクス（走行 / 配達時間 / 時給） -->
-              <div class="history-metrics-strip">
-                <div class="h-metric-item">
-                  <span class="h-metric-lbl">走行</span>
-                  <span class="h-metric-num">${distText}</span>
-                </div>
-                <span class="h-metric-divider">/</span>
-                <div class="h-metric-item">
-                  <span class="h-metric-lbl">配達時間</span>
-                  <span class="h-metric-num">${workText}</span>
-                </div>
-                ${wageText ? `
-                  <span class="h-metric-divider">/</span>
-                  <div class="h-metric-item">
-                    <span class="h-metric-lbl">時給</span>
-                    <span class="h-metric-num">${wageText}</span>
-                  </div>
-                ` : ''}
-              </div>
-
-              <!-- ③ 追加収支カード群（基本メトリクスの下、配達明細の上） -->
-              ${additionalCards.length > 0 ? `
-                <div class="history-additional-balances">
-                  ${additionalCards.join('')}
-                </div>
-              ` : ''}
-
-              <!-- ④ 配達明細ヘッダー行（見出し ＋ ソート切替ボタン） -->
+              <!-- 配達明細ヘッダー行（見出し ＋ ソート切替ボタン） -->
               <div class="history-deliveries-header-row">
                 <div class="history-deliveries-section-title">${deliverySectionTitle}</div>
                 <button type="button" class="btn-history-sort-toggle" data-date="${log.date}" title="配達明細の表示順を切り替えます">
