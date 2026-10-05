@@ -235,7 +235,7 @@ async function run() {
       // カテゴリ順・並び順
       let ls = await listState(p);
       check('カテゴリ順: すべて → マクドナルド → ファーストフード', ls.chips[0] === 'すべて' && ls.chips[1] === 'マクドナルド' && ls.chips[2] === 'ファーストフード', ls.chips);
-      check('既定は名称順・同じブランドが連続', ls.sort === 'name' && brandsContiguous(ls.items) && ls.items.length === 101, { sort: ls.sort, n: ls.items.length });
+      check('既定は名称順・同じブランドが連続', ls.sort === 'name' && brandsContiguous(ls.items) && ls.items.length === truth.master.store_count, { sort: ls.sort, n: ls.items.length });
       await p.tapSel('#pm-cat-filter [data-cat="fastfood"]');
       await sleep(250);
       ls = await listState(p);
@@ -266,13 +266,13 @@ async function run() {
       ls = await listState(p);
       check('すべてに戻すと名称順', ls.sort === 'name');
 
-      // 全101店舗: 見出しの下はそのブランドの店だけ・ブランド名を繰り返さない・短縮住所
+      // 全店舗: 見出しの下はそのブランドの店だけ・ブランド名を繰り返さない・短縮住所
       const brandNames = await p.ev(`Object.fromEntries(window.__pickupMap.data.stores.filter(s => s.brand_id).map(s => [s.brand_id, s.brand_name]))`);
       const mixed = ls.groups.filter(g => g.rows.some(r => r.brand !== g.brand));
       const dup = ls.groups.flatMap(g => g.rows.filter(r => r.shown.startsWith(g.name) || r.shown.replace(/\s/g, '').startsWith(g.name.replace(/\s/g, ''))).map(r => g.name + ':' + r.shown));
-      check('全店舗: 見出しの下に別ブランドが混ざらない・ブランド名の重複表示なし', ls.items.length === 101 && mixed.length === 0 && dup.length === 0 && ls.items.filter(i => i.brand).every(i => i.inBrand) && ls.groups.every(g => g.name === brandNames[g.brand]), { mixed, dup });
+      check('全店舗: 見出しの下に別ブランドが混ざらない・ブランド名の重複表示なし', ls.items.length === truth.master.store_count && mixed.length === 0 && dup.length === 0 && ls.items.filter(i => i.brand).every(i => i.inBrand) && ls.groups.every(g => g.name === brandNames[g.brand]), { mixed, dup });
       const lawson = ls.groups.find(g => g.brand === 'lawson'), l100 = ls.groups.find(g => g.brand === 'lawson_store100');
-      check('ローソンとローソンストア100は別グループ', lawson && l100 && lawson.name === 'ローソン' && l100.name === 'ローソンストア100' && lawson.rows.length === 5 && l100.rows.map(r => r.shown).sort().join('/') === '西区京町堀店/西区新町店', { lawson, l100 });
+      check('ローソンとローソンストア100は別グループ', lawson && l100 && lawson.name === 'ローソン' && l100.name === 'ローソンストア100' && lawson.rows.length === await p.ev("window.__pickupMap.data.stores.filter(s => s.brand_id === 'lawson').length") && l100.rows.map(r => r.shown).sort().join('/') === '西区京町堀店/西区新町店', { lawson, l100 });
       const badShort = ls.items.filter(i => i.name !== undefined && !/要確認/.test(i.sub) && !/^[^0-9０-９]+区[^0-9０-９]+$/.test(i.sub) || /大阪府|大阪市|丁目/.test(i.sub));
       check('一覧の住所は「区＋町名」（大阪府・大阪市・丁目・番地なし）', badShort.length === 0 && ls.items.find(i => i.name === 'KFC イオンモール大阪ドームシティ店').sub === '西区千代崎', badShort.slice(0, 5));
       const typo = await p.ev(`(() => { const li = document.querySelector('#pm-ranking .pm-rank-item.in-brand'); const t = li.querySelector('.pm-rank-title'), s = li.querySelector('.pm-rank-sub'), h = document.querySelector('#pm-ranking .pm-brand-head'), c = li.querySelector('.pm-rank-count');
@@ -364,7 +364,7 @@ async function run() {
       const nocoord = await p.ev(`(() => { const li = document.querySelector('#pm-review-list li[data-id="${gustId}"]'); return { open: document.getElementById('pm-review').open, text: li && li.querySelector('.pm-route-disabled') && li.querySelector('.pm-route-disabled').textContent, hasBtn: !!(li && li.querySelector('.pm-route-btn')), anyPopup: !!document.querySelector('.leaflet-popup') }; })()`);
       check('座標なし店舗: ルートボタンなし・「座標未確認のためルート案内できません」', nocoord.open && nocoord.text === '座標未確認のためルート案内できません' && !nocoord.hasBtn && !nocoord.anyPopup, nocoord);
       const allNoCoord = await p.ev(`[...document.querySelectorAll('#pm-review-list > li')].map(li => !li.querySelector('.pm-route-btn') && !!li.querySelector('.pm-route-disabled'))`);
-      check('要確認3店舗すべてルート無効', allNoCoord.length === 3 && allNoCoord.every(Boolean), allNoCoord);
+      check('要確認の店舗すべてルート無効（店舗マスタの要確認数と一致）', allNoCoord.length === truth.master.needs_review_count && allNoCoord.every(Boolean), allNoCoord);
       await p.shot(`${w}_4_nocoord`);
       await p.ev(`(() => { const i = document.getElementById('pm-search'); i.value = ''; i.dispatchEvent(new Event('input')); })()`);
 

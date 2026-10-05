@@ -30,10 +30,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 20,
+      "pickup_count": 28,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-01 11:11",
-      "active_days": 11,
+      "last_pickup": "2026-10-05 18:52",
+      "active_days": 13,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
         "マクドナルド 九　条　店 McDonald's KUJO",
@@ -47,93 +47,6 @@
       "site_id": null,
       "display_name": "九条店",
       "address_short": "西区九条"
-    },
-    {
-      "id": "st_6zt5ra",
-      "canonical_name": "バーガーキング 九条店",
-      "name_keys": [
-        "バーガーキング九条店"
-      ],
-      "category": "fastfood",
-      "address": "大阪府大阪市西区九条1-13-10",
-      "latitude": 34.675339,
-      "longitude": 135.474716,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１３番１０号",
-      "address_source": "map.yahoo.co.jp; jafnavi",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１３番１０号",
-        "osm_nearest": {
-          "id": "node/1735949588",
-          "name": "キングラム 九条店",
-          "distance_m": 37
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 8,
-      "first_pickup": "2026-09-18 11:09",
-      "last_pickup": "2026-09-29 15:23",
-      "active_days": 5,
-      "original_names": [
-        "バーガーキング 九条店",
-        "バーガーキング 九条店 Burger King Kujo"
-      ],
-      "brand_id": "burger_king",
-      "brand_name": "バーガーキング",
-      "brand_reading": null,
-      "branch_name": "九条店",
-      "site_id": null,
-      "display_name": "九条店",
-      "address_short": "西区九条"
-    },
-    {
-      "id": "st_hwl7j2",
-      "canonical_name": "マクドナルド みなと通夕凪店",
-      "name_keys": [
-        "マクドナルドみなと通夕凪店"
-      ],
-      "category": "mcdonalds",
-      "address": "大阪府大阪市港区磯路3-27-1",
-      "latitude": 34.662727,
-      "longitude": 135.45636,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区磯路三丁目２７番１号",
-      "address_source": "map.yahoo.co.jp; navitime 06399-27629",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市港区磯路三丁目２７番１号",
-        "osm_nearest": {
-          "id": "node/6287733604",
-          "name": "マクドナルド マクドナルド",
-          "distance_m": 7
-        },
-        "reverse": {
-          "muniCd": "27107",
-          "lv01Nm": "磯路三丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 7,
-      "first_pickup": "2026-09-14 09:41",
-      "last_pickup": "2026-09-27 09:15",
-      "active_days": 6,
-      "original_names": [
-        "マクドナルド みなと通夕凪店"
-      ],
-      "brand_id": "mcdonalds",
-      "brand_name": "マクドナルド",
-      "brand_reading": null,
-      "branch_name": "みなと通夕凪店",
-      "site_id": null,
-      "display_name": "みなと通夕凪店",
-      "address_short": "港区磯路"
     },
     {
       "id": "st_76kdj3",
@@ -163,10 +76,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 7,
+      "pickup_count": 11,
       "first_pickup": "2026-09-22 17:07",
-      "last_pickup": "2026-10-01 09:50",
-      "active_days": 5,
+      "last_pickup": "2026-10-04 10:14",
+      "active_days": 8,
       "original_names": [
         "マクドナルド 阪神西九条駅前店",
         "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE"
@@ -178,6 +91,50 @@
       "site_id": null,
       "display_name": "阪神西九条駅前店",
       "address_short": "此花区西九条"
+    },
+    {
+      "id": "st_6zt5ra",
+      "canonical_name": "バーガーキング 九条店",
+      "name_keys": [
+        "バーガーキング九条店"
+      ],
+      "category": "fastfood",
+      "address": "大阪府大阪市西区九条1-13-10",
+      "latitude": 34.675339,
+      "longitude": 135.474716,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１３番１０号",
+      "address_source": "map.yahoo.co.jp; jafnavi",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目１３番１０号",
+        "osm_nearest": {
+          "id": "node/1735949588",
+          "name": "キングラム 九条店",
+          "distance_m": 37
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 9,
+      "first_pickup": "2026-09-18 11:09",
+      "last_pickup": "2026-10-04 18:15",
+      "active_days": 6,
+      "original_names": [
+        "バーガーキング 九条店",
+        "バーガーキング 九条店 Burger King Kujo"
+      ],
+      "brand_id": "burger_king",
+      "brand_name": "バーガーキング",
+      "brand_reading": null,
+      "branch_name": "九条店",
+      "site_id": null,
+      "display_name": "九条店",
+      "address_short": "西区九条"
     },
     {
       "id": "st_1tevs71",
@@ -207,10 +164,10 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 6,
+      "pickup_count": 8,
       "first_pickup": "2026-09-10 11:04",
-      "last_pickup": "2026-09-29 15:33",
-      "active_days": 5,
+      "last_pickup": "2026-10-05 19:47",
+      "active_days": 6,
       "original_names": [
         "ケンタッキーフライドチキン イオンモール大阪ドームシティ店"
       ],
@@ -221,6 +178,136 @@
       "site_id": "site_c4h33y",
       "display_name": "イオンモール大阪ドームシティ店",
       "address_short": "西区千代崎"
+    },
+    {
+      "id": "st_1czdxa0",
+      "canonical_name": "マクドナルド イオンモール大阪ドームシティ店",
+      "name_keys": [
+        "マクドナルドイオンモール大阪ドームシティ店"
+      ],
+      "category": "mcdonalds",
+      "address": "大阪府大阪市西区千代崎3-13-1",
+      "latitude": 34.6703688,
+      "longitude": 135.477939,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "OSM relation/14378487 建物中心（住所 千代崎3-13-1 は丁目までしか測位できないため）",
+      "address_source": "map.mcdonalds.co.jp/map/27766",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区千代崎三丁目",
+        "osm_nearest": {
+          "id": "node/13866919754",
+          "name": "GU イオンモール大阪ドームシティ店 GU",
+          "distance_m": 62
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "千代崎三丁目"
+        }
+      },
+      "same_building": "イオンモール大阪ドームシティ",
+      "notes": null,
+      "pickup_count": 8,
+      "first_pickup": "2026-09-23 16:27",
+      "last_pickup": "2026-10-03 12:36",
+      "active_days": 5,
+      "original_names": [
+        "マクドナルド イオンモール大阪ドームシティ店",
+        "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY"
+      ],
+      "brand_id": "mcdonalds",
+      "brand_name": "マクドナルド",
+      "brand_reading": null,
+      "branch_name": "イオンモール大阪ドームシティ店",
+      "site_id": "site_c4h33y",
+      "display_name": "イオンモール大阪ドームシティ店",
+      "address_short": "西区千代崎"
+    },
+    {
+      "id": "st_hwl7j2",
+      "canonical_name": "マクドナルド みなと通夕凪店",
+      "name_keys": [
+        "マクドナルドみなと通夕凪店"
+      ],
+      "category": "mcdonalds",
+      "address": "大阪府大阪市港区磯路3-27-1",
+      "latitude": 34.662727,
+      "longitude": 135.45636,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区磯路三丁目２７番１号",
+      "address_source": "map.yahoo.co.jp; navitime 06399-27629",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市港区磯路三丁目２７番１号",
+        "osm_nearest": {
+          "id": "node/6287733604",
+          "name": "マクドナルド マクドナルド",
+          "distance_m": 7
+        },
+        "reverse": {
+          "muniCd": "27107",
+          "lv01Nm": "磯路三丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 8,
+      "first_pickup": "2026-09-14 09:41",
+      "last_pickup": "2026-10-04 09:15",
+      "active_days": 7,
+      "original_names": [
+        "マクドナルド みなと通夕凪店"
+      ],
+      "brand_id": "mcdonalds",
+      "brand_name": "マクドナルド",
+      "brand_reading": null,
+      "branch_name": "みなと通夕凪店",
+      "site_id": null,
+      "display_name": "みなと通夕凪店",
+      "address_short": "港区磯路"
+    },
+    {
+      "id": "st_189ay5t",
+      "canonical_name": "マクドナルド 弁天町駅前店",
+      "name_keys": [
+        "マクドナルド弁天町駅前店"
+      ],
+      "category": "mcdonalds",
+      "address": "大阪府大阪市港区弁天1-3-1",
+      "latitude": 34.668415,
+      "longitude": 135.461288,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区弁天一丁目３番１号",
+      "address_source": "map.yahoo.co.jp; tabelog 27153101",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市港区弁天一丁目３番１号",
+        "osm_nearest": {
+          "id": "node/11434320584",
+          "name": "ファミリーマート弁天町駅前店 Docomo Bike Share",
+          "distance_m": 187
+        },
+        "reverse": {
+          "muniCd": "27107",
+          "lv01Nm": "弁天一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 7,
+      "first_pickup": "2026-09-15 09:04",
+      "last_pickup": "2026-10-03 07:07",
+      "active_days": 4,
+      "original_names": [
+        "マクドナルド 弁天町駅前店"
+      ],
+      "brand_id": "mcdonalds",
+      "brand_name": "マクドナルド",
+      "brand_reading": null,
+      "branch_name": "弁天町駅前店",
+      "site_id": null,
+      "display_name": "弁天町駅前店",
+      "address_short": "港区弁天"
     },
     {
       "id": "st_qri0e3",
@@ -270,6 +357,50 @@
       "address_short": "西区境川"
     },
     {
+      "id": "st_4px7w0",
+      "canonical_name": "スターバックス コーヒー JR弁天町駅店",
+      "name_keys": [
+        "スターバックスコーヒーJR弁天町駅店"
+      ],
+      "category": "cafe",
+      "address": "大阪府大阪市港区波除3-11-50",
+      "latitude": 34.669586,
+      "longitude": 135.462738,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区波除三丁目１１番５０号",
+      "address_source": "store.starbucks.co.jp/detail-4441/",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市港区波除三丁目１１番５０号",
+        "osm_nearest": {
+          "id": "node/12990974708",
+          "name": "コメダ珈琲店 JR弁天町駅店 コメダ珈琲店",
+          "distance_m": 45
+        },
+        "reverse": {
+          "muniCd": "27107",
+          "lv01Nm": "波除三丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 6,
+      "first_pickup": "2026-09-19 12:43",
+      "last_pickup": "2026-10-04 08:10",
+      "active_days": 5,
+      "original_names": [
+        "スターバックス コーヒー JR弁天町駅店",
+        "スターバックス コーヒー JR弁天町駅店 Starbucks Coffee JR Bentencho Eki"
+      ],
+      "brand_id": "starbucks",
+      "brand_name": "スターバックス コーヒー",
+      "brand_reading": null,
+      "branch_name": "JR弁天町駅店",
+      "site_id": null,
+      "display_name": "JR弁天町駅店",
+      "address_short": "港区波除"
+    },
+    {
       "id": "st_t9q3ll",
       "canonical_name": "マクドナルド JR野田駅前店",
       "name_keys": [
@@ -315,47 +446,48 @@
       "address_short": "福島区野田"
     },
     {
-      "id": "st_189ay5t",
-      "canonical_name": "マクドナルド 弁天町駅前店",
+      "id": "st_xrov9e",
+      "canonical_name": "かっぱ寿司 境川店",
       "name_keys": [
-        "マクドナルド弁天町駅前店"
+        "かっぱ寿司境川店"
       ],
-      "category": "mcdonalds",
-      "address": "大阪府大阪市港区弁天1-3-1",
-      "latitude": 34.668415,
-      "longitude": 135.461288,
+      "category": "other",
+      "address": "大阪府大阪市港区南市岡1-1-52",
+      "latitude": 34.668774,
+      "longitude": 135.471802,
       "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区弁天一丁目３番１号",
-      "address_source": "map.yahoo.co.jp; tabelog 27153101",
-      "address_evidence": "map_directory",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区南市岡一丁目１番５２号",
+      "address_source": "kappasushi.jp/shop/0587 (公式; 旧住所 西区境川1-2-27)",
+      "address_evidence": "official",
       "geocode_check": {
-        "gsi_title": "大阪府大阪市港区弁天一丁目３番１号",
+        "gsi_title": "大阪府大阪市港区南市岡一丁目１番５２号",
         "osm_nearest": {
-          "id": "node/11434320584",
-          "name": "ファミリーマート弁天町駅前店 Docomo Bike Share",
-          "distance_m": 187
+          "id": "way/302852523",
+          "name": "かっぱ寿司 かっぱ寿司",
+          "distance_m": 18
         },
         "reverse": {
           "muniCd": "27107",
-          "lv01Nm": "弁天一丁目"
+          "lv01Nm": "南市岡一丁目"
         }
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 6,
-      "first_pickup": "2026-09-15 09:04",
-      "last_pickup": "2026-09-27 10:02",
-      "active_days": 3,
+      "pickup_count": 5,
+      "first_pickup": "2026-09-23 15:28",
+      "last_pickup": "2026-10-05 19:32",
+      "active_days": 4,
       "original_names": [
-        "マクドナルド 弁天町駅前店"
+        "かっぱ寿司 境川店 Kappa Sushi Sakaigawa",
+        "かっぱ寿司 境川店　Kappa Sushi Sakaigawa"
       ],
-      "brand_id": "mcdonalds",
-      "brand_name": "マクドナルド",
-      "brand_reading": null,
-      "branch_name": "弁天町駅前店",
+      "brand_id": "kappa_sushi",
+      "brand_name": "かっぱ寿司",
+      "brand_reading": "かっぱずし",
+      "branch_name": "境川店",
       "site_id": null,
-      "display_name": "弁天町駅前店",
-      "address_short": "港区弁天"
+      "display_name": "境川店",
+      "address_short": "港区南市岡"
     },
     {
       "id": "st_t581ya",
@@ -387,14 +519,15 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 4,
+      "pickup_count": 5,
       "first_pickup": "2026-09-19 10:15",
-      "last_pickup": "2026-09-26 13:31",
-      "active_days": 4,
+      "last_pickup": "2026-10-03 06:36",
+      "active_days": 5,
       "original_names": [
         "【伝説のクロックムッシュ】サンドイッチ 九条店",
         "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo〜お持帰り専門店〜",
-        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持ち帰り専門店～"
+        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持ち帰り専門店～",
+        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持帰り専門店～"
       ],
       "brand_id": null,
       "brand_name": null,
@@ -405,48 +538,91 @@
       "address_short": "西区千代崎"
     },
     {
-      "id": "st_1czdxa0",
-      "canonical_name": "マクドナルド イオンモール大阪ドームシティ店",
+      "id": "st_1omw10z",
+      "canonical_name": "餃子の王将 大阪九条",
       "name_keys": [
-        "マクドナルドイオンモール大阪ドームシティ店"
+        "餃子の王将大阪九条"
       ],
-      "category": "mcdonalds",
-      "address": "大阪府大阪市西区千代崎3-13-1",
-      "latitude": 34.6703688,
-      "longitude": 135.477939,
+      "category": "other",
+      "address": "大阪府大阪市西区九条1-12-10",
+      "latitude": 34.674976,
+      "longitude": 135.47583,
       "coordinate_status": "confirmed",
-      "coordinate_source": "OSM relation/14378487 建物中心（住所 千代崎3-13-1 は丁目までしか測位できないため）",
-      "address_source": "map.mcdonalds.co.jp/map/27766",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１２番１０号",
+      "address_source": "map.ohsho.co.jp/b/ohsho/info/1252/",
       "address_evidence": "official",
       "geocode_check": {
-        "gsi_title": "大阪府大阪市西区千代崎三丁目",
+        "gsi_title": "大阪府大阪市西区九条一丁目１２番１０号",
         "osm_nearest": {
-          "id": "node/13866919754",
-          "name": "GU イオンモール大阪ドームシティ店 GU",
-          "distance_m": 62
+          "id": "node/1619040549",
+          "name": "餃子の王将 九条店 餃子の王将",
+          "distance_m": 2
         },
         "reverse": {
           "muniCd": "27106",
-          "lv01Nm": "千代崎三丁目"
+          "lv01Nm": "九条一丁目"
         }
       },
-      "same_building": "イオンモール大阪ドームシティ",
+      "same_building": null,
       "notes": null,
       "pickup_count": 4,
-      "first_pickup": "2026-09-23 16:27",
-      "last_pickup": "2026-09-27 11:46",
+      "first_pickup": "2026-09-22 14:07",
+      "last_pickup": "2026-10-05 19:17",
       "active_days": 3,
       "original_names": [
-        "マクドナルド イオンモール大阪ドームシティ店",
-        "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY"
+        "餃子の王将 大阪九条"
+      ],
+      "brand_id": "ohsho",
+      "brand_name": "餃子の王将",
+      "brand_reading": "ぎょうざのおうしょう",
+      "branch_name": "大阪九条",
+      "site_id": null,
+      "display_name": "大阪九条",
+      "address_short": "西区九条"
+    },
+    {
+      "id": "st_3mzt1w",
+      "canonical_name": "マクドナルド 高見プラザ店",
+      "name_keys": [
+        "マクドナルド高見プラザ店"
+      ],
+      "category": "mcdonalds",
+      "address": "大阪府大阪市此花区高見1-5",
+      "latitude": 34.6915331,
+      "longitude": 135.45958,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "OSM node/5372112130（マクドナルド 高見プラザ店）; 住所は番レベル(高見1-5)のため店舗POIを採用",
+      "address_source": "crewrecruiting.mcdonalds.co.jp/map/g27135",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市此花区高見一丁目５番",
+        "osm_nearest": {
+          "id": "node/5372112130",
+          "name": "マクドナルド 高見プラザ店 マクドナルド",
+          "distance_m": 106
+        },
+        "reverse": {
+          "muniCd": "27104",
+          "lv01Nm": "高見一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 4,
+      "first_pickup": "2026-09-15 12:22",
+      "last_pickup": "2026-10-02 08:42",
+      "active_days": 3,
+      "original_names": [
+        "マクドナルド 高見プラザ店",
+        "マクドナルド 高見プラザ店 McDonald's TAKAMI PLAZA"
       ],
       "brand_id": "mcdonalds",
       "brand_name": "マクドナルド",
       "brand_reading": null,
-      "branch_name": "イオンモール大阪ドームシティ店",
-      "site_id": "site_c4h33y",
-      "display_name": "イオンモール大阪ドームシティ店",
-      "address_short": "西区千代崎"
+      "branch_name": "高見プラザ店",
+      "site_id": null,
+      "display_name": "高見プラザ店",
+      "address_short": "此花区高見"
     },
     {
       "id": "st_xvzzmy",
@@ -794,68 +970,25 @@
       "address_short": "西区新町"
     },
     {
-      "id": "st_xrov9e",
-      "canonical_name": "かっぱ寿司 境川店",
+      "id": "st_1ubet92",
+      "canonical_name": "宇奈とと 大阪九条店",
       "name_keys": [
-        "かっぱ寿司境川店"
+        "宇奈とと大阪九条店"
       ],
-      "category": "other",
-      "address": "大阪府大阪市港区南市岡1-1-52",
-      "latitude": 34.668774,
-      "longitude": 135.471802,
+      "category": "gyudon_teishoku",
+      "address": "大阪府大阪市西区九条1-13-7",
+      "latitude": 34.675255,
+      "longitude": 135.475037,
       "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区南市岡一丁目１番５２号",
-      "address_source": "kappasushi.jp/shop/0587 (公式; 旧住所 西区境川1-2-27)",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１３番７号",
+      "address_source": "unatoto.com/shop/kujo/",
       "address_evidence": "official",
       "geocode_check": {
-        "gsi_title": "大阪府大阪市港区南市岡一丁目１番５２号",
+        "gsi_title": "大阪府大阪市西区九条一丁目１３番７号",
         "osm_nearest": {
-          "id": "way/302852523",
-          "name": "かっぱ寿司 かっぱ寿司",
-          "distance_m": 18
-        },
-        "reverse": {
-          "muniCd": "27107",
-          "lv01Nm": "南市岡一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 2,
-      "first_pickup": "2026-09-23 15:28",
-      "last_pickup": "2026-09-26 18:47",
-      "active_days": 2,
-      "original_names": [
-        "かっぱ寿司 境川店 Kappa Sushi Sakaigawa"
-      ],
-      "brand_id": "kappa_sushi",
-      "brand_name": "かっぱ寿司",
-      "brand_reading": "かっぱずし",
-      "branch_name": "境川店",
-      "site_id": null,
-      "display_name": "境川店",
-      "address_short": "港区南市岡"
-    },
-    {
-      "id": "st_1omw10z",
-      "canonical_name": "餃子の王将 大阪九条",
-      "name_keys": [
-        "餃子の王将大阪九条"
-      ],
-      "category": "other",
-      "address": "大阪府大阪市西区九条1-12-10",
-      "latitude": 34.674976,
-      "longitude": 135.47583,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１２番１０号",
-      "address_source": "map.ohsho.co.jp/b/ohsho/info/1252/",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１２番１０号",
-        "osm_nearest": {
-          "id": "node/1619040549",
-          "name": "餃子の王将 九条店 餃子の王将",
-          "distance_m": 2
+          "id": "node/1619040480",
+          "name": "宇奈とと九条店（鰻丼） 九条店",
+          "distance_m": 6
         },
         "reverse": {
           "muniCd": "27106",
@@ -865,19 +998,149 @@
       "same_building": null,
       "notes": null,
       "pickup_count": 2,
-      "first_pickup": "2026-09-22 14:07",
-      "last_pickup": "2026-10-01 11:35",
+      "first_pickup": "2026-09-26 20:54",
+      "last_pickup": "2026-10-05 18:13",
       "active_days": 2,
       "original_names": [
-        "餃子の王将 大阪九条"
+        "宇奈とと 大阪九条店 Unatoto Osaka Kujo"
       ],
-      "brand_id": "ohsho",
-      "brand_name": "餃子の王将",
-      "brand_reading": "ぎょうざのおうしょう",
-      "branch_name": "大阪九条",
+      "brand_id": "unatoto",
+      "brand_name": "宇奈とと",
+      "brand_reading": "うなとと",
+      "branch_name": "大阪九条店",
       "site_id": null,
-      "display_name": "大阪九条",
+      "display_name": "大阪九条店",
       "address_short": "西区九条"
+    },
+    {
+      "id": "st_1rbxtgc",
+      "canonical_name": "カリーWEST百名店2020 いずみバーグ",
+      "name_keys": [
+        "カリーWEST百名店2020いずみバーグ"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市西区千代崎2-8-9",
+      "latitude": 34.674122,
+      "longitude": 135.477676,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区千代崎二丁目８番９号",
+      "address_source": "ubereats listing 48dYzLWETnG (web search summary); map.yahoo.co.jp qPbLlfmM0gk",
+      "address_evidence": "delivery_listing",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区千代崎二丁目８番９号",
+        "osm_nearest": {
+          "id": "node/12499987881",
+          "name": "エステムコート難波WEST-SIDE3ドームシティ Docomo Bike Share",
+          "distance_m": 237
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "千代崎二丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 2,
+      "first_pickup": "2026-09-15 11:35",
+      "last_pickup": "2026-10-04 18:10",
+      "active_days": 2,
+      "original_names": [
+        "カリーWEST百名店2020 いずみバーグ",
+        "カリーWEST百名店2020 いずみバーグ Izumi Burg"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "site_id": null,
+      "display_name": "カリーWEST百名店2020 いずみバーグ",
+      "address_short": "西区千代崎"
+    },
+    {
+      "id": "st_s1jrte",
+      "canonical_name": "CoDeLi 大阪九条駅前店",
+      "name_keys": [
+        "CoDeLi大阪九条駅前店"
+      ],
+      "category": "drug_super",
+      "address": "大阪府大阪市西区九条1-26-9",
+      "latitude": 34.674088,
+      "longitude": 135.473495,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目２６番９号",
+      "address_source": "daiei.co.jp/stores/d4011/",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目２６番９号",
+        "osm_nearest": {
+          "id": "node/1369920119",
+          "name": "セブン-イレブン 大阪九条南2丁目店 7-ELEVEN",
+          "distance_m": 69
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 2,
+      "first_pickup": "2026-09-27 09:10",
+      "last_pickup": "2026-10-04 11:57",
+      "active_days": 2,
+      "original_names": [
+        "CoDeLi 大阪九条駅前店"
+      ],
+      "brand_id": "codeli",
+      "brand_name": "CoDeLi",
+      "brand_reading": "コデリ",
+      "branch_name": "大阪九条駅前店",
+      "site_id": null,
+      "display_name": "大阪九条駅前店",
+      "address_short": "西区九条"
+    },
+    {
+      "id": "st_1taqp5c",
+      "canonical_name": "すき家 此花四貫島店",
+      "name_keys": [
+        "すき家此花四貫島店"
+      ],
+      "category": "gyudon_teishoku",
+      "address": "大阪府大阪市此花区四貫島2-4-5",
+      "latitude": 34.68322,
+      "longitude": 135.454178,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市此花区四貫島二丁目４番５号",
+      "address_source": "maps.sukiya.jp/jp/detail/1160.html",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市此花区四貫島二丁目４番５号",
+        "osm_nearest": {
+          "id": "way/673500943",
+          "name": "すき家 此花四貫島店 すき家",
+          "distance_m": 14
+        },
+        "reverse": {
+          "muniCd": "27104",
+          "lv01Nm": "四貫島二丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 2,
+      "first_pickup": "2026-09-24 15:42",
+      "last_pickup": "2026-10-04 08:28",
+      "active_days": 2,
+      "original_names": [
+        "すき家 此花四貫島店 Sukiya Konohana Shikanjima"
+      ],
+      "brand_id": "sukiya",
+      "brand_name": "すき家",
+      "brand_reading": null,
+      "branch_name": "此花四貫島店",
+      "site_id": null,
+      "display_name": "此花四貫島店",
+      "address_short": "此花区四貫島"
     },
     {
       "id": "st_3qz4cs",
@@ -922,49 +1185,6 @@
       "site_id": null,
       "display_name": "西九条駅前店",
       "address_short": "此花区西九条"
-    },
-    {
-      "id": "st_4px7w0",
-      "canonical_name": "スターバックス コーヒー JR弁天町駅店",
-      "name_keys": [
-        "スターバックスコーヒーJR弁天町駅店"
-      ],
-      "category": "cafe",
-      "address": "大阪府大阪市港区波除3-11-50",
-      "latitude": 34.669586,
-      "longitude": 135.462738,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区波除三丁目１１番５０号",
-      "address_source": "store.starbucks.co.jp/detail-4441/",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市港区波除三丁目１１番５０号",
-        "osm_nearest": {
-          "id": "node/12990974708",
-          "name": "コメダ珈琲店 JR弁天町駅店 コメダ珈琲店",
-          "distance_m": 45
-        },
-        "reverse": {
-          "muniCd": "27107",
-          "lv01Nm": "波除三丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 2,
-      "first_pickup": "2026-09-19 12:43",
-      "last_pickup": "2026-09-22 14:48",
-      "active_days": 2,
-      "original_names": [
-        "スターバックス コーヒー JR弁天町駅店"
-      ],
-      "brand_id": "starbucks",
-      "brand_name": "スターバックス コーヒー",
-      "brand_reading": null,
-      "branch_name": "JR弁天町駅店",
-      "site_id": null,
-      "display_name": "JR弁天町駅店",
-      "address_short": "港区波除"
     },
     {
       "id": "st_8dai2f",
@@ -1056,48 +1276,48 @@
       "address_short": "中央区安土町"
     },
     {
-      "id": "st_3mzt1w",
-      "canonical_name": "マクドナルド 高見プラザ店",
+      "id": "st_nun388",
+      "canonical_name": "ピザハット 大阪ナインモール九条店",
       "name_keys": [
-        "マクドナルド高見プラザ店"
+        "ピザハット大阪ナインモール九条店"
       ],
-      "category": "mcdonalds",
-      "address": "大阪府大阪市此花区高見1-5",
-      "latitude": 34.6915331,
-      "longitude": 135.45958,
+      "category": "fastfood",
+      "address": "大阪府大阪市西区九条1-13-8",
+      "latitude": 34.675282,
+      "longitude": 135.47493,
       "coordinate_status": "confirmed",
-      "coordinate_source": "OSM node/5372112130（マクドナルド 高見プラザ店）; 住所は番レベル(高見1-5)のため店舗POIを採用",
-      "address_source": "crewrecruiting.mcdonalds.co.jp/map/g27135",
-      "address_evidence": "official",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１３番８号",
+      "address_source": "map.yahoo.co.jp ql1r8kHswa2; mapion",
+      "address_evidence": "map_directory",
       "geocode_check": {
-        "gsi_title": "大阪府大阪市此花区高見一丁目５番",
+        "gsi_title": "大阪府大阪市西区九条一丁目１３番８号",
         "osm_nearest": {
-          "id": "node/5372112130",
-          "name": "マクドナルド 高見プラザ店 マクドナルド",
-          "distance_m": 106
+          "id": "node/1369920111",
+          "name": "セブン-イレブン 大阪ナインモール九条店 セブン-イレブン",
+          "distance_m": 150
         },
         "reverse": {
-          "muniCd": "27104",
-          "lv01Nm": "高見一丁目"
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
         }
       },
       "same_building": null,
       "notes": null,
       "pickup_count": 2,
-      "first_pickup": "2026-09-15 12:22",
-      "last_pickup": "2026-09-28 10:35",
+      "first_pickup": "2026-09-22 17:48",
+      "last_pickup": "2026-10-05 17:43",
       "active_days": 2,
       "original_names": [
-        "マクドナルド 高見プラザ店",
-        "マクドナルド 高見プラザ店 McDonald's TAKAMI PLAZA"
+        "ピザハット 大阪ナインモール九条店",
+        "ピザハット 大阪ナインモール九条店 Pizza Hut Osaka Ninemall Kujoh"
       ],
-      "brand_id": "mcdonalds",
-      "brand_name": "マクドナルド",
+      "brand_id": "pizza_hut",
+      "brand_name": "ピザハット",
       "brand_reading": null,
-      "branch_name": "高見プラザ店",
+      "branch_name": "大阪ナインモール九条店",
       "site_id": null,
-      "display_name": "高見プラザ店",
-      "address_short": "此花区高見"
+      "display_name": "大阪ナインモール九条店",
+      "address_short": "西区九条"
     },
     {
       "id": "st_1ygnern",
@@ -1527,6 +1747,38 @@
       "address_short": "西区北堀江"
     },
     {
+      "id": "st_19ok1ls",
+      "canonical_name": "Ton Tonカンナム",
+      "name_keys": [
+        "TonTonカンナム"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-04 17:03",
+      "last_pickup": "2026-10-04 17:03",
+      "active_days": 1,
+      "original_names": [
+        "Ton Tonカンナム"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "Ton Tonカンナム",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_1llsrkt",
       "canonical_name": "【もったりアサイーボウル】YoruAsa/ヨルアサ",
       "name_keys": [
@@ -1609,6 +1861,70 @@
       "address_short": "福島区鷺洲"
     },
     {
+      "id": "st_e22s7l",
+      "canonical_name": "いきなり!ステーキ 大阪福島",
+      "name_keys": [
+        "いきなり!ステーキ大阪福島"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-04 13:14",
+      "last_pickup": "2026-10-04 13:14",
+      "active_days": 1,
+      "original_names": [
+        "いきなり！ステーキ 大阪福島"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "いきなり!ステーキ 大阪福島",
+      "address_short": null,
+      "site_id": null
+    },
+    {
+      "id": "st_tb0mw4",
+      "canonical_name": "インド.ネパール料理ククリKhukuri",
+      "name_keys": [
+        "インド.ネパール料理ククリKhukuri"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-05 17:16",
+      "last_pickup": "2026-10-05 17:16",
+      "active_days": 1,
+      "original_names": [
+        "インド.ネパール料理ククリKhukuri"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "インド.ネパール料理ククリKhukuri",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_zm9ew6",
       "canonical_name": "ウエルシア大阪九条店",
       "name_keys": [
@@ -1646,49 +1962,6 @@
       "brand_id": "welcia",
       "brand_name": "ウエルシア",
       "brand_reading": null,
-      "branch_name": "大阪九条店",
-      "site_id": null,
-      "display_name": "大阪九条店",
-      "address_short": "西区九条"
-    },
-    {
-      "id": "st_1ubet92",
-      "canonical_name": "宇奈とと 大阪九条店",
-      "name_keys": [
-        "宇奈とと大阪九条店"
-      ],
-      "category": "gyudon_teishoku",
-      "address": "大阪府大阪市西区九条1-13-7",
-      "latitude": 34.675255,
-      "longitude": 135.475037,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１３番７号",
-      "address_source": "unatoto.com/shop/kujo/",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１３番７号",
-        "osm_nearest": {
-          "id": "node/1619040480",
-          "name": "宇奈とと九条店（鰻丼） 九条店",
-          "distance_m": 6
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-26 20:54",
-      "last_pickup": "2026-09-26 20:54",
-      "active_days": 1,
-      "original_names": [
-        "宇奈とと 大阪九条店 Unatoto Osaka Kujo"
-      ],
-      "brand_id": "unatoto",
-      "brand_name": "宇奈とと",
-      "brand_reading": "うなとと",
       "branch_name": "大阪九条店",
       "site_id": null,
       "display_name": "大阪九条店",
@@ -1940,49 +2213,6 @@
       "site_id": null,
       "display_name": "かつ丼 吉兵衛 なんば道具屋筋店",
       "address_short": "中央区難波千日前"
-    },
-    {
-      "id": "st_1rbxtgc",
-      "canonical_name": "カリーWEST百名店2020 いずみバーグ",
-      "name_keys": [
-        "カリーWEST百名店2020いずみバーグ"
-      ],
-      "category": "other",
-      "address": "大阪府大阪市西区千代崎2-8-9",
-      "latitude": 34.674122,
-      "longitude": 135.477676,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区千代崎二丁目８番９号",
-      "address_source": "ubereats listing 48dYzLWETnG (web search summary); map.yahoo.co.jp qPbLlfmM0gk",
-      "address_evidence": "delivery_listing",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区千代崎二丁目８番９号",
-        "osm_nearest": {
-          "id": "node/12499987881",
-          "name": "エステムコート難波WEST-SIDE3ドームシティ Docomo Bike Share",
-          "distance_m": 237
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "千代崎二丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-15 11:35",
-      "last_pickup": "2026-09-15 11:35",
-      "active_days": 1,
-      "original_names": [
-        "カリーWEST百名店2020 いずみバーグ"
-      ],
-      "brand_id": null,
-      "brand_name": null,
-      "brand_reading": null,
-      "branch_name": null,
-      "site_id": null,
-      "display_name": "カリーWEST百名店2020 いずみバーグ",
-      "address_short": "西区千代崎"
     },
     {
       "id": "st_1ydwm1l",
@@ -2321,49 +2551,6 @@
       "address_short": "港区磯路"
     },
     {
-      "id": "st_s1jrte",
-      "canonical_name": "CoDeLi 大阪九条駅前店",
-      "name_keys": [
-        "CoDeLi大阪九条駅前店"
-      ],
-      "category": "drug_super",
-      "address": "大阪府大阪市西区九条1-26-9",
-      "latitude": 34.674088,
-      "longitude": 135.473495,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目２６番９号",
-      "address_source": "daiei.co.jp/stores/d4011/",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目２６番９号",
-        "osm_nearest": {
-          "id": "node/1369920119",
-          "name": "セブン-イレブン 大阪九条南2丁目店 7-ELEVEN",
-          "distance_m": 69
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-27 09:10",
-      "last_pickup": "2026-09-27 09:10",
-      "active_days": 1,
-      "original_names": [
-        "CoDeLi 大阪九条駅前店"
-      ],
-      "brand_id": "codeli",
-      "brand_name": "CoDeLi",
-      "brand_reading": "コデリ",
-      "branch_name": "大阪九条駅前店",
-      "site_id": null,
-      "display_name": "大阪九条駅前店",
-      "address_short": "西区九条"
-    },
-    {
       "id": "st_16mzu7l",
       "canonical_name": "すき家 阿波座",
       "name_keys": [
@@ -2405,49 +2592,6 @@
       "site_id": null,
       "display_name": "阿波座",
       "address_short": "西区立売堀"
-    },
-    {
-      "id": "st_1taqp5c",
-      "canonical_name": "すき家 此花四貫島店",
-      "name_keys": [
-        "すき家此花四貫島店"
-      ],
-      "category": "gyudon_teishoku",
-      "address": "大阪府大阪市此花区四貫島2-4-5",
-      "latitude": 34.68322,
-      "longitude": 135.454178,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市此花区四貫島二丁目４番５号",
-      "address_source": "maps.sukiya.jp/jp/detail/1160.html",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市此花区四貫島二丁目４番５号",
-        "osm_nearest": {
-          "id": "way/673500943",
-          "name": "すき家 此花四貫島店 すき家",
-          "distance_m": 14
-        },
-        "reverse": {
-          "muniCd": "27104",
-          "lv01Nm": "四貫島二丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-24 15:42",
-      "last_pickup": "2026-09-24 15:42",
-      "active_days": 1,
-      "original_names": [
-        "すき家 此花四貫島店 Sukiya Konohana Shikanjima"
-      ],
-      "brand_id": "sukiya",
-      "brand_name": "すき家",
-      "brand_reading": null,
-      "branch_name": "此花四貫島店",
-      "site_id": null,
-      "display_name": "此花四貫島店",
-      "address_short": "此花区四貫島"
     },
     {
       "id": "st_zuzikd",
@@ -3134,49 +3278,6 @@
       "address_short": "西区靱本町"
     },
     {
-      "id": "st_nun388",
-      "canonical_name": "ピザハット 大阪ナインモール九条店",
-      "name_keys": [
-        "ピザハット大阪ナインモール九条店"
-      ],
-      "category": "fastfood",
-      "address": "大阪府大阪市西区九条1-13-8",
-      "latitude": 34.675282,
-      "longitude": 135.47493,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１３番８号",
-      "address_source": "map.yahoo.co.jp ql1r8kHswa2; mapion",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１３番８号",
-        "osm_nearest": {
-          "id": "node/1369920111",
-          "name": "セブン-イレブン 大阪ナインモール九条店 セブン-イレブン",
-          "distance_m": 150
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-22 17:48",
-      "last_pickup": "2026-09-22 17:48",
-      "active_days": 1,
-      "original_names": [
-        "ピザハット 大阪ナインモール九条店"
-      ],
-      "brand_id": "pizza_hut",
-      "brand_name": "ピザハット",
-      "brand_reading": null,
-      "branch_name": "大阪ナインモール九条店",
-      "site_id": null,
-      "display_name": "大阪ナインモール九条店",
-      "address_short": "西区九条"
-    },
-    {
       "id": "st_1522rd1",
       "canonical_name": "びっくりドンキー フォレオ大阪ドームシティ店",
       "name_keys": [
@@ -3736,6 +3837,38 @@
       "address_short": "中央区道頓堀"
     },
     {
+      "id": "st_ipn4ao",
+      "canonical_name": "らーめん砦 京町堀店",
+      "name_keys": [
+        "らーめん砦京町堀店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-04 16:26",
+      "last_pickup": "2026-10-04 16:26",
+      "active_days": 1,
+      "original_names": [
+        "らーめん砦 京町堀店 ra-men toride kyoumachibori"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "らーめん砦 京町堀店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_16ebpmq",
       "canonical_name": "ラホンパンマーラータン 天神橋店",
       "name_keys": [
@@ -3906,6 +4039,38 @@
       "site_id": null,
       "display_name": "此花千鳥橋",
       "address_short": "此花区伝法"
+    },
+    {
+      "id": "st_te9txi",
+      "canonical_name": "ローソン 西九条二丁目",
+      "name_keys": [
+        "ローソン西九条二丁目"
+      ],
+      "category": "convenience",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-04 10:39",
+      "last_pickup": "2026-10-04 10:39",
+      "active_days": 1,
+      "original_names": [
+        "ローソン 西九条二丁目"
+      ],
+      "brand_id": "lawson",
+      "brand_name": "ローソン",
+      "brand_reading": null,
+      "branch_name": "西九条二丁目",
+      "display_name": "西九条二丁目",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_1m6djsw",
@@ -4230,6 +4395,70 @@
       "address_short": null
     },
     {
+      "id": "st_bta35b",
+      "canonical_name": "【唐揚げ弁当・からあげ】鶏よし 土佐堀店",
+      "name_keys": [
+        "【唐揚げ弁当・からあげ】鶏よし土佐堀店"
+      ],
+      "category": "gyudon_teishoku",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-04 16:55",
+      "last_pickup": "2026-10-04 16:55",
+      "active_days": 1,
+      "original_names": [
+        "【唐揚げ弁当・からあげ】鶏よし 土佐堀店"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "【唐揚げ弁当・からあげ】鶏よし 土佐堀店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
+      "id": "st_qs6y2r",
+      "canonical_name": "手作りタピオカ専門店Boba.t 南船場店",
+      "name_keys": [
+        "手作りタピオカ専門店Boba.t南船場店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-04 16:04",
+      "last_pickup": "2026-10-04 16:04",
+      "active_days": 1,
+      "original_names": [
+        "手作りタピオカ専門店Boba.t　南船場店　Handmaid Tapioca Boba.t Minamisenba"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "手作りタピオカ専門店Boba.t 南船場店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_14u3yu5",
       "canonical_name": "名代 かすうどん ながた 西九条店",
       "name_keys": [
@@ -4271,6 +4500,38 @@
       "site_id": "site_1hxmw0p",
       "display_name": "名代 かすうどん ながた 西九条店",
       "address_short": "此花区西九条"
+    },
+    {
+      "id": "st_mfbg8i",
+      "canonical_name": "麺屋ここいち フォレオ大阪ドームシティ店",
+      "name_keys": [
+        "麺屋ここいちフォレオ大阪ドームシティ店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-05 19:22",
+      "last_pickup": "2026-10-05 19:22",
+      "active_days": 1,
+      "original_names": [
+        "麺屋ここいち フォレオ大阪ドームシティ店"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "麺屋ここいち フォレオ大阪ドームシティ店",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_3sxwcy",
@@ -4320,14 +4581,14 @@
   "summary": {
     "period": {
       "from": "2026-09-10",
-      "to": "2026-10-01",
-      "days": 17
+      "to": "2026-10-05",
+      "days": 21
     },
-    "total_trips": 194,
-    "total_pickups": 194,
-    "store_count": 101,
+    "total_trips": 240,
+    "total_pickups": 240,
+    "store_count": 109,
     "confirmed_count": 98,
-    "needs_review_count": 3,
+    "needs_review_count": 11,
     "trips_without_restaurant": 0
   },
   "category_labels": {
