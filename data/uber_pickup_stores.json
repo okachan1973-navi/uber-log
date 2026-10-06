@@ -1753,16 +1753,23 @@
         "TonTonカンナム"
       ],
       "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
+      "address": "大阪府大阪市福島区福島2-7-5",
+      "latitude": 34.694279,
+      "longitude": 135.487122,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市福島区福島二丁目７番５号",
+      "address_source": "本人確認済み住所（2026-10-06 指示書） 1・2階",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市福島区福島二丁目７番５号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27103",
+          "lv01Nm": "福島二丁目"
+        }
+      },
       "same_building": null,
-      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "notes": "1・2階",
       "pickup_count": 1,
       "first_pickup": "2026-10-04 17:03",
       "last_pickup": "2026-10-04 17:03",
@@ -1775,7 +1782,7 @@
       "brand_reading": null,
       "branch_name": null,
       "display_name": "Ton Tonカンナム",
-      "address_short": null,
+      "address_short": "福島区福島",
       "site_id": null
     },
     {
@@ -1867,16 +1874,23 @@
         "いきなり!ステーキ大阪福島"
       ],
       "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
+      "address": "大阪府大阪市福島区福島5-9-8",
+      "latitude": 34.695393,
+      "longitude": 135.486099,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市福島区福島五丁目９番８号",
+      "address_source": "本人確認済み住所（2026-10-06 指示書）",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市福島区福島五丁目９番８号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27103",
+          "lv01Nm": "福島五丁目"
+        }
+      },
       "same_building": null,
-      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "notes": null,
       "pickup_count": 1,
       "first_pickup": "2026-10-04 13:14",
       "last_pickup": "2026-10-04 13:14",
@@ -1889,7 +1903,7 @@
       "brand_reading": null,
       "branch_name": null,
       "display_name": "いきなり!ステーキ 大阪福島",
-      "address_short": null,
+      "address_short": "福島区福島",
       "site_id": null
     },
     {
@@ -1899,16 +1913,23 @@
         "インド.ネパール料理ククリKhukuri"
       ],
       "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
+      "address": "大阪府大阪市西区本田3-2-3",
+      "latitude": 34.677967,
+      "longitude": 135.476318,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区本田三丁目２番３号",
+      "address_source": "本人確認済み住所（2026-10-06 指示書） シャトーメルヘン1階・2階",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区本田三丁目２番３号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "本田三丁目"
+        }
+      },
       "same_building": null,
-      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "notes": "シャトーメルヘン1階・2階",
       "pickup_count": 1,
       "first_pickup": "2026-10-05 17:16",
       "last_pickup": "2026-10-05 17:16",
@@ -1921,7 +1942,7 @@
       "brand_reading": null,
       "branch_name": null,
       "display_name": "インド.ネパール料理ククリKhukuri",
-      "address_short": null,
+      "address_short": "西区本田",
       "site_id": null
     },
     {
@@ -3843,16 +3864,23 @@
         "らーめん砦京町堀店"
       ],
       "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
+      "address": "大阪府大阪市西区京町堀1-10-10",
+      "latitude": 34.687794,
+      "longitude": 135.495255,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区京町堀一丁目１０番１０号",
+      "address_source": "本人確認済み住所（2026-10-06 指示書）",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区京町堀一丁目１０番１０号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "京町堀一丁目"
+        }
+      },
       "same_building": null,
-      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "notes": null,
       "pickup_count": 1,
       "first_pickup": "2026-10-04 16:26",
       "last_pickup": "2026-10-04 16:26",
@@ -3865,7 +3893,7 @@
       "brand_reading": null,
       "branch_name": null,
       "display_name": "らーめん砦 京町堀店",
-      "address_short": null,
+      "address_short": "西区京町堀",
       "site_id": null
     },
     {
@@ -4047,16 +4075,23 @@
         "ローソン西九条二丁目"
       ],
       "category": "convenience",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
+      "address": "大阪府大阪市此花区西九条2-1-2",
+      "latitude": 34.679733,
+      "longitude": 135.466858,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市此花区西九条二丁目１番２号",
+      "address_source": "本人確認済み住所（2026-10-06 指示書）",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市此花区西九条二丁目１番２号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27104",
+          "lv01Nm": "西九条二丁目"
+        }
+      },
       "same_building": null,
-      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "notes": null,
       "pickup_count": 1,
       "first_pickup": "2026-10-04 10:39",
       "last_pickup": "2026-10-04 10:39",
@@ -4069,7 +4104,7 @@
       "brand_reading": null,
       "branch_name": "西九条二丁目",
       "display_name": "西九条二丁目",
-      "address_short": null,
+      "address_short": "此花区西九条",
       "site_id": null
     },
     {
@@ -4401,16 +4436,23 @@
         "【唐揚げ弁当・からあげ】鶏よし土佐堀店"
       ],
       "category": "gyudon_teishoku",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
+      "address": "大阪府大阪市西区土佐堀3-2-8",
+      "latitude": 34.686893,
+      "longitude": 135.487457,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区土佐堀三丁目２番８号",
+      "address_source": "本人確認済み住所（2026-10-06 指示書） 木村ビル1階",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区土佐堀三丁目２番８号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "土佐堀三丁目"
+        }
+      },
       "same_building": null,
-      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "notes": "木村ビル1階",
       "pickup_count": 1,
       "first_pickup": "2026-10-04 16:55",
       "last_pickup": "2026-10-04 16:55",
@@ -4423,7 +4465,7 @@
       "brand_reading": null,
       "branch_name": null,
       "display_name": "【唐揚げ弁当・からあげ】鶏よし 土佐堀店",
-      "address_short": null,
+      "address_short": "西区土佐堀",
       "site_id": null
     },
     {
@@ -4433,16 +4475,23 @@
         "手作りタピオカ専門店Boba.t南船場店"
       ],
       "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
+      "address": "大阪府大阪市中央区南船場4-10-19",
+      "latitude": 34.677162,
+      "longitude": 135.498123,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市中央区南船場四丁目１０番１９号",
+      "address_source": "本人確認済み住所（2026-10-06 指示書） 1階",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市中央区南船場四丁目１０番１９号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27128",
+          "lv01Nm": "南船場四丁目"
+        }
+      },
       "same_building": null,
-      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "notes": "1階。第三者情報で「掲載保留」の情報あり。Uber公式取込にピックアップ実績があるため登録（2026-10-06）",
       "pickup_count": 1,
       "first_pickup": "2026-10-04 16:04",
       "last_pickup": "2026-10-04 16:04",
@@ -4455,7 +4504,7 @@
       "brand_reading": null,
       "branch_name": null,
       "display_name": "手作りタピオカ専門店Boba.t 南船場店",
-      "address_short": null,
+      "address_short": "中央区南船場",
       "site_id": null
     },
     {
@@ -4508,16 +4557,23 @@
         "麺屋ここいちフォレオ大阪ドームシティ店"
       ],
       "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
-      "same_building": null,
-      "notes": "2026-10-05 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "address": "大阪府大阪市西区九条南1-12-33",
+      "latitude": 34.669296,
+      "longitude": 135.473404,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条南一丁目１２番３３号",
+      "address_source": "本人確認済み住所（2026-10-06 指示書） フォレオ大阪ドームシティ1階",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条南一丁目１２番３３号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条南一丁目"
+        }
+      },
+      "same_building": "フォレオ大阪ドームシティ",
+      "notes": "フォレオ大阪ドームシティ1階",
       "pickup_count": 1,
       "first_pickup": "2026-10-05 19:22",
       "last_pickup": "2026-10-05 19:22",
@@ -4530,8 +4586,8 @@
       "brand_reading": null,
       "branch_name": null,
       "display_name": "麺屋ここいち フォレオ大阪ドームシティ店",
-      "address_short": null,
-      "site_id": null
+      "address_short": "西区九条南",
+      "site_id": "site_69kcep"
     },
     {
       "id": "st_3sxwcy",
@@ -4587,8 +4643,8 @@
     "total_trips": 240,
     "total_pickups": 240,
     "store_count": 109,
-    "confirmed_count": 98,
-    "needs_review_count": 11,
+    "confirmed_count": 106,
+    "needs_review_count": 3,
     "trips_without_restaurant": 0
   },
   "category_labels": {
@@ -4656,12 +4712,14 @@
       "store_ids": [
         "st_10wgyup",
         "st_1522rd1",
-        "st_8wp77m"
+        "st_8wp77m",
+        "st_mfbg8i"
       ],
       "brands": [
         "カレーハウス CoCo壱番屋",
         "びっくりドンキー",
-        "やよい軒"
+        "やよい軒",
+        "麺屋ここいち フォレオ大阪ドームシティ店"
       ]
     },
     {

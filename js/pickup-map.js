@@ -24,7 +24,7 @@
   // カテゴリの並びは data/uber_brands.json の categories 順（マクドナルド → ファーストフード → …）
   const CATEGORY_ORDER = (master && master.category_order) || (brandsDef.categories || []).map(c => c.id);
   const STATUS_LABEL = { confirmed: '座標確認済み', needs_review: '要確認', unknown: '未登録' };
-  const EVIDENCE_LABEL = { official: '公式店舗情報', map_directory: '地図・店舗情報サイト', delivery_listing: 'デリバリー掲載情報' };
+  const EVIDENCE_LABEL = { official: '公式店舗情報', map_directory: '地図・店舗情報サイト', delivery_listing: 'デリバリー掲載情報', user_confirmed: '本人確認済みの住所' };
   const SUGGEST_LIMIT = 8;
   const NO_ROUTE_MESSAGE = '座標未確認のためルート案内できません';
 

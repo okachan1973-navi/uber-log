@@ -389,7 +389,7 @@ async function run() {
       await p.tapSel(`.pm-rank-item[data-id="${await storeId(p, 'マクドナルド 九条店')}"]`);
       await sleep(1600);
       const pop = await popupState(p);
-      check('拒否後も店舗選択・ルートボタンは普通に使える', r.pins === 98 && !!pop && !!pop.href, pop);
+      check('拒否後も店舗選択・ルートボタンは普通に使える', r.pins === await p.ev("window.__pickupMap.data.stores.filter(s => s.coordinate_status === 'confirmed' && s.pickup_count > 0).length") && !!pop && !!pop.href, pop);
       await p.close();
     }
 

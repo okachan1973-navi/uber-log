@@ -118,9 +118,9 @@ test('Google Maps: iOSアプリ用URLも同じ座標・自転車モード', () =
   assert.ok(!q.has('saddr'));
 });
 
-test('Google Maps: 座標確認済みの全98店舗でURLが作れ、目的地が各店舗の保存座標', () => {
+test('Google Maps: 座標確認済みの全店舗でURLが作れ、目的地が各店舗の保存座標', () => {
   const confirmed = master.stores.filter(s => s.coordinate_status === 'confirmed');
-  assert.strictEqual(confirmed.length, 98);
+  assert.strictEqual(confirmed.length, master.summary.confirmed_count, '座標確認済みの店舗数はマスタの集計と一致');
   confirmed.forEach(s => {
     const dest = new URL(PS.googleMapsBikeUrl(s)).searchParams.get('destination').split(',').map(Number);
     assert.ok(Math.abs(dest[0] - s.latitude) < 1e-6 && Math.abs(dest[1] - s.longitude) < 1e-6, s.canonical_name);
@@ -288,7 +288,7 @@ test('一覧用 address_short: 区＋町名（大阪府・大阪市・丁目・�
     assert.ok(s.address.startsWith('大阪府大阪市'), '正式住所は残っている: ' + s.canonical_name);
     assert.ok(s.address.includes(s.address_short.replace(/区/, '区')), s.canonical_name);
   });
-  assert.strictEqual(master.stores.filter(s => s.address_short).length, 98);
+  assert.strictEqual(master.stores.filter(s => s.address_short).length, master.stores.filter(s => s.address).length, '住所のある店舗はすべて短縮住所あり');
 });
 
 test('data/uber_pickup_stores.js が JSON と同期している', () => {
