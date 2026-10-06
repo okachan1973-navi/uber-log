@@ -7843,7 +7843,7 @@ class Store {
 
     log.workSessions.push(session);
     this.syncLegacyWorkInfo(log);
-    this.saveToStorage();
+    this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
     return { log, session, isNew: true };
   }
 
@@ -7871,7 +7871,7 @@ class Store {
     }
 
     this.syncLegacyWorkInfo(log);
-    this.saveToStorage();
+    this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
     return { log, session: targetSession };
   }
 
@@ -7891,7 +7891,7 @@ class Store {
 
     log.workSessions.push(session);
     this.syncLegacyWorkInfo(log);
-    this.saveToStorage();
+    this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
     return session;
   }
 
@@ -7911,7 +7911,7 @@ class Store {
         isApproximate: updateFields.isApproximate !== undefined ? Boolean(updateFields.isApproximate) : current.isApproximate
       };
       this.syncLegacyWorkInfo(log);
-      this.saveToStorage();
+      this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
       return log.workSessions[idx];
     }
     return null;
@@ -7926,7 +7926,7 @@ class Store {
     if (idx !== -1) {
       const removed = log.workSessions.splice(idx, 1)[0];
       this.syncLegacyWorkInfo(log);
-      this.saveToStorage();
+      this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
       return removed;
     }
     return null;
@@ -7973,7 +7973,7 @@ class Store {
     };
 
     log.deliveries.push(delivery);
-    this.saveToStorage();
+    this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
     return { log, delivery };
   }
 
@@ -7984,7 +7984,7 @@ class Store {
       return null;
     }
     const removed = log.deliveries.pop();
-    this.saveToStorage();
+    this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
     return { log, removed };
   }
 
@@ -7997,7 +7997,7 @@ class Store {
         ...log.deliveries[idx],
         ...updateFields
       };
-      this.saveToStorage();
+      this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
       return log.deliveries[idx];
     }
     return null;
@@ -8012,7 +8012,7 @@ class Store {
       log.deliveries.forEach((d, i) => {
         d.index = i + 1;
       });
-      this.saveToStorage();
+      this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
       return removed;
     }
     return null;
@@ -8030,7 +8030,7 @@ class Store {
     };
     log.quests.push(quest);
     log.quests = deduplicateQuests(log.quests);
-    this.saveToStorage();
+    this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
     return quest;
   }
 
@@ -8041,7 +8041,7 @@ class Store {
     if (idx !== -1) {
       const removed = log.quests.splice(idx, 1)[0];
       log.quests = deduplicateQuests(log.quests);
-      this.saveToStorage();
+      this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
       return removed;
     }
     return null;
@@ -8080,7 +8080,7 @@ class Store {
       }
     }
     this.syncLegacyWorkInfo(log);
-    this.saveToStorage();
+    this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
     return log;
   }
 
@@ -8097,7 +8097,7 @@ class Store {
     if (quest !== undefined) {
       log.manualQuest = (quest === '' || quest === null || isNaN(Number(quest))) ? null : Number(quest);
     }
-    this.saveToStorage();
+    this.saveToStorage(log.date); // 対象日を同期対象にする（過去日の編集も Supabase へ）
     return log;
   }
 
