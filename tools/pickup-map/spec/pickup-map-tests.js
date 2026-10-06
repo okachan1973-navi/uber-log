@@ -225,8 +225,11 @@ test('同一拠点: 松屋 九条店と松のや 九条店は同住所で同じ�
   assert.strictEqual(ya.address, noya.address);
   assert.ok(ya.site_id && ya.site_id === noya.site_id);
   assert.strictEqual(tenma.site_id, null, '住所の違う松屋 天満橋店はまとめない');
-  assert.strictEqual(ya.pickup_count, 2);
-  assert.strictEqual(noya.pickup_count, 3);
+  // 回数は店舗ごとに別々に集計（取込で増えるので固定値ではなく、トリップからの集計と一致すること）
+  const agg = PS.aggregatePickups(dailyLogs, master).stores;
+  assert.strictEqual(ya.pickup_count, agg.find(s => s.id === ya.id).pickup_count);
+  assert.strictEqual(noya.pickup_count, agg.find(s => s.id === noya.id).pickup_count);
+  assert.ok(ya.pickup_count >= 2 && noya.pickup_count >= 3, '9/28 時点の回数（松屋2・松のや3）より減らない');
   assert.notStrictEqual(ya.id, noya.id);
   const site = master.sites.find(x => x.site_id === ya.site_id);
   assert.deepStrictEqual(site.store_ids.sort(), [ya.id, noya.id].sort());

@@ -286,7 +286,9 @@ async function run() {
       await p.tapSel(`.pm-rank-item[data-id="${await storeId(p, '松屋 九条店')}"]`);
       await sleep(1600);
       const site = await p.ev(`(() => { const box = document.querySelector('.leaflet-popup .pm-pop-site'); return box ? { text: box.textContent.replace(/\\s+/g, ' '), links: [...box.querySelectorAll('.pm-site-link')].map(b => b.textContent) } : null; })()`);
-      check('松屋 九条店: 同一拠点に松のや 九条店（回数は別々 2回/3回）', !!site && /九条1-14-26/.test(site.text) && site.links.join() === '松のや 九条店' && /松屋 九条店（この店舗）2回/.test(site.text) && /松のや 九条店3回/.test(site.text), site);
+      const siteCounts = await p.ev(`(() => { const by = n => window.__pickupMap.data.stores.find(s => s.canonical_name === n).pickup_count; return { ya: by('松屋 九条店'), noya: by('松のや 九条店') }; })()`);
+      check(`松屋 九条店: 同一拠点に松のや 九条店（回数は店舗ごとに別々 ${siteCounts.ya}回/${siteCounts.noya}回）`, !!site && /九条1-14-26/.test(site.text) && site.links.join() === '松のや 九条店'
+        && site.text.includes(`松屋 九条店（この店舗）${siteCounts.ya}回`) && site.text.includes(`松のや 九条店${siteCounts.noya}回`), site);
       await p.tapSel('.leaflet-popup .pm-site-link');
       await sleep(1600);
       const sitePop = await popupState(p);

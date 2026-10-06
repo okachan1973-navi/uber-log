@@ -30,10 +30,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 28,
+      "pickup_count": 31,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-05 18:52",
-      "active_days": 13,
+      "last_pickup": "2026-10-06 10:59",
+      "active_days": 14,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
         "マクドナルド 九　条　店 McDonald's KUJO",
@@ -42,6 +42,50 @@
       ],
       "brand_id": "mcdonalds",
       "brand_name": "マクドナルド",
+      "brand_reading": null,
+      "branch_name": "九条店",
+      "site_id": null,
+      "display_name": "九条店",
+      "address_short": "西区九条"
+    },
+    {
+      "id": "st_6zt5ra",
+      "canonical_name": "バーガーキング 九条店",
+      "name_keys": [
+        "バーガーキング九条店"
+      ],
+      "category": "fastfood",
+      "address": "大阪府大阪市西区九条1-13-10",
+      "latitude": 34.675339,
+      "longitude": 135.474716,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１３番１０号",
+      "address_source": "map.yahoo.co.jp; jafnavi",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目１３番１０号",
+        "osm_nearest": {
+          "id": "node/1735949588",
+          "name": "キングラム 九条店",
+          "distance_m": 37
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 11,
+      "first_pickup": "2026-09-18 11:09",
+      "last_pickup": "2026-10-06 17:31",
+      "active_days": 7,
+      "original_names": [
+        "バーガーキング 九条店",
+        "バーガーキング 九条店 Burger King Kujo"
+      ],
+      "brand_id": "burger_king",
+      "brand_name": "バーガーキング",
       "brand_reading": null,
       "branch_name": "九条店",
       "site_id": null,
@@ -93,50 +137,6 @@
       "address_short": "此花区西九条"
     },
     {
-      "id": "st_6zt5ra",
-      "canonical_name": "バーガーキング 九条店",
-      "name_keys": [
-        "バーガーキング九条店"
-      ],
-      "category": "fastfood",
-      "address": "大阪府大阪市西区九条1-13-10",
-      "latitude": 34.675339,
-      "longitude": 135.474716,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１３番１０号",
-      "address_source": "map.yahoo.co.jp; jafnavi",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１３番１０号",
-        "osm_nearest": {
-          "id": "node/1735949588",
-          "name": "キングラム 九条店",
-          "distance_m": 37
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 9,
-      "first_pickup": "2026-09-18 11:09",
-      "last_pickup": "2026-10-04 18:15",
-      "active_days": 6,
-      "original_names": [
-        "バーガーキング 九条店",
-        "バーガーキング 九条店 Burger King Kujo"
-      ],
-      "brand_id": "burger_king",
-      "brand_name": "バーガーキング",
-      "brand_reading": null,
-      "branch_name": "九条店",
-      "site_id": null,
-      "display_name": "九条店",
-      "address_short": "西区九条"
-    },
-    {
       "id": "st_1tevs71",
       "canonical_name": "KFC イオンモール大阪ドームシティ店",
       "name_keys": [
@@ -164,10 +164,10 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 8,
+      "pickup_count": 9,
       "first_pickup": "2026-09-10 11:04",
-      "last_pickup": "2026-10-05 19:47",
-      "active_days": 6,
+      "last_pickup": "2026-10-06 12:49",
+      "active_days": 7,
       "original_names": [
         "ケンタッキーフライドチキン イオンモール大阪ドームシティ店"
       ],
@@ -294,12 +294,13 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 7,
+      "pickup_count": 8,
       "first_pickup": "2026-09-15 09:04",
-      "last_pickup": "2026-10-03 07:07",
-      "active_days": 4,
+      "last_pickup": "2026-10-06 09:26",
+      "active_days": 5,
       "original_names": [
-        "マクドナルド 弁天町駅前店"
+        "マクドナルド 弁天町駅前店",
+        "マクドナルド 弁天町駅前店 McDonald's BENTENCHO EKIMAE"
       ],
       "brand_id": "mcdonalds",
       "brand_name": "マクドナルド",
@@ -490,6 +491,49 @@
       "address_short": "港区南市岡"
     },
     {
+      "id": "st_1omw10z",
+      "canonical_name": "餃子の王将 大阪九条",
+      "name_keys": [
+        "餃子の王将大阪九条"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市西区九条1-12-10",
+      "latitude": 34.674976,
+      "longitude": 135.47583,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１２番１０号",
+      "address_source": "map.ohsho.co.jp/b/ohsho/info/1252/",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目１２番１０号",
+        "osm_nearest": {
+          "id": "node/1619040549",
+          "name": "餃子の王将 九条店 餃子の王将",
+          "distance_m": 2
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 5,
+      "first_pickup": "2026-09-22 14:07",
+      "last_pickup": "2026-10-06 15:38",
+      "active_days": 4,
+      "original_names": [
+        "餃子の王将 大阪九条"
+      ],
+      "brand_id": "ohsho",
+      "brand_name": "餃子の王将",
+      "brand_reading": "ぎょうざのおうしょう",
+      "branch_name": "大阪九条",
+      "site_id": null,
+      "display_name": "大阪九条",
+      "address_short": "西区九条"
+    },
+    {
       "id": "st_t581ya",
       "canonical_name": "【伝説のクロックムッシュ】サンドイッチ九条店",
       "name_keys": [
@@ -538,47 +582,48 @@
       "address_short": "西区千代崎"
     },
     {
-      "id": "st_1omw10z",
-      "canonical_name": "餃子の王将 大阪九条",
+      "id": "st_qpn587",
+      "canonical_name": "京都北白川ラーメン魁力屋 イオンモール大阪ドームシティ店",
       "name_keys": [
-        "餃子の王将大阪九条"
+        "京都北白川ラーメン魁力屋イオンモール大阪ドームシティ店"
       ],
       "category": "other",
-      "address": "大阪府大阪市西区九条1-12-10",
-      "latitude": 34.674976,
-      "longitude": 135.47583,
+      "address": "大阪府大阪市西区千代崎3-13-1",
+      "latitude": 34.6703688,
+      "longitude": 135.477939,
       "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１２番１０号",
-      "address_source": "map.ohsho.co.jp/b/ohsho/info/1252/",
+      "coordinate_source": "OSM relation/14378487 建物中心（住所 千代崎3-13-1 は丁目までしか測位できないため）",
+      "address_source": "shop.kairikiya.co.jp/stores/123",
       "address_evidence": "official",
       "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１２番１０号",
+        "gsi_title": "大阪府大阪市西区千代崎三丁目",
         "osm_nearest": {
-          "id": "node/1619040549",
-          "name": "餃子の王将 九条店 餃子の王将",
-          "distance_m": 2
+          "id": "node/13866919752",
+          "name": "ラーメン魁力屋 イオンモール大阪ドームシティ店 ラーメン魁力屋",
+          "distance_m": 100
         },
         "reverse": {
           "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
+          "lv01Nm": "千代崎三丁目"
         }
       },
-      "same_building": null,
+      "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
       "pickup_count": 4,
-      "first_pickup": "2026-09-22 14:07",
-      "last_pickup": "2026-10-05 19:17",
-      "active_days": 3,
+      "first_pickup": "2026-09-22 10:28",
+      "last_pickup": "2026-10-06 11:41",
+      "active_days": 4,
       "original_names": [
-        "餃子の王将 大阪九条"
+        "京都北白川 ラーメン魁力屋 イオンモール大阪ドームシティ店",
+        "京都北白川ラーメン魁力屋 イオンモール大阪ドームシティ店"
       ],
-      "brand_id": "ohsho",
-      "brand_name": "餃子の王将",
-      "brand_reading": "ぎょうざのおうしょう",
-      "branch_name": "大阪九条",
-      "site_id": null,
-      "display_name": "大阪九条",
-      "address_short": "西区九条"
+      "brand_id": "kairikiya",
+      "brand_name": "京都北白川ラーメン魁力屋",
+      "brand_reading": "きょうときたしらかわらーめんかいりきや",
+      "branch_name": "イオンモール大阪ドームシティ店",
+      "site_id": "site_c4h33y",
+      "display_name": "イオンモール大阪ドームシティ店",
+      "address_short": "西区千代崎"
     },
     {
       "id": "st_3mzt1w",
@@ -669,48 +714,48 @@
       "address_short": "西区南堀江"
     },
     {
-      "id": "st_qpn587",
-      "canonical_name": "京都北白川ラーメン魁力屋 イオンモール大阪ドームシティ店",
+      "id": "st_1i6vnp7",
+      "canonical_name": "松のや 九条店",
       "name_keys": [
-        "京都北白川ラーメン魁力屋イオンモール大阪ドームシティ店"
+        "松のや九条店"
       ],
-      "category": "other",
-      "address": "大阪府大阪市西区千代崎3-13-1",
-      "latitude": 34.6703688,
-      "longitude": 135.477939,
+      "category": "gyudon_teishoku",
+      "address": "大阪府大阪市西区九条1-14-26",
+      "latitude": 34.675159,
+      "longitude": 135.474838,
       "coordinate_status": "confirmed",
-      "coordinate_source": "OSM relation/14378487 建物中心（住所 千代崎3-13-1 は丁目までしか測位できないため）",
-      "address_source": "shop.kairikiya.co.jp/stores/123",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１４番２６号",
+      "address_source": "pkg.navitime.co.jp/matsuyafoods2 (松屋併設)",
       "address_evidence": "official",
       "geocode_check": {
-        "gsi_title": "大阪府大阪市西区千代崎三丁目",
+        "gsi_title": "大阪府大阪市西区九条一丁目１４番２６号",
         "osm_nearest": {
-          "id": "node/13866919752",
-          "name": "ラーメン魁力屋 イオンモール大阪ドームシティ店 ラーメン魁力屋",
-          "distance_m": 100
+          "id": "node/1735950052",
+          "name": "松屋 九条店 松屋",
+          "distance_m": 7
         },
         "reverse": {
           "muniCd": "27106",
-          "lv01Nm": "千代崎三丁目"
+          "lv01Nm": "九条一丁目"
         }
       },
-      "same_building": "イオンモール大阪ドームシティ",
+      "same_building": "九条1-14-26（松屋・松のや併設）",
       "notes": null,
-      "pickup_count": 3,
-      "first_pickup": "2026-09-22 10:28",
-      "last_pickup": "2026-10-01 13:00",
+      "pickup_count": 4,
+      "first_pickup": "2026-09-22 12:31",
+      "last_pickup": "2026-10-06 11:51",
       "active_days": 3,
       "original_names": [
-        "京都北白川 ラーメン魁力屋 イオンモール大阪ドームシティ店",
-        "京都北白川ラーメン魁力屋 イオンモール大阪ドームシティ店"
+        "松のや 九条店",
+        "松のや 九条店 Matsunoya Kujo"
       ],
-      "brand_id": "kairikiya",
-      "brand_name": "京都北白川ラーメン魁力屋",
-      "brand_reading": "きょうときたしらかわらーめんかいりきや",
-      "branch_name": "イオンモール大阪ドームシティ店",
-      "site_id": "site_c4h33y",
-      "display_name": "イオンモール大阪ドームシティ店",
-      "address_short": "西区千代崎"
+      "brand_id": "matsunoya",
+      "brand_name": "松のや",
+      "brand_reading": "まつのや",
+      "branch_name": "九条店",
+      "site_id": "site_15arb50",
+      "display_name": "九条店",
+      "address_short": "西区九条"
     },
     {
       "id": "st_6snect",
@@ -801,50 +846,6 @@
       "address_short": "福島区海老江"
     },
     {
-      "id": "st_1i6vnp7",
-      "canonical_name": "松のや 九条店",
-      "name_keys": [
-        "松のや九条店"
-      ],
-      "category": "gyudon_teishoku",
-      "address": "大阪府大阪市西区九条1-14-26",
-      "latitude": 34.675159,
-      "longitude": 135.474838,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１４番２６号",
-      "address_source": "pkg.navitime.co.jp/matsuyafoods2 (松屋併設)",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１４番２６号",
-        "osm_nearest": {
-          "id": "node/1735950052",
-          "name": "松屋 九条店 松屋",
-          "distance_m": 7
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": "九条1-14-26（松屋・松のや併設）",
-      "notes": null,
-      "pickup_count": 3,
-      "first_pickup": "2026-09-22 12:31",
-      "last_pickup": "2026-09-28 08:06",
-      "active_days": 2,
-      "original_names": [
-        "松のや 九条店",
-        "松のや 九条店 Matsunoya Kujo"
-      ],
-      "brand_id": "matsunoya",
-      "brand_name": "松のや",
-      "brand_reading": "まつのや",
-      "branch_name": "九条店",
-      "site_id": "site_15arb50",
-      "display_name": "九条店",
-      "address_short": "西区九条"
-    },
-    {
       "id": "st_1jtin90",
       "canonical_name": "やよい軒 九条店",
       "name_keys": [
@@ -924,6 +925,49 @@
       "branch_name": null,
       "site_id": null,
       "display_name": "【塩のおにぎり屋】PACKN-TO",
+      "address_short": "西区九条"
+    },
+    {
+      "id": "st_zm9ew6",
+      "canonical_name": "ウエルシア大阪九条店",
+      "name_keys": [
+        "ウエルシア大阪九条店"
+      ],
+      "category": "drug_super",
+      "address": "大阪府大阪市西区九条1-18-5",
+      "latitude": 34.673492,
+      "longitude": 135.476517,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１８番５号",
+      "address_source": "kusurinomadoguchi s1000131325; navitime",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目１８番５号",
+        "osm_nearest": {
+          "id": "way/192864287",
+          "name": "AOKI 大阪九条店 AOKI",
+          "distance_m": 74
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 2,
+      "first_pickup": "2026-09-29 11:50",
+      "last_pickup": "2026-10-06 16:23",
+      "active_days": 2,
+      "original_names": [
+        "ウエルシア大阪九条店"
+      ],
+      "brand_id": "welcia",
+      "brand_name": "ウエルシア",
+      "brand_reading": null,
+      "branch_name": "大阪九条店",
+      "site_id": null,
+      "display_name": "大阪九条店",
       "address_short": "西区九条"
     },
     {
@@ -1536,6 +1580,49 @@
       "address_short": "港区八幡屋"
     },
     {
+      "id": "st_szcubg",
+      "canonical_name": "ローソン 港区南市岡一丁目",
+      "name_keys": [
+        "ローソン港区南市岡一丁目"
+      ],
+      "category": "convenience",
+      "address": "大阪府大阪市港区南市岡1-2-36",
+      "latitude": 34.668591,
+      "longitude": 135.471603,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区南市岡一丁目２番３６号",
+      "address_source": "foursquare (要OSM/GSI照合)",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市港区南市岡一丁目２番３６号",
+        "osm_nearest": {
+          "id": "node/1629885896",
+          "name": "ローソン 境川店 ローソン",
+          "distance_m": 89
+        },
+        "reverse": {
+          "muniCd": "27107",
+          "lv01Nm": "南市岡一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 2,
+      "first_pickup": "2026-09-17 12:00",
+      "last_pickup": "2026-10-06 10:19",
+      "active_days": 2,
+      "original_names": [
+        "ローソン 港区南市岡一丁目"
+      ],
+      "brand_id": "lawson",
+      "brand_name": "ローソン",
+      "brand_reading": null,
+      "branch_name": "港区南市岡一丁目",
+      "site_id": null,
+      "display_name": "港区南市岡一丁目",
+      "address_short": "港区南市岡"
+    },
+    {
       "id": "st_17dn6fz",
       "canonical_name": "ローソン 大阪ドームシティ",
       "name_keys": [
@@ -1944,49 +2031,6 @@
       "display_name": "インド.ネパール料理ククリKhukuri",
       "address_short": "西区本田",
       "site_id": null
-    },
-    {
-      "id": "st_zm9ew6",
-      "canonical_name": "ウエルシア大阪九条店",
-      "name_keys": [
-        "ウエルシア大阪九条店"
-      ],
-      "category": "drug_super",
-      "address": "大阪府大阪市西区九条1-18-5",
-      "latitude": 34.673492,
-      "longitude": 135.476517,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１８番５号",
-      "address_source": "kusurinomadoguchi s1000131325; navitime",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１８番５号",
-        "osm_nearest": {
-          "id": "way/192864287",
-          "name": "AOKI 大阪九条店 AOKI",
-          "distance_m": 74
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-29 11:50",
-      "last_pickup": "2026-09-29 11:50",
-      "active_days": 1,
-      "original_names": [
-        "ウエルシア大阪九条店"
-      ],
-      "brand_id": "welcia",
-      "brand_name": "ウエルシア",
-      "brand_reading": null,
-      "branch_name": "大阪九条店",
-      "site_id": null,
-      "display_name": "大阪九条店",
-      "address_short": "西区九条"
     },
     {
       "id": "st_1h847nd",
@@ -2570,6 +2614,38 @@
       "site_id": null,
       "display_name": "港区弁天町店",
       "address_short": "港区磯路"
+    },
+    {
+      "id": "st_1dahafm",
+      "canonical_name": "サーティワン アイスクリーム 九条ナインモール店 31",
+      "name_keys": [
+        "サーティワンアイスクリーム九条ナインモール店31"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-06 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-06 16:34",
+      "last_pickup": "2026-10-06 16:34",
+      "active_days": 1,
+      "original_names": [
+        "サーティワン アイスクリーム 九条ナインモール店 31 Ice Cream Kujoh Ninemall"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "サーティワン アイスクリーム 九条ナインモール店 31",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_16mzu7l",
@@ -3983,49 +4059,6 @@
       "address_short": "北区曽根崎新地"
     },
     {
-      "id": "st_szcubg",
-      "canonical_name": "ローソン 港区南市岡一丁目",
-      "name_keys": [
-        "ローソン港区南市岡一丁目"
-      ],
-      "category": "convenience",
-      "address": "大阪府大阪市港区南市岡1-2-36",
-      "latitude": 34.668591,
-      "longitude": 135.471603,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区南市岡一丁目２番３６号",
-      "address_source": "foursquare (要OSM/GSI照合)",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市港区南市岡一丁目２番３６号",
-        "osm_nearest": {
-          "id": "node/1629885896",
-          "name": "ローソン 境川店 ローソン",
-          "distance_m": 89
-        },
-        "reverse": {
-          "muniCd": "27107",
-          "lv01Nm": "南市岡一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-17 12:00",
-      "last_pickup": "2026-09-17 12:00",
-      "active_days": 1,
-      "original_names": [
-        "ローソン 港区南市岡一丁目"
-      ],
-      "brand_id": "lawson",
-      "brand_name": "ローソン",
-      "brand_reading": null,
-      "branch_name": "港区南市岡一丁目",
-      "site_id": null,
-      "display_name": "港区南市岡一丁目",
-      "address_short": "港区南市岡"
-    },
-    {
       "id": "st_5bo6hd",
       "canonical_name": "ローソン 此花千鳥橋",
       "name_keys": [
@@ -4637,14 +4670,14 @@
   "summary": {
     "period": {
       "from": "2026-09-10",
-      "to": "2026-10-05",
-      "days": 21
+      "to": "2026-10-06",
+      "days": 22
     },
-    "total_trips": 240,
-    "total_pickups": 240,
-    "store_count": 109,
+    "total_trips": 253,
+    "total_pickups": 253,
+    "store_count": 110,
     "confirmed_count": 106,
-    "needs_review_count": 3,
+    "needs_review_count": 4,
     "trips_without_restaurant": 0
   },
   "category_labels": {

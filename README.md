@@ -166,3 +166,8 @@ Uber Driver に案件が出ている数秒間に、DROP先のマンション名�
   - 📊 効率: 平均距離（距離÷件数）／平均単価・距離単価・実働時給（いずれも通常分析売上 `regularSales`＝特別クエスト・新規保証を除く、時給と同じ定義）
   - 見出しアイコンは `js/ui.js` の `ICON` を空にすれば消える。その下に従来の配達明細（○/×評価・地図・並び替え）。
 - テスト: `node tools/history/spec/history-e2e.js`（Edge で iPhone相当 375/390/430px。1行表示・最大想定値・展開の数値）
+
+## 12. 公開前の全テスト
+
+- `node tools/release-check/run-all.js` … 公式取込・同期・目標クエスト・DROP照合・配達マップ・ルート判断・履歴の全テスト（画面テストを含む）。1件でも予期しない失敗があれば exit 1。`--quick` で画面テストを除く、`--rebuild-stores` で先に店舗マスタを再生成。
+- 既知の例外は `tools/release-check/run-all.js` の `KNOWN_EXCEPTIONS` に理由・条件つきで記載（現在: Excel 原本の欠損。Excel が戻れば通常の失敗として扱う）。

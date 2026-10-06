@@ -2,7 +2,7 @@
 /**
  * 履歴タブ（日別アコーディオン）のブラウザテスト（Microsoft Edge ヘッドレス + DevTools Protocol, iPhone相当）
  *   node tools/history/spec/history-e2e.js [--shots <dir>] [--base <公開URL>]
- * 新しいブラウザ（未ログイン）で、アプリ同梱の公式取込データ（9/10〜10/5 の21稼働日）を使って確認する。
+ * 新しいブラウザ（未ログイン）で、アプリ同梱の公式取込データを使って確認する（日別の数値は確定済みの過去日 9/19・9/22・9/24・10/5 で確認）。
  */
 'use strict';
 
@@ -126,7 +126,9 @@ async function run() {
       await p.ev(`(() => { const btn = document.querySelector('[data-view="list"]'); if (btn) btn.click(); })()`);
       await sleep(200);
       const rows = await p.ev(ROWS_JS);
-      check('稼働日が並ぶ（同梱データ 21日）', rows.length === 21, rows.length);
+      // 同梱の公式データで配達がある日の数（アプリの稼働日判定とは別に数える。取込で日が増えても固定値で壊れない）
+      const workedDays = await p.ev(`Object.values(getConfirmedSeedData().dailyLogs).filter(l => (l.deliveries || []).length > 0).length`);
+      check(`稼働日が並ぶ（同梱データで配達のある ${workedDays}日）`, workedDays >= 21 && rows.length === workedDays, { rows: rows.length, workedDays });
       const fmt = /^\d{1,2}\/\d{1,2}\([月火水木金土日]\) 📦\d+件 🚲\d+\.\dkm 💰[\d,]+円 ▼$/;
       check('閉じた行は「10/5(月) 📦17件 🚲34.2km 💰10,666円 ▼」の形（日付・件数・距離小数1桁・総売上・▼）', rows.every(r => fmt.test(r.t)), rows.filter(r => !fmt.test(r.t)).map(r => r.t));
       check('10/5 の閉じた行', (rows.find(r => r.date === '2026-10-05') || {}).t === '10/5(月) 📦17件 🚲34.2km 💰10,666円 ▼', rows[0]);
@@ -178,7 +180,7 @@ async function run() {
       const cal = await p.ev(`({ cal: !document.getElementById('history-calendar-container').hidden, list: !document.getElementById('history-list-container').hidden, cells: document.getElementById('history-calendar-container').textContent.length })`);
       await p.tapSel('.history-view-btn[data-view="list"]');
       const back = await p.ev(`({ cal: !document.getElementById('history-calendar-container').hidden, list: !document.getElementById('history-list-container').hidden, rows: document.querySelectorAll('.hr-line').length })`);
-      check('一覧 / カレンダー切替が動く', cal.cal && !cal.list && cal.cells > 0 && !back.cal && back.list && back.rows === 21, { cal, back });
+      check('一覧 / カレンダー切替が動く', cal.cal && !cal.list && cal.cells > 0 && !back.cal && back.list && back.rows === workedDays, { cal, back, workedDays });
       const nav = await p.ev(`(() => { const items = [...document.querySelectorAll('.bottom-nav .nav-label')]; return { labels: items.map(e => e.textContent).join(' '), font: Math.min(...items.map(e => parseFloat(getComputedStyle(e).fontSize))), h: document.querySelector('.bottom-nav').getBoundingClientRect().height }; })()`);
       check('下部ナビは6項目のまま（稼働 履歴 分析 地雷 地図 ルート）', nav.labels === '稼働 履歴 分析 地雷 地図 ルート', nav);
       // もう一度タップで閉じる
