@@ -171,3 +171,4 @@ Uber Driver に案件が出ている数秒間に、DROP先のマンション名�
 
 - `node tools/release-check/run-all.js` … 公式取込・同期・目標クエスト・DROP照合・配達マップ・ルート判断・履歴の全テスト（画面テストを含む）。1件でも予期しない失敗があれば exit 1。`--quick` で画面テストを除く、`--rebuild-stores` で先に店舗マスタを再生成。
 - 既知の例外は `tools/release-check/run-all.js` の `KNOWN_EXCEPTIONS` に理由・条件つきで記載（現在: Excel 原本の欠損。Excel が戻れば通常の失敗として扱う）。
+- 版番号: 元は `version.json` の `version` だけ。`node tools/release-check/version.js` で index.html（読込番号・Service Worker・`UBER_LOG_APP_VERSION`）・sw.js・pickup-map.html・route-judge.html へ反映、`--check` で確認、`--bump` で版を上げて反映。設定画面の「アプリバージョン」は実際に動いている版を表示（公開中の最新版と比べて「最新」／「新しい版があります」）。

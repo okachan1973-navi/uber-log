@@ -34,12 +34,12 @@ argument-hint: YYYY-MM-DD
 6. **テスト**: `node tools/official-import/import.js test` → 全PASSを確認。1件でも FAIL なら commit せず報告。
    ※ テスト10節は既存確定値（9/22まで）の回帰確認。新しい日の取込で週次・月次の値が変わる場合はテストの期待値ではなく実装の問題かを確認し、正しい確定値であれば期待値を更新する（本体データを古い数字に戻さない）。
 6b. **配達マップ店舗マスタ**: `node tools/pickup-map/build-stores.js` → 「A 総トリップ = pickup合計」を確認。「新店舗」警告が出たら、既存店舗の別表記か新店舗かを確認する（別表記の証拠があれば `data/uber_pickup_stores.json` の該当店舗の `name_keys` へ移す。新店舗の住所・座標は推測で入れず needs_review のまま報告）。続けて `node tools/pickup-map/spec/pickup-map-tests.js` が全PASS であること（9/28時点の固定値テストは変わらない）。変わった `data/uber_pickup_stores.json`・`data/uber_pickup_stores.js` も 8 で add する。
-6c. **公開前の全テスト**: `node tools/release-check/run-all.js`（公式取込・履歴・配達マップ・ルート判断・DROP照合・同期の全テスト。画面テストを含み数分かかる）→ 最後が「0 failed」であることを確認。「予期しない失敗」が1件でもあれば commit・push せず報告する（Excel 欠損などの既知の例外は「known」と表示され、理由が出る）。
+6c. **版番号の反映と公開前の全テスト**: `node tools/release-check/version.js`（apply で上がった version.json の版を pickup-map.html・route-judge.html を含む全ページへ反映）→ `node tools/release-check/run-all.js`（公式取込・履歴・配達マップ・ルート判断・DROP照合・同期の全テスト。画面テストを含み数分かかる）→ 最後が「0 failed」であることを確認。「予期しない失敗」が1件でもあれば commit・push せず報告する（Excel 欠損などの既知の例外は「known」と表示され、理由が出る）。
 7. **HANDOFF**: `node tools/official-import/import.js report $ARGUMENTS` の数値で `C:\Users\okano\Desktop\UBER_HANDOFF.txt` を更新する。
    - 冒頭の「最終更新日時」「最新状態」、「日別実績確定データ一覧」に対象日の行（配達件数・トリップ・売上内訳・配達時間・距離・MAP）を追加／更新、進行中の週・月累計・クエスト進捗・MAP登録数、バージョン表記（sw.js / version.json）を更新。
    - 経費（Bike等）はアプリ側入力のため、ユーザーから金額を聞いていない場合は「経費: アプリ入力分（HANDOFF未把握）」と書き、推測で書かない。
    - 保存後、リポジトリ内 `HANDOFF.md` へ同じ内容をコピーし（`Copy-Item C:\Users\okano\Desktop\UBER_HANDOFF.txt HANDOFF.md -Force`）、正本を再読込して確認する。
-8. **commit / push**: `git status` → 取込で変わったファイル（`js/store.js`・`js/trip-maps.js`・`assets/maps/*`・`index.html`・`sw.js`・`version.json`・`HANDOFF.md`）だけを `git add` → `git commit -m "data($ARGUMENTS): official import (<N> trips, <総売上>)"` → `git push` → `git status` が clean であることを確認。
+8. **commit / push**: `git status` → 取込で変わったファイル（`js/store.js`・`js/trip-maps.js`・`assets/maps/*`・`index.html`・`sw.js`・`version.json`・`pickup-map.html`・`route-judge.html`・`HANDOFF.md`、6b で変わった店舗マスタ）だけを `git add` → `git commit -m "data($ARGUMENTS): official import (<N> trips, <総売上>)"` → `git push` → `git status` が clean であることを確認。
 9. **報告**: 次の形式で簡潔に。
    ```
    YYYY/MM/DD 公式取込

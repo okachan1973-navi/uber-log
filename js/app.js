@@ -439,7 +439,20 @@ function initModalActions() {
 }
 
 // 6. 設定画面のアクション
+// 設定画面「アプリバージョン」: 実際に動いている版（index.html の UBER_LOG_APP_VERSION）と、公開中の最新版との比較
+function showAppVersion(latest) {
+  const el = document.getElementById('settings-app-version-desc');
+  if (!el) return;
+  const running = window.UBER_LOG_APP_VERSION || '不明';
+  let state = '（通常は自動更新されます）';
+  if (latest && latest === running) state = '（最新）';
+  else if (latest) state = `（新しい版 v${latest} があります。開き直すと更新されます）`;
+  el.textContent = `v${running}${state}`;
+}
+
 function initSettingsActions() {
+  showAppVersion(null);
+
   // 確定データ（2026-09-14〜09-17）復元
   const reloadBtn = document.getElementById('btn-reload-confirmed');
   if (reloadBtn) {
@@ -548,6 +561,7 @@ function initAppUpdateChecker() {
       });
       if (!res.ok) return;
       const data = await res.json();
+      showAppVersion(data && data.version);
       const currentVer = window.UBER_LOG_APP_VERSION || '20260920_v16';
       if (data && data.version && data.version !== currentVer) {
         console.log(`[PWA] Newer version detected: ${data.version} (current: ${currentVer})`);

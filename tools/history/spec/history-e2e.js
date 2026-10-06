@@ -143,6 +143,8 @@ async function run() {
       const font = await p.ev(`(() => { const h = document.querySelector('.hr-line'); const f = c => parseFloat(getComputedStyle(h.querySelector(c)).fontSize); return { date: f('.hr-date'), count: f('.hr-count'), dist: f('.hr-dist'), amount: f('.hr-amount') }; })()`);
       check('v57より大きい文字（日付16・件数17・距離16・売上19px）・売上が一番大きい', font.date >= 16 && font.count >= 17 && font.dist >= 16 && font.amount >= 19 && font.amount > Math.max(font.date, font.count, font.dist), font);
       check('経費・利益は一覧に出さない', rows.every(r => !/経費|利益/.test(r.t)));
+      const ver = await p.ev(`({ label: document.getElementById('settings-app-version-desc').textContent, running: window.UBER_LOG_APP_VERSION })`);
+      check('設定画面のアプリバージョンは実際に動いている版（固定文字列ではない）', /^\d{8}_v\d+$/.test(ver.running) && ver.label.startsWith('v' + ver.running), ver);
       check('横スクロールなし', await p.ev('document.documentElement.scrollWidth <= document.documentElement.clientWidth'));
       await p.shot(`history_${w}_list`);
 

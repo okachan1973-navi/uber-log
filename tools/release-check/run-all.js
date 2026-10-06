@@ -24,6 +24,7 @@ const PY = process.env.PYTHON || 'python';
 const EXCEL = path.join(os.homedir(), 'Desktop', '大阪市_タワマン一覧_Uber配達用.xlsx');
 
 const SUITES = [
+  { name: '版番号が version.json と一致', cmd: [NODE, 'tools/release-check/version.js', '--check'] },
   { name: '公式取込（集計・整合性）', cmd: [NODE, 'tools/official-import/spec/run-tests.js'] },
   { name: '端末・クラウド同期（経費）', cmd: [NODE, 'tools/official-import/spec/sync-tests.js'] },
   { name: '取込サーバー', cmd: [NODE, 'tools/official-import/spec/server-tests.js'] },
