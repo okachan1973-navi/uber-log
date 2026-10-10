@@ -7041,10 +7041,10 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": 26.76,
-      "tripsCount": 14,
-      "officialPoints": 16,
-      "deliveriesCount": 16,
+      "totalDistanceKm": 35.43,
+      "tripsCount": 20,
+      "officialPoints": 22,
+      "deliveriesCount": 22,
       "workSessions": [],
       "deliveries": [
         {
@@ -7428,6 +7428,162 @@ const CONFIRMED_SEED_DATA = {
             }
           ],
           "sequence": null
+        },
+        {
+          "id": "del_1010_15",
+          "index": 15,
+          "completedAt": "17:25",
+          "restaurant": "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY",
+          "area": "大阪市大正区三軒家東2丁目",
+          "fee": 320,
+          "distanceKm": 1.54,
+          "durationStr": "13分32秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "3dc30c28-3e0d-4d61-b1a5-8825bd260211",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "3dc30c28-3e0d-4d61-b1a5-8825bd260211",
+              "restaurant": "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY",
+              "pickupAddress": "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY",
+              "dropoffAddress": "27大阪市大正区三軒家東２丁目",
+              "area": "大阪市大正区三軒家東2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_16",
+          "index": 16,
+          "completedAt": "17:45",
+          "restaurant": "マクドナルド イオンモール大阪ドームシティ店",
+          "area": "大阪市大正区三軒家西3丁目",
+          "fee": 341,
+          "distanceKm": 1.67,
+          "durationStr": "21分27秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "f7ef56e8-1cb0-4249-978e-53dc7d1d8023",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "f7ef56e8-1cb0-4249-978e-53dc7d1d8023",
+              "restaurant": "マクドナルド イオンモール大阪ドームシティ店",
+              "pickupAddress": "マクドナルド イオンモール大阪ドームシティ店",
+              "dropoffAddress": "27大阪市大正区三軒家西３丁目",
+              "area": "大阪市大正区三軒家西3丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_17",
+          "index": 17,
+          "completedAt": "18:14",
+          "restaurant": "ケンタッキーフライドチキン イオンモール大阪ドームシティ店",
+          "area": "大阪市西区新町4丁目",
+          "fee": 381,
+          "distanceKm": 1.85,
+          "durationStr": "17分21秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "afd84300-5176-4e4b-a5a6-059dfa4b7940",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "afd84300-5176-4e4b-a5a6-059dfa4b7940",
+              "restaurant": "ケンタッキーフライドチキン イオンモール大阪ドームシティ店",
+              "pickupAddress": "ケンタッキーフライドチキン イオンモール大阪ドームシティ店",
+              "dropoffAddress": "27大阪市西区新町４丁目",
+              "area": "大阪市西区新町4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_18",
+          "index": 18,
+          "completedAt": "18:39",
+          "restaurant": "やよい軒 九条店",
+          "area": "大阪市西区川口4丁目",
+          "fee": 320,
+          "distanceKm": 1.19,
+          "durationStr": "9分37秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "1a55c65e-08df-426d-9602-17bff2b1ce05",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "1a55c65e-08df-426d-9602-17bff2b1ce05",
+              "restaurant": "やよい軒 九条店",
+              "pickupAddress": "やよい軒 九条店",
+              "dropoffAddress": "27大阪市西区川口４丁目",
+              "area": "大阪市西区川口4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_19",
+          "index": 19,
+          "completedAt": "19:09",
+          "restaurant": "金のとりから/待茶 イオンモール大阪ドームシティ店",
+          "area": "大阪市浪速区桜川4丁目",
+          "fee": 320,
+          "distanceKm": 1.21,
+          "durationStr": "13分26秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "db144b69-a769-42ae-957e-050acb125c75",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "db144b69-a769-42ae-957e-050acb125c75",
+              "restaurant": "金のとりから/待茶 イオンモール大阪ドームシティ店",
+              "pickupAddress": "金のとりから/待茶 イオンモール大阪ドームシティ店",
+              "dropoffAddress": "27大阪市浪速区桜川４丁目",
+              "area": "大阪市浪速区桜川4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_20",
+          "index": 20,
+          "completedAt": "19:41",
+          "restaurant": "スターバックス コーヒー イオンモール大阪ドームシティ店 Starbucks Coffee AEON MALL Osaka Dome City",
+          "area": "大阪市浪速区幸町2丁目",
+          "fee": 320,
+          "distanceKm": 1.21,
+          "durationStr": "11分57秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "b63887b8-56d9-4871-b5c2-b46cef22c59d",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "b63887b8-56d9-4871-b5c2-b46cef22c59d",
+              "restaurant": "スターバックス コーヒー イオンモール大阪ドームシティ店 Starbucks Coffee AEON MALL Osaka Dome City",
+              "pickupAddress": "スターバックス コーヒー イオンモール大阪ドームシティ店 Starbucks Coffee AEON MALL Osaka Dome City",
+              "dropoffAddress": "27大阪市浪速区幸町２丁目",
+              "area": "大阪市浪速区幸町2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
         }
       ],
       "quests": [
@@ -7440,19 +7596,29 @@ const CONFIRMED_SEED_DATA = {
           "questName": "6回乗車クエスト",
           "questType": "normal",
           "note": "公式一覧は「クエスト ¥1,000」「6 回乗車クエスト ¥1,000」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1010_2",
+          "time": "19:53",
+          "title": "クエスト",
+          "amount": 1000,
+          "isDuplicateIgnored": false,
+          "questName": "6回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥1,000」「6 回乗車クエスト ¥1,000」の2表示だが同一報酬のため1件のみ計上（二重計上防止）。15:00の「3 回乗車クエスト」¥0は報酬0のため売上非加算"
         }
       ],
       "sales": {
-        "delivery": 4995,
-        "quest": 1000,
+        "delivery": 6997,
+        "quest": 2000,
         "adjustment": 0,
         "other": 0,
-        "total": 5995
+        "total": 8997
       },
       "expenses": [],
       "officialImport": {
         "source": "official-import-v1",
-        "importedAt": "2026-10-10T05:47:27.222Z"
+        "importedAt": "2026-10-10T12:06:05.330Z"
       }
     }
   },
