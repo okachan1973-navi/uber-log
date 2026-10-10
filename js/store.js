@@ -7035,6 +7035,425 @@ const CONFIRMED_SEED_DATA = {
         "source": "official-import-v1",
         "importedAt": "2026-10-09T12:39:45.923Z"
       }
+    },
+    "2026-10-10": {
+      "date": "2026-10-10",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 26.76,
+      "tripsCount": 14,
+      "officialPoints": 16,
+      "deliveriesCount": 16,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_1010_1",
+          "index": 1,
+          "completedAt": "08:23",
+          "restaurant": "マクドナルド 九　条　店 McDonald's KUJO",
+          "area": "大阪市西区本田2丁目",
+          "fee": 320,
+          "distanceKm": 0.95,
+          "durationStr": "8分12秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "5a095fcf-aa1a-4517-95e2-0e54d84088e0",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "5a095fcf-aa1a-4517-95e2-0e54d84088e0",
+              "restaurant": "マクドナルド 九　条　店 McDonald's KUJO",
+              "pickupAddress": "マクドナルド 九　条　店 McDonald's KUJO",
+              "dropoffAddress": "27大阪市西区本田２丁目",
+              "area": "大阪市西区本田2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_2",
+          "index": 2,
+          "completedAt": "08:33",
+          "restaurant": "マクドナルド 九　条　店 McDonald's KUJO",
+          "area": "大阪市大正区三軒家西2丁目",
+          "fee": 328,
+          "distanceKm": 2.46,
+          "durationStr": "13分56秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "5037dd8a-2f67-4701-ba31-c0899496ef06",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "5037dd8a-2f67-4701-ba31-c0899496ef06",
+              "restaurant": "マクドナルド 九　条　店 McDonald's KUJO",
+              "pickupAddress": "マクドナルド 九　条　店 McDonald's KUJO",
+              "dropoffAddress": "27大阪市大正区三軒家西２丁目",
+              "area": "大阪市大正区三軒家西2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_3",
+          "index": 3,
+          "completedAt": "08:46",
+          "restaurant": "マクドナルド 大　正　店 McDonald's TAISHO",
+          "area": "大阪市大正区北恩加島1丁目/大阪市大正区千島1丁目",
+          "fee": 497,
+          "distanceKm": 3.28,
+          "durationStr": "25分12秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）／2件完了/2pt",
+          "tripUuid": "6cc2d9a2-2a80-41a9-b65f-5c52899eaaf7",
+          "tripLegCount": 2,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "71619929-93a1-4d2b-85ff-d2b872605e19",
+              "restaurant": "",
+              "pickupAddress": "27大阪市大正区千島１丁目",
+              "dropoffAddress": "27大阪市大正区北恩加島１丁目",
+              "area": "大阪市大正区北恩加島1丁目",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Aright%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.65385%2C135.47287&markers=%7Canchor%3Aright%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.65338%2C135.46475&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3AoiorEmpzyXLcD_GqBQ%5C%7CD%60%40_%40rDrIfDqGda%40lGhDeC%7CBGbB&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=sVwiLJc0VNCWBwO1h7rHfJyYorU="
+            },
+            {
+              "legIndex": 1,
+              "legUuid": "1dcd423f-3ba7-447c-8c5e-b39a907568e7",
+              "restaurant": "",
+              "pickupAddress": "27大阪市大正区千島１丁目",
+              "dropoffAddress": "27大阪市大正区千島１丁目",
+              "area": "大阪市大正区千島1丁目",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Abottom%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.65385%2C135.47287&markers=%7Canchor%3Abottom%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.65492%2C135.47414&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3AoiorEmpzyXLcDkFuBe%40%60%40l%40E&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=S6Ssaci9gQgNeLmoUJaismBVbOY="
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_4",
+          "index": 4,
+          "completedAt": "09:31",
+          "restaurant": "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持帰り専門店～",
+          "area": "大阪市西区新町3丁目",
+          "fee": 320,
+          "distanceKm": 1.77,
+          "durationStr": "16分12秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "e5494eed-1863-4cab-86bf-4be0421f4276",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "e5494eed-1863-4cab-86bf-4be0421f4276",
+              "restaurant": "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持帰り専門店～",
+              "pickupAddress": "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持帰り専門店～",
+              "dropoffAddress": "27大阪市西区新町３丁目",
+              "area": "大阪市西区新町3丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_5",
+          "index": 5,
+          "completedAt": "09:43",
+          "restaurant": "ローソンストア100 西区新町店",
+          "area": "大阪市西区靱本町2丁目",
+          "fee": 320,
+          "distanceKm": 2.22,
+          "durationStr": "21分17秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "55e3fd1e-554a-48e4-b86b-601543ac409b",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "55e3fd1e-554a-48e4-b86b-601543ac409b",
+              "restaurant": "ローソンストア100 西区新町店",
+              "pickupAddress": "ローソンストア100 西区新町店",
+              "dropoffAddress": "27大阪市西区靱本町２丁目",
+              "area": "大阪市西区靱本町2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_6",
+          "index": 6,
+          "completedAt": "09:54",
+          "restaurant": "ジューシーズ ラボラトリー 靱公園店 juicy's laboratory Utsubo Park",
+          "area": "大阪市福島区鷺洲1丁目",
+          "fee": 387,
+          "distanceKm": 3.2,
+          "durationStr": "25分7秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "7da8b8d9-1c64-4cae-85ee-e87c6cae3753",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "7da8b8d9-1c64-4cae-85ee-e87c6cae3753",
+              "restaurant": "ジューシーズ ラボラトリー 靱公園店 juicy's laboratory Utsubo Park",
+              "pickupAddress": "ジューシーズ ラボラトリー 靱公園店 juicy's laboratory Utsubo Park",
+              "dropoffAddress": "27大阪市福島区鷺洲１丁目",
+              "area": "大阪市福島区鷺洲1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_7",
+          "index": 7,
+          "completedAt": "10:34",
+          "restaurant": "マクドナルド 阪神西九条駅前店",
+          "area": "大阪市此花区梅香3丁目",
+          "fee": 328,
+          "distanceKm": 1.66,
+          "durationStr": "16分34秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "7c68c718-a9c8-46b8-83ab-85c421dae2bc",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "7c68c718-a9c8-46b8-83ab-85c421dae2bc",
+              "restaurant": "マクドナルド 阪神西九条駅前店",
+              "pickupAddress": "マクドナルド 阪神西九条駅前店",
+              "dropoffAddress": "27大阪市此花区梅香３丁目",
+              "area": "大阪市此花区梅香3丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_8",
+          "index": 8,
+          "completedAt": "10:50",
+          "restaurant": "マクドナルド 高見プラザ店",
+          "area": "大阪市此花区梅香3丁目",
+          "fee": 435,
+          "distanceKm": 2.86,
+          "durationStr": "15分20秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "9e9d8b65-87cc-426f-b724-22617398013a",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "9e9d8b65-87cc-426f-b724-22617398013a",
+              "restaurant": "マクドナルド 高見プラザ店",
+              "pickupAddress": "マクドナルド 高見プラザ店",
+              "dropoffAddress": "27大阪市此花区梅香３丁目",
+              "area": "大阪市此花区梅香3丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_9",
+          "index": 9,
+          "completedAt": "11:37",
+          "restaurant": "餃子の王将 大阪九条",
+          "area": "大阪市西区新町4丁目",
+          "fee": 320,
+          "distanceKm": 1.37,
+          "durationStr": "11分37秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "833c7e35-6d95-4f3c-8960-6226406b92a3",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "833c7e35-6d95-4f3c-8960-6226406b92a3",
+              "restaurant": "餃子の王将 大阪九条",
+              "pickupAddress": "餃子の王将 大阪九条",
+              "dropoffAddress": "27大阪市西区新町４丁目",
+              "area": "大阪市西区新町4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_10",
+          "index": 10,
+          "completedAt": "12:12",
+          "restaurant": "マクドナルド 九　条　店 McDonald's KUJO",
+          "area": "大阪市西区本田1丁目",
+          "fee": 320,
+          "distanceKm": 0.9,
+          "durationStr": "8分20秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "533f7a7e-79ed-4078-8191-44081eddd9fb",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "533f7a7e-79ed-4078-8191-44081eddd9fb",
+              "restaurant": "マクドナルド 九　条　店 McDonald's KUJO",
+              "pickupAddress": "マクドナルド 九　条　店 McDonald's KUJO",
+              "dropoffAddress": "27大阪市西区本田１丁目",
+              "area": "大阪市西区本田1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_11",
+          "index": 11,
+          "completedAt": "12:20",
+          "restaurant": "バーガーキングフレスポ阿波座店 Burger King Frespo Awaza",
+          "area": "大阪市西区本田1丁目",
+          "fee": 320,
+          "distanceKm": 1.19,
+          "durationStr": "9分20秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "fbb110a5-5035-4920-8cf0-31e357cb71ce",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "fbb110a5-5035-4920-8cf0-31e357cb71ce",
+              "restaurant": "バーガーキングフレスポ阿波座店 Burger King Frespo Awaza",
+              "pickupAddress": "バーガーキングフレスポ阿波座店 Burger King Frespo Awaza",
+              "dropoffAddress": "27大阪市西区本田１丁目",
+              "area": "大阪市西区本田1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_12",
+          "index": 12,
+          "completedAt": "12:32",
+          "restaurant": "餃子の王将 大阪九条",
+          "area": "大阪市西区京町堀3丁目/大阪市西区本田2丁目",
+          "fee": 460,
+          "distanceKm": 2.46,
+          "durationStr": "20分20秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）／2件完了/2pt",
+          "tripUuid": "d32f284c-4afe-4a2e-ae0a-cd7cde9be520",
+          "tripLegCount": 2,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "82bab6c4-e90b-412b-8131-d0c6d9b6c60f",
+              "restaurant": "",
+              "pickupAddress": "27大阪市西区九条１丁目",
+              "dropoffAddress": "27大阪市西区京町堀３丁目",
+              "area": "大阪市西区京町堀3丁目",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Aright%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.67502%2C135.47554&markers=%7Canchor%3Aright%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.68402%2C135.48604&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3A%7BmsrEca%7ByXj%40%7BBcA%7BA%5CaHoWaJJ%60A%5B%7DB%7DWcJNsQc%40yB%7BAQcAoCYv%40&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=-S8UbT0fVdTLpmKoON3l9lE12dY="
+            },
+            {
+              "legIndex": 1,
+              "legUuid": "dd60fb72-a5e7-4e59-9ec6-85397b6241aa",
+              "restaurant": "",
+              "pickupAddress": "27大阪市西区九条２丁目",
+              "dropoffAddress": "27大阪市西区本田２丁目",
+              "area": "大阪市西区本田2丁目",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Aright%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.6755%2C135.47409&markers=%7Canchor%3Aright%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.67888%2C135.47945&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3A%7BpsrE_xzyXjC_LcA%7BAl%40mG_XuJDlA&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=s9_2kRGME_HBDe-_B7wUjuD7wcs="
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_13",
+          "index": 13,
+          "completedAt": "13:28",
+          "restaurant": "サーティワン アイスクリーム 九条ナインモール店 31 Ice Cream Kujoh Ninemall",
+          "area": "大阪市西区新町3丁目",
+          "fee": 320,
+          "distanceKm": 1.88,
+          "durationStr": "17分26秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "cd7e2495-1786-42f3-b9de-b044d688602f",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "cd7e2495-1786-42f3-b9de-b044d688602f",
+              "restaurant": "サーティワン アイスクリーム 九条ナインモール店 31 Ice Cream Kujoh Ninemall",
+              "pickupAddress": "サーティワン アイスクリーム 九条ナインモール店 31 Ice Cream Kujoh Ninemall",
+              "dropoffAddress": "27大阪市西区新町３丁目",
+              "area": "大阪市西区新町3丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1010_14",
+          "index": 14,
+          "completedAt": "13:49",
+          "restaurant": "ローソン 新町四丁目",
+          "area": "大阪市西区新町3丁目",
+          "fee": 320,
+          "distanceKm": 0.56,
+          "durationStr": "6分52秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "66f0a667-b868-4ce7-913f-daf409c22ad7",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "66f0a667-b868-4ce7-913f-daf409c22ad7",
+              "restaurant": "ローソン 新町四丁目",
+              "pickupAddress": "ローソン 新町四丁目",
+              "dropoffAddress": "27大阪市西区新町３丁目",
+              "area": "大阪市西区新町3丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_1010_1",
+          "time": "13:47",
+          "title": "クエスト",
+          "amount": 1000,
+          "isDuplicateIgnored": false,
+          "questName": "6回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥1,000」「6 回乗車クエスト ¥1,000」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        }
+      ],
+      "sales": {
+        "delivery": 4995,
+        "quest": 1000,
+        "adjustment": 0,
+        "other": 0,
+        "total": 5995
+      },
+      "expenses": [],
+      "officialImport": {
+        "source": "official-import-v1",
+        "importedAt": "2026-10-10T05:47:27.222Z"
+      }
     }
   },
   "targetQuests": [
