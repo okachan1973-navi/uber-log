@@ -697,7 +697,8 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
     check([...a19, ...a24].filter(x => x.split(':')[1] === '🏆').every(x => x.endsWith(':attr-bonus attr-quest-trophy')), '🏆 は従来の金色系（attr-bonus）を使用');
     check(!r.labels.includes('賞') && !Object.values(r.attrs).some(v => v.some(x => x.split(':')[1] === '賞')), '日別属性から「賞」を廃止（どの日にも出ない）');
     const withTrophy = Object.entries(r.attrs).filter(([, v]) => v.some(x => x.split(':')[1] === '🏆')).map(([k]) => k).sort();
-    check(withTrophy.join() === '2026-09-19,2026-09-24,2026-09-27', `🏆 は特別ボーナス系のある日だけ（${withTrophy.join(', ')}）`);
+    // 2026-10-11: 70回乗車クエスト ¥8,840（questType: special）
+    check(withTrophy.join() === '2026-09-19,2026-09-24,2026-09-27,2026-10-11', `🏆 は特別ボーナス系のある日だけ（${withTrophy.join(', ')}）`);
     check(r.two === 1 && r.none === 0, '特別クエストが複数でも 🏆 は1個・通常クエストだけの日は表示しない');
     check(r.bothN === 1 && r.bothG === 5000 && r.bothSq === 8890, '新規保証と特別クエストが同じ日でも 🏆 は1個（内部は guaranteeBonus / specialQuestSales で別管理）');
     const order = ['bike_share', 'adjustment', 'special_bonus', 'tip'];
