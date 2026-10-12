@@ -320,7 +320,7 @@
           q.duplicateOfSeq = keep.seq;
         });
       } else if (decision === 'count_all') {
-        list.forEach(q => { q.counted = true; q.reason = 'ユーザー確認済み: 別報酬として計上'; });
+        list.forEach(q => { q.counted = true; q.reason = 'ユーザー確認済み: 別報酬として計上'; q.decision = 'count_all'; });
       } else {
         list.forEach(q => { q.reason = '重複候補（要確認）'; });
         candidates.push({ key: shortKey, items: list.map(q => ({ seq: q.seq, title: q.title, category: q.category, time: q.time, amount: q.amount })) });

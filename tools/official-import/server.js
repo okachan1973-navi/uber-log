@@ -14,6 +14,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { ImportJob } = require('./lib/import-job.js');
+const browserFetcher = require('./lib/browser-fetcher.js');
 
 const PORT = Number(process.env.UBER_LOG_PORT || 8088);
 const HOST = '127.0.0.1';
@@ -119,7 +120,56 @@ async function handleApi(req, res, url) {
     if (!job) return send(res, 404, { error: 'not found' });
     return send(res, 200, job.view());
   }
-  return send(res, 404, { error: 'not found' });
+  if (req.method === 'GET' && url.pathname === '/api/browser/status') {
+    const exe = browserFetcher.findBrowserExecutable();
+    let auth = { ok: false, running: false, message: '未起動' };
+    if (exe) {
+      try {
+        auth = await browserFetcher.checkAuthStatus(ROOT, {
+          onDiagnostic: data => log(`browser auth ${JSON.stringify(data)}`)
+        });
+      } catch (e) {
+        auth = { ok: false, running: false, message: e.message };
+      }
+    } else {
+      auth = { ok: false, running: false, message: 'ブラウザ（Edge/Chrome）が見つかりません' };
+    }
+    return send(res, 200, {
+      browserAvailable: !!exe,
+      executablePath: exe,
+      status: auth
+    });
+  }
+  if (req.method === 'POST' && url.pathname === '/api/browser/launch') {
+    const exe = browserFetcher.findBrowserExecutable();
+    if (!exe) {
+      return send(res, 400, {
+        ok: false,
+        code: 'browser_not_found',
+        error: 'Microsoft Edge または Google Chrome が見つかりません。'
+      });
+    }
+    try {
+      const result = await browserFetcher.launchOrConnectBrowser(ROOT);
+      const isVisible = result.windowInfo ? !!result.windowInfo.isVisible : true;
+      return send(res, 200, {
+        ok: true,
+        attached: !!result.attached,
+        visible: isVisible,
+        windowInfo: result.windowInfo,
+        message: result.attached
+          ? 'Phase 1専用Edgeに接続しました。Uber画面（別ウィンドウ）をご確認ください。'
+          : '専用Edgeを起動しました。Uber画面でログインしてください。'
+      });
+    } catch (e) {
+      return send(res, 500, {
+        ok: false,
+        code: e.code || 'launch_failed',
+        error: e.message
+      });
+    }
+  }
+  return send(res, 404, { error: 'route not found' });
 }
 
 function serveStatic(req, res, url) {

@@ -19,5 +19,7 @@ Thumbs.db
 # UBER_LOG 公式取込v1: 生データ（Uber一覧・公式スクショ）と中間データは個人情報を含み得るためコミットしない
 tools/official-import/inbox/
 tools/official-import/staging/
+tools/official-import/logs/
+tools/official-import/.browser-data/
 __pycache__/
-.claude/settings.local.jsontools/official-import/logs/
+.claude/settings.local.json

@@ -1036,6 +1036,14 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
     if (r.status !== 0) console.log(r.stdout, r.stderr);
     check(r.status === 0, '目標クエスト全テスト（作成・編集・削除・進捗計算・予定報酬分離・クラウド同期）PASS');
   }
+
+  // ==========================================================
+  section('16. 構造化自動取得（Phase 1: 単配達・ダブル・内訳一致・順序捏造防止）');
+  {
+    const r = spawnSync(process.execPath, [path.join(__dirname, 'structured-tests.js')], { encoding: 'utf8' });
+    if (r.status !== 0) console.log(r.stdout, r.stderr);
+    check(r.status === 0, '構造化自動取得 全テスト（単配達・ダブル・チップ・内訳一致・重複防止・安全停止）PASS');
+  }
 } catch (e) {
   failed++;
   console.log(`  ❌ 例外: ${e.stack}`);

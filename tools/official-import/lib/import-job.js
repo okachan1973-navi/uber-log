@@ -15,6 +15,7 @@ const crypto = require('crypto');
 const { spawn } = require('child_process');
 const { readScreens } = require('./screen-reader.js');
 const { updateHandoff } = require('./handoff.js');
+const browserFetcher = require('./browser-fetcher.js');
 
 const STEPS = [
   ['save', '保存中'],
@@ -75,6 +76,7 @@ class ImportJob {
   view() {
     return {
       id: this.id, date: this.date, state: this.state, step: this.step, message: this.message,
+      sourceType: this.sourceType || 'screenshots',
       steps: STEPS.map(([key, label]) => ({ key, label })),
       problems: this.problems, result: this.result, log: this.log.slice(-40), startedAt: this.startedAt
     };
@@ -144,27 +146,82 @@ class ImportJob {
 
     // 1. 保存
     this.setStep('save');
-    if (!String(payload.activity || '').trim()) throw new Error('Uberアクティビティ一覧が空です');
-    fs.mkdirSync(shotDir, { recursive: true });
-    fs.writeFileSync(path.join(inbox, 'activity.txt'), String(payload.activity).replace(/\r?\n/g, '\r\n'), 'utf8');
-    const keep = new Set((payload.keep || []).map(safeName).filter(Boolean));
-    const incoming = [];
-    for (const f of payload.files || []) {
-      const name = safeName(f.name);
-      if (!name) throw new Error(`画像として扱えないファイル名です: ${f.name}`);
-      incoming.push({ name, buf: Buffer.from(String(f.data || ''), 'base64') });
+    const isBrowser = !!payload.useBrowser;
+    const isStructuredInput = !!payload.structured;
+    this.sourceType = isBrowser || isStructuredInput ? 'structured' : 'screenshots';
+
+    if (isBrowser) {
+      let structuredData;
+      const structuredFile = path.join(inbox, 'structured.json');
+      if ((payload.confirmed || payload.decisions) && fs.existsSync(structuredFile)) {
+        this.message = '保存済みの構造化データを読み込んでいます...';
+        try {
+          structuredData = JSON.parse(fs.readFileSync(structuredFile, 'utf8'));
+          this.log.push(`読込: 保存済み構造化データ (${(structuredData.trips || []).length} trips) を使用して反映します`);
+        } catch (e) {
+          structuredData = null;
+        }
+      }
+      if (!structuredData) {
+        this.message = 'Uber Web から実績データを自動取得中...';
+        try {
+          structuredData = await browserFetcher.fetchUberDataForDate(this.root, date, {}, msg => {
+            this.message = msg;
+            this.log.push(`[${new Date().toLocaleTimeString('ja-JP')}] ${msg}`);
+          });
+        } catch (err) {
+          if (/ログイン/i.test(err.message)) {
+            this.needsReview([{
+              type: 'auth',
+              title: 'Uberへのログインが必要です',
+              detail: 'ブラウザ画面で手動ログイン（パスキー・2段階認証含む）を完了してから、もう一度「自動取得」を押してください。'
+            }]);
+            return;
+          }
+          if (fs.existsSync(structuredFile)) {
+            try {
+              structuredData = JSON.parse(fs.readFileSync(structuredFile, 'utf8'));
+              this.log.push(`自動取得エラー (${err.message}) のため保存済み構造化データを使用します`);
+            } catch (e) {
+              throw err;
+            }
+          } else {
+            throw err;
+          }
+        }
+      }
+      browserFetcher.saveStructuredInbox(this.root, date, structuredData);
+      this.log.push(`保存: Uber Web から構造化データを自動取得 (${(structuredData.trips || []).length} trips)`);
+    } else if (isStructuredInput) {
+      browserFetcher.saveStructuredInbox(this.root, date, payload.structured);
+      this.log.push(`保存: 構造化データを保存 (${(payload.structured.trips || []).length} trips)`);
+    } else {
+      if (!String(payload.activity || '').trim()) throw new Error('Uberアクティビティ一覧が空です');
+      fs.mkdirSync(shotDir, { recursive: true });
+      fs.writeFileSync(path.join(inbox, 'activity.txt'), String(payload.activity).replace(/\r?\n/g, '\r\n'), 'utf8');
+      const keep = new Set((payload.keep || []).map(safeName).filter(Boolean));
+      const incoming = [];
+      for (const f of payload.files || []) {
+        const name = safeName(f.name);
+        if (!name) throw new Error(`画像として扱えないファイル名です: ${f.name}`);
+        incoming.push({ name, buf: Buffer.from(String(f.data || ''), 'base64') });
+      }
+      const wanted = new Set([...keep, ...incoming.map(f => f.name)]);
+      const leftovers = fs.readdirSync(shotDir).filter(f => IMAGE_EXT.test(f) && !wanted.has(f));
+      if (leftovers.length) {
+        // 画面で外した画像は削除せず退避
+        const prev = path.join(inbox, '_previous', new Date().toISOString().replace(/[:.]/g, '-'));
+        fs.mkdirSync(prev, { recursive: true });
+        leftovers.forEach(f => fs.renameSync(path.join(shotDir, f), path.join(prev, f)));
+      }
+      incoming.forEach(f => fs.writeFileSync(path.join(shotDir, f.name), f.buf));
+      const missingKeep = [...keep].filter(f => !fs.existsSync(path.join(shotDir, f)));
+      if (missingKeep.length) throw new Error(`保存済みの画像が見つかりません: ${missingKeep.join(', ')}`);
+      const files = fs.readdirSync(shotDir).filter(f => IMAGE_EXT.test(f)).sort((a, b) => a.localeCompare(b, 'ja'));
+      if (!files.length) throw new Error('公式スクリーンショットが0枚です');
+      this.log.push(`保存: activity.txt / スクショ ${files.length}枚（新規・更新 ${incoming.length}枚${leftovers.length ? ` / 外した ${leftovers.length}枚は _previous へ退避` : ''}）`);
     }
-    const wanted = new Set([...keep, ...incoming.map(f => f.name)]);
-    const leftovers = fs.readdirSync(shotDir).filter(f => IMAGE_EXT.test(f) && !wanted.has(f));
-    if (leftovers.length) {
-      // 画面で外した画像は削除せず退避
-      const prev = path.join(inbox, '_previous', new Date().toISOString().replace(/[:.]/g, '-'));
-      fs.mkdirSync(prev, { recursive: true });
-      leftovers.forEach(f => fs.renameSync(path.join(shotDir, f), path.join(prev, f)));
-    }
-    incoming.forEach(f => fs.writeFileSync(path.join(shotDir, f.name), f.buf));
-    const missingKeep = [...keep].filter(f => !fs.existsSync(path.join(shotDir, f)));
-    if (missingKeep.length) throw new Error(`保存済みの画像が見つかりません: ${missingKeep.join(', ')}`);
+
     if (payload.decisions) {
       const decFile = path.join(inbox, 'decisions.json');
       const cur = fs.existsSync(decFile) ? JSON.parse(fs.readFileSync(decFile, 'utf8')) : {};
@@ -177,9 +234,6 @@ class ImportJob {
       }
       fs.writeFileSync(decFile, JSON.stringify(next, null, 2), 'utf8');
     }
-    const files = fs.readdirSync(shotDir).filter(f => IMAGE_EXT.test(f)).sort((a, b) => a.localeCompare(b, 'ja'));
-    if (!files.length) throw new Error('公式スクリーンショットが0枚です');
-    this.log.push(`保存: activity.txt / スクショ ${files.length}枚（新規・更新 ${incoming.length}枚${leftovers.length ? ` / 外した ${leftovers.length}枚は _previous へ退避` : ''}）`);
 
     // 2. 一覧解析（既存 prepare）
     this.setStep('parse');
@@ -189,34 +243,38 @@ class ImportJob {
       return;
     }
 
-    // 3. スクショ確認（未読・内容が変わった画像だけ Claude Code で読む）
+    // 3. スクショ確認（未読・内容が変わった画像だけ Claude Code で読む。構造化データ取込時はスキップ）
     this.setStep('screens');
     const doc = JSON.parse(fs.readFileSync(screensFile, 'utf8'));
-    const pending = [];
-    doc.screenshots = doc.screenshots.map(s => {
-      const hash = sha256(fs.readFileSync(path.join(shotDir, s.file)));
-      let entry = s;
-      if (s._sha256 && s._sha256 !== hash) {
-        entry = { file: s.file, kind: 'delivery', ...Object.fromEntries(SCREEN_FIELDS.map(k => [k, 'UNKNOWN'])), baseFee: null, tip: null, note: '' };
-      }
-      entry._sha256 = hash;
-      if ((entry.kind || 'delivery') === 'delivery' && SCREEN_FIELDS.some(k => isUnknown(entry[k]))) pending.push(entry.file);
-      return entry;
-    });
-    if (pending.length) {
-      const read = await readScreens(this.root, date, pending, msg => { this.message = msg; });
-      doc.screenshots = doc.screenshots.map(s => {
-        const r = read.find(x => x.file === s.file);
-        if (!r) return s;
-        const merged = { ...s, ...r, file: s.file, _sha256: s._sha256, readBy: 'claude-code' };
-        if (merged.kind !== 'delivery') { merged.baseFee = null; merged.tip = null; }
-        return merged;
-      });
-      fs.writeFileSync(screensFile, JSON.stringify(doc, null, 2) + '\n', 'utf8');
+    if (doc.sourceType === 'structured') {
+      this.log.push('構造化データ取込: スクショ読取スキップ（公式JSONを使用）');
     } else {
-      fs.writeFileSync(screensFile, JSON.stringify(doc, null, 2) + '\n', 'utf8');
+      const pending = [];
+      doc.screenshots = doc.screenshots.map(s => {
+        const hash = sha256(fs.readFileSync(path.join(shotDir, s.file)));
+        let entry = s;
+        if (s._sha256 && s._sha256 !== hash) {
+          entry = { file: s.file, kind: 'delivery', ...Object.fromEntries(SCREEN_FIELDS.map(k => [k, 'UNKNOWN'])), baseFee: null, tip: null, note: '' };
+        }
+        entry._sha256 = hash;
+        if ((entry.kind || 'delivery') === 'delivery' && SCREEN_FIELDS.some(k => isUnknown(entry[k]))) pending.push(entry.file);
+        return entry;
+      });
+      if (pending.length) {
+        const read = await readScreens(this.root, date, pending, msg => { this.message = msg; });
+        doc.screenshots = doc.screenshots.map(s => {
+          const r = read.find(x => x.file === s.file);
+          if (!r) return s;
+          const merged = { ...s, ...r, file: s.file, _sha256: s._sha256, readBy: 'claude-code' };
+          if (merged.kind !== 'delivery') { merged.baseFee = null; merged.tip = null; }
+          return merged;
+        });
+        fs.writeFileSync(screensFile, JSON.stringify(doc, null, 2) + '\n', 'utf8');
+      } else {
+        fs.writeFileSync(screensFile, JSON.stringify(doc, null, 2) + '\n', 'utf8');
+      }
+      this.log.push(`スクショ確認: ${pending.length ? `${pending.length}枚を読取` : '全枚数 読取済み'}`);
     }
-    this.log.push(`スクショ確認: ${pending.length ? `${pending.length}枚を読取` : '全枚数 読取済み'}`);
 
     // 4. MAP作成・検証（既存 validate）
     this.setStep('validate');
@@ -224,6 +282,23 @@ class ImportJob {
     if (v.status !== 'PASS') {
       this.needsReview(this.explain(v, doc));
       this.result = { summary: v.summary, status: v.status };
+      return;
+    }
+
+    // 初回構造化取得時は自動applyせず、プレビュー確認のため停止する（誤反映防止）
+    if (isBrowser && !payload.confirmed) {
+      this.needsReview([{
+        type: 'preview',
+        title: `【プレビュー】${date} Uber Web構造化取得・検証完了（未反映）`,
+        detail: `全 ${v.summary.trips} 件のトリップ（配達件数: ${v.summary.deliveriesCount}）を正常に取得・検証しました。本体（store.js）への確定反映は保留しています。下の内訳を確認してください。`,
+        summary: v.summary,
+        items: (v.deliveries || []).map(d => ({
+          time: d.time,
+          amount: d.amount,
+          reason: `${d.restaurant || ''} / ${d.area || ''} / ${d.distanceKm || 0}km / ${d.durationStr || ''}${d.tripLegCount > 1 ? ` 【${d.tripLegCount}件配達】` : ''}${d.tip ? ` (チップ: ¥${d.tip})` : ''}`
+        }))
+      }]);
+      this.result = { date, summary: v.summary, status: 'PASS', preview: true, deliveries: v.deliveries, warnings: v.warnings };
       return;
     }
 
@@ -293,29 +368,49 @@ class ImportJob {
   // 検証結果を画面向けの「確認が必要です」に変換
   explain(v, doc) {
     const problems = [];
+    const isStructured = doc && doc.sourceType === 'structured';
     const mapFailed = (v.deliveries || []).filter(d => d.map && d.map.status === 'failed');
     if (mapFailed.length) {
-      problems.push({
-        type: 'map',
-        title: `${mapFailed.length}件のMAP画像を確認できません`,
-        detail: '地図全体が写っていることを確認できなかったため、推測で切り抜かずに止めています（理由は各行）。' +
-          '地図の上下左右に白い余白が入るように撮り直したスクショを追加してください（古い画像は × で外す）。MAPなしで良い場合は「MAPなしで取り込む」。\n' +
-          '※ 画面の表示倍率・スクショの横幅が違うだけなら自動で検出されます（縦横比 420:233）。',
-        items: mapFailed.map(d => ({ file: d.file, time: d.time, amount: d.amount, reason: d.map && d.map.reason })),
-        actions: ['replace', 'mapMissingOk']
-      });
+      if (isStructured) {
+        problems.push({
+          type: 'map',
+          title: `${mapFailed.length}件のMAP情報を取得できません`,
+          detail: 'Uber Web からルート地図を取得できませんでした。MAPなしで取り込む場合は「MAPなしで取り込む」を選択してください。',
+          items: mapFailed.map(d => ({ file: d.file, time: d.time, amount: d.amount, reason: d.map && d.map.reason })),
+          actions: ['mapMissingOk']
+        });
+      } else {
+        problems.push({
+          type: 'map',
+          title: `${mapFailed.length}件のMAP画像を確認できません`,
+          detail: '地図全体が写っていることを確認できなかったため、推測で切り抜かずに止めています（理由は各行）。' +
+            '地図の上下左右に白い余白が入るように撮り直したスクショを追加してください（古い画像は × で外す）。MAPなしで良い場合は「MAPなしで取り込む」。\n' +
+            '※ 画面の表示倍率・スクショの横幅が違うだけなら自動で検出されます（縦横比 420:233）。',
+          items: mapFailed.map(d => ({ file: d.file, time: d.time, amount: d.amount, reason: d.map && d.map.reason })),
+          actions: ['replace', 'mapMissingOk']
+        });
+      }
     }
     const unreadable = (doc.screenshots || []).filter(s => (s.kind || 'delivery') === 'delivery' && SCREEN_FIELDS.some(k => isUnknown(s[k])));
     if (unreadable.length) {
-      problems.push({
-        type: 'unreadable',
-        title: `${unreadable.length}枚のスクショで読み取れない項目があります`,
-        detail: 'Delivery詳細の画面全体（見出し・時間・距離・店舗・配達先・ポイント）が写ったスクショに差し替えてください。',
-        items: unreadable.map(s => ({ file: s.file, fields: SCREEN_FIELDS.filter(k => isUnknown(s[k])).join('・') }))
-      });
+      if (isStructured) {
+        problems.push({
+          type: 'unreadable',
+          title: `${unreadable.length}件のトリップ詳細で取得できない項目があります`,
+          detail: 'Uber Web の構造化データを確認してください。',
+          items: unreadable.map(s => ({ file: s.file, fields: SCREEN_FIELDS.filter(k => isUnknown(s[k])).join('・') }))
+        });
+      } else {
+        problems.push({
+          type: 'unreadable',
+          title: `${unreadable.length}枚のスクショで読み取れない項目があります`,
+          detail: 'Delivery詳細の画面全体（見出し・時間・距離・店舗・配達先・ポイント）が写ったスクショに差し替えてください。',
+          items: unreadable.map(s => ({ file: s.file, fields: SCREEN_FIELDS.filter(k => isUnknown(s[k])).join('・') }))
+        });
+      }
     }
     const others = (doc.screenshots || []).filter(s => s.kind === 'other');
-    if (others.length) {
+    if (others.length && !isStructured) {
       problems.push({ type: 'other', title: 'Delivery詳細ではない画像が含まれています', detail: '× で外してから、もう一度「取り込み実行」を押してください。', items: others.map(s => ({ file: s.file })) });
     }
     const dups = v.questDuplicateCandidates || [];
@@ -329,7 +424,7 @@ class ImportJob {
         actions: ['count_once', 'count_all']
       });
     }
-    (v.checks || []).filter(c => !c.ok && !/^MAP/.test(c.name) && !(dups.length && /^クエスト重複/.test(c.name)) && !(unreadable.length + others.length && /スクショ全件読取済み/.test(c.name)))
+    (v.checks || []).filter(c => !c.ok && !/^MAP/.test(c.name) && !(dups.length && /^クエスト重複/.test(c.name)) && !(unreadable.length + others.length && /スクショ全件読取済み|構造化トリップ詳細読込/.test(c.name)))
       .forEach(c => problems.push({ type: 'check', title: c.name, detail: c.detail }));
     if (!problems.length) problems.push({ type: 'check', title: '検証で止まりました', detail: (v.errors || []).join('\n') });
     return problems;

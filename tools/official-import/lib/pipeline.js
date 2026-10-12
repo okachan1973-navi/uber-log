@@ -19,6 +19,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawnSync } = require('child_process');
 const parser = require('./activity-parser.js');
+const structuredNormalizer = require('./structured-normalizer.js');
 
 const IMPORTER = 'official-import-v1';
 const UNKNOWN = 'UNKNOWN';
@@ -38,6 +39,7 @@ function getPaths(root, date, opts = {}) {
     inboxDir,
     activityFile: path.join(inboxDir, 'activity.txt'),
     screenshotDir: opts.screenshotDir || path.join(inboxDir, 'screenshots'),
+    structuredFile: path.join(inboxDir, 'structured.json'),
     decisionsFile: path.join(inboxDir, 'decisions.json'),
     stagingDir,
     screensFile: path.join(stagingDir, `${date}.screens.json`),
@@ -223,8 +225,16 @@ function screenTemplate(file) {
 function prepare(root, date, opts = {}) {
   assertDate(date);
   const p = getPaths(root, date, opts);
+  const hasStructured = fs.existsSync(p.structuredFile);
   if (!fs.existsSync(p.activityFile)) {
-    throw new Error(`activity.txt がありません: ${p.activityFile}\n取込補助画面（tools/official-import/index.html）で保存してください。`);
+    if (hasStructured) {
+      const structData = readJson(p.structuredFile, {});
+      const actTxt = structuredNormalizer.buildActivityTextFromStructured(structData.activity || structData, date);
+      fs.mkdirSync(p.inboxDir, { recursive: true });
+      fs.writeFileSync(p.activityFile, actTxt, 'utf8');
+    } else {
+      throw new Error(`activity.txt がありません: ${p.activityFile}\n取込補助画面（tools/official-import/index.html）で保存してください。`);
+    }
   }
   const files = listScreenshots(p.screenshotDir);
   const parsed = parser.parseActivityText(fs.readFileSync(p.activityFile, 'utf8'), { defaultYear: date.slice(0, 4) });
@@ -232,20 +242,71 @@ function prepare(root, date, opts = {}) {
 
   const existing = readJson(p.screensFile, null);
   const byFile = new Map((existing && existing.screenshots || []).map(s => [s.file, s]));
-  const screens = {
-    date,
-    importer: IMPORTER,
-    howTo: [
-      '各スクショを実際に見て、表示どおりの値を記入する（推測・逆算・補完は禁止）。読めない項目は "UNKNOWN" のまま残す。',
-      'date: 見出しの日付（例 2026-09-22） / time: 見出しの時刻を24時間表記（午後12時53分 → 12:53）',
-      'amount: 見出しの金額（最終売上。チップ込み） / baseFee・tip: 売り上げ欄にチップがある場合のみ数値、無ければ null',
-      'durationStr: 「時間」欄（例 52分31秒） / distanceKm: 「距離」欄の数値（例 6.81） / points: 「Nポイントを獲得」のN',
-      'restaurant: 店舗名（表示どおり） / area: 配達先（丁目まで。先頭の都道府県コード27等は除く。番地・部屋番号・氏名は絶対に書かない）',
-      'kind: Delivery詳細なら "delivery"。1日の合計画面なら "summary"（daySummary に記入）。無関係な画像なら "other"（検証で止まる）'
-    ],
-    screenshots: files.map(f => byFile.get(f) || screenTemplate(f)),
-    daySummary: (existing && existing.daySummary) || null
-  };
+
+  let screens;
+  if (hasStructured && files.length === 0) {
+    const structData = readJson(p.structuredFile, {});
+    const rawTrips = Array.isArray(structData.trips) ? structData.trips : [];
+    const seenUuids = new Set();
+    const uniqueTrips = [];
+    rawTrips.forEach(raw => {
+      const meta = raw.data?.metadata || raw.metadata || {};
+      const status = String(meta.statusType || raw.statusType || '').toUpperCase();
+      if (status === 'CANCELED' || status === 'CANCELLED' || raw.title === 'キャンセル済み') return;
+      const u = (raw.tripUuid || raw.uuid || meta.uuid || '').toLowerCase();
+      if (u && seenUuids.has(u)) return;
+      if (u) seenUuids.add(u);
+      uniqueTrips.push(raw);
+    });
+    const structScreens = uniqueTrips.map((raw, idx) => {
+      const { trip } = structuredNormalizer.normalizeTripDetail(raw, date);
+      if (!trip || trip.isCanceled || trip.statusType === 'CANCELED') return null;
+      const file = `structured_trip_${idx + 1}_${(trip ? trip.tripUuid : 'unknown').slice(0, 8)}.json`;
+      return {
+        file,
+        kind: 'delivery',
+        date: (trip && trip.date) || date,
+        time: (trip && trip.time) || UNKNOWN,
+        amount: (trip && trip.amount) || UNKNOWN,
+        baseFee: (trip && trip.tip !== null) ? trip.baseFee : null,
+        tip: (trip && trip.tip !== null) ? trip.tip : null,
+        durationStr: (trip && trip.durationStr) || UNKNOWN,
+        distanceKm: trip ? trip.distanceKm : UNKNOWN,
+        restaurant: (trip && trip.restaurant) || UNKNOWN,
+        area: (trip && trip.area) || UNKNOWN,
+        points: (trip && trip.points) || UNKNOWN,
+        note: trip && trip.tripLegCount > 1 ? `${trip.tripLegCount}件完了/${trip.tripLegCount}pt` : '',
+        tripUuid: trip ? trip.tripUuid : null,
+        tripLegCount: trip ? trip.tripLegCount : 1,
+        legs: trip ? trip.legs : [],
+        sequence: trip ? trip.sequence : null,
+        sourceType: 'structured'
+      };
+    }).filter(Boolean);
+    screens = {
+      date,
+      importer: IMPORTER,
+      sourceType: 'structured',
+      structuredFile: path.relative(root, p.structuredFile),
+      screenshots: structScreens,
+      daySummary: (existing && existing.daySummary) || null
+    };
+  } else {
+    screens = {
+      date,
+      importer: IMPORTER,
+      howTo: [
+        '各スクショを実際に見て、表示どおりの値を記入する（推測・逆算・補完は禁止）。読めない項目は "UNKNOWN" のまま残す。',
+        'date: 見出しの日付（例 2026-09-22） / time: 見出しの時刻を24時間表記（午後12時53分 → 12:53）',
+        'amount: 見出しの金額（最終売上。チップ込み） / baseFee・tip: 売り上げ欄にチップがある場合のみ数値、無ければ null',
+        'durationStr: 「時間」欄（例 52分31秒） / distanceKm: 「距離」欄の数値（例 6.81） / points: 「Nポイントを獲得」のN',
+        'restaurant: 店舗名（表示どおり） / area: 配達先（丁目まで。先頭の都道府県コード27等は除く。番地・部屋番号・氏名は絶対に書かない）',
+        'kind: Delivery詳細なら "delivery"。1日の合計画面なら "summary"（daySummary に記入）。無関係な画像なら "other"（検証で止まる）'
+      ],
+      screenshots: files.map(f => byFile.get(f) || screenTemplate(f)),
+      daySummary: (existing && existing.daySummary) || null
+    };
+  }
   const removed = [...byFile.keys()].filter(f => !files.includes(f));
   writeJson(p.screensFile, screens);
 
@@ -266,11 +327,8 @@ function normalizeArea(area) {
   return a;
 }
 
-// 番地・号・部屋番号・郵便番号など、丁目より細かい情報が含まれていないか
 function privacyIssue(area) {
-  if (/丁目.*\d/.test(area)) return '丁目より後ろに数字（番地等）が含まれています';
-  if (/(\d+\s*番地?|\d+\s*号|号室|〒|\d+-\d+|\d+F\b|階)/i.test(area)) return '番地・部屋番号などが含まれています';
-  return null;
+  return structuredNormalizer.privacyIssue(area);
 }
 
 function normalizeScreen(s, date) {
@@ -297,7 +355,7 @@ function normalizeScreen(s, date) {
   out.tip = isUnknown(s.tip) ? null : Number(s.tip);
 
   if (!out.date) errors.push(`date を解釈できません: ${s.date}`);
-  else if (out.date !== date) errors.push(`取込日と異なる日付のスクショ: ${out.date}`);
+  else if (out.date !== date) errors.push(`取込日と異なる日付の${s.sourceType === 'structured' ? 'データ' : 'スクショ'}: ${out.date}`);
   if (!out.time) errors.push(`time を解釈できません: ${s.time}`);
   if (!Number.isInteger(out.amount) || out.amount <= 0) errors.push(`amount が不正: ${s.amount}`);
   if (!out.durationSeconds || out.durationSeconds <= 0) errors.push(`durationStr が不正: ${s.durationStr}`);
@@ -391,28 +449,35 @@ function buildStaging(root, date, opts = {}) {
   check(dupCount === 0 ? 'クエスト重複候補なし' : `クエスト重複候補あり（${dupCount}件・同じ報酬か別の報酬かの確認が必要）`, dupCount === 0,
     questResult.duplicateCandidates.map(c => `${c.key.replace('|', ' ¥')}: ${c.items.map(i => `「${(i.category ? i.category + ' ' : '') + i.title}」`).join(' と ')}（同じ報酬の2種類の表示なら count_once（1回だけ計上）、別々に受け取った報酬なら count_all（両方計上）を decisions.json の questDuplicates で指定）`).join('\n'));
 
-  // 2. スクショ
+  // 2. 詳細（スクショ または 構造化データ）
   const files = listScreenshots(p.screenshotDir);
   const screensDoc = readJson(p.screensFile, null);
   if (!screensDoc) {
-    check('スクショ読取結果', false, `${p.screensFile} がありません（prepare を実行し、スクショを読んで記入してください）`);
+    check('詳細読取結果', false, `${p.screensFile} がありません（prepare を実行してください）`);
     return finish();
   }
+  const isStructured = screensDoc.sourceType === 'structured';
   const screenErrors = [];
   const screens = [];
-  const listed = new Set((screensDoc.screenshots || []).map(s => s.file));
-  files.filter(f => !listed.has(f)).forEach(f => screenErrors.push(`${f}: 読取結果が未記入（prepare を再実行）`));
+  if (!isStructured) {
+    const listed = new Set((screensDoc.screenshots || []).map(s => s.file));
+    files.filter(f => !listed.has(f)).forEach(f => screenErrors.push(`${f}: 読取結果が未記入（prepare を再実行）`));
+  }
   (screensDoc.screenshots || []).forEach(s => {
-    if (!files.includes(s.file)) {
+    if (!isStructured && !files.includes(s.file)) {
       screenErrors.push(`${s.file}: screenshots フォルダに画像がありません`);
       return;
     }
     const { screen, errors } = normalizeScreen(s, date);
+    if (s.legs) screen.legs = s.legs;
+    if (s.tripLegCount) screen.tripLegCount = s.tripLegCount;
+    if (s.sequence !== undefined) screen.sequence = s.sequence;
+    if (s.tripUuid) screen.tripUuid = s.tripUuid;
     errors.forEach(e => screenErrors.push(`${s.file}: ${e}`));
     if (screen.kind === 'other') screenErrors.push(`${s.file}: Delivery詳細ではない画像（kind: other）。取り除くか確認してください`);
     screens.push(screen);
   });
-  check('スクショ全件読取済み（UNKNOWNなし・値が正常）', screenErrors.length === 0, screenErrors.join('\n'));
+  check(isStructured ? '構造化トリップ詳細読込（値が正常）' : 'スクショ全件読取済み（UNKNOWNなし・値が正常）', screenErrors.length === 0, screenErrors.join('\n'));
 
   // 同じDeliveryを2回撮ったスクショ（撮り直し等）は1枚として扱う。
   // 見出しの時刻・金額だけでなく、時間・距離・ポイント・店舗・配達先まで全て一致するものだけを同一とみなす
@@ -451,25 +516,25 @@ function buildStaging(root, date, opts = {}) {
   groups.forEach((g, k) => {
     const [time, amount] = k.split('|');
     if (g.acts.length !== g.screens.length) {
-      if (!g.screens.length) matchErrors.push(`一覧 ${time} ${yen(+amount)} に一致するスクショがありません`);
-      else if (!g.acts.length) matchErrors.push(`スクショ ${g.screens.map(s => s.file).join(', ')}（${time} ${yen(+amount)}）に一致する一覧Deliveryがありません`);
-      else matchErrors.push(`${time} ${yen(+amount)}: 一覧 ${g.acts.length} 件に対しスクショ ${g.screens.length} 件（件数不一致）`);
+      if (!g.screens.length) matchErrors.push(isStructured ? `一覧 ${time} ${yen(+amount)} に一致するトリップ詳細がありません` : `一覧 ${time} ${yen(+amount)} に一致するスクショがありません`);
+      else if (!g.acts.length) matchErrors.push(isStructured ? `トリップ詳細 ${g.screens.map(s => s.file).join(', ')}（${time} ${yen(+amount)}）に一致する一覧Deliveryがありません` : `スクショ ${g.screens.map(s => s.file).join(', ')}（${time} ${yen(+amount)}）に一致する一覧Deliveryがありません`);
+      else matchErrors.push(isStructured ? `${time} ${yen(+amount)}: 一覧 ${g.acts.length} 件に対しトリップ詳細 ${g.screens.length} 件（件数不一致）` : `${time} ${yen(+amount)}: 一覧 ${g.acts.length} 件に対しスクショ ${g.screens.length} 件（件数不一致）`);
       return;
     }
     if (g.acts.length > 1) warnings.push(`${time} ${yen(+amount)} の同時刻・同額Deliveryが ${g.acts.length} 件（ファイル名順に対応付け）`);
     g.acts.forEach((a, i) => {
       const s = g.screens[i];
       if (a.tripUuid && s.tripUuid && a.tripUuid !== s.tripUuid) {
-        matchErrors.push(`${time} ${yen(+amount)}: trip UUID が一致しません（一覧 ${a.tripUuid} / スクショ ${s.tripUuid}）`);
+        matchErrors.push(isStructured ? `${time} ${yen(+amount)}: trip UUID が一致しません（一覧 ${a.tripUuid} / トリップ詳細 ${s.tripUuid}）` : `${time} ${yen(+amount)}: trip UUID が一致しません（一覧 ${a.tripUuid} / スクショ ${s.tripUuid}）`);
         return;
       }
       trips.push({ activity: a, screen: s });
     });
   });
   trips.sort((a, b) => a.screen.time.localeCompare(b.screen.time) || a.screen.file.localeCompare(b.screen.file));
-  check('Delivery件数一致（一覧 = スクショ = 照合済み）',
+  check(isStructured ? 'Delivery件数一致（一覧 = トリップ詳細 = 照合済み）' : 'Delivery件数一致（一覧 = スクショ = 照合済み）',
     matchErrors.length === 0 && actDeliveries.length === deliveryScreens.length && trips.length === actDeliveries.length,
-    [`一覧 ${actDeliveries.length} / スクショ ${deliveryScreens.length} / 照合 ${trips.length}`].concat(matchErrors).join('\n'));
+    [`一覧 ${actDeliveries.length} / ${isStructured ? '詳細' : 'スクショ'} ${deliveryScreens.length} / 照合 ${trips.length}`].concat(matchErrors).join('\n'));
 
   const actDeliverySum = actDeliveries.reduce((s, e) => s + e.amount, 0);
   tripSum = trips.reduce((s, t) => s + t.screen.amount, 0);
@@ -523,53 +588,71 @@ function buildStaging(root, date, opts = {}) {
   const appDedupe = appDeduplicateQuests(root, rec.log ? rec.log.quests : []);
   check('アプリのクエスト表示ロジックと整合', appDedupe.length === 0, appDedupe.join('、'));
 
-  // 6. MAP（公式スクショからの切り抜きのみ。既存MAPは上書きしない）
+  // 6. MAP（公式スクショからの切り抜き、または構造化取込時は構造化MAP情報保持）
   const mapMissingOk = new Set((decisions.mapMissingOk || []).map(String));
   const jobs = [];
-  rec.tripIds.forEach((id, i) => {
-    const t = trips[i];
-    if (tm.catalog[id]) {
-      t.map = { status: 'existing' };
-      return;
-    }
-    // 同じDeliveryの重複スクショ（撮り直し）がある場合は、それぞれ切り抜きを試して地図が切り抜けた方を使う
-    const sources = [t.screen.file].concat(screens.filter(s => s.duplicateOf === t.screen.file).map(s => s.file));
-    t.map = { status: 'pending', candidates: sources.map((file, k) => {
-      const stem = `${String(i + 1).padStart(2, '0')}_${k}_${sha256(file).slice(0, 8)}`;
-      const cand = { file, work: path.join(p.workDir, `map_${stem}.png`), workFull: path.join(p.workDir, `full_${stem}.png`) };
-      jobs.push({ src: path.join(p.screenshotDir, file), map: cand.work, full: cand.workFull });
-      return cand;
-    }) };
-  });
-  const cropResults = runCropBatch(p, jobs);
   const mapErrors = [];
   const sizeErrors = [];
-  trips.forEach(t => {
-    if (!t.map || t.map.status !== 'pending') return;
-    const results = t.map.candidates.map(cand => ({ cand, r: cropResults.find(c => path.resolve(c.src) === path.resolve(p.screenshotDir, cand.file)) }));
-    const okPick = results.find(x => x.r && x.r.ok);
-    const r = okPick ? okPick.r : (results[0] && results[0].r);
-    if (okPick) {
-      t.map = { status: 'pending', work: okPick.cand.work, workFull: okPick.cand.workFull, sourceFile: okPick.cand.file };
-      if (okPick.cand.file !== t.screen.file) warnings.push(`${t.screen.time} ${yen(t.screen.amount)}: MAP は重複スクショ ${okPick.cand.file} から切り抜き`);
-    }
-    if (r && r.size && r.size[0] > MAX_SCREENSHOT_WIDTH) {
-      sizeErrors.push(`${t.screen.file}: 幅 ${r.size[0]}px（画面全体ではなく Delivery詳細部分だけを切り取ってください）`);
-    }
-    if (r && r.ok) {
-      t.map = { ...t.map, status: 'cropped', box: r.box };
-    } else if (mapMissingOk.has(t.screen.file)) {
-      t.map = { status: 'none', reason: (r && r.reason) || '不明' };
-      warnings.push(`${t.screen.file}: MAPなしで登録（decisions.json の mapMissingOk で確認済み）`);
-    } else {
-      t.map = { status: 'failed', reason: (r && r.reason) || '不明' };
-      mapErrors.push(`${t.screen.file}（${t.screen.time} ${yen(t.screen.amount)}）: ${t.map.reason}`);
-    }
-  });
-  check('スクショ画像サイズ（Delivery詳細部分のみ）', sizeErrors.length === 0, sizeErrors.join('\n'));
-  const mapped = trips.filter(t => t.map && ['existing', 'cropped'].includes(t.map.status)).length;
-  check('MAP（公式スクショから切り抜き）', mapErrors.length === 0,
-    [`${mapped}/${trips.length}`].concat(mapErrors.map(e => `MAPなし: ${e}（スクショを撮り直すか、MAPなしで良ければ decisions.json の mapMissingOk にファイル名を追加）`)).join('\n'));
+
+  if (isStructured) {
+    trips.forEach((t, i) => {
+      const id = rec.tripIds[i];
+      if (tm.catalog[id]) {
+        t.map = { status: 'existing' };
+      } else {
+        t.map = {
+          status: 'structured',
+          tripUuid: t.screen.tripUuid,
+          legCount: t.screen.tripLegCount || 1,
+          hasRouteMap: !!(t.screen.legs && t.screen.legs.some(l => l.customRouteMap))
+        };
+      }
+    });
+    check('MAP（構造化データ）', true, `${trips.length}/${trips.length}（Uber Web構造化データより取得）`);
+  } else {
+    rec.tripIds.forEach((id, i) => {
+      const t = trips[i];
+      if (tm.catalog[id]) {
+        t.map = { status: 'existing' };
+        return;
+      }
+      // 同じDeliveryの重複スクショ（撮り直し）がある場合は、それぞれ切り抜きを試して地図が切り抜けた方を使う
+      const sources = [t.screen.file].concat(screens.filter(s => s.duplicateOf === t.screen.file).map(s => s.file));
+      t.map = { status: 'pending', candidates: sources.map((file, k) => {
+        const stem = `${String(i + 1).padStart(2, '0')}_${k}_${sha256(file).slice(0, 8)}`;
+        const cand = { file, work: path.join(p.workDir, `map_${stem}.png`), workFull: path.join(p.workDir, `full_${stem}.png`) };
+        jobs.push({ src: path.join(p.screenshotDir, file), map: cand.work, full: cand.workFull });
+        return cand;
+      }) };
+    });
+    const cropResults = runCropBatch(p, jobs);
+    trips.forEach(t => {
+      if (!t.map || t.map.status !== 'pending') return;
+      const results = t.map.candidates.map(cand => ({ cand, r: cropResults.find(c => path.resolve(c.src) === path.resolve(p.screenshotDir, cand.file)) }));
+      const okPick = results.find(x => x.r && x.r.ok);
+      const r = okPick ? okPick.r : (results[0] && results[0].r);
+      if (okPick) {
+        t.map = { status: 'pending', work: okPick.cand.work, workFull: okPick.cand.workFull, sourceFile: okPick.cand.file };
+        if (okPick.cand.file !== t.screen.file) warnings.push(`${t.screen.time} ${yen(t.screen.amount)}: MAP は重複スクショ ${okPick.cand.file} から切り抜き`);
+      }
+      if (r && r.size && r.size[0] > MAX_SCREENSHOT_WIDTH) {
+        sizeErrors.push(`${t.screen.file}: 幅 ${r.size[0]}px（画面全体ではなく Delivery詳細部分だけを切り取ってください）`);
+      }
+      if (r && r.ok) {
+        t.map = { ...t.map, status: 'cropped', box: r.box };
+      } else if (mapMissingOk.has(t.screen.file)) {
+        t.map = { status: 'none', reason: (r && r.reason) || '不明' };
+        warnings.push(`${t.screen.file}: MAPなしで登録（decisions.json の mapMissingOk で確認済み）`);
+      } else {
+        t.map = { status: 'failed', reason: (r && r.reason) || '不明' };
+        mapErrors.push(`${t.screen.file}（${t.screen.time} ${yen(t.screen.amount)}）: ${t.map.reason}`);
+      }
+    });
+    check('スクショ画像サイズ（Delivery詳細部分のみ）', sizeErrors.length === 0, sizeErrors.join('\n'));
+    const mapped = trips.filter(t => t.map && ['existing', 'cropped'].includes(t.map.status)).length;
+    check('MAP（公式スクショから切り抜き）', mapErrors.length === 0,
+      [`${mapped}/${trips.length}`].concat(mapErrors.map(e => `MAPなし: ${e}（スクショを撮り直すか、MAPなしで良ければ decisions.json の mapMissingOk にファイル名を追加）`)).join('\n'));
+  }
 
   return finish();
 
@@ -677,6 +760,10 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
       if (!merged.durationStr) merged.durationStr = s.durationStr;
       if (merged.points === null || merged.points === undefined) merged.points = s.points;
       if (s.baseFee !== null && merged.baseFee === undefined) { merged.baseFee = s.baseFee; merged.tip = s.tip; }
+      if (s.tripUuid && !merged.tripUuid) merged.tripUuid = s.tripUuid;
+      if (s.tripLegCount && !merged.tripLegCount) merged.tripLegCount = s.tripLegCount;
+      if (s.legs && !merged.legs) merged.legs = s.legs;
+      if (s.sequence !== undefined && merged.sequence === undefined) merged.sequence = s.sequence;
       newDeliveries.push(merged);
       tripIds.push(ex.id);
       tripStatus.push('existing');
@@ -700,6 +787,10 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
       };
       if (s.baseFee !== null) { d.baseFee = s.baseFee; d.tip = s.tip; }
       Object.assign(d, { distanceKm: s.distanceKm, durationStr: s.durationStr, points: s.points, memo: memo.join('／') });
+      if (s.tripUuid) d.tripUuid = s.tripUuid;
+      if (s.tripLegCount) d.tripLegCount = s.tripLegCount;
+      if (s.legs) d.legs = s.legs;
+      if (s.sequence !== undefined) d.sequence = s.sequence;
       newDeliveries.push(d);
       tripIds.push(id);
       tripStatus.push('new');
@@ -737,6 +828,7 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
         ? `公式一覧は ${n.time}「${n.title} ${yen(n.amount)}」（達成表示）と ${q.time}「${q.title} ${yen(q.amount)}」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）`
         : `公式一覧は「${q.title} ${yen(q.amount)}」「${n.title} ${yen(n.amount)}」の2表示だが同一報酬のため1件のみ計上（二重計上防止）`);
     const quest = { id: `quest_${md}_${nextQ}`, time: q.time, title: q.title, amount: q.amount, isDuplicateIgnored: false };
+    if (q.decision) quest.decision = q.decision;
     // クエスト名（回数クエストの名称）と種別（通常 normal / 特別 special）。会計上はどちらもクエスト報酬
     if (q.questName) quest.questName = String(q.questName).replace(/\s+/g, '');
     if (q.questType) quest.questType = q.questType;
