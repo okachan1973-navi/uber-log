@@ -41,6 +41,19 @@
     return index;
   }
 
+  /**
+   * 個別の配達だけを店舗に紐付ける（店舗マスタの delivery_links: [{ date, id, restaurant }]）。
+   * 曖昧な店名（例: 支店名なしの「ガスト」）を name_keys に入れず、確認できた 1 件だけを紐付けるためのもの。
+   * 日付・配達 ID・元の店名の 3 つが全部一致したときだけ使う（どれか違えば通常の name_keys 照合に戻る）
+   */
+  const linkKey = (date, id) => date + '|' + id;
+  function buildLinkIndex(master) {
+    const index = new Map();
+    const stores = (master && master.stores) || [];
+    stores.forEach(st => (st.delivery_links || []).forEach(l => index.set(linkKey(l.date, l.id), { store: st, key: restaurantKey(l.restaurant) })));
+    return index;
+  }
+
   function listDeliveries(dailyLogs) {
     const out = [];
     Object.keys(dailyLogs || {}).sort().forEach(date => {
@@ -56,6 +69,7 @@
    */
   function aggregatePickups(dailyLogs, master) {
     const index = buildKeyIndex(master);
+    const links = buildLinkIndex(master);
     const byId = new Map();
     const unregistered = new Map();
     const missingName = [];
@@ -76,7 +90,8 @@
       const raw = delivery.restaurant;
       if (!raw || !String(raw).trim()) { missingName.push({ date, time, id: delivery.id }); return; }
       const key = restaurantKey(raw);
-      const st = index.get(key);
+      const link = links.get(linkKey(date, delivery.id));
+      const st = link && link.key === key ? link.store : index.get(key);
       let bucket;
       if (st) {
         bucket = byId.get(st.id);

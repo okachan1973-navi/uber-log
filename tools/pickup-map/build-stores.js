@@ -227,6 +227,16 @@ function validate(result, dailyLogs) {
   }));
   const ids = new Set();
   master.stores.forEach(st => { if (ids.has(st.id)) errors.push(`C: ID重複 ${st.id}`); ids.add(st.id); });
+  // 個別の紐付け（delivery_links）: 実在する配達（日付・ID・元の店名が一致）を指し、同じ配達を 2 店舗に紐付けていない
+  const linkOwner = new Map();
+  master.stores.forEach(st => (st.delivery_links || []).forEach(l => {
+    const k = l.date + '|' + l.id;
+    if (linkOwner.has(k)) errors.push(`C: 配達 ${k} が ${linkOwner.get(k)} と ${st.canonical_name} の両方に紐付け`);
+    linkOwner.set(k, st.canonical_name);
+    const d = ((dailyLogs[l.date] || {}).deliveries || []).find(x => x.id === l.id);
+    if (!d) errors.push(`C: 「${st.canonical_name}」の紐付け先の配達 ${k} が配達実績に無い`);
+    else if (PickupStores.restaurantKey(d.restaurant) !== PickupStores.restaurantKey(l.restaurant)) errors.push(`C: 「${st.canonical_name}」の紐付け先の配達 ${k} の店名が「${d.restaurant}」で、紐付けの「${l.restaurant}」と違う`);
+  }));
   // 片方のキーがもう片方を含む店舗は重複の疑い（例: 「ガスト」と「ガスト港弁天町店」）→ 警告のみ（自動統合はしない）
   const flat = master.stores.map(st => ({ st, key: st.name_keys[0] }));
   for (let i = 0; i < flat.length; i++) for (let j = i + 1; j < flat.length; j++) {

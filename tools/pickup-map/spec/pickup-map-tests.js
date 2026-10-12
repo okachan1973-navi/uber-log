@@ -40,6 +40,42 @@ test('「ガスト」と「ガスト 港弁天町店」を統合しない', () =
   const idx = new Map();
   master.stores.forEach(s => s.name_keys.forEach(k => idx.set(k, s.id)));
   assert.notStrictEqual(idx.get(PS.restaurantKey('ガスト')), idx.get(PS.restaurantKey('ガスト 港弁天町店')));
+  const nanba = master.stores.find(s => s.canonical_name === 'ガスト なんば店');
+  assert.notStrictEqual(idx.get(PS.restaurantKey('ガスト')), nanba.id, '支店名なしの「ガスト」をなんば店の照合キーにしない（個別紐付けだけ）');
+});
+
+test('個別紐付け: del_0916_8 の「ガスト」だけがガスト なんば店、ほかの「ガスト」は支店名なしのまま', () => {
+  const nanba = master.stores.find(s => s.canonical_name === 'ガスト なんば店');
+  const none = master.stores.find(s => s.canonical_name === 'ガスト（支店名なし）');
+  const count = (agg, id) => (agg.stores.find(s => s.id === id) || { pickup_count: 0 }).pickup_count;
+  const raw = dailyLogs['2026-09-16'].deliveries.find(d => d.id === 'del_0916_8');
+  assert.strictEqual(raw.restaurant, 'ガスト', '元データの店名は書き換えない');
+  const agg = PS.aggregatePickups(dailyLogs, master);
+  assert.strictEqual(count(agg, nanba.id), 1);
+  assert.strictEqual(count(agg, none.id), 0);
+  const logs = JSON.parse(JSON.stringify(dailyLogs));
+  logs['2027-09-16'] = { date: '2027-09-16', deliveries: [{ id: 'del_0916_8', completedAt: '12:00', restaurant: 'ガスト' }] }; // 同じ旧形式 ID・翌年
+  logs['2026-09-16'].deliveries.push({ id: 'del_0916_99', completedAt: '20:00', restaurant: 'ガスト' });
+  const agg2 = PS.aggregatePickups(logs, master);
+  assert.strictEqual(count(agg2, nanba.id), 1, 'なんば店は del_0916_8（2026-09-16）の 1 件だけ');
+  assert.strictEqual(count(agg2, none.id), 2, 'ほかの「ガスト」は支店名なしに数える');
+  // 紐付け先の店名が変わっていたら紐付けない（通常の照合に戻る）
+  const renamed = JSON.parse(JSON.stringify(dailyLogs));
+  renamed['2026-09-16'].deliveries.find(d => d.id === 'del_0916_8').restaurant = 'ガスト 港弁天町店';
+  assert.strictEqual(count(PS.aggregatePickups(renamed, master), nanba.id), 0, 'なんば店に数えない');
+});
+
+test('個別紐付けの検証: 実在しない配達・店名の違う配達・二重の紐付けはエラー', () => {
+  const bad = JSON.parse(JSON.stringify(master));
+  const nanba = bad.stores.find(s => s.canonical_name === 'ガスト なんば店');
+  const other = bad.stores.find(s => s.canonical_name === 'ガスト 港弁天町店');
+  nanba.delivery_links.push({ date: '2026-09-16', id: 'del_0916_404', restaurant: 'ガスト' }, { date: '2026-09-16', id: 'del_0916_7', restaurant: 'ガスト' });
+  other.delivery_links = [{ date: '2026-09-16', id: 'del_0916_8', restaurant: 'ガスト' }];
+  const { errors } = build.validate(build.rebuild(bad, dailyLogs), dailyLogs);
+  assert.ok(errors.some(e => /del_0916_404 が配達実績に無い/.test(e)), errors.join('\n'));
+  assert.ok(errors.some(e => /del_0916_7 の店名が/.test(e)), errors.join('\n'));
+  assert.ok(errors.some(e => /del_0916_8 が .* の両方に紐付け/.test(e)), errors.join('\n'));
+  assert.deepStrictEqual(build.validate(build.rebuild(master, dailyLogs), dailyLogs).errors, []);
 });
 
 test('A/B: 全トリップが店舗に割り当てられ件数が一致する', () => {
@@ -130,7 +166,8 @@ test('Google Maps: 座標確認済みの全店舗でURLが作れ、目的地が�
 
 test('Google Maps: 座標なし・要確認・不正座標ではURLを作らない（ルート無効）', () => {
   const review = master.stores.filter(s => s.coordinate_status !== 'confirmed');
-  assert.ok(review.length > 0 && review.length === master.summary.needs_review_count, '要確認の店舗数はマスタの集計と一致');
+  // 集計 summary は実績のある店舗だけ（ガスト（支店名なし）のように実績 0 回の要確認店舗もマスタに残る）
+  assert.ok(review.length > 0 && review.filter(s => s.pickup_count > 0).length === master.summary.needs_review_count, '要確認の店舗数はマスタの集計と一致');
   review.forEach(s => {
     assert.strictEqual(PS.googleMapsBikeUrl(s), null, s.canonical_name);
     assert.strictEqual(PS.googleMapsAppUrl(s), null, s.canonical_name);

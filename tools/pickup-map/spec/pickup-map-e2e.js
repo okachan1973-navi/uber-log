@@ -355,12 +355,13 @@ async function run() {
       const lowHit = await p.ev(`(() => { const m = window.__pickupMap; const s = m.data.stores.find(x => x.tier === 'low' && x.hasCoord); const e = m.markers.get(s.id).getElement(); const r = e.getBoundingClientRect(); const v = e.querySelector('svg').getBoundingClientRect(); return { hitW: r.width, hitH: r.height, visW: v.width, visH: v.height }; })()`);
       check('1〜4回の小ピン: 見た目は小さいままタップ領域だけ拡大', lowHit.hitW > lowHit.visW && lowHit.hitH >= lowHit.visH && lowHit.visW <= 26, lowHit);
 
-      // ④ 座標なし店舗（ガスト 支店名なし）
+      // ④ 座標なし店舗（実績のある要確認店舗のうち 1 店。どの店かは店舗マスタの確認状況で変わる）
       await p.ev(`void window.__pickupMap.map.closePopup()`);
+      const nc = await p.ev(`(() => { const s = window.__pickupMap.data.stores.find(x => !x.hasCoord && x.pickup_count > 0 && !x.unregistered); return { id: s.id, name: s.canonical_name }; })()`);
       await p.tapSel('#pm-search');
-      await p.s('Input.insertText', { text: 'ガスト' });
+      await p.s('Input.insertText', { text: nc.name });
       await sleep(300);
-      const gustId = await p.ev(`[...document.querySelectorAll('.pm-suggest-item')].find(li => /支店名なし/.test(li.textContent))?.dataset.id`);
+      const gustId = await p.ev(`[...document.querySelectorAll('.pm-suggest-item')].find(li => li.dataset.id === ${JSON.stringify(nc.id)})?.dataset.id`);
       await p.tapSel(`.pm-suggest-item[data-id="${gustId}"]`);
       await sleep(900);
       const nocoord = await p.ev(`(() => { const li = document.querySelector('#pm-review-list li[data-id="${gustId}"]'); return { open: document.getElementById('pm-review').open, text: li && li.querySelector('.pm-route-disabled') && li.querySelector('.pm-route-disabled').textContent, hasBtn: !!(li && li.querySelector('.pm-route-btn')), anyPopup: !!document.querySelector('.leaflet-popup') }; })()`);

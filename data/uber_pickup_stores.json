@@ -2439,22 +2439,29 @@
       "address_short": "港区波除"
     },
     {
-      "id": "st_uku5ji",
-      "canonical_name": "ガスト（支店名なし）",
+      "id": "st_pjgy4q",
+      "canonical_name": "ガスト なんば店",
       "name_keys": [
-        "ガスト"
+        "ガストなんば店"
       ],
       "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
+      "address": "大阪府大阪市中央区難波3-5-1",
+      "latitude": 34.666832,
+      "longitude": 135.501343,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市中央区難波三丁目５番１号",
+      "address_source": "本人確認済み住所（2026-10-09 店舗レビュー回答） ナンバー壱番ビル2F",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市中央区難波三丁目５番１号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27128",
+          "lv01Nm": "難波三丁目"
+        }
+      },
       "same_building": null,
-      "notes": "店名に支店名がない「ガスト」の受け皿（支店不明・要確認のまま）。港弁天町店・なんば店とは統合しない。2026-09-16 11:58 del_0916_8 の「ガスト」は本人確認で なんば店 と判明しているが、main には配達 ID 単位の個別紐付けの仕組みが無いため、元データ（restaurant:\"ガスト\"）は書き換えずここに数える。",
+      "notes": "ナンバー壱番ビル2F。照合キーは支店名付きの「ガストなんば店」だけ（汎用の「ガスト」は港弁天町店などを誤分類するため付けない）。2026-09-16 11:58 del_0916_8（元表記「ガスト」）は本人確認でこの店舗と確定し、delivery_links で個別に紐付け（元データは書き換えない）。DROP先「大阪市西区九条2丁目」は配達先で店舗住所ではない。",
       "pickup_count": 1,
       "first_pickup": "2026-09-16 11:58",
       "last_pickup": "2026-09-16 11:58",
@@ -2465,10 +2472,17 @@
       "brand_id": "gusto",
       "brand_name": "ガスト",
       "brand_reading": null,
-      "branch_name": "(支店名なし)",
+      "branch_name": "なんば店",
+      "display_name": "なんば店",
+      "address_short": "中央区難波",
       "site_id": null,
-      "display_name": "(支店名なし)",
-      "address_short": null
+      "delivery_links": [
+        {
+          "date": "2026-09-16",
+          "id": "del_0916_8",
+          "restaurant": "ガスト"
+        }
+      ]
     },
     {
       "id": "st_1wrk08c",
@@ -5010,41 +5024,36 @@
       "address_short": "西区靱本町"
     },
     {
-      "id": "st_pjgy4q",
-      "canonical_name": "ガスト なんば店",
+      "id": "st_uku5ji",
+      "canonical_name": "ガスト（支店名なし）",
       "name_keys": [
-        "ガストなんば店"
+        "ガスト"
       ],
       "category": "other",
-      "address": "大阪府大阪市中央区難波3-5-1",
-      "latitude": 34.666832,
-      "longitude": 135.501343,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市中央区難波三丁目５番１号",
-      "address_source": "本人確認済み住所（2026-10-09 店舗レビュー回答） ナンバー壱番ビル2F",
-      "address_evidence": "user_confirmed",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市中央区難波三丁目５番１号",
-        "osm_nearest": null,
-        "reverse": {
-          "muniCd": "27128",
-          "lv01Nm": "難波三丁目"
-        }
-      },
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
       "same_building": null,
-      "notes": "ナンバー壱番ビル2F。照合キーは支店名付きの「ガストなんば店」だけ（汎用の「ガスト」は港弁天町店などを誤分類するため付けない）。2026-09-16 del_0916_8（元表記「ガスト」）は本人確認でこの店舗だが、個別紐付けの仕組みが main に無いため「ガスト（支店名なし）」に数えている。DROP先「大阪市西区九条2丁目」は配達先で店舗住所ではない。",
+      "notes": "店名に支店名がない「ガスト」の受け皿（支店不明・要確認のまま）。港弁天町店・なんば店とは統合しない。2026-09-16 del_0916_8 は なんば店 へ個別紐付け済み。今後の支店名なし「ガスト」はここに数える。",
       "pickup_count": 0,
       "first_pickup": null,
       "last_pickup": null,
       "active_days": 0,
-      "original_names": [],
+      "original_names": [
+        "ガスト"
+      ],
       "brand_id": "gusto",
       "brand_name": "ガスト",
       "brand_reading": null,
-      "branch_name": "なんば店",
-      "display_name": "なんば店",
-      "address_short": "中央区難波",
-      "site_id": null
+      "branch_name": "(支店名なし)",
+      "site_id": null,
+      "display_name": "(支店名なし)",
+      "address_short": null
     }
   ],
   "generated_from": "js/store.js CONFIRMED_SEED_DATA.dailyLogs",
@@ -5057,8 +5066,8 @@
     "total_trips": 331,
     "total_pickups": 331,
     "store_count": 120,
-    "confirmed_count": 109,
-    "needs_review_count": 11,
+    "confirmed_count": 110,
+    "needs_review_count": 10,
     "trips_without_restaurant": 0
   },
   "category_labels": {
