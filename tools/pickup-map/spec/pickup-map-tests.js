@@ -120,7 +120,8 @@ test('Google Maps: iOSアプリ用URLも同じ座標・自転車モード', () =
 
 test('Google Maps: 座標確認済みの全店舗でURLが作れ、目的地が各店舗の保存座標', () => {
   const confirmed = master.stores.filter(s => s.coordinate_status === 'confirmed');
-  assert.strictEqual(confirmed.length, master.summary.confirmed_count, '座標確認済みの店舗数はマスタの集計と一致');
+  // 集計 summary はピックアップ実績のある店舗だけを数える（ガスト なんば店のように実績 0 回の確定店舗もマスタに残る）
+  assert.strictEqual(confirmed.filter(s => s.pickup_count > 0).length, master.summary.confirmed_count, '座標確認済みの店舗数はマスタの集計と一致');
   confirmed.forEach(s => {
     const dest = new URL(PS.googleMapsBikeUrl(s)).searchParams.get('destination').split(',').map(Number);
     assert.ok(Math.abs(dest[0] - s.latitude) < 1e-6 && Math.abs(dest[1] - s.longitude) < 1e-6, s.canonical_name);

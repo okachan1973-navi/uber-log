@@ -1351,21 +1351,29 @@
     },
     {
       "id": "st_1dahafm",
-      "canonical_name": "サーティワン アイスクリーム 九条ナインモール店 31",
+      "canonical_name": "サーティワンアイスクリーム 九条ナインモール店",
       "name_keys": [
-        "サーティワンアイスクリーム九条ナインモール店31"
+        "サーティワンアイスクリーム九条ナインモール店31",
+        "サーティワンアイスクリーム九条ナインモール店"
       ],
       "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
+      "address": "大阪府大阪市西区九条1-12-6",
+      "latitude": 34.67485,
+      "longitude": 135.476227,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１２番６号",
+      "address_source": "本人確認済み住所（2026-10-09 店舗レビュー回答）",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目１２番６号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
       "same_building": null,
-      "notes": "2026-10-06 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "notes": "元表記「サーティワン アイスクリーム 九条ナインモール店 31 Ice Cream Kujoh Ninemall」。",
       "pickup_count": 2,
       "first_pickup": "2026-10-06 16:34",
       "last_pickup": "2026-10-10 13:28",
@@ -1377,8 +1385,8 @@
       "brand_name": null,
       "brand_reading": null,
       "branch_name": null,
-      "display_name": "サーティワン アイスクリーム 九条ナインモール店 31",
-      "address_short": null,
+      "display_name": "サーティワンアイスクリーム 九条ナインモール店",
+      "address_short": "西区九条",
       "site_id": null
     },
     {
@@ -2446,7 +2454,7 @@
       "address_evidence": null,
       "geocode_check": null,
       "same_building": null,
-      "notes": "店名に支店名がなく店舗を特定できない。「ガスト 港弁天町店」とは証拠がないため統合しない。",
+      "notes": "店名に支店名がない「ガスト」の受け皿（支店不明・要確認のまま）。港弁天町店・なんば店とは統合しない。2026-09-16 11:58 del_0916_8 の「ガスト」は本人確認で なんば店 と判明しているが、main には配達 ID 単位の個別紐付けの仕組みが無いため、元データ（restaurant:\"ガスト\"）は書き換えずここに数える。",
       "pickup_count": 1,
       "first_pickup": "2026-09-16 11:58",
       "last_pickup": "2026-09-16 11:58",
@@ -4657,21 +4665,29 @@
     },
     {
       "id": "st_uvz466",
-      "canonical_name": "横浜家系ラーメン 一新家（支店名なし）",
+      "canonical_name": "横浜家系ラーメン 一新家 桜川店",
       "name_keys": [
-        "横浜家系ラーメン一新家(よこはまいえけいらーめんいっしんや)"
+        "横浜家系ラーメン一新家(よこはまいえけいらーめんいっしんや)",
+        "横浜家系ラーメン一新家桜川店"
       ],
       "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
+      "address": "大阪府大阪市浪速区桜川3-1-29",
+      "latitude": 34.668304,
+      "longitude": 135.487793,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市浪速区桜川三丁目１番２９号",
+      "address_source": "本人確認済み住所（2026-10-09 店舗レビュー回答） 1F",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市浪速区桜川三丁目１番２９号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27111",
+          "lv01Nm": "桜川三丁目"
+        }
+      },
       "same_building": null,
-      "notes": "支店名なし。候補が複数（桜川店: 大阪市浪速区桜川3-1-29 / 別所店: 松原市別所1-8-15）あり特定不可。",
+      "notes": "元表記「横浜家系ラーメン 一新家（よこはまいえけいらーめん いっしんや）」は本人確認で 桜川店 と確定（別所店ではない）。1F。",
       "pickup_count": 1,
       "first_pickup": "2026-09-26 14:43",
       "last_pickup": "2026-09-26 14:43",
@@ -4684,8 +4700,8 @@
       "brand_reading": null,
       "branch_name": null,
       "site_id": null,
-      "display_name": "横浜家系ラーメン 一新家（支店名なし）",
-      "address_short": null
+      "display_name": "横浜家系ラーメン 一新家 桜川店",
+      "address_short": "浪速区桜川"
     },
     {
       "id": "st_1ujqqr2",
@@ -4694,16 +4710,23 @@
         "韓国屋台momoチキン大正店"
       ],
       "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
-      "same_building": null,
-      "notes": "デリバリー専門ブランド。大正店の住所を公式・掲載情報で確認できず。",
+      "address": "大阪府大阪市大正区三軒家東1-17-33",
+      "latitude": 34.665455,
+      "longitude": 135.479858,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市大正区三軒家東一丁目１７番３３号（同一住所の確定済み店舗 st_1ta3evv / st_1njqw93 と同じ座標）",
+      "address_source": "本人確認済み住所（2026-10-09 店舗レビュー回答） 平和相互大正第一ビル103",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市大正区三軒家東一丁目１７番３３号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27108",
+          "lv01Nm": "三軒家東一丁目"
+        }
+      },
+      "same_building": "三軒家東1-17-33（平和相互大正第一ビル103）",
+      "notes": "平和相互大正第一ビル103。座標は同一住所（三軒家東1-17-33）で確定済みの Egg House・Master Of Chicken と同じ国土地理院 住所検索の座標。",
       "pickup_count": 1,
       "first_pickup": "2026-09-19 14:18",
       "last_pickup": "2026-09-19 14:18",
@@ -4715,9 +4738,9 @@
       "brand_name": null,
       "brand_reading": null,
       "branch_name": null,
-      "site_id": null,
+      "site_id": "site_rwl2xq",
       "display_name": "韓国屋台momoチキン 大正店",
-      "address_short": null
+      "address_short": "大正区三軒家東"
     },
     {
       "id": "st_h7s5dv",
@@ -4985,6 +5008,43 @@
       "site_id": null,
       "display_name": "珈琲とフレンチトースト MUC COFFEE ROASTERS うつぼ公園店",
       "address_short": "西区靱本町"
+    },
+    {
+      "id": "st_pjgy4q",
+      "canonical_name": "ガスト なんば店",
+      "name_keys": [
+        "ガストなんば店"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市中央区難波3-5-1",
+      "latitude": 34.666832,
+      "longitude": 135.501343,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市中央区難波三丁目５番１号",
+      "address_source": "本人確認済み住所（2026-10-09 店舗レビュー回答） ナンバー壱番ビル2F",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市中央区難波三丁目５番１号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27128",
+          "lv01Nm": "難波三丁目"
+        }
+      },
+      "same_building": null,
+      "notes": "ナンバー壱番ビル2F。照合キーは支店名付きの「ガストなんば店」だけ（汎用の「ガスト」は港弁天町店などを誤分類するため付けない）。2026-09-16 del_0916_8（元表記「ガスト」）は本人確認でこの店舗だが、個別紐付けの仕組みが main に無いため「ガスト（支店名なし）」に数えている。DROP先「大阪市西区九条2丁目」は配達先で店舗住所ではない。",
+      "pickup_count": 0,
+      "first_pickup": null,
+      "last_pickup": null,
+      "active_days": 0,
+      "original_names": [],
+      "brand_id": "gusto",
+      "brand_name": "ガスト",
+      "brand_reading": null,
+      "branch_name": "なんば店",
+      "display_name": "なんば店",
+      "address_short": "中央区難波",
+      "site_id": null
     }
   ],
   "generated_from": "js/store.js CONFIRMED_SEED_DATA.dailyLogs",
@@ -4997,8 +5057,8 @@
     "total_trips": 331,
     "total_pickups": 331,
     "store_count": 120,
-    "confirmed_count": 106,
-    "needs_review_count": 14,
+    "confirmed_count": 109,
+    "needs_review_count": 11,
     "trips_without_restaurant": 0
   },
   "category_labels": {
@@ -5097,15 +5157,17 @@
     },
     {
       "site_id": "site_rwl2xq",
-      "label": "三軒家東1-17-33（大正橋第1ビル2F）",
+      "label": "大阪府大阪市大正区三軒家東1-17-33",
       "address": "大阪府大阪市大正区三軒家東1-17-33",
       "store_ids": [
         "st_1njqw93",
-        "st_1ta3evv"
+        "st_1ta3evv",
+        "st_1ujqqr2"
       ],
       "brands": [
         "【チキンステーキ弁当】Master Of Chicken～大正店～",
-        "【カラダが喜ぶオムライスCafe】Egg House～大正店～"
+        "【カラダが喜ぶオムライスCafe】Egg House～大正店～",
+        "韓国屋台momoチキン 大正店"
       ]
     }
   ]
