@@ -99,7 +99,9 @@ UBER_LOG 正本開発引継ぎドキュメント（MASTER HANDOFF）
      getAnalytics の dailyComparison に weather を通し、日別比較に列（無い日は「—」）を足すのが最小変更。
      公式取込の syncOfficialImportedDay は sales/trip 系だけを上書きするので weather は端末データとして残る（クラウド同期の統合 mergeDayUserData に weather の追加が必要）。
      取得元（気象庁 CSV の手動取込 or Open-Meteo）は未決定。
-  8. 未解決: 天気の取得方法の決定。旧取込で端末に入った過去の sales.other の有無（端末データの確認が必要）。
+  8. commit / push: df12749（v75 リリース）を origin/main へ push 済み（2026-10-13）。本記録は続く docs commit。
+     Desktop\UBER_HANDOFF.txt も同じ内容に同期。
+  9. 未解決: 天気の取得方法の決定。旧取込で端末に入った過去の sales.other の有無（端末データの確認が必要）。
      履歴の日別詳細の「経費」表記（分析画面外）。10/12 の要確認3店舗（鶏ヶ屋・カルボリア・松のや）の住所・座標確認。
 
 ■ v74（2026-10-13）: 分析画面の表示・集計整理（必要経費・稼働日数・売上内訳順・配達時間 HH:MM）
