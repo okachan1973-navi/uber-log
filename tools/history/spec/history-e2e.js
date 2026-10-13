@@ -153,9 +153,9 @@ async function run() {
       let d = await p.ev(DETAIL_JS('2026-10-05'));
       check('タップで展開・▲', d.open && d.icon === '▲', { open: d.open, icon: d.icon });
       check('展開は 💰 収益・🚲 稼働・📊 効率 の3ブロック', d.heads.join(',') === '💰収益,🚲稼働,📊効率', d.heads);
-      check('収益: 総売上 10,666円・配達報酬 5,016円・クエスト 5,650円・特別クエスト 0円', JSON.stringify(d.blocks['収益']) === JSON.stringify({ 総売上: '10,666円', 配達報酬: '5,016円', クエスト: '5,650円', 特別クエスト: '0円' }), d.blocks['収益']);
-      check('稼働: 17件・34.2km・3時間46分（Uber公式の実働時間 226分）', JSON.stringify(d.blocks['稼働']) === JSON.stringify({ 配達件数: '17件', 走行距離: '34.2km', 実働時間: '3時間46分' }), d.blocks['稼働']);
-      check('効率: 平均距離 2.0km・平均単価 627円・距離単価 312円/km・実働時給 2,819円', JSON.stringify(d.blocks['効率']) === JSON.stringify({ 平均距離: '2.0km', 平均単価: '627円', 距離単価: '312円/km', 実働時給: '2,819円' }), d.blocks['効率']);
+      check('収益: 総売上 10,666円・配達報酬 5,016円・クエスト 5,650円・特別ボーナス 0円', JSON.stringify(d.blocks['収益']) === JSON.stringify({ 総売上: '10,666円', 配達報酬: '5,016円', クエスト: '5,650円', 特別ボーナス: '0円' }), d.blocks['収益']);
+      check('稼働: 17件・34.2km・03:46（Uber公式トリップ所要時間の合計 226分。表記は分析と同じ）', JSON.stringify(d.blocks['稼働']) === JSON.stringify({ 配達件数: '17件', 配達距離: '34.2km', 配達時間: '03:46' }), d.blocks['稼働']);
+      check('効率: 平均距離 2.0km・平均単価 627円・距離単価 312円/km・時給 2,819円', JSON.stringify(d.blocks['効率']) === JSON.stringify({ 平均距離: '2.0km', 平均単価: '627円', 距離単価: '312円/km', 時給: '2,819円' }), d.blocks['効率']);
       check('「プロモーション」「¥」表記を使わない', !/プロモーション|¥/.test(d.text.replace(/配達明細[\s\S]*$/, '')));
       check('配達明細（○/×評価・並び替え）は3ブロックの下に残る', d.deliveries > 0 && d.evalBtns > 0 && d.sortBtn, { n: d.deliveries, eval: d.evalBtns });
       const lay = await p.ev(`(() => { const c = document.querySelector('.history-card[data-date="2026-10-05"]'); const vals = [...c.querySelectorAll('.hd-val')].map(v => v.getBoundingClientRect().right); const blocks = c.querySelector('.hd-blocks').getBoundingClientRect(); const det = c.querySelector('.history-deliveries-detail').getBoundingClientRect();
@@ -168,15 +168,15 @@ async function run() {
       d = await p.ev(DETAIL_JS('2026-09-24'));
       const prev = await p.ev(`document.querySelector('.history-card[data-date="2026-10-05"]').classList.contains('expanded')`);
       check('別の日を開くと前の日は閉じる', d.open && !prev);
-      check('9/24: 特別クエスト 8,890円（80回乗車クエスト）・クエスト 600円・総売上 17,189円', d.blocks['収益']['特別クエスト'] === '8,890円' && d.blocks['収益']['クエスト'] === '600円' && d.blocks['収益']['総売上'] === '17,189円' && d.notes.includes('80回乗車クエスト'), { r: d.blocks['収益'], n: d.notes });
-      check('9/24: 効率は特別クエストを除く（平均単価 377円・実働時給 1,239円）', d.blocks['効率']['平均単価'] === '377円' && d.blocks['効率']['実働時給'] === '1,239円', d.blocks['効率']);
+      check('9/24: 特別ボーナス 8,890円（80回乗車クエスト）・クエスト 600円・総売上 17,189円', d.blocks['収益']['特別ボーナス'] === '8,890円' && d.blocks['収益']['クエスト'] === '600円' && d.blocks['収益']['総売上'] === '17,189円' && d.notes.includes('80回乗車クエスト'), { r: d.blocks['収益'], n: d.notes });
+      check('9/24: 効率は特別ボーナスを除く（平均単価 377円・時給 1,239円）', d.blocks['効率']['平均単価'] === '377円' && d.blocks['効率']['時給'] === '1,239円', d.blocks['効率']);
       await p.tapSel('.history-card[data-date="2026-09-19"] .history-card-header');
       d = await p.ev(DETAIL_JS('2026-09-19'));
-      check('9/19: 新規保証 12,132円は特別クエストに・経費 −1,527円（バイクシェア利用）・利益 19,783円', d.blocks['収益']['特別クエスト'] === '12,132円' && d.blocks['収益']['経費'] === '−1,527円' && d.notes.includes('バイクシェア利用') && d.blocks['収益']['利益'] === '19,783円' && d.blocks['収益']['総売上'] === '21,310円', d.blocks['収益']);
-      check('9/19: 実働時給は新規保証を除く（1,409円）', d.blocks['効率']['実働時給'] === '1,409円', d.blocks['効率']);
+      check('9/19: 新規保証 12,132円は特別ボーナスに・必要経費 −1,527円（バイクシェア利用）・利益 19,783円', d.blocks['収益']['特別ボーナス'] === '12,132円' && d.blocks['収益']['必要経費'] === '−1,527円' && d.notes.includes('バイクシェア利用') && d.blocks['収益']['利益'] === '19,783円' && d.blocks['収益']['総売上'] === '21,310円', d.blocks['収益']);
+      check('9/19: 時給は新規保証を除く（1,409円）', d.blocks['効率']['時給'] === '1,409円', d.blocks['効率']);
       await p.tapSel('.history-card[data-date="2026-09-22"] .history-card-header');
       d = await p.ev(DETAIL_JS('2026-09-22'));
-      check('9/22: 売上調整 −607円・うちチップ・総売上 9,243円（内訳の合計＝総売上）', d.blocks['収益']['売上調整'] === '−607円' && Object.keys(d.blocks['収益']).some(k => /^うちチップ/.test(k)) && d.blocks['収益']['総売上'] === '9,243円', d.blocks['収益']);
+      check('9/22: 配達報酬 8,200円・チップ 50円・調整 −607円・総売上 9,243円（分析と同じ内訳。合計＝総売上）', d.blocks['収益']['配達報酬'] === '8,200円' && d.blocks['収益']['チップ'] === '50円' && d.blocks['収益']['調整'] === '−607円' && d.blocks['収益']['総売上'] === '9,243円', d.blocks['収益']);
       // 一覧 / カレンダー切替・下部ナビ6項目
       await p.tapSel('.history-view-btn[data-view="calendar"]');
       const cal = await p.ev(`({ cal: !document.getElementById('history-calendar-container').hidden, list: !document.getElementById('history-list-container').hidden, cells: document.getElementById('history-calendar-container').textContent.length })`);

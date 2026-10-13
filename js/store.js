@@ -9089,19 +9089,33 @@ function syncOfficialImportedDay(target, log) {
   return changed;
 }
 
-// 今日の日付文字列（YYYY-MM-DD）を取得
+// UBER_LOG の基準タイムゾーン（大阪での配達運用）。端末のタイムゾーン設定に関係なく「今日」「現在時刻」は日本時間で決める
+const APP_TIME_ZONE = 'Asia/Tokyo';
+function jstParts(d) {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: APP_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(d);
+    const get = t => (parts.find(p => p.type === t) || {}).value;
+    return { year: get('year'), month: get('month'), day: get('day'), hour: get('hour'), minute: get('minute') };
+  } catch (e) {
+    // Intl のタイムゾーンが使えない環境: UTC+9 を直接計算（日本は夏時間なし）
+    const j = new Date(d.getTime() + 9 * 3600 * 1000);
+    const p = n => String(n).padStart(2, '0');
+    return { year: String(j.getUTCFullYear()), month: p(j.getUTCMonth() + 1), day: p(j.getUTCDate()), hour: p(j.getUTCHours()), minute: p(j.getUTCMinutes()) };
+  }
+}
+
+// 今日の日付文字列（YYYY-MM-DD・日本時間）を取得。d を渡すとその時刻の日本時間の日付
 function getTodayDateString(d = new Date()) {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const p = jstParts(d);
+  return `${p.year}-${p.month}-${p.day}`;
 }
 
 // 現在時刻文字列（HH:mm）を取得
 function getCurrentTimeString(d = new Date()) {
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
+  const p = jstParts(d);
+  return `${p.hour}:${p.minute}`;
 }
 
 // 日本の祝日データ（2026年9月周辺の確実な国民の祝日を安全に内包。外部API依存なし）
@@ -9572,7 +9586,8 @@ function parseUberSalesText(rawText) {
   // 全角数字・記号を半角に正規化
   const normalized = rawText
     .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
-    .replace(/[￥]/g, '¥');
+    .replace(/[￥]/g, '¥')
+    .replace(/[−－]/g, '-'); // マイナス記号（U+2212・全角）を半角に
 
   const lines = normalized
     .split(/\r?\n/)
@@ -9586,6 +9601,9 @@ function parseUberSalesText(rawText) {
     const mWithUnit = clean.match(/[+\-]?\s*[¥￥]\s*(\d+(?:\.\d+)?)/) ||
                       clean.match(/[+\-]?\s*(\d+(?:\.\d+)?)\s*円/);
     if (mWithUnit) return Math.round(parseFloat(mWithUnit[1]));
+    // ¥-607 の形（記号の後ろにマイナス）
+    const mSignAfterYen = clean.match(/[¥￥]\s*[-−－]\s*(\d+(?:\.\d+)?)/);
+    if (mSignAfterYen) return Math.round(parseFloat(mSignAfterYen[1]));
 
     // 2. 単独数値行（1回、11件等のカウントを誤検知しないよう除外）
     if (/^\s*[+\-]?\d+(?:\.\d+)?\s*$/.test(clean.trim())) {
@@ -9593,6 +9611,16 @@ function parseUberSalesText(rawText) {
       return isNaN(num) ? null : Math.round(num);
     }
     return null;
+  };
+  // 符号付きの金額（調整用）。「-¥607」「−¥607」「－607円」「¥-607」はマイナス
+  const extractSignedAmount = (str) => {
+    const amt = extractAmount(str);
+    if (amt === null) return null;
+    // マイナス記号は金額の直前だけを見る（日付「2026-09-22」等の「-」に反応しない）
+    const s = String(str).replace(/,/g, '').trim();
+    const negative = /[-−－]\s*[¥￥]\s*\d/.test(s) || /[¥￥]\s*[-−－]\s*\d/.test(s) ||
+      /(^|[^\d])[-−－]\s*\d+(?:\.\d+)?\s*円/.test(s) || /^[-−－]\s*\d+(?:\.\d+)?$/.test(s);
+    return negative ? -Math.abs(amt) : amt;
   };
 
   let deliveryTotal = null;
@@ -9641,10 +9669,10 @@ function parseUberSalesText(rawText) {
       }
     }
 
-    // 調整金 / Adjustment / 料金の調整
+    // 調整金 / Adjustment / 料金の調整（符号付き。-¥607 のようなマイナス調整を絶対値にしない）
     if (/調整|Adjustment/i.test(line)) {
-      const amt = extractAmount(line) || extractAmount(nextLine);
-      if (amt !== null && amt > 0) {
+      const amt = extractSignedAmount(line) || extractSignedAmount(nextLine);
+      if (amt !== null && amt !== 0) {
         detectedAdjustments.push({
           title: line,
           amount: amt
@@ -9947,8 +9975,9 @@ class Store {
             target.vehicleType = 'バイクシェア利用';
             hasChange = true;
           }
-        } else {
-          // 9/18, 9/19 以外の過去日（9/10〜9/17等）から誤ったバイクシェア/レンタサイクル情報を完全排除
+        } else if (date <= '2026-09-17') {
+          // 9/18, 9/19 以外の過去日（9/10〜9/17）から誤ったバイクシェア/レンタサイクル情報を完全排除。
+          // ユーザーの経費を消す処理のため、対象はこの初期期間だけに限る（今後シードに加わる日には絶対に適用しない）
           const target = parsed.dailyLogs[date];
           if (target) {
             if (target.vehicleType === 'レンタサイクル' || target.vehicleType === 'レンタバイク' || target.vehicleType === 'バイクシェア利用') {
@@ -11272,11 +11301,15 @@ class Store {
     // 基本表示の「時給」は通常稼働時給（grossHourlyWage）に統一
     const hourlyWage = grossHourlyWage;
 
-    // 1件あたり平均売上
+    // 1件あたり平均売上（総売上 ÷ 件数。後方互換）
     let avgSalesPerDelivery = null;
     if (totalSales !== null && count > 0) {
       avgSalesPerDelivery = Math.round(totalSales / count);
     }
+    // 1件あたり平均（通常売上 ÷ 件数。分析の平均単価・履歴の平均単価と同じ定義: 特別クエスト・特別ボーナス・その他を除く）
+    const avgRegularPerDelivery = (hourlyBaseSales !== null && count > 0) ? Math.round(hourlyBaseSales / count) : null;
+    // 新規ドライバー保証等（guaranteeBonus）を除いた総売上（ホームの「通常稼働収入」）
+    const salesExcludingGuarantee = totalSales !== null ? totalSales - (guaranteeBonus || 0) : null;
 
     // 1件あたり平均距離（後方互換用）
     let avgDistPerDelivery = null;
@@ -11324,6 +11357,8 @@ class Store {
       hasActiveSession: Boolean(log.workSessions && log.workSessions.some(s => s.start && !s.end)),
       workSessions: log.workSessions || [],
       avgSalesPerDelivery,
+      avgRegularPerDelivery,
+      salesExcludingGuarantee,
       avgFeePerDelivery: avgSalesPerDelivery,
       avgDistPerDelivery,
       quests: deduplicateQuests(log.quests || [])
@@ -11546,7 +11581,7 @@ class Store {
       totalSales: 0, deliverySales: 0, baseDeliverySales: 0, tipSales: 0, tipCount: 0,
       questSales: 0, specialQuestSales: 0, guaranteeOnlySales: 0, guaranteeBonus: 0,
       adjustmentSales: 0, otherSales: 0,
-      expenses: 0, bikeExpenses: 0, necessaryCategoryExpenses: 0,
+      expenses: 0, expenseCount: 0, expenseByCategory: {}, bikeExpenses: 0, necessaryCategoryExpenses: 0,
       regularSales: 0, workSeconds: 0, distanceKm: 0
     };
     this.getAllDailyLogs()
@@ -11568,8 +11603,13 @@ class Store {
         out.totalSales += (m.totalSales || 0);
         out.expenses += (m.totalExpenses || 0);
         (l.expenses || []).forEach(e => {
-          if (isBikeExpense(e)) out.bikeExpenses += Number(e.amount);
-          else if (Number(e.amount) > 0 && String(e.category || '').trim() === '必要経費') out.necessaryCategoryExpenses += Number(e.amount);
+          const amt = Number(e && e.amount);
+          if (!(amt > 0)) return; // 0円・マイナス・数値でない経費は必要経費に入れない（totalExpenses と同じ条件）
+          const cat = String(e.category || '').trim() || '（種類なし）';
+          out.expenseByCategory[cat] = (out.expenseByCategory[cat] || 0) + amt;
+          out.expenseCount++;
+          if (isBikeExpense(e)) out.bikeExpenses += amt;
+          else if (cat === '必要経費') out.necessaryCategoryExpenses += amt;
         });
         if (this.isWorkedDay(l)) {
           out.workedDays++;
@@ -11590,7 +11630,8 @@ class Store {
   }
 
   // 週・月・累計の売上サマリー取得（今週の売上を最重要管理）。集計はすべて aggregateForRange
-  //  今週: 基準日を含む月曜〜日曜（振込対象週。日付の区切りは0時） / 先週: その前の月曜〜日曜 / 今月: 当月1日〜基準日（未来日は含めない）
+  //  今週: 基準日を含む週の月曜〜基準日（振込対象週。日付の区切りは日本時間0時。未来日は含めない） / 先週: その前の月曜〜日曜 /
+  //  今月: 当月1日〜基準日（未来日は含めない）
   getRevenueSummary(dateStr = getTodayDateString()) {
     const allLogs = this.getAllDailyLogs();
 
@@ -11601,9 +11642,9 @@ class Store {
     const prevWeekSalesProfit = prevWeek.profit;
 
     let prevWeekComparison = null;
-    // 今週
+    // 今週（月曜〜基準日。基準日より後の日は含めない。表示の期間ラベル・振込予定日は月曜〜日曜のまま）
     const weekRange = getWeekRange(dateStr);
-    const week = this.aggregateForRange(weekRange.startStr, weekRange.endStr);
+    const week = this.aggregateForRange(weekRange.startStr, weekRange.endStr < dateStr ? weekRange.endStr : dateStr);
     const weekOfficialSales = week.totalSales;
 
     // 「今週の売上利益」＝ 総売上 － 必要経費（先週比も先週の同じ「売上利益」と比較）
@@ -11636,6 +11677,7 @@ class Store {
       periodLabel: cleanWeekPeriod,
       startDate: weekRange.startStr,
       endDate: weekRange.endStr,
+      aggregatedEndDate: week.endDate, // 集計の終了日（月曜〜基準日）
       salesProfit: weekSalesProfit,
       officialSales: weekOfficialSales,
       calculatedSales: weekOfficialSales,
@@ -12014,6 +12056,7 @@ if (typeof module !== 'undefined' && module.exports) {
     isBikeExpense,
     mergeExpenseLists,
     mergeDayUserData,
+    syncOfficialImportedDay,
     getTodayDateString,
     getCurrentTimeString,
     formatJapaneseDate,

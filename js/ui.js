@@ -166,8 +166,9 @@ class UI {
     // メイン数字：本日の実働時間（巨大）
     const durationEl = document.getElementById('today-work-duration-text');
     if (durationEl) {
+      // workMinutes は公式トリップ所要時間の合計（全トリップの時間が揃った日だけ）。表示は HH:MM（分析・履歴と同じ）
       if (metrics.workMinutes !== null) {
-        durationEl.textContent = formatMinutes(metrics.workMinutes);
+        durationEl.textContent = formatMinutesHHMM(metrics.workMinutes);
       } else if (isWorking) {
         durationEl.textContent = '稼働中';
       } else {
@@ -288,7 +289,8 @@ class UI {
           const regSalesEl = document.getElementById('settled-regular-sales');
           const bonusEl = document.getElementById('settled-guarantee-bonus');
           const totWithBonusEl = document.getElementById('settled-total-with-bonus');
-          if (regSalesEl) regSalesEl.textContent = `¥${(metrics.totalSales || 0).toLocaleString()}`;
+          // 通常稼働収入 = 総売上 − 新規ドライバー保証（以前は保証込みの総売上をそのまま表示していた）
+          if (regSalesEl) regSalesEl.textContent = `¥${(metrics.salesExcludingGuarantee || 0).toLocaleString()}`;
           if (bonusEl) bonusEl.textContent = `+¥${metrics.guaranteeBonus.toLocaleString()}`;
           if (totWithBonusEl) totWithBonusEl.textContent = `¥${(metrics.totalSalesWithBonus || 0).toLocaleString()}`;
         } else {
@@ -308,7 +310,8 @@ class UI {
       if (pSales) pSales.textContent = `¥${(metrics.totalSales || 0).toLocaleString()}`;
       if (pExpenses) pExpenses.textContent = `-¥${(metrics.totalExpenses || 0).toLocaleString()}`;
       if (pGrossHourly) pGrossHourly.textContent = metrics.grossHourlyWage !== null ? `¥${metrics.grossHourlyWage.toLocaleString()}/h` : '--';
-      if (pAvgDelivery) pAvgDelivery.textContent = metrics.avgSalesPerDelivery !== null ? `¥${metrics.avgSalesPerDelivery.toLocaleString()}/件` : '--';
+      // 1件平均は通常売上 ÷ 件数（分析・履歴の平均単価と同じ定義。特別クエスト・特別ボーナスを除く）
+      if (pAvgDelivery) pAvgDelivery.textContent = metrics.avgRegularPerDelivery !== null ? `¥${metrics.avgRegularPerDelivery.toLocaleString()}/件` : '--';
     } else if (settledCard) {
       settledCard.style.display = 'none';
     }
@@ -1565,10 +1568,9 @@ class UI {
       const yen = n => `${Math.round(n).toLocaleString('ja-JP')}円`;
       const km1 = n => (Math.round(n * 10) / 10).toFixed(1);
       const distVal = metrics.totalDistanceKm !== null ? metrics.totalDistanceKm : metrics.uberDeliveryDistanceKm;
-      const workText = metrics.workMinutes !== null
-        ? (metrics.workMinutes >= 60 ? `${Math.floor(metrics.workMinutes / 60)}時間${String(metrics.workMinutes % 60).padStart(2, '0')}分` : `${metrics.workMinutes}分`)
-        : '--';
-      // 収益の内訳（合計＝総売上）。特別クエスト＝特別クエスト（questType: special）＋新規保証等の特別収入
+      // 配達時間（公式トリップ所要時間の合計）。表示は HH:MM（分析と同じ）
+      const workText = metrics.workMinutes !== null ? formatMinutesHHMM(metrics.workMinutes) : '--';
+      // 収益の内訳（合計＝総売上）。特別ボーナス＝特別クエスト（questType: special）＋新規保証等の特別収入（分析の「特別ボーナス」と同じ）
       const specialSales = (metrics.specialQuestSales || 0) + (metrics.guaranteeBonus || 0);
       const normalQuestSales = (metrics.questSales || 0) - (metrics.specialQuestSales || 0);
       const specialNames = (metrics.specialQuests || []).map(sq => sq.name)
@@ -1587,15 +1589,16 @@ class UI {
       const row = (label, value, cls = '') => `<div class="hd-row${cls ? ' ' + cls : ''}"><span class="hd-label">${label}</span><span class="hd-val">${value}</span></div>`;
       const revenueRows = [
         row('総売上', metrics.totalSales !== null ? yen(metrics.totalSales) : '--', 'hd-total'),
-        row('配達報酬', metrics.deliverySales !== null ? yen(metrics.deliverySales) : '--'),
-        metrics.tipSales > 0 ? row(metrics.tipCount > 0 ? `うちチップ（${metrics.tipCount}件）` : 'うちチップ', yen(metrics.tipSales), 'hd-sub') : '',
+        // 内訳は分析の売上内訳と同じ項目・順番（配達報酬はチップを除いた額。合計＝総売上）
+        row('配達報酬', metrics.baseDeliverySales !== null ? yen(metrics.baseDeliverySales) : '--'),
         row('クエスト', yen(normalQuestSales)),
-        row('特別クエスト', yen(specialSales)),
+        row('特別ボーナス', yen(specialSales)),
         specialSales > 0 && specialNames.length ? `<div class="hd-note">${specialNames.join('・')}</div>` : '',
-        metrics.adjustmentSales !== 0 ? row('売上調整', `${metrics.adjustmentSales < 0 ? '−' : ''}${yen(Math.abs(metrics.adjustmentSales))}`) : '',
-        metrics.otherSales ? row('その他', yen(metrics.otherSales)) : '',
-        // 経費がある日だけ「経費 → 利益」（売上・経費・利益の関係をここで確認する。一覧には出さない）
-        metrics.totalExpenses > 0 ? row('経費', `−${yen(metrics.totalExpenses)}`, 'hd-sep') : '',
+        metrics.tipSales > 0 ? row('チップ', yen(metrics.tipSales)) : '',
+        metrics.adjustmentSales !== 0 ? row('調整', `${metrics.adjustmentSales < 0 ? '−' : ''}${yen(Math.abs(metrics.adjustmentSales))}`) : '',
+        metrics.otherSales ? row('その他', `${metrics.otherSales < 0 ? '−' : ''}${yen(Math.abs(metrics.otherSales))}`) : '',
+        // 必要経費がある日だけ「必要経費 → 利益」（売上・必要経費・利益の関係をここで確認する。一覧には出さない）。下の小さい行は経費の種類（バイクシェア等）
+        metrics.totalExpenses > 0 ? row('必要経費', `−${yen(metrics.totalExpenses)}`, 'hd-sep') : '',
         metrics.totalExpenses > 0 && expenseNames.length ? `<div class="hd-note">${expenseNames.join('・')}</div>` : '',
         metrics.totalExpenses > 0 && metrics.netProfit !== null ? row('利益', yen(metrics.netProfit), 'hd-profit') : ''
       ].join('');
@@ -1620,14 +1623,14 @@ class UI {
               <section class="hd-block hd-revenue">${head('revenue', '収益')}${revenueRows}</section>
               <section class="hd-block hd-work">${head('work', '稼働')}
                 ${row('配達件数', `${metrics.count}件`)}
-                ${row('走行距離', distVal !== null ? `${km1(distVal)}km` : '--')}
-                ${row('実働時間', workText)}
+                ${row('配達距離', distVal !== null ? `${km1(distVal)}km` : '--')}
+                ${row('配達時間', workText)}
               </section>
               <section class="hd-block hd-efficiency">${head('efficiency', '効率')}
                 ${row('平均距離', eff.avgDist)}
                 ${row('平均単価', eff.avgPrice)}
                 ${row('距離単価', eff.perKm)}
-                ${row('実働時給', eff.hourly)}
+                ${row('時給', eff.hourly)}
               </section>
             </div>
 
