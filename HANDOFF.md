@@ -76,7 +76,9 @@ UBER_LOG 正本開発引継ぎドキュメント（MASTER HANDOFF）
   6. 版番号は取込が v76 → v77 に更新済み（全ページ一致）。追加の版上げはしていない。
   7. テスト: run-all 18 passed / 2 known（Excel 原本欠落）/ 0 failed（公式取込 354・同期 35・取込サーバー 38・過去日同期 76・目標クエスト 15・データモデル 49・監査 OK・
      Uber Web 正規化 62・履歴画面 90・配達マップ 単体27/画面197・ルート判断 単体12/画面71・DROP画面 363）。
-  8. 取込画面の案内が矛盾する原因（今回は調査のみ・未修正）: tools/official-import/lib/import-job.js が (a) 構造化データのプレビュー確認待ち、(b) 反映前の確認項目、
+  8. commit / push（2026-10-14・origin/main へ push 済み）: 97d1654（テストの期待値を日別データから導出）→ 114bfab（data(2026-10-12): official import (21 trips, ¥8,799)）。
+     本記録は続く docs commit。Desktop\UBER_HANDOFF.txt も同じ内容に同期。
+  9. 取込画面の案内が矛盾する原因（今回は調査のみ・未修正）: tools/official-import/lib/import-job.js が (a) 構造化データのプレビュー確認待ち、(b) 反映前の確認項目、
      (c) 反映後の自動テスト失敗 を同じ状態 needs_review にしている。index.html の showStatus は needs_review の見出しを常に「UBER_LOG には反映していません」
      「もう一度『取り込み実行』を押してください」にしており、(c)（反映済み・未保存）では誤り（押し直すと再取込になる）。プレビューかどうかはメッセージ文字列の「プレビュー」で判定し、
      下部の案内（run-note・問題カードのボタン）は別の関数が問題の種類から作るため、上下で別々の文言になる。プレビューの集計欄は summary が無いと仮の数字（13trip・16件・¥4,982・¥1,000）を表示する。
