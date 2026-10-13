@@ -13,7 +13,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { ImportJob } = require('./lib/import-job.js');
+const { ImportJob, detectPending, jstToday } = require('./lib/import-job.js');
 const browserFetcher = require('./lib/browser-fetcher.js');
 
 const PORT = Number(process.env.UBER_LOG_PORT || 8088);
@@ -63,9 +63,17 @@ function readBody(req) {
   });
 }
 
+// 今日（日本時間）
 function todayStr() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return jstToday();
+}
+
+// 取込後の自動テスト（UBER_IMPORT_TEST_CMD: 'skip' / JSON 配列のコマンド。テスト・保守用）
+function testCommandFromEnv() {
+  const v = process.env.UBER_IMPORT_TEST_CMD;
+  if (v === 'skip') return 'skip';
+  if (v && v.trim().startsWith('[')) { try { return JSON.parse(v); } catch (e) { /* 既定に戻す */ } }
+  return undefined;
 }
 
 function validDate(date) {
@@ -107,12 +115,29 @@ async function handleApi(req, res, url) {
     try { payload = JSON.parse(await readBody(req)); } catch (e) { return send(res, 400, { error: `送信データを読めません: ${e.message}` }); }
     if (!validDate(payload.date)) return send(res, 400, { error: '日付が正しくありません' });
     if (payload.date > todayStr()) return send(res, 400, { error: '未来の日付は取り込めません' });
-    const testCommand = process.env.UBER_IMPORT_TEST_CMD === 'skip' ? 'skip' : undefined;
-    const job = new ImportJob({ root: ROOT, handoffFile: HANDOFF, date: payload.date, testCommand });
+    const job = new ImportJob({ root: ROOT, handoffFile: HANDOFF, date: payload.date, testCommand: testCommandFromEnv(), today: todayStr() });
     current = job;
     jobs.set(job.id, job);
     log(`import start ${job.id} ${payload.date} files=${(payload.files || []).length} keep=${(payload.keep || []).length}`);
     job.run(payload).then(() => log(`import end ${job.id} state=${job.state} ${job.message}`));
+    return send(res, 202, job.view());
+  }
+  // 反映済みで保存（commit・push）待ちの取込（サーバー再起動後も画面で「テストと保存を再開する」を出すため）
+  if (req.method === 'GET' && url.pathname === '/api/pending') {
+    return send(res, 200, { pending: detectPending(ROOT), today: todayStr() });
+  }
+  // テストと保存を再開する（取得・反映はやり直さない）
+  if (req.method === 'POST' && url.pathname === '/api/resume') {
+    if (current && current.state === 'running') return send(res, 409, { error: '取込を実行中です。完了までお待ちください。', job: current.view() });
+    let payload;
+    try { payload = JSON.parse(await readBody(req)); } catch (e) { return send(res, 400, { error: `送信データを読めません: ${e.message}` }); }
+    if (!validDate(payload.date)) return send(res, 400, { error: '日付が正しくありません' });
+    const job = new ImportJob({ root: ROOT, handoffFile: HANDOFF, date: payload.date, testCommand: testCommandFromEnv(), today: todayStr() });
+    job.phase = 'TESTING';
+    current = job;
+    jobs.set(job.id, job);
+    log(`resume start ${job.id} ${payload.date}`);
+    job.resume().then(() => log(`resume end ${job.id} phase=${job.phase} ${job.message}`));
     return send(res, 202, job.view());
   }
   if (req.method === 'GET' && (m = url.pathname.match(/^\/api\/jobs\/(current|job_\d+)$/))) {

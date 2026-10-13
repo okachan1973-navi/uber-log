@@ -8,18 +8,18 @@
     :root {
       --bg: #f4f5f7; --card: #fff; --text: #1d1f23; --muted: #6b7079; --line: #d9dce1;
       --accent: #0a7c5a; --accent-weak: #e3f4ee; --warn: #b3541e; --warn-weak: #fdf0e7; --err: #c62828; --err-weak: #fdeaea;
+      --info: #1f5fa8; --info-weak: #e8f0fb;
     }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Segoe UI", "Yu Gothic UI", "Meiryo", sans-serif; }
-    main { max-width: 980px; margin: 0 auto; padding: 28px 24px 60px; }
+    main { max-width: 980px; margin: 0 auto; padding: 24px 16px 60px; }
     h1 { font-size: 22px; margin: 0 0 4px; }
-    .lead { color: var(--muted); margin: 0 0 22px; font-size: 13px; }
-    .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; }
+    .lead { color: var(--muted); margin: 0 0 18px; font-size: 13px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
     .card h2 { font-size: 15px; margin: 0 0 10px; }
-    .step { display: inline-block; min-width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 11px; background: var(--accent); color: #fff; font-size: 12px; margin-right: 6px; }
     input[type=date] { font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; }
-    textarea { width: 100%; min-height: 220px; font: 13px/1.5 Consolas, "BIZ UDGothic", monospace; padding: 10px; border: 1px solid var(--line); border-radius: 6px; resize: vertical; }
-    .drop { border: 2px dashed var(--line); border-radius: 10px; padding: 26px; text-align: center; color: var(--muted); cursor: pointer; transition: .15s; }
+    textarea { width: 100%; min-height: 200px; font: 13px/1.5 Consolas, "BIZ UDGothic", monospace; padding: 10px; border: 1px solid var(--line); border-radius: 6px; resize: vertical; }
+    .drop { border: 2px dashed var(--line); border-radius: 10px; padding: 22px; text-align: center; color: var(--muted); cursor: pointer; transition: .15s; }
     .drop.over, .drop.attention { border-color: var(--accent); background: var(--accent-weak); color: var(--accent); }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px 12px; margin-top: 12px; font-size: 12px; }
     .img-item { display: flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; background: #fafbfc; min-width: 0; }
@@ -30,98 +30,113 @@
     .stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     .stat { background: var(--bg); border-radius: 8px; padding: 6px 12px; font-size: 13px; }
     .stat b { font-size: 16px; margin-left: 4px; }
+    .stat.total { background: var(--accent-weak); }
     .note { margin-top: 10px; padding: 8px 12px; border-radius: 6px; font-size: 13px; white-space: pre-wrap; }
     .note.warn { background: var(--warn-weak); color: var(--warn); }
     .note.ok { background: var(--accent-weak); color: var(--accent); }
     .note.err { background: var(--err-weak); color: var(--err); }
     button { font: inherit; border: 0; border-radius: 8px; padding: 10px 22px; cursor: pointer; }
-    .primary { background: var(--accent); color: #fff; font-weight: 700; font-size: 18px; padding: 14px 36px; }
-    .primary:disabled { background: #9fb8ae; cursor: default; }
+    button:disabled { cursor: default; opacity: .5; }
+    /* 主操作（緑）は画面に常に1つだけ（#primary） */
+    .primary { background: var(--accent); color: #fff; font-weight: 700; font-size: 18px; padding: 14px 32px; box-shadow: 0 2px 8px rgba(10,124,90,.3); }
     .ghost { background: var(--bg); color: var(--text); border: 1px solid var(--line); padding: 6px 14px; font-size: 13px; }
     .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
     .muted { color: var(--muted); font-size: 12px; }
-    .progress { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 4px; }
+    /* 次にやること */
+    #next { border-width: 2px; }
+    #next.ok { border-color: var(--accent); }
+    #next.warn { border-color: var(--warn); }
+    #next.err { border-color: var(--err); }
+    #next.info { border-color: var(--info); }
+    #phase-title { font-size: 20px; font-weight: 800; margin: 0; }
+    #next.ok #phase-title { color: var(--accent); }
+    #next.warn #phase-title { color: var(--warn); }
+    #next.err #phase-title { color: var(--err); }
+    #next.info #phase-title { color: var(--info); }
+    #phase-desc { margin: 6px 0 0; white-space: pre-wrap; }
+    #phase-desc b { font-weight: 800; }
+    .complete-big { font-size: 28px; font-weight: 900; color: var(--accent); margin: 10px 0 0; }
+    .progress { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 3px; }
     .progress li { color: var(--muted); }
     .progress li small { font-weight: 400; margin-left: 6px; }
-    .progress li.todo::before { content: "・ "; }
-    .progress li.doing { color: var(--text); font-weight: 700; }
-    .progress li.doing::before { content: "▶ "; color: var(--accent); }
+    .progress li .mk { display: inline-block; width: 1.4em; text-align: center; font-weight: 800; }
     .progress li.done { color: var(--accent); }
-    .progress li.done::before { content: "✓ "; }
-    .progress li.stopped { color: var(--warn); font-weight: 700; }
-    .progress li.stopped::before { content: "⏸ "; }
-    .progress li.failed { color: var(--err); font-weight: 700; }
-    .progress li.failed::before { content: "✕ "; }
+    .progress li.doing { color: var(--info); font-weight: 700; }
+    .progress li.waiting { color: var(--warn); font-weight: 700; }
+    .progress li.error { color: var(--err); font-weight: 700; }
+    .progress li.skip { color: var(--muted); }
     .problem .reason { color: var(--warn); font-size: 12px; }
     .problem { border: 1px solid var(--warn); background: var(--warn-weak); border-radius: 8px; padding: 12px 14px; margin-top: 10px; }
     .problem.error { border-color: var(--err); background: var(--err-weak); }
+    .problem.info { border-color: var(--line); background: #fafbfc; }
     .problem h3 { margin: 0 0 4px; font-size: 15px; }
-    .problem ul { margin: 6px 0; padding-left: 20px; }
+    .problem ul { margin: 6px 0; padding-left: 20px; max-height: 360px; overflow: auto; }
     .problem .detail { white-space: pre-wrap; font-size: 13px; }
-    .result h2 { font-size: 20px; }
-    .result table { border-collapse: collapse; font-size: 16px; }
-    .result td { padding: 3px 18px 3px 0; }
+    .result table { border-collapse: collapse; font-size: 15px; margin-top: 8px; }
+    .result td { padding: 2px 18px 2px 0; }
     .result td:last-child { font-weight: 700; text-align: right; }
-    .pass { display: inline-block; background: var(--accent); color: #fff; border-radius: 6px; padding: 2px 10px; font-weight: 700; margin-top: 8px; }
-    .link-btn { display: inline-block; margin-top: 14px; background: var(--accent); color: #fff; text-decoration: none; border-radius: 8px; padding: 10px 26px; font-weight: 700; }
+    details.legacy > summary { cursor: pointer; font-weight: 700; }
+    .locked { opacity: .55; pointer-events: none; }
     [hidden] { display: none !important; }
   </style>
 </head>
 <body>
 <main>
   <h1>UBER_LOG 公式取込</h1>
-  <p class="lead">日付・一覧・スクショを入れて「取り込み実行」を押すだけで、確認・反映・記録まで自動で行います。</p>
+  <p class="lead">Uber Web から取得 → 内容を確認 → UBER_LOG へ反映 → 自動テスト → 保存（HANDOFF・commit・push）を1本道で進めます。<br>
+    <b>押すのは「次にやること」の緑のボタンだけです。</b></p>
 
   <div class="note err" id="offline" hidden>この画面はPCのローカル専用です。デスクトップの「UBER_LOG」から開いてください。</div>
 
-  <section class="card">
-    <h2><span class="step">1</span>日付</h2>
+  <section class="card" id="date-card">
+    <h2>日付</h2>
     <input type="date" id="date">
     <span class="muted" id="date-note"></span>
+    <div id="today-warn" hidden></div>
   </section>
 
-  <section class="card" style="border-left: 4px solid var(--accent); background: #fdfefe;">
-    <h2><span class="step" style="background:#0984e3;">新</span>Uber Web公式実績の自動取得（Phase 1）</h2>
-    <p class="muted" style="margin: 0 0 10px; font-size: 13px;">Uber Driver Webから対象日のデータを構造化取得し、確認・反映します（コピペ・スクショ不要）。<br>
-    <span style="color:#d63031; font-weight:bold;">※</span> 「Uber画面を開く／ログイン」で起動するウィンドウは<strong>【Phase 1専用Edge】</strong>です。普段お使いの通常Edgeとは別プロファイルのため、この専用Edgeウィンドウで一度ログインを行ってください（ログイン状態は安全に保持されます）。</p>
+  <!-- 次にやること（見出し・説明・主ボタン・進捗は render() が phase から1か所で作る） -->
+  <section class="card" id="next">
+    <p id="phase-title">—</p>
+    <p id="phase-desc"></p>
+    <div id="next-warn"></div>
+    <div class="stats" id="summary"></div>
+    <div class="row" style="margin-top:14px"><button class="primary" id="primary" type="button" hidden></button><span class="muted" id="primary-note"></span></div>
+    <ul class="progress" id="progress"></ul>
+    <div id="problems"></div>
+    <div class="result" id="result" hidden></div>
+    <div class="row" style="margin-top:10px"><button class="ghost" id="btn-reset" type="button" hidden>別の日を取り込む（この取得結果は反映しない）</button></div>
+  </section>
+
+  <section class="card" id="uber-card">
+    <h2>Uber Web のログイン</h2>
+    <p class="muted" style="margin:0 0 8px">取得には【Phase 1専用Edge】で Uber にログインしている必要があります（普段の Edge とは別のウィンドウ・ログイン状態は保持されます）。</p>
     <div class="row">
-      <button class="primary" id="btn-browser-fetch" type="button" style="font-size:15px; padding:10px 24px; background:#0984e3;">Uber Webから自動取得</button>
       <button class="ghost" id="btn-open-uber" type="button">Uber画面を開く／ログイン</button>
       <span class="muted" id="browser-status-text"></span>
     </div>
   </section>
 
-  <section class="card">
-    <h2><span class="step">2</span>Uberアクティビティ一覧（コピーして貼り付け）</h2>
-    <textarea id="activity" placeholder="Delivery&#10;Wednesday, September 23rd, 2026&#10;17:15&#10;￥320&#10;View Details&#10;…"></textarea>
-    <div class="stats" id="parse-stats"></div>
-    <div id="parse-notes"></div>
+  <section class="card" id="legacy-card">
+    <details class="legacy" id="legacy">
+      <summary>スクショで取り込む（従来の方法・Uber Web で取得できないとき）</summary>
+      <p class="muted">Uberアクティビティ一覧を貼り付け、Delivery詳細のスクショを全部入れてから「スクショで取り込む」を押します。</p>
+      <h2 style="margin-top:12px">Uberアクティビティ一覧（コピーして貼り付け）</h2>
+      <textarea id="activity" placeholder="Delivery&#10;Wednesday, September 23rd, 2026&#10;17:15&#10;￥320&#10;View Details&#10;…"></textarea>
+      <div class="stats" id="parse-stats"></div>
+      <div id="parse-notes"></div>
+      <h2 style="margin-top:14px">公式スクリーンショット（Delivery詳細を全部ドラッグ）</h2>
+      <div class="drop" id="drop">ここに画像をドラッグ＆ドロップ（またはクリックして選択）<br><span class="muted">PNG / JPG・Delivery詳細部分だけを切り取った画像</span></div>
+      <input type="file" id="file-input" accept="image/png,image/jpeg" multiple hidden>
+      <div class="row" style="margin-top:10px">
+        <div class="stat">画像枚数<b id="img-count">0</b> 枚</div>
+        <button class="ghost" id="clear-images" type="button">画像をすべて外す</button>
+      </div>
+      <div id="img-notes"></div>
+      <div class="grid" id="img-list"></div>
+      <div class="row" style="margin-top:12px"><button class="ghost" id="run" type="button">スクショで取り込む</button><span id="run-note"></span></div>
+    </details>
   </section>
-
-  <section class="card">
-    <h2><span class="step">3</span>公式スクリーンショット（Delivery詳細を全部ドラッグ）</h2>
-    <div class="drop" id="drop">ここに画像をドラッグ＆ドロップ（またはクリックして選択）<br><span class="muted">PNG / JPG・Delivery詳細部分だけを切り取った画像</span></div>
-    <input type="file" id="file-input" accept="image/png,image/jpeg" multiple hidden>
-    <div class="row" style="margin-top:10px">
-      <div class="stat">画像枚数<b id="img-count">0</b> 枚</div>
-      <button class="ghost" id="clear-images" type="button">画像をすべて外す</button>
-    </div>
-    <div id="img-notes"></div>
-    <div class="grid" id="img-list"></div>
-  </section>
-
-  <section class="card">
-    <h2><span class="step">4</span>取り込み</h2>
-    <button class="primary" id="run" type="button">取り込み実行</button>
-    <div id="run-note"></div>
-    <div id="status" hidden>
-      <div class="note ok" id="status-msg"></div>
-      <ul class="progress" id="progress"></ul>
-    </div>
-    <div id="problems"></div>
-  </section>
-
-  <section class="card result" id="result" hidden></section>
 </main>
 
 <script src="lib/activity-parser.js"></script>
@@ -130,51 +145,202 @@
   const $ = id => document.getElementById(id);
   const P = window.UberActivityParser;
   const api = (p, opt = {}) => fetch(p, { ...opt, headers: { 'X-UBER-LOG': '1', ...(opt.headers || {}) } });
-  const yen = n => (n < 0 ? '-' : '') + '¥' + Math.abs(Number(n) || 0).toLocaleString();
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const hms = s => `${Math.floor(s / 3600)}:${String(Math.floor(s % 3600 / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  // 数字が無いときは「—」。架空の金額・件数は絶対に出さない
+  const has = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
+  const yen = n => has(n) ? (n < 0 ? '-' : '') + '¥' + Math.abs(Number(n)).toLocaleString() : '—';
+  const cnt = (n, unit = '') => has(n) ? `${Number(n).toLocaleString()}${unit}` : '—';
 
   let backend = false;
   let busy = false;
-  const saved = new Set();           // サーバーに保存済みの画像（外さない限り再送不要）
-  const added = new Map();           // 今回追加した画像 name -> { file, width }
-  let flagged = new Set();           // 確認が必要な画像
+  let view = null; // いま表示している取込（サーバーの job.view() または保存待ちの情報）
+  const saved = new Set();
+  const added = new Map();
+  let flagged = new Set();
+  let lastStopSig = '';
+  let sameStopCount = 0;
 
-  const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  // 今日（日本時間）
+  const todayStr = (() => { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); } catch (e) { const d = new Date(Date.now() + 9 * 3600e3); return d.toISOString().slice(0, 10); } })();
   $('date').value = todayStr;
   $('date').max = todayStr;
 
-  let lastJobSummary = null;
+  const TODAY_WARNING = '本日はまだ終了していません。この後の配達は含まれません。後で再取込すると最新の公式データへ更新できます（同じ日を取り込み直しても二重にはなりません）。';
 
-  // ---------- 一覧テキストの簡易解析 ----------
+  // ============================================================
+  // phase ごとの見出し・説明（この表だけが案内文の元。上下で別の文言を作らない）
+  // ============================================================
+  const PHASE = {
+    IDLE: { cls: 'info', title: 'Uber Web から取得します', desc: '日付を選んで「Uber Webから取得する」を押してください。取得した内容は、反映する前に確認できます。' },
+    FETCHING: { cls: 'info', title: '● 取得・検証中', desc: 'Uber Web から取得して内容を確かめています。このまま待ってください（ボタンを押す必要はありません）。' },
+    PREVIEW_READY: { cls: 'ok', title: 'Ⅱ 取得完了。内容を確認してください', desc: 'まだ UBER_LOG には反映していません。\n下の内容で良ければ <b>「この内容でUBER_LOGへ反映する」</b> を押してください。取り込みを押し直す必要はありません。' },
+    PREVIEW_BLOCKED: { cls: 'warn', title: 'Ⅱ 確認が必要です', desc: 'UBER_LOG にはまだ反映していません。下の項目を解決してください。' },
+    REFLECTING: { cls: 'info', title: '● UBER_LOG へ反映中', desc: 'このまま待ってください。' },
+    REFLECTED: { cls: 'info', title: '● UBER_LOG へ反映しました', desc: '続けて自動テストを行います。このまま待ってください。' },
+    TESTING: { cls: 'info', title: '● 自動テスト中', desc: 'UBER_LOG への反映は完了しています。テストが終わると自動で保存（HANDOFF・commit・push）します。このまま待ってください。' },
+    TEST_FAILED: { cls: 'err', title: '× 自動テストが失敗しました（保存はまだです）', desc: '<b>UBER_LOG には反映済みです。</b>\n<b>取り込みをやり直さないでください。</b>（もう一度取得・反映する必要はありません）\n<b>GitHub への保存はまだです。</b>\n原因を直したら「テストと保存を再開する」を押してください（テスト → HANDOFF → commit → push だけを行います）。' },
+    SAVING: { cls: 'info', title: '● 記録・保存中（HANDOFF・commit・push）', desc: 'このまま待ってください。' },
+    SAVE_FAILED: { cls: 'err', title: '× 記録・保存でエラーになりました', desc: '<b>UBER_LOG には反映済みです。取り込みをやり直さないでください。</b>\nGitHub への保存はまだです。原因を直したら「テストと保存を再開する」を押してください。' },
+    PUSH_FAILED: { cls: 'err', title: '× GitHub への送信だけ失敗しました', desc: 'UBER_LOG への反映と保存（commit）は完了しています。取り込みはやり直さないでください。\nネットワークを確認して「GitHubへの送信を再試行する」を押してください。' },
+    COMPLETE: { cls: 'ok', title: '✓ 全工程完了', desc: '次に押すボタンはありません。' },
+    ERROR: { cls: 'err', title: '× エラーで停止しました', desc: 'UBER_LOG には反映していません（変更なし）。原因を確認して「最初から取得し直す」を押してください。' }
+  };
+  const MARK = { done: ['✓', '完了'], doing: ['●', '実行中'], waiting: ['Ⅱ', 'ユーザー確認待ち'], error: ['×', 'エラー'], todo: ['・', '未実行'], skip: ['－', '不要'] };
+  const RUNNING = ['FETCHING', 'REFLECTING', 'REFLECTED', 'TESTING', 'SAVING'];
+  const LOCK_INPUT = [...RUNNING, 'PREVIEW_READY', 'TEST_FAILED', 'SAVE_FAILED', 'PUSH_FAILED'];
+
+  // 取得結果の数字（届いた値だけ。無い項目は「—」）
+  function summaryHtml(s, deliveries) {
+    if (!s) return '';
+    const tip = Array.isArray(deliveries) && deliveries.length ? deliveries.reduce((a, d) => a + (Number(d.tip) || 0), 0) : null;
+    const items = [
+      ['トリップ', cnt(s.trips)], ['配達件数', cnt(s.deliveriesCount, '件')], ['配達報酬（チップ込み）', yen(s.deliverySales)], ['うちチップ', yen(tip)],
+      ['クエスト', yen(s.questSales)], ['調整', yen(s.adjustmentSales)], ['総売上', yen(s.totalSales)],
+      ['距離', has(s.distanceKm) ? `${Number(s.distanceKm).toFixed(2)}km` : '—'], ['配達時間', s.durationText || '—']
+    ];
+    return items.map(([k, v]) => `<div class="stat${k === '総売上' ? ' total' : ''}">${esc(k)}<b>${esc(v)}</b></div>`).join('');
+  }
+
+  // ============================================================
+  // 画面の描画（ここだけが見出し・説明・主ボタン・進捗を決める）
+  // ============================================================
+  function render(v) {
+    view = v;
+    const phase = v ? v.phase : 'IDLE';
+    const t = PHASE[phase] || PHASE.ERROR;
+    $('next').className = `card ${t.cls}`;
+    $('phase-title').textContent = t.title;
+    $('phase-desc').innerHTML = t.desc;
+
+    // 今日の途中データの注意（取得前・確認・完了のどれでも）
+    const isToday = (v ? v.date : $('date').value) === todayStr;
+    $('today-warn').hidden = !isToday;
+    $('today-warn').innerHTML = isToday ? `<div class="note warn">${esc(TODAY_WARNING)}</div>` : '';
+    $('next-warn').innerHTML = v && (v.partialDay || (v.result && v.result.partialDay)) && ['PREVIEW_READY', 'COMPLETE'].includes(phase)
+      ? `<div class="note warn"><b>今日（${esc(v.date)}）の途中のデータです。</b>${esc(TODAY_WARNING)}</div>` : '';
+
+    // 数字（取得結果）
+    const r = v && v.result;
+    const pv = v && (v.problems || []).find(p => p.type === 'preview');
+    const s = (r && r.summary) || (pv && pv.summary) || null;
+    $('summary').innerHTML = phase === 'IDLE' ? '' : summaryHtml(s, r && r.deliveries);
+
+    // 主ボタン（1つだけ）
+    const next = phase === 'IDLE' ? { act: 'fetch', label: 'Uber Webから取得する' } : (v.next || null);
+    $('primary').hidden = !next || busy;
+    if (next) { $('primary').textContent = next.label; $('primary').dataset.act = next.act; $('primary').dataset.date = next.date || (v && v.date) || ''; }
+    $('primary-note').textContent = RUNNING.includes(phase) ? '処理中…（待つだけです）' : (!next && phase === 'PREVIEW_BLOCKED' ? '下の項目のボタンで選んでください' : '');
+
+    // 進捗
+    $('progress').innerHTML = (v && v.progress ? v.progress : []).map(p => {
+      const [mk, tag] = MARK[p.status] || MARK.todo;
+      return `<li class="${esc(p.status)}"><span class="mk">${mk}</span>${esc(p.label)}<small>${esc(tag)}</small></li>`;
+    }).join('');
+
+    // 問題・プレビューの明細
+    renderProblems(v);
+
+    // 完了
+    if (phase === 'COMPLETE') renderComplete(v); else { $('result').hidden = true; $('result').innerHTML = ''; }
+
+    // 入力のロック（反映待ち・保存待ち・処理中は新しい取込を始めさせない）
+    const lock = LOCK_INPUT.includes(phase) || busy;
+    ['date-card', 'legacy-card'].forEach(id => $(id).classList.toggle('locked', lock));
+    $('btn-reset').hidden = phase !== 'PREVIEW_READY' && phase !== 'PREVIEW_BLOCKED' && phase !== 'ERROR' && phase !== 'COMPLETE';
+    $('btn-reset').textContent = phase === 'PREVIEW_READY' ? '別の日を取り込む（この取得結果は反映しない）' : '別の日を取り込む';
+  }
+
+  function renderProblems(v) {
+    const phase = v ? v.phase : 'IDLE';
+    const problems = (v && v.problems) || [];
+    flagged = new Set();
+    const mapFiles = [];
+    let head = '';
+    if (phase === 'PREVIEW_BLOCKED' && problems.length) {
+      const sig = JSON.stringify(problems.map(p => [p.type, p.title, (p.items || []).map(i => i.file || i.key || '')]));
+      sameStopCount = sig === lastStopSig ? sameStopCount + 1 : 1;
+      lastStopSig = sig;
+      head = `<div class="note warn"><b>確認が必要な項目（${problems.length}件）</b> — 解決するまで UBER_LOG には反映しません。` +
+        (sameStopCount > 1 ? `<br><b>前回と同じ理由で停止しました（${sameStopCount}回目）。</b>下の項目を解決しないと同じ確認で止まります。` : '') + '</div>';
+    }
+    const isStructured = v && v.sourceType === 'structured';
+    $('problems').innerHTML = head + problems.map(p => {
+      (p.items || []).forEach(i => i.file && flagged.add(i.file));
+      if (p.type === 'map') (p.items || []).forEach(i => mapFiles.push(i.file));
+      const items = (p.items || []).map(i => {
+        if (p.type === 'quest') {
+          return `<li>${esc(`${i.time} ${yen(i.amount)}: ${(i.labels || []).map(l => `「${l}」`).join(' と ')}`)}` +
+            `<div class="row" style="margin-top:4px"><button class="ghost" type="button" data-act="count_once" data-key="${esc(i.key)}">同じ報酬（1回だけ計上）</button>` +
+            `<button class="ghost" type="button" data-act="count_all" data-key="${esc(i.key)}">別々の報酬（両方計上）</button></div></li>`;
+        }
+        const text = [i.time, i.amount !== undefined ? yen(i.amount) : '', i.fields ? `読めない項目: ${i.fields}` : '', i.file ? `（${i.file}）` : ''].filter(Boolean).join(' ');
+        return `<li>${esc(text)}${i.reason ? `<br><span class="reason">${esc(i.reason)}</span>` : ''}</li>`;
+      }).join('');
+      const actions = p.type === 'map'
+        ? `<div class="row" style="margin-top:8px">${isStructured ? '' : '<button class="ghost" type="button" data-act="add">スクショを追加する</button>'}<button class="ghost" type="button" data-act="mapless">MAPなしで取り込む</button></div>`
+        : (!isStructured && (p.type === 'unreadable' || p.type === 'other')) ? '<div class="row" style="margin-top:8px"><button class="ghost" type="button" data-act="add">スクショを追加する</button></div>' : '';
+      const cls = p.type === 'preview' ? 'problem info' : (['error', 'test', 'save', 'push'].includes(p.type) ? 'problem error' : 'problem');
+      const title = p.type === 'preview' ? `取得したトリップ（${(p.items || []).length}件）` : p.title;
+      return `<div class="${cls}"><h3>${esc(title)}</h3>${p.type === 'preview' ? '' : `<div class="detail">${esc(p.detail || '')}</div>`}${items ? `<ul>${items}</ul>` : ''}${actions}</div>`;
+    }).join('');
+    renderImages();
+    $('problems').querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
+      const act = b.dataset.act;
+      if (act === 'add') {
+        $('legacy').open = true;
+        $('drop').classList.add('attention');
+        $('drop').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else if (act === 'mapless' && confirm(`次の ${mapFiles.length} 件を MAP なしで取り込みます。よろしいですか？\n${mapFiles.join('\n')}`)) {
+        isStructured ? startBrowserFetch(false, { mapMissingOk: mapFiles }) : start({ mapMissingOk: mapFiles });
+      } else if ((act === 'count_once' || act === 'count_all') && confirm(act === 'count_once'
+        ? `${b.dataset.key.replace('|', ' ¥')} は同じ報酬の2種類の表示として、1回だけ計上します（二重計上しない）。よろしいですか？`
+        : `${b.dataset.key.replace('|', ' ¥')} は別々に受け取った報酬として、両方とも計上します。よろしいですか？`)) {
+        const d = { questDuplicates: { [b.dataset.key]: act } };
+        isStructured ? startBrowserFetch(false, d) : start(d);
+      }
+    }));
+  }
+
+  function renderComplete(v) {
+    const r = v.result || {};
+    const [y, m, d] = String(r.date || v.date).split('-');
+    const extra = r.unchanged
+      ? '<p class="muted">この日はすでに同じ内容で取り込み済みでした（変更なし・二重登録なし）。</p>'
+      : `<p class="muted">保存: commit ${esc(r.commit || '—')}${r.pushed ? '・GitHub へ送信済み' : ''}${r.version ? ` / version ${esc(r.version)}` : ''}</p>`;
+    $('result').innerHTML = `<p class="complete-big">✓ 取込完了</p><p class="muted">${esc(`${y}/${m}/${d}`)}</p>${extra}
+      ${(r.warnings || []).length ? `<details><summary class="muted">注意 ${r.warnings.length} 件</summary><ul class="muted">${r.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul></details>` : ''}
+      <a class="ghost" style="display:inline-block;margin-top:10px;text-decoration:none" href="/">UBER_LOGを見る</a>`;
+    $('result').hidden = false;
+  }
+
+  // ============================================================
+  // 主ボタン
+  // ============================================================
+  $('primary').addEventListener('click', () => {
+    const act = $('primary').dataset.act;
+    const date = $('primary').dataset.date || $('date').value;
+    if (act === 'fetch') startBrowserFetch(false);
+    else if (act === 'apply') { if (confirm('取得した内容を UBER_LOG へ反映します。よろしいですか？')) startBrowserFetch(true); }
+    else if (act === 'resume') resume(date);
+    else if (act === 'restart') (view && view.sourceType === 'screenshots') ? start() : startBrowserFetch(false);
+    else if (act === 'revalidate') (view && view.sourceType === 'screenshots') ? start() : startBrowserFetch(false);
+  });
+  $('btn-reset').addEventListener('click', () => { lastStopSig = ''; sameStopCount = 0; render(null); });
+
+  // ---------- 一覧テキストの簡易解析（貼り付けた一覧から数えた値だけを出す） ----------
   function renderParse() {
     const date = $('date').value;
     const text = $('activity').value;
-    if (!text.trim() && !lastJobSummary) { $('parse-stats').innerHTML = ''; $('parse-notes').innerHTML = ''; return; }
-    const s = text.trim() ? P.summarize(P.parseActivityText(text, { defaultYear: date.slice(0, 4) }), date) : {};
-    const sm = lastJobSummary || {};
-    const trips = sm.trips != null ? sm.trips : (s.delivery || 0);
-    const deliveriesCount = sm.deliveriesCount != null ? sm.deliveriesCount : (s.delivery || 0);
-    const deliverySales = sm.deliverySales != null ? sm.deliverySales : (s.deliverySales || 0);
-    const questSales = sm.questSales != null ? sm.questSales : (s.questSales || 0);
-    const adjustmentSales = sm.adjustmentSales != null ? sm.adjustmentSales : (s.adjustmentSales || 0);
-    const totalSales = deliverySales + questSales + adjustmentSales;
-
-    $('parse-stats').innerHTML = [
-      ['Trip数', trips],
-      ['実配達件数', deliveriesCount],
-      ['配達報酬', yen(deliverySales)],
-      ['クエスト', yen(questSales)],
-      ['調整', yen(adjustmentSales)],
-      ['総売上', yen(totalSales)]
-    ].map(([k, v]) => `<div class="stat">${esc(k)}<b>${esc(String(v))}</b></div>`).join('');
+    if (!text.trim()) { $('parse-stats').innerHTML = ''; $('parse-notes').innerHTML = ''; return; }
+    const s = P.summarize(P.parseActivityText(text, { defaultYear: date.slice(0, 4) }), date);
+    $('parse-stats').innerHTML = [['Delivery', cnt(s.delivery, '件')], ['配達報酬', yen(s.deliverySales)], ['クエスト', yen(s.questSales)], ['調整', yen(s.adjustmentSales)]]
+      .map(([k, v]) => `<div class="stat">${esc(k)}<b>${esc(String(v))}</b></div>`).join('');
     const notes = [];
-    if (!trips && !s.delivery) notes.push(['err', `${date} の Delivery が見つかりません。日付とコピー範囲（日付の行も含めて）を確認してください`]);
+    if (!s.delivery) notes.push(['err', `${date} の Delivery が見つかりません。日付とコピー範囲（日付の行も含めて）を確認してください`]);
     if (s.otherDates) notes.push(['ok', `${date} 以外の日付のイベント ${s.otherDates} 件は取込対象外です`]);
     if (s.unknown) notes.push(['warn', `未分類・対象外のイベントが ${s.unknown} 件あります（取込時に確認が必要になります）`]);
     const n = saved.size + added.size;
-    if (!lastJobSummary && s.delivery && n && s.delivery !== n) notes.push(['warn', `Delivery ${s.delivery} 件に対してスクショ ${n} 枚です`]);
+    if (s.delivery && n && s.delivery !== n) notes.push(['warn', `Delivery ${s.delivery} 件に対してスクショ ${n} 枚です`]);
     $('parse-notes').innerHTML = notes.map(([c, t]) => `<div class="note ${c}">${esc(t)}</div>`).join('');
   }
   $('activity').addEventListener('input', renderParse);
@@ -194,8 +360,7 @@
     const n = saved.size + added.size;
     $('img-count').textContent = n;
     const wide = [...added.values()].filter(i => i.width > 800);
-    $('img-notes').innerHTML = wide.length
-      ? `<div class="note warn">画面全体のスクショが ${wide.length} 枚あります（幅800px超）。Delivery詳細部分だけを切り取った画像にしてください。</div>` : '';
+    $('img-notes').innerHTML = wide.length ? `<div class="note warn">画面全体のスクショが ${wide.length} 枚あります（幅800px超）。Delivery詳細部分だけを切り取った画像にしてください。</div>` : '';
     const items = [...[...saved].map(name => ({ name, tag: '保存済み' })), ...[...added.values()].map(i => ({ name: i.file.name, tag: `${i.width}×${i.height}` }))]
       .sort((a, b) => a.name.localeCompare(b.name, 'ja'));
     $('img-list').innerHTML = items.map(i => `<div class="img-item${flagged.has(i.name) ? ' flag' : ''}" title="${esc(i.name)}"><span>${esc(i.name)}<br><small>${esc(i.tag)}</small></span><button type="button" data-remove="${esc(i.name)}" title="外す">×</button></div>`).join('');
@@ -225,7 +390,7 @@
         const r = await (await api(`/api/inbox/${date}`)).json();
         if (r.activity) $('activity').value = r.activity;
         (r.screenshots || []).forEach(n => saved.add(n));
-        if (r.activity || (r.screenshots || []).length) $('date-note').textContent = `（${date} の保存済みデータを読み込みました）`;
+        if (r.activity || (r.screenshots || []).length) $('date-note').textContent = `（${date} の保存済みのスクショ・一覧を読み込みました）`;
       } catch (e) { /* 読めなくても入力は続けられる */ }
     }
     renderImages();
@@ -233,29 +398,34 @@
   $('date').addEventListener('change', async () => {
     $('activity').value = '';
     await loadDate();
-    $('result').hidden = true;
-    $('problems').innerHTML = '';
-    $('status').hidden = true;
-    $('run-note').innerHTML = '';
-    $('run').disabled = !backend;
-    try {
-      const res = await api('/api/jobs/current');
-      if (res.ok) {
-        const job = await res.json();
-        if (job.date === $('date').value) {
-          await restoreJob(job);
-        }
-      }
-    } catch (e) {}
+    render(null);
   });
 
-  // ---------- 実行 ----------
+  // ============================================================
+  // 実行（取得・反映・再開）
+  // ============================================================
   const toBase64 = file => new Promise((resolve, reject) => {
     const r = new FileReader();
     r.onload = () => resolve(String(r.result).split(',')[1]);
     r.onerror = reject;
     r.readAsDataURL(file);
   });
+  function note(kind, text) { $('run-note').innerHTML = `<span class="note ${kind}" style="display:inline-block;margin:0">${esc(text)}</span>`; }
+  const localView = (phase, extra = {}) => ({ phase, date: $('date').value, progress: [], problems: [], ...extra });
+
+  async function send(path, body, startingPhase) {
+    busy = true;
+    render(localView(startingPhase, view ? { result: view.result, sourceType: view.sourceType, problems: [] } : {}));
+    try {
+      const res = await api(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const job = await res.json();
+      if (!res.ok) throw new Error(job.error || `開始に失敗しました（${res.status}）`);
+      poll(job.id);
+    } catch (e) {
+      busy = false;
+      render(localView('ERROR', { next: { act: 'restart', label: '最初から取得し直す' }, problems: [{ type: 'error', title: 'エラー', detail: e.message }] }));
+    }
+  }
 
   async function start(decisions) {
     if (busy) return;
@@ -266,118 +436,70 @@
     if (date > todayStr) return note('err', '未来の日付は取り込めません');
     if (!text.trim()) return note('err', 'Uberアクティビティ一覧を貼り付けてください');
     if (!saved.size && !added.size) return note('err', 'Delivery詳細のスクショを入れてください');
-    busy = true;
-    $('run').disabled = true;
-    $('result').hidden = true;
-    $('problems').innerHTML = '';
-    showStatus('保存中...', null, 'save');
-    try {
-      const files = [];
-      for (const { file } of added.values()) files.push({ name: file.name, data: await toBase64(file) });
-      const res = await api('/api/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, activity: text, keep: [...saved], files, decisions }) });
-      const job = await res.json();
-      if (!res.ok) throw new Error(job.error || `送信に失敗しました（${res.status}）`);
-      [...added.keys()].forEach(n => saved.add(n));
-      added.clear();
-      renderImages();
-      poll(job.id);
-    } catch (e) {
-      finish();
-      showProblems([{ type: 'error', title: 'エラー', detail: e.message }]);
-    }
-  }
-  function note(kind, text) { $('run-note').innerHTML = `<div class="note ${kind}">${esc(text)}</div>`; }
-  function finish() {
-    busy = false;
-    $('run').disabled = !backend;
-    if ($('btn-browser-fetch')) $('btn-browser-fetch').disabled = !backend;
+    const files = [];
+    for (const { file } of added.values()) files.push({ name: file.name, data: await toBase64(file) });
+    [...added.keys()].forEach(n => saved.add(n));
+    const keep = [...saved];
+    added.clear();
+    send('/api/import', { date, activity: text, keep, files, decisions }, 'FETCHING');
   }
 
-  async function startBrowserFetch(confirmed = false, decisions = null) {
+  function startBrowserFetch(confirmed = false, decisions = null) {
     if (busy) return;
     const date = $('date').value;
-    $('run-note').innerHTML = '';
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return note('err', '日付を選んでください');
-    if (date > todayStr) return note('err', '未来の日付は取り込めません');
-    busy = true;
-    $('run').disabled = true;
-    $('btn-browser-fetch').disabled = true;
-    $('result').hidden = true;
-    $('problems').innerHTML = '';
-    showStatus(confirmed ? 'UBER_LOGへ反映中...' : (decisions ? '重複判定を更新中...' : 'Uber Webから自動取得を開始中...'), null, confirmed ? 'apply' : 'save');
-    try {
-      const payload = { date, useBrowser: true, confirmed };
-      if (decisions) payload.decisions = decisions;
-      const res = await api('/api/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const job = await res.json();
-      if (!res.ok) throw new Error(job.error || `開始に失敗しました（${res.status}）`);
-      poll(job.id);
-    } catch (e) {
-      finish();
-      showProblems([{ type: 'error', title: 'エラー', detail: e.message }]);
-    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+    if (date > todayStr) return;
+    const payload = { date, useBrowser: true, confirmed };
+    if (decisions) payload.decisions = decisions;
+    send('/api/import', payload, confirmed ? 'REFLECTING' : 'FETCHING');
   }
 
-  $('btn-browser-fetch').addEventListener('click', () => startBrowserFetch(false));
+  function resume(date) {
+    if (busy) return;
+    send('/api/resume', { date }, 'TESTING');
+  }
 
+  async function poll(id) {
+    let job;
+    try { job = await (await api(`/api/jobs/${id}`)).json(); } catch (e) { setTimeout(() => poll(id), 1500); return; }
+    busy = job.state === 'running';
+    render(job);
+    if (busy) setTimeout(() => poll(id), 1000);
+  }
+
+  $('run').addEventListener('click', () => start());
+
+  // ---------- Uber Web のログイン ----------
   async function refreshBrowserStatus() {
     if (!backend) return;
     try {
       const res = await api('/api/browser/status');
-      if (res.status === 404) {
-        $('browser-status-text').innerHTML = '<span style="color:var(--err)">サーバーの再起動が必要です（旧バージョンのサーバーが動作中）。</span>';
-        return;
-      }
+      if (res.status === 404) { $('browser-status-text').innerHTML = '<span style="color:var(--err)">サーバーの再起動が必要です（旧バージョンのサーバーが動作中）。</span>'; return; }
       if (!res.ok) return;
       const data = await res.json();
-      if (!data.browserAvailable) {
-        $('browser-status-text').innerHTML = '<span style="color:var(--err)">Edge / Chrome が見つかりません</span>';
-        return;
-      }
+      if (!data.browserAvailable) { $('browser-status-text').innerHTML = '<span style="color:var(--err)">Edge / Chrome が見つかりません</span>'; return; }
       const st = data.status || {};
-      if (st.authenticated) {
-        $('browser-status-text').innerHTML = '<span style="color:#00b894;font-weight:bold;">✓ Uber Webログイン済み</span>';
-      } else if (st.needsLogin) {
-        $('browser-status-text').innerHTML = '<span style="color:#d63031;font-weight:bold;">⚠ Phase 1専用Edgeでのログインが必要です</span>（開いた専用Edgeで手動ログインしてください）';
-      } else if (st.unknown) {
-        $('browser-status-text').innerHTML = '<span style="color:#636e72;">Uber画面を確認中…</span>';
-      } else if (st.running) {
-        $('browser-status-text').textContent = st.message || 'ブラウザ起動中';
-      } else {
-        $('browser-status-text').textContent = 'ブラウザ未起動（「Uber画面を開く／ログイン」を押してください）';
-      }
-    } catch (e) {
-      // ネットワーク切断等は無視
-    }
+      if (st.authenticated) $('browser-status-text').innerHTML = '<span style="color:var(--accent);font-weight:bold;">✓ Uber Webログイン済み</span>';
+      else if (st.needsLogin) $('browser-status-text').innerHTML = '<span style="color:var(--err);font-weight:bold;">⚠ 専用Edgeでのログインが必要です</span>（開いた専用Edgeで手動ログインしてください）';
+      else if (st.unknown) $('browser-status-text').textContent = 'Uber画面を確認中…';
+      else if (st.running) $('browser-status-text').textContent = st.message || 'ブラウザ起動中';
+      else $('browser-status-text').textContent = 'ブラウザ未起動（取得するときに自動で開きます。ログインが必要なら「Uber画面を開く／ログイン」）';
+    } catch (e) { /* ネットワーク切断等は無視 */ }
   }
-
   $('btn-open-uber').addEventListener('click', async () => {
     try {
       $('browser-status-text').textContent = 'ブラウザを起動しています...';
       const res = await api('/api/browser/launch', { method: 'POST' });
-      if (res.status === 404) {
-        $('browser-status-text').innerHTML = '<span style="color:var(--err);font-weight:bold;">サーバーが古い状態（404 route not found）です。UBER_LOG サーバーを再起動してください。</span>';
-        return;
-      }
+      if (res.status === 404) { $('browser-status-text').innerHTML = '<span style="color:var(--err);font-weight:bold;">サーバーが古い状態です。UBER_LOG サーバーを再起動してください。</span>'; return; }
       const data = await res.json();
       if (data.ok) {
-        if (data.visible === false) {
-          $('browser-status-text').innerHTML = '<span style="color:var(--err);font-weight:bold;">専用Edgeの可視ウィンドウを確認できませんでした。デスクトップの「Uber_Phase1_Edge起動.bat」から起動してください。</span>';
-        } else {
-          $('browser-status-text').innerHTML = data.attached
-            ? '<span style="color:#00b894;font-weight:bold;">専用Edgeに接続しました。</span>別ウィンドウのUber画面をご確認ください。'
-            : '<span style="color:#00b894;font-weight:bold;">専用Edgeを画面に表示しました。</span>Uber画面で手動ログインしてください。';
-        }
+        $('browser-status-text').innerHTML = data.visible === false
+          ? '<span style="color:var(--err);font-weight:bold;">専用Edgeの画面を確認できませんでした。デスクトップの「Uber_Phase1_Edge起動.bat」から起動してください。</span>'
+          : (data.attached ? '<span style="color:var(--accent);font-weight:bold;">専用Edgeに接続しました。</span>別ウィンドウのUber画面をご確認ください。' : '<span style="color:var(--accent);font-weight:bold;">専用Edgeを表示しました。</span>Uber画面で手動ログインしてください。');
         setTimeout(refreshBrowserStatus, 1500);
         setTimeout(refreshBrowserStatus, 4000);
       } else {
-        const msg = data.code === 'browser_not_found'
-          ? 'ブラウザ実行ファイル（Edge / Chrome）が見つかりません。'
-          : (data.error || '専用Edgeを起動できませんでした。デスクトップの「Uber_Phase1_Edge起動.bat」から起動してください。');
+        const msg = data.code === 'browser_not_found' ? 'ブラウザ（Edge / Chrome）が見つかりません。' : (data.error || '専用Edgeを起動できませんでした。');
         $('browser-status-text').innerHTML = `<span style="color:var(--err);font-weight:bold;">${esc(msg)}</span>`;
       }
     } catch (e) {
@@ -385,225 +507,47 @@
     }
   });
 
-  // 状態ごとの見出し（処理中／確認待ちで停止／エラーで停止／完了 を一目で区別する）
-  const STATE_HEAD = {
-    running: '▶ 処理中',
-    needs_review: '⏸ 確認待ちのため停止しています（処理は動いていません・UBER_LOG には反映していません）',
-    error: '✕ エラーで停止しました（処理は動いていません）',
-    done: '✓ 完了'
-  };
-  // 工程名から「中」を外す（完了・停止した工程に「保存中」と出さない）
-  const stepName = label => String(label).replace(/中(?=（|$)/, '');
-
-  function showStatus(msg, steps, stepKey, state = 'running') {
-    $('status').hidden = false;
-    const isPreview = msg && /プレビュー/i.test(msg);
-    const head = (state === 'needs_review' && isPreview) ? '⏸ プレビュー確認待ち（UBER_LOG 本体にはまだ反映していません）' : (STATE_HEAD[state] || '');
-    const body = state === 'running' ? msg
-      : state === 'needs_review' ? (isPreview ? '取得した内容を確認し、問題がなければ下の「✓ この内容でUBER_LOGへ反映する」を押してください。' : '下の「確認が必要な項目」を解決してから、もう一度「取り込み実行」を押してください。')
-      : state === 'error' ? String(msg).replace(/^エラーで停止しました:\s*/, '')
-      : msg;
-    $('status-msg').innerHTML = `<b>${esc(head)}</b>${body && body !== head ? `<br>${esc(body)}` : ''}`;
-    $('status-msg').className = `note ${state === 'error' ? 'err' : state === 'needs_review' ? (isPreview ? 'ok' : 'warn') : 'ok'}`;
-    if (!steps) return;
-    const idx = steps.findIndex(s => s.key === stepKey);
-    $('progress').innerHTML = steps.filter(s => s.key !== 'done').map((s, i) => {
-      let cls = 'todo', tag = '未実行';
-      if (state === 'done' || i < idx) { cls = 'done'; tag = '完了'; }
-      else if (i === idx && state === 'running') { cls = 'doing'; tag = '処理中…'; }
-      else if (i === idx && state === 'needs_review') { cls = 'stopped'; tag = isPreview ? 'プレビュー表示中' : '確認待ちで停止'; }
-      else if (i === idx && state === 'error') { cls = 'failed'; tag = 'エラーで停止'; }
-      return `<li class="${cls}">${esc(stepName(s.label))}<small>${esc(tag)}</small></li>`;
-    }).join('');
-  }
-
-  // 同じ理由で繰り返し止まっているか（「取り込み実行」を押し直しても解決しない場合に明示する）
-  let lastStopSig = '';
-  let sameStopCount = 0;
-
-  let lastJob = null;
-
-  async function poll(id) {
-    let job;
-    try { job = await (await api(`/api/jobs/${id}`)).json(); } catch (e) { setTimeout(() => poll(id), 1500); return; }
-    lastJob = job;
-    if (job.result && job.result.summary) {
-      lastJobSummary = job.result.summary;
-      renderParse();
-    }
-    showStatus(job.message, job.steps, job.step, job.state);
-    if (job.state === 'running') { setTimeout(() => poll(id), 1000); return; }
-    finish();
-    if (job.problems && job.problems.length) showProblems(job.problems, job.state, job);
-    if (job.state === 'done') showResult(job);
-  }
-
-  function showProblems(problems, state, job) {
-    flagged = new Set();
-    const mapFiles = [];
-    let head = '';
-    const currentJob = job || lastJob;
-    const isStructured = (currentJob && currentJob.sourceType === 'structured') || problems.some(p => p.type === 'preview');
-    const isPreview = problems.some(p => p.type === 'preview');
-    if (state === 'needs_review') {
-      if (isPreview) {
-        head = `<div class="note ok" style="border-left: 4px solid #00b894; background: #e6fcf5; color: #087f5b; margin-bottom: 12px; font-size:15px; padding:12px 16px;">` +
-          `<b>✓ Uber Webからの構造化データ取得が完了しました</b><br>` +
-          `全トリップの正規化・照合・プレビュー作成が完了しています。<br>` +
-          `内容を確認し、問題がなければ下の<b>「✓ この内容でUBER_LOGへ反映する」</b>を押してください。<br>` +
-          `<span style="color:#d63031;font-weight:bold;">※ 従来の「取り込み実行」ボタンは押さないでください。</span>` +
-          `</div>`;
-      } else {
-        const sig = JSON.stringify(problems.map(p => [p.type, p.title, (p.items || []).map(i => i.file || i.key || '')]));
-        sameStopCount = sig === lastStopSig ? sameStopCount + 1 : 1;
-        lastStopSig = sig;
-        head = `<div class="note warn"><b>確認が必要な項目（${problems.length}件）</b> — 解決するまで UBER_LOG には反映しません。` +
-          (sameStopCount > 1 ? `<br><b>前回と同じ理由で停止しました（${sameStopCount}回目）。</b>下の項目を解決しないまま「取り込み実行」を押しても、同じ確認で止まります。` : '') + '</div>';
-      }
-    }
-    if (isPreview) {
-      $('run').disabled = true;
-      $('run-note').innerHTML = '<div class="note warn" style="margin-top:8px;"><b>構造化データのプレビュー確認待ちです。</b><br>下の「✓ この内容でUBER_LOGへ反映する」ボタンを押してください。<b style="color:var(--err)">※ 従来の「取り込み実行」は不要です。</b></div>';
-    }
-    $('problems').innerHTML = head + problems.map(p => {
-      (p.items || []).forEach(i => i.file && flagged.add(i.file));
-      if (p.type === 'map') (p.items || []).forEach(i => mapFiles.push(i.file));
-      const items = (p.items || []).map(i => {
-        if (p.type === 'quest') {
-          return `<li>${esc(`${i.time} ${yen(i.amount)}: ${(i.labels || []).map(l => `「${l}」`).join(' と ')}`)}` +
-            `<div class="row" style="margin-top:4px"><button class="ghost" type="button" data-act="count_once" data-key="${esc(i.key)}">同じ報酬（1回だけ計上）</button>` +
-            `<button class="ghost" type="button" data-act="count_all" data-key="${esc(i.key)}">別々の報酬（両方計上）</button></div></li>`;
-        }
-        const text = [i.time, i.amount !== undefined ? yen(i.amount) : '', i.fields ? `読めない項目: ${i.fields}` : '', i.file ? `（${i.file}）` : ''].filter(Boolean).join(' ');
-        return `<li>${esc(text)}${i.reason ? `<br><span class="reason">${esc(i.reason)}</span>` : ''}</li>`;
-      }).join('');
-      const summaryStats = p.type === 'preview' ? (() => {
-        const sm = p.summary || lastJobSummary || {};
-        const trips = sm.trips != null ? sm.trips : 13;
-        const deliveriesCount = sm.deliveriesCount != null ? sm.deliveriesCount : 16;
-        const deliverySales = sm.deliverySales != null ? sm.deliverySales : 4982;
-        const questSales = sm.questSales != null ? sm.questSales : 1000;
-        const adjustmentSales = sm.adjustmentSales != null ? sm.adjustmentSales : 0;
-        const totalSales = deliverySales + questSales + adjustmentSales;
-        const stats = [
-          ['Trip数', trips],
-          ['実配達件数', deliveriesCount],
-          ['配達報酬', yen(deliverySales)],
-          ['クエスト', yen(questSales)],
-          ['調整', yen(adjustmentSales)],
-          ['総売上', yen(totalSales)]
-        ];
-        return `<div class="stats" style="margin: 14px 0 10px 0; background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #dfe6e9; display: flex; flex-wrap: wrap; gap: 10px;">` +
-          stats.map(([k, v]) => `<div class="stat" style="min-width: 95px; padding: 8px 14px; background: ${k === '総売上' ? '#e6fcf5' : '#f8f9fa'}; border-radius: 6px; border: ${k === '総売上' ? '1px solid #00b894' : '1px solid #eee'};">${esc(k)}<b style="${k === '総売上' ? 'color:#00b894; font-size:1.3em;' : 'font-size:1.15em;'}">${esc(String(v))}</b></div>`).join('') +
-          `</div>`;
-      })() : '';
-      const topAction = p.type === 'preview'
-        ? `<div class="row" style="margin:12px 0 16px 0"><button class="primary" type="button" data-act="apply_confirmed" style="background:#00b894;padding:12px 28px;font-size:16px;font-weight:bold;cursor:pointer;box-shadow:0 2px 8px rgba(0,184,148,0.35);">✓ この内容でUBER_LOGへ反映する</button></div>`
-        : '';
-      const actions = p.type === 'map'
-        ? `<div class="row" style="margin-top:8px">${isStructured ? '' : '<button class="ghost" type="button" data-act="add">スクショを追加する</button>'}<button class="ghost" type="button" data-act="mapless">MAPなしで取り込む</button></div>`
-        : (p.type === 'unreadable' || p.type === 'other') ? (isStructured ? '' : `<div class="row" style="margin-top:8px"><button class="ghost" type="button" data-act="add">スクショを追加する</button></div>`)
-        : p.type === 'preview' ? `<div class="row" style="margin-top:14px"><button class="primary" type="button" data-act="apply_confirmed" style="background:#00b894;padding:12px 28px;font-size:16px;font-weight:bold;cursor:pointer;box-shadow:0 2px 8px rgba(0,184,148,0.35);">✓ この内容でUBER_LOGへ反映する</button></div>` : '';
-      return `<div class="problem${p.type === 'error' ? ' error' : ''}"><h3>${esc(p.title)}</h3><div class="detail">${esc(p.detail || '')}</div>${summaryStats}${topAction}${items ? `<ul>${items}</ul>` : ''}${actions}</div>`;
-    }).join('');
-    renderImages();
-    $('problems').querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
-      const act = b.dataset.act;
-      if (act === 'apply_confirmed') {
-        if (confirm('取得した構造化データの内容を UBER_LOG へ反映します。よろしいですか？')) {
-          startBrowserFetch(true);
-        }
-      } else if (act === 'add') {
-        drop.classList.add('attention');
-        drop.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else if (act === 'mapless' && confirm(`次の ${mapFiles.length} 件を MAP なしで取り込みます。よろしいですか？\n${mapFiles.join('\n')}`)) {
-        start({ mapMissingOk: mapFiles });
-      } else if ((act === 'count_once' || act === 'count_all') && confirm(act === 'count_once'
-        ? `${b.dataset.key.replace('|', ' ¥')} は同じ報酬の2種類の表示として、1回だけ計上します（二重計上しない）。よろしいですか？`
-        : `${b.dataset.key.replace('|', ' ¥')} は別々に受け取った報酬として、両方とも計上します。よろしいですか？`)) {
-        if (isStructured) {
-          startBrowserFetch(false, { questDuplicates: { [b.dataset.key]: act } });
-        } else {
-          start({ questDuplicates: { [b.dataset.key]: act } });
-        }
-      }
-    }));
-  }
-
-  function showResult(job) {
-    const r = job.result || {};
-    const s = r.summary || {};
-    const [y, m, d] = String(r.date || job.date).split('-');
-    const rows = [
-      [`${s.trips}トリップ`, ''], [`${s.deliveriesCount}配達`, ''],
-      ['配達報酬', yen(s.deliverySales)], ['クエスト', yen(s.questSales)], ['調整', yen(s.adjustmentSales)],
-      ['総売上', yen(s.totalSales)], ['距離', `${Number(s.distanceKm).toFixed(2)} km`], ['配達時間', hms(s.durationSeconds || 0)], ['MAP', s.maps]
-    ];
-    const extra = r.unchanged
-      ? '<p class="muted">この日はすでに取り込み済みで、変更はありませんでした（二重登録なし）。</p>'
-      : `<p class="muted">記録: HANDOFF 更新・保存（commit ${esc(r.commit || '')}）${r.pushed ? '・GitHub へ送信済み' : ''}${r.version ? ` / version ${esc(r.version)}` : ''}</p>`;
-    $('result').innerHTML = `<h2>${y}/${m}/${d} 取込完了</h2><table>${rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>
-      <div class="pass">VALIDATION ${esc(r.status || 'PASS')}</div>${extra}
-      ${(r.warnings || []).length ? `<details><summary class="muted">注意 ${r.warnings.length} 件</summary><ul class="muted">${r.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul></details>` : ''}
-      <a class="link-btn" href="/">UBER_LOGを見る</a>`;
-    $('result').hidden = false;
-    $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  $('run').addEventListener('click', () => start());
-
-  async function restoreJob(job) {
-    if (!job) return;
-    lastJob = job;
-    if (job.result && job.result.summary) {
-      lastJobSummary = job.result.summary;
-    }
-    if (job.date && $('date').value !== job.date) {
-      $('date').value = job.date;
-      await loadDate();
-    }
-    renderParse();
-    showStatus(job.message, job.steps, job.step, job.state);
-    if (job.state === 'running') {
-      busy = true;
-      $('run').disabled = true;
-      if ($('btn-browser-fetch')) $('btn-browser-fetch').disabled = true;
-      poll(job.id);
-    } else if (job.state === 'needs_review') {
-      finish();
-      if (job.problems && job.problems.length) {
-        showProblems(job.problems, job.state, job);
-      }
-    } else if (job.state === 'done') {
-      finish();
-      showResult(job);
-    } else if (job.state === 'error') {
-      finish();
-      if (job.problems && job.problems.length) {
-        showProblems(job.problems, job.state, job);
-      }
-    }
-  }
-
-  // ---------- 起動時: ローカルbackendの確認・実行中ジョブの再表示 ----------
+  // ---------- 起動時: 実行中・保存待ちの取込を再表示 ----------
   (async () => {
     try {
       const h = await (await fetch('/api/health', { cache: 'no-store' })).json();
       backend = h && h.app === 'uber-log-local';
     } catch (e) { backend = false; }
     $('offline').hidden = backend;
-    $('run').disabled = !backend;
     await loadDate();
-    if (backend) {
-      refreshBrowserStatus();
-      try {
-        const res = await api('/api/jobs/current');
-        if (res.ok) {
-          const job = await res.json();
-          await restoreJob(job);
-        }
-      } catch (e) { /* 無ければ何もしない */ }
+    render(null);
+    if (!backend) { $('primary').hidden = true; return; }
+    refreshBrowserStatus();
+    let job = null;
+    try { const res = await api('/api/jobs/current'); if (res.ok) job = await res.json(); } catch (e) { /* 無ければ何もしない */ }
+    if (job && job.phase && job.phase !== 'COMPLETE') {
+      if (job.date) $('date').value = job.date;
+      busy = job.state === 'running';
+      render(job);
+      if (busy) poll(job.id);
+      return;
     }
+    // サーバー再起動後でも「反映済み・保存待ち」を出す
+    try {
+      const p = await (await api('/api/pending')).json();
+      if (p && p.pending) {
+        const pd = p.pending;
+        $('date').value = pd.date;
+        const unpushed = pd.kind === 'unpushed';
+        render({
+          phase: unpushed ? 'PUSH_FAILED' : 'TEST_FAILED', date: pd.date, sourceType: 'structured',
+          result: { date: pd.date, summary: pd.summary || null },
+          next: { act: 'resume', label: unpushed ? 'GitHubへの送信を再試行する' : 'テストと保存を再開する', date: pd.date },
+          progress: [['fetch', '取得・検証', 'done'], ['review', '内容確認', 'done'], ['apply', 'UBER_LOG反映', 'done'],
+            ['test', '自動テスト', unpushed ? 'done' : 'waiting'], ['handoff', 'HANDOFF記録', unpushed ? 'done' : 'todo'], ['commit', '保存（commit）', unpushed ? 'done' : 'todo'], ['push', 'GitHubへ送信（push）', unpushed ? 'error' : 'todo']]
+            .map(([key, label, status]) => ({ key, label, status })),
+          problems: [{ type: 'pending', title: `${pd.date} の取込は UBER_LOG へ反映済みで、${unpushed ? 'GitHub への送信' : '保存（commit・push）'}が終わっていません`, detail: '取り込みをやり直さないでください。' }]
+        });
+        return;
+      }
+    } catch (e) { /* 判定できなければ通常表示 */ }
+    // 直前に完了した取込は「取込完了」を表示（次に押すボタンなし・「別の日を取り込む」で始められる）
+    if (job && job.phase === 'COMPLETE') { if (job.date) $('date').value = job.date; render(job); }
   })();
 })();
 </script>

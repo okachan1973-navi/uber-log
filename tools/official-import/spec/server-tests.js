@@ -136,7 +136,7 @@ async function startServer(env) {
     const h = await request('GET', '/api/health');
     check(h.status === 200 && h.json.app === 'uber-log-local', 'health: UBER_LOG ローカルbackend');
     const page = await request('GET', '/tools/official-import/');
-    check(page.status === 200 && page.text.includes('取り込み実行'), '公式取込画面（/tools/official-import/）を配信・主ボタン「取り込み実行」');
+    check(page.status === 200 && page.text.includes('id="primary"') && page.text.includes('スクショで取り込む'), '公式取込画面（/tools/official-import/）を配信・主ボタンは「次にやること」の1つ（#primary）');
     const app = await request('GET', '/');
     check(app.status === 200 && app.text.includes('UBER_LOG_APP_VERSION'), '通常の UBER_LOG（/）を同じサーバーから配信');
     check((await request('GET', '/api/health', { host: 'evil.example:80' })).status === 403, 'Host が localhost 以外なら拒否（DNS rebinding 対策）');
@@ -165,8 +165,8 @@ async function startServer(env) {
     check(r.status === 202 && r.json.state === 'running', '「取り込み実行」を受付（処理状況をポーリング）');
     let job = await waitJob(r.json.id);
     const mapP = (job.problems || []).find(p => p.type === 'map');
-    check(job.state === 'needs_review' && job.message === '確認待ちのため停止しています' && job.step === 'validate',
-      `確認待ちで停止（${job.message}・停止した工程: ${job.step}）— 「処理中」とは区別`);
+    check(job.state === 'needs_review' && job.phase === 'PREVIEW_BLOCKED' && job.step === 'validate' && job.next === null && job.progress[0].status === 'waiting',
+      `反映前の確認待ち（phase ${job.phase}・停止した工程: ${job.step}）— MAP の選択はカードのボタン・主ボタンなし`);
     check(mapP && mapP.items.every(i => i.reason) && /推測で切り抜かず/.test(mapP.detail), `MAPを確認できない理由を画像ごとに表示（${mapP && mapP.items.map(i => i.reason).join(' / ')}）`);
     check(mapP && /1件のMAP画像を確認できません/.test(mapP.title) && mapP.items.length === 1 && mapP.items[0].time === '14:48' && mapP.items[0].amount === 331,
       `MAP不足を時刻・金額つきで表示（${mapP && mapP.title}: ${mapP && mapP.items.map(i => `${i.time} ¥${i.amount}`).join(', ')}）`);
@@ -183,7 +183,8 @@ async function startServer(env) {
     job = await waitJob(r.json.id);
     const res = job.result || {};
     const s = res.summary || {};
-    check(job.state === 'done' && res.status === 'PASS', `完了（${job.message}）`);
+    check(job.state === 'done' && job.phase === 'COMPLETE' && res.status === 'PASS' && job.next === null && job.progress.every(p => p.status === 'done' || (p.key === 'review' && p.status === 'skip')),
+      `完了（phase ${job.phase}・進捗 ${job.progress.map(p => p.status).join('/')}・次に押すボタンなし）`);
     check(s.trips === 18 && s.deliveriesCount === 25 && s.deliverySales === 8250 && s.questSales === 1600 && s.adjustmentSales === -607 && s.totalSales === 9243 && s.distanceKm === 67.13 && s.maps === '17/18',
       `結果: ${s.trips}トリップ / ${s.deliveriesCount}配達 / 総売上 ¥${s.totalSales} / ${s.distanceKm}km / MAP ${s.maps}`);
     check(res.committed && res.pushed && head() !== head0 && sh('git', ['rev-parse', 'main'], remote) === head(), `commit ${res.commit} を作成し push 済み（送信先と一致）`);
@@ -206,21 +207,22 @@ async function startServer(env) {
     const store1 = fs.readFileSync(storeFile, 'utf8');
     r = await apiPost('/api/import', { date: '2026-09-22', activity, keep: inbox.json.screenshots, files: [] });
     job = await waitJob(r.json.id);
-    check(job.state === 'done' && job.result.unchanged === true, `完了（取込済み・変更なし）: ${job.message}`);
+    check(job.state === 'done' && job.phase === 'COMPLETE' && job.result.unchanged === true && ['test', 'handoff', 'commit', 'push'].every(k => job.progress.find(p => p.key === k).status === 'skip'),
+      `完了（取込済み・変更なし）: ${job.message}・テスト/保存は不要`);
     check(fs.readFileSync(storeFile, 'utf8') === store1 && head() === head1, 'store.js・git は変更なし（新しい commit なし）');
 
     // ==========================================================
     section('13-5. 取込エラー時は本体に反映しない');
     r = await apiPost('/api/import', { date: '2026-09-21', activity: fs.readFileSync(path.join(FIX, '2026-09-21.activity.txt'), 'utf8'), keep: [], files: [{ name: 'dummy.png', data: images[0].data }] });
     job = await waitJob(r.json.id);
-    check(job.state === 'needs_review' && (job.problems || []).some(p => p.type === 'unreadable' || /Delivery件数一致/.test(p.title)),
+    check(job.state === 'needs_review' && job.phase === 'PREVIEW_BLOCKED' && job.next && job.next.act === 'revalidate' && (job.problems || []).some(p => p.type === 'unreadable' || /Delivery件数一致/.test(p.title)),
       `読み取れないスクショ・件数不一致 → 確認が必要です（${(job.problems || []).map(p => p.title).join(' / ')}）`);
     check(fs.readFileSync(storeFile, 'utf8') === store1 && head() === head1, 'UBER_LOG 本体・git は変更なし');
 
     fs.appendFileSync(storeFile, '\n// 別作業の未コミット変更\n');
     r = await apiPost('/api/import', { date: '2026-09-22', activity, keep: inbox.json.screenshots, files: [] });
     job = await waitJob(r.json.id);
-    check(job.state === 'needs_review' && job.problems[0].type === 'git', '取込対象ファイルに未コミットの変更があれば混ぜずに停止');
+    check(job.state === 'needs_review' && job.phase === 'PREVIEW_BLOCKED' && job.problems[0].type === 'git', '取込と関係ない未コミットの変更があれば混ぜずに停止（保守で確認）');
     fs.writeFileSync(storeFile, store1, 'utf8');
 
     // 画面で外した画像は削除せず退避
@@ -232,14 +234,116 @@ async function startServer(env) {
     check(job.state === 'needs_review' && fs.readFileSync(storeFile, 'utf8') === store1, 'スクショが1枚足りない → 確認が必要です・本体は変更なし');
 
     // ==========================================================
-    section('13-5b. 取込画面の表示（完了／処理中／確認待ちで停止／エラー停止の区別・クエスト重複の指定）');
+    section('13-5b. 取込画面の表示（状態ごとの案内は1か所・主ボタンは1つ・仮の数字なし）');
     const ui = (await request('GET', '/tools/official-import/')).text;
-    check(ui.includes('確認待ちのため停止しています（処理は動いていません') && ui.includes("'確認待ちで停止'") && ui.includes("'エラーで停止'") && ui.includes("'処理中…'") && ui.includes("'未実行'"),
-      '進捗は工程ごとに 完了／処理中…／確認待ちで停止／エラーで停止／未実行 を表示');
-    check(/replace\(\/中\(\?=（\|\$\)\/, ''\)/.test(ui), '完了・停止した工程に「保存中」などの「〜中」を出さない');
+    const PH = ['IDLE', 'FETCHING', 'PREVIEW_READY', 'PREVIEW_BLOCKED', 'REFLECTING', 'REFLECTED', 'TESTING', 'TEST_FAILED', 'SAVING', 'SAVE_FAILED', 'PUSH_FAILED', 'COMPLETE', 'ERROR'];
+    check(PH.every(p => new RegExp(`\\b${p}: \\{ cls:`).test(ui)), '見出し・説明は状態（phase）ごとの表1か所だけ（全13状態）');
+    check((ui.match(/class="primary"/g) || []).length === 1 && !/class="primary"[^>]*data-act=/.test(ui), '緑の主ボタンは画面に1つだけ（#primary。問題カードの中に緑のボタンを作らない）');
+    check(ui.includes("done: ['✓', '完了']") && ui.includes("doing: ['●', '実行中']") && ui.includes("waiting: ['Ⅱ', 'ユーザー確認待ち']") && ui.includes("error: ['×', 'エラー']") && ui.includes("todo: ['・', '未実行']"),
+      '進捗の印: ✓ 完了 / ● 実行中 / Ⅱ ユーザー確認待ち / × エラー / ・ 未実行（確認待ちとエラーは別の表示）');
+    check(!/4982|: 16;|: 13;|questSales : 1000|sm\.trips : 13/.test(ui) && ui.includes("'—'"), '仮の数字（13 trip・16件・¥4,982・¥1,000）を表示しない（値が無ければ「—」）');
+    check(!/もう一度「取り込み実行」|従来の「取り込み実行」/.test(ui), '「もう一度取り込み実行」「従来の取り込み実行」の曖昧な案内を出さない');
+    check(ui.includes('UBER_LOG には反映済みです。') && ui.includes('取り込みをやり直さないでください。') && ui.includes('GitHub への保存はまだです。'),
+      'テスト失敗時: 反映済み・やり直さない・GitHub 未保存 を表示');
+    check(ui.includes('本日はまだ終了していません。この後の配達は含まれません。'), '今日の日付を取り込むときの注意を表示');
     check(ui.includes('data-act="count_once"') && ui.includes('data-act="count_all"') && ui.includes('questDuplicates'),
       'クエスト重複は画面のボタン（同じ報酬＝count_once / 別々の報酬＝count_all）で指定できる');
     check(ui.includes('前回と同じ理由で停止しました'), '同じ理由で繰り返し止まった場合は「前回と同じ理由で停止」と表示');
+
+    // ==========================================================
+    // Uber Web 構造化データ（structured-tests と同じ形の人工データ。trip の数だけ作る）
+    const trip = (date, i, amount, points = 1, tip = null) => ({
+      tripUuid: `${String(i).repeat(8).slice(0, 8)}-1111-1111-1111-${String(date.replace(/-/g, '')).padStart(12, '0')}`.slice(0, 36),
+      statusType: 'COMPLETED', date, time: `1${i}:0${i}`, amount, baseFee: tip ? amount - tip : amount, tip, distanceKm: 2 + i, durationStr: `${10 + i}分0秒`, points,
+      restaurant: `テスト店${i}`, area: '大阪市港区弁天1丁目', tripLegCount: points,
+      legs: Array.from({ length: points }, (_, k) => ({ legUuid: `leg-${date}-${i}-${k}`, restaurant: `テスト店${i}`, pickupAddress: '大阪市港区弁天1-2-3', dropoffAddress: '大阪市港区弁天1丁目5-6' }))
+    });
+    // quests: 金額 または [[時刻, 金額], ...]
+    const structured = (date, trips, quests) => ({
+      source: 'uber-driver-web', fetchedAt: new Date().toISOString(), targetDate: date,
+      activity: { feedItems: [...trips.map(t => ({ type: 'delivery', tripUuid: t.tripUuid, time: t.time, amount: t.amount })),
+        ...(!quests ? [] : (Array.isArray(quests) ? quests : [['20:00', quests]]).map(([time, amount]) => ({ type: 'quest', title: 'クエスト', time, amount })))] },
+      trips
+    });
+    const storeNow = () => fs.readFileSync(storeFile, 'utf8');
+    const seedDay = d => pipeline.readSeed(storeFile).data.dailyLogs[d];
+
+    section('13-7. PREVIEW_READY: 取得完了 → 内容確認 → 「この内容でUBER_LOGへ反映する」→ COMPLETE');
+    const d24 = '2026-09-24';
+    const p24 = structured(d24, [trip(d24, 1, 372), trip(d24, 2, 702, 2, 97)], 400);
+    const storeA = storeNow();
+    r = await apiPost('/api/import', { date: d24, structured: p24, previewFirst: true });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'PREVIEW_READY' && job.next && job.next.act === 'apply' && job.next.label === 'この内容でUBER_LOGへ反映する',
+      `取得・検証が終わったら PREVIEW_READY・主ボタンは「${job.next && job.next.label}」だけ`);
+    check(job.progress.find(p => p.key === 'fetch').status === 'done' && job.progress.find(p => p.key === 'review').status === 'waiting', '進捗: 取得・検証 ✓・内容確認 Ⅱ（ユーザー確認待ち）');
+    const pv = (job.problems || []).find(p => p.type === 'preview');
+    check(pv && pv.summary.trips === 2 && pv.summary.deliveriesCount === 3 && pv.summary.totalSales === 1474 && job.result.deliveries.length === 2,
+      `確認する数字は実データ（${pv && pv.summary.trips}trip・${pv && pv.summary.deliveriesCount}件・総売上 ¥${pv && pv.summary.totalSales}）`);
+    check(storeNow() === storeA, 'PREVIEW_READY ではまだ UBER_LOG に反映しない');
+    r = await apiPost('/api/import', { date: d24, structured: p24, confirmed: true });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'COMPLETE' && job.progress.every(p => p.status === 'done') && job.result.committed && job.result.pushed,
+      `反映 → テスト → HANDOFF → commit → push まで完了（${job.progress.map(p => `${p.label}:${p.status}`).join(' / ')}）`);
+    check(seedDay(d24) && seedDay(d24).tripsCount === 2 && sh('git', ['status', '--porcelain'], root) === '', 'store.js に反映・git clean');
+
+    section('13-8. 同じ日の再取込（途中データ → 最新の公式データ）: 重複しない・手動データを消さない');
+    // 既にある公式データ（クエスト ¥400）が新しい取得結果に無い場合は、消さずに止める（PREVIEW_BLOCKED）
+    const storeB = storeNow();
+    r = await apiPost('/api/import', { date: d24, structured: structured(d24, [trip(d24, 1, 372), trip(d24, 2, 702, 2, 97), trip(d24, 3, 500)], [['21:00', 260]]), confirmed: true });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'PREVIEW_BLOCKED' && storeNow() === storeB && (job.problems || []).some(p => /既存クエスト/.test(p.detail || '')),
+      '再取込で既存の公式データ（クエスト ¥400）が見つからなければ、消さずに止める（UBER_LOG は変更なし）');
+    // 10/12 の実例と同じ: 夕方の trip とクエストが増えた最新データ
+    const p24b = structured(d24, [trip(d24, 1, 372), trip(d24, 2, 702, 2, 97), trip(d24, 3, 500)], [['20:00', 400], ['21:00', 260]]);
+    r = await apiPost('/api/import', { date: d24, structured: p24b, confirmed: true });
+    job = await waitJob(r.json.id);
+    const day24 = seedDay(d24);
+    const ids24 = day24.deliveries.map(d => d.id);
+    check(job.phase === 'COMPLETE' && day24.tripsCount === 3 && day24.deliveriesCount === 4 && new Set(ids24).size === 3 && day24.sales.total === 702 + 372 + 500 + 400 + 260,
+      `再取込で trip 2 → 3・配達 3 → 4件・総売上 ¥${day24.sales.total}（同じ trip を二重にしない: ${ids24.join(',')}）`);
+    check(day24.deliveries[0].id === 'del_0924_1' && day24.deliveries[1].tip === 97, '既存の trip ID・チップは変わらない');
+
+    section('13-9. TEST_FAILED: 反映済み・テスト失敗 →「テストと保存を再開する」（取得・反映はやり直さない）');
+    server.kill();
+    await sleep(500);
+    await startServer({ UBER_IMPORT_TEST_CMD: JSON.stringify([process.execPath, '-e', 'console.log("❌ FAIL: わざと失敗"); process.exit(1)']) });
+    const d25 = '2026-09-25';
+    const headBefore = head();
+    r = await apiPost('/api/import', { date: d25, structured: structured(d25, [trip(d25, 4, 640)]), confirmed: true });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'TEST_FAILED' && job.applied === true && job.next && job.next.act === 'resume' && job.next.label === 'テストと保存を再開する',
+      `反映済みでテスト失敗 → TEST_FAILED・主ボタン「${job.next && job.next.label}」`);
+    check(job.progress.find(p => p.key === 'apply').status === 'done' && job.progress.find(p => p.key === 'test').status === 'error' && job.progress.find(p => p.key === 'commit').status === 'todo',
+      '進捗: UBER_LOG反映 ✓・自動テスト ×・commit 未実行');
+    check(/UBER_LOG へは反映済み/.test(job.problems[0].detail) && /やり直さないで/.test(job.problems[0].detail) && /わざと失敗/.test(job.problems[0].detail), '反映済み・やり直さない・失敗したテストの行を表示');
+    check(seedDay(d25) && head() === headBefore, 'store.js には反映済み・commit はしていない');
+    const pend = await apiGet('/api/pending');
+    check(pend.json.pending && pend.json.pending.kind === 'uncommitted' && pend.json.pending.date === d25, `保存待ちを検出（${JSON.stringify(pend.json.pending && { kind: pend.json.pending.kind, date: pend.json.pending.date })}）`);
+    const store25 = storeNow();
+    r = await apiPost('/api/import', { date: d24, structured: p24b, confirmed: true });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'TEST_FAILED' && job.pendingDate === d25 && job.next.date === d25 && storeNow() === store25,
+      '保存待ちのまま別の取込を押しても取得・反映しない（TEST_FAILED のまま・再開ボタンは保存待ちの日）');
+    server.kill();
+    await sleep(500);
+    await startServer({});
+    check((await apiGet('/api/jobs/current')).status === 404 && (await apiGet('/api/pending')).json.pending.date === d25, 'サーバーを再起動しても保存待ちが分かる（/api/pending）');
+    r = await apiPost('/api/resume', { date: d25 });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'COMPLETE' && job.result.committed && job.result.pushed && sh('git', ['status', '--porcelain'], root) === '' && sh('git', ['rev-parse', 'main'], remote) === head(),
+      `再開でテスト → HANDOFF → commit → push だけを実行（取得・反映なし）: ${sh('git', ['log', '-1', '--format=%s'], root)}`);
+    check(seedDay(d25).tripsCount === 1 && storeNow() === store25, '再開しても UBER_LOG のデータは変わらない（二重反映なし）');
+    r = await apiPost('/api/resume', { date: d25 });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'ERROR' && /再開できる取込がありません/.test(job.problems[0].title), '保存待ちが無いときの再開は何もしない（ERROR・UBER_LOG は変更なし）');
+
+    section('13-10. 今日の取込（1日が終わっていない途中のデータ）');
+    const { jstToday } = require('../lib/import-job.js');
+    const today = jstToday();
+    r = await apiPost('/api/import', { date: today, structured: structured(today, [trip(today, 5, 450)]), previewFirst: true });
+    job = await waitJob(r.json.id);
+    check(job.partialDay === true && job.today === today && job.phase === 'PREVIEW_READY', `今日（${today}）の取込は partialDay（画面に「本日はまだ終了していません」）・取込自体はできる`);
 
     // ==========================================================
     section('13-6. Claude Code が見つからない場合');
