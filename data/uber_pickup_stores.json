@@ -30,9 +30,9 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 63,
+      "pickup_count": 64,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-12 09:01",
+      "last_pickup": "2026-10-12 17:27",
       "active_days": 19,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
@@ -224,6 +224,49 @@
       "address_short": "西区千代崎"
     },
     {
+      "id": "st_1omw10z",
+      "canonical_name": "餃子の王将 大阪九条",
+      "name_keys": [
+        "餃子の王将大阪九条"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市西区九条1-12-10",
+      "latitude": 34.674976,
+      "longitude": 135.47583,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１２番１０号",
+      "address_source": "map.ohsho.co.jp/b/ohsho/info/1252/",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目１２番１０号",
+        "osm_nearest": {
+          "id": "node/1619040549",
+          "name": "餃子の王将 九条店 餃子の王将",
+          "distance_m": 2
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 9,
+      "first_pickup": "2026-09-22 14:07",
+      "last_pickup": "2026-10-12 17:37",
+      "active_days": 6,
+      "original_names": [
+        "餃子の王将 大阪九条"
+      ],
+      "brand_id": "ohsho",
+      "brand_name": "餃子の王将",
+      "brand_reading": "ぎょうざのおうしょう",
+      "branch_name": "大阪九条",
+      "site_id": null,
+      "display_name": "大阪九条",
+      "address_short": "西区九条"
+    },
+    {
       "id": "st_189ay5t",
       "canonical_name": "マクドナルド 弁天町駅前店",
       "name_keys": [
@@ -357,49 +400,6 @@
       "site_id": null,
       "display_name": "みなと通夕凪店",
       "address_short": "港区磯路"
-    },
-    {
-      "id": "st_1omw10z",
-      "canonical_name": "餃子の王将 大阪九条",
-      "name_keys": [
-        "餃子の王将大阪九条"
-      ],
-      "category": "other",
-      "address": "大阪府大阪市西区九条1-12-10",
-      "latitude": 34.674976,
-      "longitude": 135.47583,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１２番１０号",
-      "address_source": "map.ohsho.co.jp/b/ohsho/info/1252/",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１２番１０号",
-        "osm_nearest": {
-          "id": "node/1619040549",
-          "name": "餃子の王将 九条店 餃子の王将",
-          "distance_m": 2
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 7,
-      "first_pickup": "2026-09-22 14:07",
-      "last_pickup": "2026-10-10 12:32",
-      "active_days": 5,
-      "original_names": [
-        "餃子の王将 大阪九条"
-      ],
-      "brand_id": "ohsho",
-      "brand_name": "餃子の王将",
-      "brand_reading": "ぎょうざのおうしょう",
-      "branch_name": "大阪九条",
-      "site_id": null,
-      "display_name": "大阪九条",
-      "address_short": "西区九条"
     },
     {
       "id": "st_qri0e3",
@@ -801,6 +801,49 @@
       "address_short": "西区九条"
     },
     {
+      "id": "st_zm9ew6",
+      "canonical_name": "ウエルシア大阪九条店",
+      "name_keys": [
+        "ウエルシア大阪九条店"
+      ],
+      "category": "drug_super",
+      "address": "大阪府大阪市西区九条1-18-5",
+      "latitude": 34.673492,
+      "longitude": 135.476517,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１８番５号",
+      "address_source": "kusurinomadoguchi s1000131325; navitime",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目１８番５号",
+        "osm_nearest": {
+          "id": "way/192864287",
+          "name": "AOKI 大阪九条店 AOKI",
+          "distance_m": 74
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 4,
+      "first_pickup": "2026-09-29 11:50",
+      "last_pickup": "2026-10-12 16:47",
+      "active_days": 4,
+      "original_names": [
+        "ウエルシア大阪九条店"
+      ],
+      "brand_id": "welcia",
+      "brand_name": "ウエルシア",
+      "brand_reading": null,
+      "branch_name": "大阪九条店",
+      "site_id": null,
+      "display_name": "大阪九条店",
+      "address_short": "西区九条"
+    },
+    {
       "id": "st_qpn587",
       "canonical_name": "京都北白川ラーメン魁力屋 イオンモール大阪ドームシティ店",
       "name_keys": [
@@ -886,49 +929,6 @@
       "site_id": null,
       "display_name": "大阪ドームシティ",
       "address_short": "西区千代崎"
-    },
-    {
-      "id": "st_zm9ew6",
-      "canonical_name": "ウエルシア大阪九条店",
-      "name_keys": [
-        "ウエルシア大阪九条店"
-      ],
-      "category": "drug_super",
-      "address": "大阪府大阪市西区九条1-18-5",
-      "latitude": 34.673492,
-      "longitude": 135.476517,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１８番５号",
-      "address_source": "kusurinomadoguchi s1000131325; navitime",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１８番５号",
-        "osm_nearest": {
-          "id": "way/192864287",
-          "name": "AOKI 大阪九条店 AOKI",
-          "distance_m": 74
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 3,
-      "first_pickup": "2026-09-29 11:50",
-      "last_pickup": "2026-10-11 13:33",
-      "active_days": 3,
-      "original_names": [
-        "ウエルシア大阪九条店"
-      ],
-      "brand_id": "welcia",
-      "brand_name": "ウエルシア",
-      "brand_reading": null,
-      "branch_name": "大阪九条店",
-      "site_id": null,
-      "display_name": "大阪九条店",
-      "address_short": "西区九条"
     },
     {
       "id": "st_6snect",
@@ -5159,8 +5159,8 @@
       "to": "2026-10-12",
       "days": 27
     },
-    "total_trips": 348,
-    "total_pickups": 348,
+    "total_trips": 352,
+    "total_pickups": 352,
     "store_count": 123,
     "confirmed_count": 110,
     "needs_review_count": 13,

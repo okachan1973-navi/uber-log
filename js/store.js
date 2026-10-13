@@ -8434,10 +8434,10 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": 37.45,
-      "tripsCount": 17,
-      "officialPoints": 20,
-      "deliveriesCount": 20,
+      "totalDistanceKm": 47.77,
+      "tripsCount": 21,
+      "officialPoints": 24,
+      "deliveriesCount": 24,
       "workSessions": [],
       "deliveries": [
         {
@@ -8908,6 +8908,110 @@ const CONFIRMED_SEED_DATA = {
             }
           ],
           "sequence": null
+        },
+        {
+          "id": "del_1012_18",
+          "index": 18,
+          "completedAt": "16:10",
+          "restaurant": "餃子の王将 大阪九条",
+          "area": "大阪市浪速区桜川2丁目",
+          "fee": 352,
+          "distanceKm": 3.54,
+          "durationStr": "28分17秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "2b0d873d-2d26-46d2-8cba-90a530ae57e8",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "2b0d873d-2d26-46d2-8cba-90a530ae57e8",
+              "restaurant": "餃子の王将 大阪九条",
+              "pickupAddress": "餃子の王将 大阪九条",
+              "dropoffAddress": "27大阪市浪速区桜川２丁目",
+              "area": "大阪市浪速区桜川2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1012_19",
+          "index": 19,
+          "completedAt": "16:47",
+          "restaurant": "ウエルシア大阪九条店",
+          "area": "大阪市大正区千島1丁目",
+          "fee": 475,
+          "distanceKm": 3.81,
+          "durationStr": "19分6秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "e7fd60ec-8a1d-40fe-9889-1d63814a31b5",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "e7fd60ec-8a1d-40fe-9889-1d63814a31b5",
+              "restaurant": "ウエルシア大阪九条店",
+              "pickupAddress": "ウエルシア大阪九条店",
+              "dropoffAddress": "27大阪市大正区千島１丁目",
+              "area": "大阪市大正区千島1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1012_20",
+          "index": 20,
+          "completedAt": "17:27",
+          "restaurant": "マクドナルド 九条店",
+          "area": "大阪市西区本田2丁目",
+          "fee": 320,
+          "distanceKm": 0.64,
+          "durationStr": "12分47秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "2e0a1d44-bdf2-4fcf-be0d-555f06bacbcf",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "2e0a1d44-bdf2-4fcf-be0d-555f06bacbcf",
+              "restaurant": "マクドナルド 九条店",
+              "pickupAddress": "マクドナルド 九条店",
+              "dropoffAddress": "27大阪市西区本田２丁目",
+              "area": "大阪市西区本田2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1012_21",
+          "index": 21,
+          "completedAt": "17:37",
+          "restaurant": "餃子の王将 大阪九条",
+          "area": "大阪市西区南堀江3丁目",
+          "fee": 320,
+          "distanceKm": 2.33,
+          "durationStr": "19分50秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "c172624b-a575-4b0a-bf69-78197dadafa0",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "c172624b-a575-4b0a-bf69-78197dadafa0",
+              "restaurant": "餃子の王将 大阪九条",
+              "pickupAddress": "餃子の王将 大阪九条",
+              "dropoffAddress": "27大阪市西区南堀江３丁目",
+              "area": "大阪市西区南堀江3丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
         }
       ],
       "quests": [
@@ -8920,19 +9024,30 @@ const CONFIRMED_SEED_DATA = {
           "questName": "6回乗車クエスト",
           "questType": "normal",
           "note": "公式一覧は「クエスト ¥600」「6 回乗車クエスト ¥600」の2表示だが同一報酬のため1件のみ計上（二重計上防止）。14:30の「3 回乗車クエスト」¥0は報酬0のため売上非加算"
+        },
+        {
+          "id": "quest_1012_2",
+          "time": "17:40",
+          "title": "クエスト",
+          "amount": 260,
+          "isDuplicateIgnored": false,
+          "questName": "3回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "17:39",
+          "note": "公式一覧は 17:39「3 回乗車クエスト ¥260」（達成表示）と 17:40「クエスト ¥260」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）。14:30の「3 回乗車クエスト」¥0は報酬0のため売上非加算。21:00の「3 回乗車クエスト」¥0は報酬0のため売上非加算"
         }
       ],
       "sales": {
-        "delivery": 6472,
-        "quest": 600,
+        "delivery": 7939,
+        "quest": 860,
         "adjustment": 0,
         "other": 0,
-        "total": 7072
+        "total": 8799
       },
       "expenses": [],
       "officialImport": {
         "source": "official-import-v1",
-        "importedAt": "2026-10-12T06:35:24.909Z"
+        "importedAt": "2026-10-13T22:35:13.248Z"
       }
     }
   },
