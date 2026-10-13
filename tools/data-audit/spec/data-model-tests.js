@@ -191,6 +191,44 @@ check(WT.none === null && WT.rowNone === null && WT.jma13 === null, '天気が�
 check(WT.jma29.t === 'rain' && WT.jma29.s === 'jma' && WT.jma12.t === 'sunny' && WT.row && WT.row.type === 'rain', '気象庁のデータ: 2026-09-29 は雨・2026-10-12 は晴。日別比較の行に天気が入る');
 
 // ============================================================
+section('4d. 天気の自動更新（未登録の過去日だけ・今日は取らない・失敗しても取込を止めない）');
+const WF = run(`
+  const fs=require('fs'),path=require('path'),os=require('os');
+  const {updateWeather}=require(${JSON.stringify(path.join(ROOT, 'tools', 'weather', 'fetch-jma-weather.js'))});
+  const {ImportJob}=require(${JSON.stringify(path.join(ROOT, 'tools', 'official-import', 'lib', 'import-job.js'))});
+  const html=fs.readFileSync(${JSON.stringify(path.join(ROOT, 'tools', 'weather', 'spec', 'fixtures', 'jma_osaka_2026_09.html'))},'utf8');
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'uberlog-weather-'));
+  fs.mkdirSync(path.join(root,'data'));
+  const keep={type:'cloudy',day:'手で確認した値（書き換えない）',night:'',nightRain:false,precipitationMm:null,precipitationNone:true,sunshineH:null};
+  fs.writeFileSync(path.join(root,'data','uber_weather.json'),JSON.stringify({days:{'2026-09-11':keep}}));
+  const ok=u=>Promise.resolve({ok:true,status:200,text:()=>Promise.resolve(html)});
+  (async()=>{
+    const r1=await updateWeather({root,missingOnly:true,today:'2026-09-15',fetchImpl:ok});
+    const d1=JSON.parse(fs.readFileSync(path.join(root,'data','uber_weather.json'),'utf8')).days;
+    const js1=fs.readFileSync(path.join(root,'data','uber_weather.js'),'utf8');
+    const before=fs.readFileSync(path.join(root,'data','uber_weather.json'),'utf8');
+    const r2=await updateWeather({root,missingOnly:true,today:'2026-09-20',fetchImpl:()=>Promise.reject(new Error('ネットワークなし'))});
+    const r3=await updateWeather({root,missingOnly:true,today:'2026-09-20',timeoutMs:50,fetchImpl:(u,o)=>new Promise((res,rej)=>o.signal.addEventListener('abort',()=>{const e=new Error('aborted');e.name='AbortError';rej(e);}))});
+    const after=fs.readFileSync(path.join(root,'data','uber_weather.json'),'utf8');
+    // 取込の中では失敗を警告にするだけ（例外にしない）
+    fs.mkdirSync(path.join(root,'tools','weather'),{recursive:true});
+    fs.writeFileSync(path.join(root,'tools','weather','fetch-jma-weather.js'),"module.exports={updateWeather:async()=>({ok:false,error:'気象庁に接続できません'})};");
+    const job=new ImportJob({root,handoffFile:'',date:'2026-09-20',today:'2026-09-21',testCommand:'skip'});
+    const warns=await job.updateWeatherSafe();
+    delete require.cache[require.resolve(path.join(root,'tools','weather','fetch-jma-weather.js'))];
+    fs.writeFileSync(path.join(root,'tools','weather','fetch-jma-weather.js'),"module.exports={updateWeather:async()=>{throw new Error('想定外の例外');}};");
+    const job2=new ImportJob({root,handoffFile:'',date:'2026-09-20',today:'2026-09-21',testCommand:'skip'});
+    const warns2=await job2.updateWeatherSafe();
+    console.log(JSON.stringify({r1:{ok:r1.ok,added:r1.added},keep:d1['2026-09-11'].day,has10:!!d1['2026-09-10'],has14:!!d1['2026-09-14'],has15:!!d1['2026-09-15'],js:js1.startsWith('// UBER_LOG 天気データ')&&js1.includes('window.UBER_WEATHER'),
+      r2:{ok:r2.ok,error:r2.error},r3:{ok:r3.ok,error:r3.error},unchanged:before===after,warns,warns2}));
+  })();`);
+check(WF.r1.ok && WF.r1.added.join() === '2026-09-10,2026-09-12,2026-09-13,2026-09-14' && WF.has10 && WF.has14 && !WF.has15 && WF.js,
+  `未登録の過去日だけ追加（${WF.r1.added.join(', ')}）・今日（9/15）は取らない`, WF.r1);
+check(WF.keep === '手で確認した値（書き換えない）', '登録済みの日（9/11）は書き換えない');
+check(!WF.r2.ok && /ネットワークなし/.test(WF.r2.error) && !WF.r3.ok && /秒で終わりませんでした/.test(WF.r3.error) && WF.unchanged, '取得できない・時間切れでも例外にならず、天気データは変更しない', [WF.r2, WF.r3]);
+check(WF.warns.length === 1 && /取込には影響なし/.test(WF.warns[0]) && WF.warns2.length === 1 && /想定外の例外/.test(WF.warns2[0]), '取込の中では天気の失敗は警告だけ（取込全体を止めない）', [WF.warns, WF.warns2]);
+
+// ============================================================
 section('5. 同期マージ（経費・手動項目・公式項目を失わない／二重にしない）');
 const SY = run(`
   const H=require(${JSON.stringify(path.join(ROOT, 'tools', 'official-import', 'spec', 'sync-harness.js'))});

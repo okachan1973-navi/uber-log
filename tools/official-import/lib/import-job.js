@@ -30,7 +30,7 @@ const STEPS = [
 const NEEDS_REVIEW_MESSAGE = '確認待ちのため停止しています';
 // 取込で変更してよいファイル（これ以外はコミットしない）。店舗マスタは反映後に build-stores.js で作り直す
 const IMPORT_PATHS = ['js/store.js', 'js/trip-maps.js', 'assets/maps', 'index.html', 'sw.js', 'pickup-map.html', 'route-judge.html', 'version.json', 'HANDOFF.md',
-  'data/uber_pickup_stores.json', 'data/uber_pickup_stores.js'];
+  'data/uber_pickup_stores.json', 'data/uber_pickup_stores.js', 'data/uber_weather.json', 'data/uber_weather.js'];
 
 /**
  * 取込の状態（phase）。画面はこの値だけで「見出し・説明・次に押すボタン（1つ）・進捗」を決める（DATA_MODEL.md「公式取込の状態」）。
@@ -474,8 +474,10 @@ class ImportJob {
     this.log.push(`[${new Date().toLocaleTimeString('ja-JP')}] UBER_LOG へ反映しました${this.partialDay ? '（今日の途中のデータ。この後の配達は含まれない）' : ''}`);
     this.result = { date, summary, status: 'PASS', applied: true, committed: false, partialDay: this.partialDay, warnings: a.staging.warnings };
     this.rebuildStores();
+    const warnings = [...(a.staging.warnings || []), ...(await this.updateWeatherSafe())];
+    this.result.warnings = warnings;
 
-    await this.testAndRecord({ date, summary, version: a.version ? a.version.to : null, warnings: a.staging.warnings });
+    await this.testAndRecord({ date, summary, version: a.version ? a.version.to : null, warnings });
   }
 
   // 配達マップの店舗マスタを作り直す（取込で trip が増えると古くなるため。build-stores.js が無い環境では省略）
@@ -486,6 +488,28 @@ class ImportJob {
     if (r.status !== 0) throw new Error(`店舗マスタの再生成に失敗しました: ${(r.stderr || r.stdout).slice(0, 300)}`);
     const line = (r.stdout.match(/A 総トリップ.*/) || [''])[0];
     this.log.push(`店舗マスタを再生成${line ? `（${line}）` : ''}`);
+  }
+
+  // 天気（気象庁）のまだ登録されていない過去日だけを追加する。取得できなくても取込は止めない（警告だけ・天気データは変更しない）
+  // 環境変数 UBER_WEATHER_UPDATE=skip で省略（テスト・保守用）。tools/weather が無い環境でも省略
+  async updateWeatherSafe() {
+    const tool = path.join(this.root, 'tools', 'weather', 'fetch-jma-weather.js');
+    if (process.env.UBER_WEATHER_UPDATE === 'skip' || !fs.existsSync(tool)) return [];
+    try {
+      const { updateWeather } = require(tool);
+      const r = await updateWeather({ root: this.root, missingOnly: true, today: this.today, timeoutMs: 20000 });
+      if (!r.ok) {
+        const w = `天気（気象庁）を更新できませんでした（取込には影響なし・次の取込で再確認）: ${r.error}`;
+        this.log.push(w);
+        return [w];
+      }
+      this.log.push(`天気（気象庁）: ${r.added.length ? `${r.added.join(', ')} を追加` : '追加なし'}${r.unpublished.length ? `・未発表 ${r.unpublished.join(', ')}（次の取込で再確認）` : ''}`);
+      return [];
+    } catch (e) {
+      const w = `天気（気象庁）の更新でエラー（取込には影響なし）: ${e.message}`;
+      this.log.push(w);
+      return [w];
+    }
   }
 
   // 6. テスト → 7. 記録（report → HANDOFF → commit → push）。反映後の通常の流れと「テストと保存を再開する」で共通
@@ -568,7 +592,8 @@ class ImportJob {
       } else {
         this.result = { date: this.date, summary, status: 'PASS', applied: true, committed: false, partialDay: false };
         this.rebuildStores();
-        await this.testAndRecord({ date: this.date, summary, version: versionNow !== versionHead ? versionNow : null, warnings: pending.warnings || [] });
+        const warnings = [...(pending.warnings || []), ...(await this.updateWeatherSafe())];
+        await this.testAndRecord({ date: this.date, summary, version: versionNow !== versionHead ? versionNow : null, warnings });
       }
     } catch (e) {
       this.fail(e.message);
