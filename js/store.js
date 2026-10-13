@@ -9201,6 +9201,11 @@ function syncOfficialImportedDay(target, log) {
     target.sales = { ...(target.sales || {}), ...log.sales };
     changed = true;
   }
+  // どの公式取込の値かを残す（同期で新旧を比べるため）
+  if (log.officialImport && JSON.stringify(target.officialImport || null) !== JSON.stringify(log.officialImport)) {
+    target.officialImport = { ...log.officialImport };
+    changed = true;
+  }
   return changed;
 }
 
@@ -9917,8 +9922,11 @@ class Store {
           parsed.dailyLogs[date] = log;
           hasChange = true;
         } else if (log.officialImport) {
-          // 公式取込v1（tools/official-import）で反映された日: Uber公式データを正とし、端末側データは保持
-          if (syncOfficialImportedDay(parsed.dailyLogs[date], log)) hasChange = true;
+          // 公式取込v1（tools/official-import）で反映された日: Uber公式データを正とし、端末側データは保持。
+          // ただし端末側がこの版の同梱データより新しい公式取込（クラウド経由で受け取った）を持つ日は巻き戻さない
+          const own = parsed.dailyLogs[date].officialImport;
+          const newerOnDevice = own && own.importedAt && log.officialImport.importedAt && own.importedAt > log.officialImport.importedAt;
+          if (!newerOnDevice && syncOfficialImportedDay(parsed.dailyLogs[date], log)) hasChange = true;
         } else if (date === '2026-09-10') {
           const target = parsed.dailyLogs[date];
           if (!target.quests || target.quests.length < 2 || !target.quests.some(q => q.amount === 100)) {
@@ -10126,13 +10134,21 @@ class Store {
                 if (plog.deliveries) {
                   plog.deliveries.forEach(pd => {
                     const entry = evalsMap[pd.id];
+                    // 端末内の控えは、配達側（同期で受け取った値）より新しいときだけ反映する。
+                    // 以前は起動のたびに控えで上書きしていたため、別端末の新しい評価が古い評価に戻っていた
                     if (entry) {
                       if (typeof entry === 'string') {
-                        pd.evaluation = entry;
-                        pd.evaluationReason = '';
+                        if (!pd.evaluationUpdatedAt && pd.evaluation === undefined) {
+                          pd.evaluation = entry;
+                          pd.evaluationReason = '';
+                        }
                       } else if (typeof entry === 'object') {
-                        pd.evaluation = entry.evaluation || null;
-                        pd.evaluationReason = entry.reason || '';
+                        const at = entry.updatedAt || '';
+                        if (!pd.evaluationUpdatedAt || (at && at > pd.evaluationUpdatedAt)) {
+                          pd.evaluation = entry.evaluation || null;
+                          pd.evaluationReason = entry.reason || '';
+                          if (at) pd.evaluationUpdatedAt = at;
+                        }
                       }
                     }
                   });
@@ -10153,7 +10169,8 @@ class Store {
               Object.values(parsed.dailyLogs).forEach(plog => {
                 if (plog.deliveries) {
                   plog.deliveries.forEach(pd => {
-                    if (memosMap[pd.id] !== undefined) {
+                    // 控え（更新時刻なし）は、同期で受け取ったメモ（mapMemoUpdatedAt あり）を上書きしない
+                    if (memosMap[pd.id] !== undefined && !pd.mapMemoUpdatedAt) {
                       pd.mapMemo = String(memosMap[pd.id]);
                     }
                   });
@@ -10271,8 +10288,10 @@ class Store {
       }
     } catch (e) {}
 
-    // 現在のstate内のdelivery.evaluationを更新（既存のevaluationReasonは保持）
+    // 現在のstate内のdelivery.evaluationを更新（既存のevaluationReasonは保持）。
+    // evaluationUpdatedAt: 端末間の同期で新しい方を選ぶための更新時刻（評価と理由で共通）
     let changedDate = null;
+    const nowIso = new Date().toISOString();
     const allLogs = this.state && this.state.dailyLogs ? Object.entries(this.state.dailyLogs) : [];
     for (const [date, log] of allLogs) {
       if (log.deliveries) {
@@ -10282,6 +10301,7 @@ class Store {
           if (prevReason && !d.evaluationReason) {
             d.evaluationReason = prevReason;
           }
+          d.evaluationUpdatedAt = nowIso;
           changedDate = date;
           break;
         }
@@ -10324,6 +10344,7 @@ class Store {
         const d = log.deliveries.find(item => item.id === deliveryId);
         if (d) {
           d.evaluationReason = cleanReason;
+          d.evaluationUpdatedAt = new Date().toISOString();
           changedDate = date;
           break;
         }
@@ -10335,8 +10356,20 @@ class Store {
   }
 
   // ○／×体験評価および理由メモの取得
+  // 1つの配達（trip）を ID で探す
+  findDelivery(deliveryId) {
+    const allLogs = this.state && this.state.dailyLogs ? Object.values(this.state.dailyLogs) : [];
+    for (const log of allLogs) {
+      const d = (log.deliveries || []).find(item => item && item.id === deliveryId);
+      if (d) return d;
+    }
+    return null;
+  }
+
   getTripEvaluationData(deliveryId) {
     if (!deliveryId) return { evaluation: null, reason: '' };
+    // 端末内の控え（uber_log_trip_evaluations）と配達側（同期される）で、更新時刻の新しい方を使う
+    const synced = this.findDelivery(deliveryId);
     try {
       if (typeof localStorage !== 'undefined') {
         const raw = localStorage.getItem('uber_log_trip_evaluations');
@@ -10344,6 +10377,10 @@ class Store {
           const evalsMap = JSON.parse(raw);
           if (evalsMap && evalsMap[deliveryId]) {
             const item = evalsMap[deliveryId];
+            const itemAt = item && typeof item === 'object' ? item.updatedAt || '' : '';
+            if (synced && synced.evaluationUpdatedAt && synced.evaluationUpdatedAt > itemAt) {
+              return { evaluation: synced.evaluation || null, reason: synced.evaluationReason || '' };
+            }
             if (typeof item === 'string') {
               return { evaluation: item, reason: '' };
             } else if (typeof item === 'object') {
@@ -10395,16 +10432,22 @@ class Store {
       console.warn('UBER_LOG: Failed to save map memo to localStorage', e);
     }
 
-    const allLogs = this.state && this.state.dailyLogs ? Object.values(this.state.dailyLogs) : [];
-    for (const log of allLogs) {
+    // 以前は保存（saveToStorage）を呼ばず、メモがクラウドへ送られなかった（端末内だけ）。
+    // mapMemoUpdatedAt: 端末間の同期で新しい方を選ぶための更新時刻
+    let changedDate = null;
+    const allLogs = this.state && this.state.dailyLogs ? Object.entries(this.state.dailyLogs) : [];
+    for (const [date, log] of allLogs) {
       if (log.deliveries) {
         const d = log.deliveries.find(item => item.id === deliveryId);
         if (d) {
           d.mapMemo = cleanMemo;
+          d.mapMemoUpdatedAt = new Date().toISOString();
+          changedDate = date;
           break;
         }
       }
     }
+    if (changedDate) this.saveToStorage(changedDate);
 
     return cleanMemo;
   }
@@ -10412,6 +10455,9 @@ class Store {
   // MAP一口メモの取得
   getTripMapMemo(deliveryId) {
     if (!deliveryId) return '';
+    // 同期で受け取った新しいメモ（更新時刻つき）は端末内の控えより優先
+    const synced = this.findDelivery(deliveryId);
+    if (synced && synced.mapMemoUpdatedAt) return String(synced.mapMemo || '');
     try {
       if (typeof localStorage !== 'undefined') {
         const raw = localStorage.getItem('uber_log_trip_map_memos');
@@ -11616,8 +11662,32 @@ class Store {
   updateVehicleType(dateStr, vehicleType) {
     const log = this.getDailyLog(dateStr);
     log.vehicleType = vehicleType || null;
+    this.touchManualField(log, 'vehicleType');
     this.saveToStorage(dateStr);
     return log.vehicleType;
+  }
+
+  // 手動の日別項目（MANUAL_DAY_FIELDS）の更新時刻。端末間の同期で新しい方を選ぶ（SYNC_MODEL.md）
+  touchManualField(log, field) {
+    log.manualUpdatedAt = { ...(log.manualUpdatedAt || {}), [field]: new Date().toISOString() };
+  }
+
+  // 手動休みの設定・解除（解除は dayOff: false として残し、同期で「休みを解除した」ことが伝わるようにする）
+  setDayOff(dateStr, isOff) {
+    const log = this.getDailyLog(dateStr);
+    log.dayOff = !!isOff;
+    this.touchManualField(log, 'dayOff');
+    this.saveToStorage(dateStr);
+    return log.dayOff;
+  }
+
+  // 天気の手動登録（{ type: 'sunny'|'cloudy'|'rain'|'unknown', raw }）。null で取り消し（気象庁データの表示に戻る）
+  setDayWeather(dateStr, weather) {
+    const log = this.getDailyLog(dateStr);
+    log.weather = weather ? { type: weather.type, source: weather.source || 'manual', raw: weather.raw || '', observedDate: dateStr } : null;
+    this.touchManualField(log, 'weather');
+    this.saveToStorage(dateStr);
+    return log.weather;
   }
 
   // 地雷DBの評価ステータス更新（育てるDB: AVOID | VERIFY | OK）

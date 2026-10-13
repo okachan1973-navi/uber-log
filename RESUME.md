@@ -17,4 +17,5 @@ v79「同期の一本化（OPPO・PC・クラウド）」。進み具合は WORK
 - バックアップ: ローカルブランチ `backup/pre-v79-sync-overhaul`（v78 = 97ec358）。
 
 ## 現在地
-フェーズ 1（監査）完了。結果は WORK_PROGRESS.md「フェーズ1 監査の結果」。次はフェーズ 2-4（cloud-sync.js の mergeDailyLog・store.js の評価/メモ/公式値の新旧）。
+フェーズ 2-4 完了（js/cloud-sync.js: mergeDailyLog の公式値・手動メモ・手動項目・競合・同期状態の記録、js/store.js: 評価/メモの更新時刻・起動時の巻き戻し防止・setDayOff/setDayWeather）。
+次はフェーズ 5-8（ヘッダーの同期表示「同期済み HH:MM」・未送信/競合/エラーの表示）→ 10-11（版の表示・Supabase 2.117.3 固定＋SRI）。

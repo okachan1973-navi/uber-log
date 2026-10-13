@@ -16,8 +16,37 @@ const SYNC_STORAGE_KEYS = {
   PENDING_DATES: 'uber_pending_sync_dates',
   LAST_PULL_TIME: 'uber_last_cloud_pull_time',
   PRE_MIGRATION_BACKUP: 'uber_backup_pre_cloud_sync',
-  MIGRATION_COMPLETED: 'uber_cloud_migration_completed'
+  MIGRATION_COMPLETED: 'uber_cloud_migration_completed',
+  STATUS: 'uber_sync_status',        // 最終 pull / push 時刻・結果・エラー・クラウドの日数（diag.html で表示）
+  CONFLICTS: 'uber_sync_conflicts',  // 自動で決められなかった項目（端末側の値を残したもの）
+  CLIENT_ID: 'uber_sync_client_id'   // この端末（ブラウザ）の識別子（diag.html で表示）
 };
+
+// 表示中の定期同期の間隔（SYNC_MODEL.md「自動同期」）
+const SYNC_INTERVAL_MS = 60 * 1000;
+// 手動で入力する日別の項目（端末間で新しい方を選ぶ。更新時刻は manualUpdatedAt[項目]）
+const MANUAL_DAY_FIELDS = ['dayOff', 'weather', 'vehicleType'];
+// trip ごとの手動メモ（値の組と、その更新時刻）
+const TRIP_NOTE_GROUPS = [
+  { fields: ['evaluation', 'evaluationReason'], at: 'evaluationUpdatedAt', label: '○×評価・理由' },
+  { fields: ['mapMemo'], at: 'mapMemoUpdatedAt', label: 'MAP一口メモ' }
+];
+// 公式取込で決まる日別の項目（新しい公式取込 officialImport.importedAt の側を採用）
+const OFFICIAL_DAY_FIELDS = ['deliveriesCount', 'tripsCount', 'officialPoints', 'totalDistanceKm'];
+const OFFICIAL_SALES_KEYS = ['delivery', 'quest', 'adjustment', 'other', 'total'];
+
+function syncStorageGet(key, fallback) {
+  try {
+    if (typeof localStorage === 'undefined') return fallback;
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (e) { return fallback; }
+}
+function syncStorageSet(key, value) {
+  try { if (typeof localStorage !== 'undefined') localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* 保存できなくても同期は続ける */ }
+}
+const sameValue = (a, b) => JSON.stringify(a === undefined ? null : a) === JSON.stringify(b === undefined ? null : b);
+const isEmptyValue = v => v === undefined || v === null || v === '';
 
 class CloudSyncManager {
   constructor() {
@@ -29,9 +58,71 @@ class CloudSyncManager {
     this.pendingSyncDates = this.loadPendingSyncDates();
     this.localVersions = {}; // 日付ごとの端末内変更回数（送信中の変更を取りこぼさないため）
     this.pendingTargetQuestsSync = false;
+    this.clientId = this.loadClientId();
 
     this.initEventListeners();
     this.startInitialSync();
+  }
+
+  loadClientId() {
+    let id = syncStorageGet(SYNC_STORAGE_KEYS.CLIENT_ID, null);
+    if (!id) {
+      id = `client_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+      syncStorageSet(SYNC_STORAGE_KEYS.CLIENT_ID, id);
+    }
+    return id;
+  }
+
+  // 同期の記録（diag.html・ヘッダーの「同期済み HH:MM」で使う）
+  getSyncInfo() {
+    return {
+      clientId: this.clientId,
+      status: this.status,
+      pendingDates: Array.from(this.pendingSyncDates).sort(),
+      conflicts: this.getConflicts(),
+      ...syncStorageGet(SYNC_STORAGE_KEYS.STATUS, {})
+    };
+  }
+  recordSync(patch) {
+    const cur = syncStorageGet(SYNC_STORAGE_KEYS.STATUS, {});
+    const appVersion = (typeof window !== 'undefined' && window.UBER_LOG_APP_VERSION) || cur.appVersion || null;
+    syncStorageSet(SYNC_STORAGE_KEYS.STATUS, { ...cur, ...patch, clientId: this.clientId, appVersion });
+  }
+
+  // 競合（自動で決められず、端末側の値を残した項目）。同じ日・項目は1件にまとめ、値が一致したら消す
+  getConflicts() {
+    const list = syncStorageGet(SYNC_STORAGE_KEYS.CONFLICTS, []);
+    return Array.isArray(list) ? list : [];
+  }
+  recordConflict(date, field, localValue, cloudValue) {
+    const key = `${date}|${field}`;
+    const list = this.getConflicts().filter(c => c.key !== key);
+    list.push({ key, date, field, local: localValue === undefined ? null : localValue, cloud: cloudValue === undefined ? null : cloudValue, kept: 'local', at: new Date().toISOString() });
+    syncStorageSet(SYNC_STORAGE_KEYS.CONFLICTS, list.slice(-100));
+  }
+  resolveConflict(date, field) {
+    const key = `${date}|${field}`;
+    const list = this.getConflicts();
+    if (list.some(c => c.key === key)) syncStorageSet(SYNC_STORAGE_KEYS.CONFLICTS, list.filter(c => c.key !== key));
+  }
+
+  /**
+   * 両端末の値から1つを選ぶ（更新時刻で決める）。
+   *  - 片方にしか値が無い（もう片方は一度も設定していない）→ 値がある方
+   *  - 両方に更新時刻 → 新しい方 / 片方だけに更新時刻 → 時刻がある方（時刻の無い古い値より新しい）
+   *  - どちらにも時刻が無く値が違う → 端末側を残し、競合として記録（勝手に捨てない）
+   */
+  pickByTime(date, field, localVal, cloudVal, localAt, cloudAt) {
+    if (sameValue(localVal, cloudVal)) { this.resolveConflict(date, field); return { value: localVal, at: localAt || cloudAt || null }; }
+    if (localAt && cloudAt) return localAt >= cloudAt ? { value: localVal, at: localAt } : { value: cloudVal, at: cloudAt };
+    if (localAt) return { value: localVal, at: localAt };
+    if (cloudAt) return { value: cloudVal, at: cloudAt };
+    if (localVal === undefined) return { value: cloudVal, at: null };
+    if (cloudVal === undefined) return { value: localVal, at: null };
+    if (isEmptyValue(localVal) && !isEmptyValue(cloudVal)) return { value: cloudVal, at: null };
+    if (isEmptyValue(cloudVal) && !isEmptyValue(localVal)) return { value: localVal, at: null };
+    this.recordConflict(date, field, localVal, cloudVal);
+    return { value: localVal, at: null };
   }
 
   // 起動時の同期（保存済みのログインを復元して Pull → 未送信分を Push）。
@@ -45,10 +136,11 @@ class CloudSyncManager {
     } else {
       kick();
     }
+    // 表示中は60秒ごとに同期（裏に回っている間は通信しない。復帰時は visibilitychange で同期）
     if (typeof setInterval === 'function') {
       setInterval(() => {
         if (document.visibilityState === 'visible') this.pullAndSync();
-      }, 5 * 60 * 1000);
+      }, SYNC_INTERVAL_MS);
     }
   }
 
@@ -287,12 +379,21 @@ class CloudSyncManager {
       filteredLocalDels = localDels.filter(d => d.restaurant || (d.fee !== null && d.fee !== undefined));
     }
 
+    // 公式取込の新旧（officialImport.importedAt）。新しい公式取込を持つ側の公式値を採用し、古い端末の公式値で巻き戻さない
+    const oiLocal = localLog.officialImport && localLog.officialImport.importedAt;
+    const oiCloud = cloudLog.officialImport && cloudLog.officialImport.importedAt;
+    const officialSide = (oiLocal && oiCloud) ? (oiCloud > oiLocal ? 'cloud' : 'local') : (oiCloud ? 'cloud' : (oiLocal ? 'local' : null));
+    const offLog = officialSide === 'cloud' ? cloudLog : (officialSide === 'local' ? localLog : null);
+
     const deliveryMap = new Map();
+    const cloudById = new Map(filteredCloudDels.map(d => [d.id, d]));
+    const localById = new Map(filteredLocalDels.map(d => [d.id, d]));
     filteredCloudDels.forEach(d => deliveryMap.set(d.id, { ...d }));
     filteredLocalDels.forEach(localD => {
       if (deliveryMap.has(localD.id)) {
         const cloudD = deliveryMap.get(localD.id);
-        deliveryMap.set(localD.id, {
+        // 公式の値: 新しい公式取込の側（無ければ従来どおり端末側を優先）
+        const base = officialSide === 'cloud' ? { ...localD, ...cloudD } : {
           ...cloudD,
           ...localD,
           fee: localD.fee !== null && localD.fee !== undefined ? localD.fee : (cloudD.fee ?? null),
@@ -301,10 +402,27 @@ class CloudSyncManager {
           area: localD.area || cloudD.area || '',
           memo: localD.memo || cloudD.memo || '',
           durationStr: localD.durationStr || cloudD.durationStr || ''
-        });
+        };
+        deliveryMap.set(localD.id, base);
       } else {
         deliveryMap.set(localD.id, { ...localD });
       }
+    });
+    // trip ごとの手動メモ（○×評価・理由・MAP一口メモ）は、公式値とは別に更新時刻で選ぶ
+    deliveryMap.forEach((d, id) => {
+      const l = localById.get(id);
+      const c = cloudById.get(id);
+      if (!l || !c) return;
+      TRIP_NOTE_GROUPS.forEach(g => {
+        const lv = g.fields.map(f => l[f]);
+        const cv = g.fields.map(f => c[f]);
+        const lEmpty = lv.every(v => v === undefined);
+        const cEmpty = cv.every(v => v === undefined);
+        const r = this.pickByTime(date, `trip ${id} ${g.label}`, lEmpty ? undefined : lv, cEmpty ? undefined : cv, l[g.at], c[g.at]);
+        if (r.value === undefined) return;
+        g.fields.forEach((f, i) => { if (r.value[i] === undefined) delete d[f]; else d[f] = r.value[i]; });
+        if (r.at) d[g.at] = r.at;
+      });
     });
     merged.deliveries = Array.from(deliveryMap.values()).sort((a, b) => {
       const idxDiff = (a.index || 0) - (b.index || 0);
@@ -327,10 +445,21 @@ class CloudSyncManager {
 
     // 3-2. Uber公式の売上調整イベント（Support Adjustment等）はID基準で両端を保持
     const adjMap = new Map();
-    (cloudLog.adjustments || []).forEach(a => adjMap.set(a.id, { ...a }));
-    (localLog.adjustments || []).forEach(a => adjMap.set(a.id, { ...(adjMap.get(a.id) || {}), ...a }));
+    const adjFirst = officialSide === 'cloud' ? localLog : cloudLog;   // 後から重ねる側（公式取込が新しい側）が優先
+    const adjSecond = officialSide === 'cloud' ? cloudLog : localLog;
+    (adjFirst.adjustments || []).forEach(a => adjMap.set(a.id, { ...a }));
+    (adjSecond.adjustments || []).forEach(a => adjMap.set(a.id, { ...(adjMap.get(a.id) || {}), ...a }));
     if (adjMap.size > 0) {
       merged.adjustments = Array.from(adjMap.values());
+    }
+
+    // 3-3. 公式取込で決まる値（件数・距離・クエスト・公式取込の印）は新しい公式取込の側
+    if (offLog) {
+      OFFICIAL_DAY_FIELDS.forEach(f => { if (offLog[f] !== undefined && offLog[f] !== null) merged[f] = offLog[f]; });
+      if (Array.isArray(offLog.quests)) {
+        merged.quests = (typeof window !== 'undefined' && typeof window.deduplicateQuests === 'function') ? window.deduplicateQuests(offLog.quests.map(q => ({ ...q }))) : offLog.quests.map(q => ({ ...q }));
+      }
+      merged.officialImport = { ...offLog.officialImport };
     }
 
     // 4. 売上内訳のマージ（Delivery, Quest, Adjustment, Other, Total）
@@ -390,12 +519,19 @@ class CloudSyncManager {
         merged.sales.total = officialDay.total;
       }
 
-      // 公式取込v1（tools/official-import）で反映された日は、アプリ同梱の公式データを正とする
+      // 公式の売上内訳は新しい公式取込の側（古い端末の公式値で巻き戻さない）
+      if (offLog && offLog.sales) {
+        OFFICIAL_SALES_KEYS.forEach(k => { if (offLog.sales[k] !== undefined) merged.sales[k] = offLog.sales[k]; });
+      }
+
+      // 公式取込v1（tools/official-import）で反映された日は、アプリ同梱の公式データを正とする。
+      // ただし同期で受け取った公式取込のほうが新しい場合（この端末の版が古い）は同梱データで巻き戻さない
       const seedLog = (typeof window !== 'undefined' && typeof window.getConfirmedSeedData === 'function')
         ? (window.getConfirmedSeedData().dailyLogs || {})[date]
         : null;
-      if (seedLog && seedLog.officialImport && seedLog.sales) {
-        ['delivery', 'quest', 'adjustment', 'other', 'total'].forEach(k => {
+      const mergedOi = merged.officialImport && merged.officialImport.importedAt;
+      if (seedLog && seedLog.officialImport && seedLog.sales && (!mergedOi || !seedLog.officialImport.importedAt || seedLog.officialImport.importedAt >= mergedOi)) {
+        OFFICIAL_SALES_KEYS.forEach(k => {
           merged.sales[k] = seedLog.sales[k];
         });
       }
@@ -429,8 +565,17 @@ class CloudSyncManager {
       merged.manualTapsArchive = Array.from(archiveMap.values());
     }
 
-    // 6. 車両/移動手段種別のマージ
-    merged.vehicleType = localLog.vehicleType || cloudLog.vehicleType || null;
+    // 6. 手動の日別項目（手動休み・天気・移動手段）は更新時刻（manualUpdatedAt）で新しい方。
+    //    片方にしか無い値は消さない。どちらにも時刻が無く値が違うときは端末側を残し、競合として記録する
+    const lmu = localLog.manualUpdatedAt || {};
+    const cmu = cloudLog.manualUpdatedAt || {};
+    const mu = { ...cmu, ...lmu };
+    MANUAL_DAY_FIELDS.forEach(f => {
+      const r = this.pickByTime(date, f, localLog[f], cloudLog[f], lmu[f], cmu[f]);
+      if (r.value === undefined) delete merged[f]; else merged[f] = r.value;
+      if (r.at) mu[f] = r.at;
+    });
+    if (Object.keys(mu).length) merged.manualUpdatedAt = mu;
 
     // 後方互換性プロパティの整合性補正
     if (typeof window !== 'undefined' && window.store && typeof window.store.syncLegacyWorkInfo === 'function') {
@@ -449,12 +594,14 @@ class CloudSyncManager {
     if (this.isSyncing) return;
     if (!navigator.onLine) {
       this.setStatus('OFFLINE', 'オフライン（端末内保存中）');
+      this.recordSync({ lastResult: 'offline', lastCheckAt: new Date().toISOString() });
       return;
     }
 
     const sm = window.supabaseManager;
     if (!sm || !sm.isReady()) {
       this.setStatus('UNCONFIGURED', '接続未設定');
+      this.recordSync({ lastResult: 'unconfigured', lastCheckAt: new Date().toISOString() });
       return;
     }
 
@@ -463,6 +610,7 @@ class CloudSyncManager {
       const session = await sm.getSession();
       if (!session) {
         this.setStatus('NOT_LOGGED_IN', '未ログイン（ローカル単体稼働中）');
+        this.recordSync({ lastResult: 'not_logged_in', loggedIn: false, lastCheckAt: new Date().toISOString() });
         return;
       }
     }
@@ -483,6 +631,7 @@ class CloudSyncManager {
       if (logError) {
         throw new Error(`日別データ取得失敗: ${logError.message}`);
       }
+      this.recordSync({ lastPullAt: new Date().toISOString(), cloudDays: Array.isArray(cloudLogs) ? cloudLogs.length : 0, loggedIn: true });
 
       // 2. ローカルデータへ安全にマージ
       let hasLocalUpdate = false;
@@ -564,11 +713,14 @@ class CloudSyncManager {
       await this.pushPendingChangesInternal();
 
       // 完了
-      const nowTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+      const nowIso = new Date().toISOString();
+      const nowTime = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' });
+      this.recordSync({ lastSyncAt: nowIso, lastResult: 'ok', lastError: null });
       this.setStatus('SYNCED', `同期完了 (${nowTime})`);
     } catch (err) {
       // 【同期安全ルール 4】通信失敗時もLocalStorageを絶対破壊・巻き戻ししない
       console.warn('UBER_LOG: Sync warning/error (local data preserved):', err);
+      this.recordSync({ lastResult: 'error', lastError: err.message || '通信エラー', lastErrorAt: new Date().toISOString() });
       this.setStatus('ERROR', `同期一時停止: ${err.message || '通信エラー'}`);
     } finally {
       this.isSyncing = false;
@@ -636,6 +788,7 @@ class CloudSyncManager {
     }
 
     this.savePendingSyncDates();
+    if (datesToPush.length) this.recordSync({ lastPushAt: new Date().toISOString(), lastPushDays: datesToPush.length, cloudDays: new Set([...cloudByDate.keys(), ...datesToPush]).size });
 
     // 目標クエストのPush
     if (this.pendingTargetQuestsSync) {
@@ -688,12 +841,21 @@ class CloudSyncManager {
   }
 
   // 保留中差分のPush実行
+  // 入力の直後に送る（送れなかった日は未送信のまま残り、online 復帰・画面復帰・60秒ごとの同期で再送する）
   async pushPendingChanges() {
     if (this.isSyncing) return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      this.setStatus('OFFLINE', 'オフライン（端末内保存中・未送信あり）');
+      this.recordSync({ lastResult: 'offline', lastCheckAt: new Date().toISOString() });
+      return;
+    }
     try {
       await this.pushPendingChangesInternal();
+      if (this.pendingSyncDates.size === 0 && this.status === 'SYNCED') this.notifyListeners();
     } catch (e) {
       console.warn('UBER_LOG: Push error:', e);
+      this.recordSync({ lastResult: 'error', lastError: e.message || '送信エラー', lastErrorAt: new Date().toISOString() });
+      this.setStatus('ERROR', `同期一時停止: ${e.message || '送信エラー'}（未送信は端末に保存済み）`);
     }
   }
 
@@ -876,5 +1038,5 @@ if (typeof window !== 'undefined') {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { CloudSyncManager, cloudSync, SYNC_STORAGE_KEYS };
+  module.exports = { CloudSyncManager, cloudSync, SYNC_STORAGE_KEYS, SYNC_INTERVAL_MS, MANUAL_DAY_FIELDS, TRIP_NOTE_GROUPS };
 }
