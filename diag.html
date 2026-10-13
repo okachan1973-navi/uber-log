@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>UBER_LOG データ診断</title>
+  <!-- 開発用のデータ診断ページ（読み取り専用・外部送信なし）。アプリの画面からはリンクしていない。
+       この端末に保存されている日別データ（localStorage の uber_log_v1_data）をそのまま読み、月ごとの件数・売上・必要経費と整合性チェックを表示する。
+       store.js は読み込まない（読み込むと端末保存の補完・書き込みが走るため）。判定の定義は DATA_MODEL.md / js/data-diagnostics.js -->
+  <style>
+    :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --ok: #3fb950; --warn: #d29922; --err: #f85149; }
+    @media (prefers-color-scheme: light) { :root { --bg: #f6f8fa; --card: #ffffff; --border: #d0d7de; --text: #1f2328; --muted: #57606a; --ok: #1a7f37; --warn: #9a6700; --err: #cf222e; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    .note { color: var(--muted); font-size: 12px; margin: 0 0 14px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; overflow-x: auto; }
+    .card h2 { font-size: 14px; margin: 0 0 8px; }
+    table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+    th, td { padding: 5px 6px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; font-size: 13px; }
+    th:first-child, td:first-child { text-align: left; }
+    th { color: var(--muted); font-weight: 600; }
+    .kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; }
+    .kv dt { color: var(--muted); } .kv dd { margin: 0; word-break: break-all; }
+    .error { color: var(--err); } .warn { color: var(--warn); } .ok { color: var(--ok); } .info { color: var(--muted); }
+    ul { margin: 0; padding-left: 18px; } li { margin: 2px 0; }
+  </style>
+</head>
+<body>
+  <h1>UBER_LOG データ診断</h1>
+  <p class="note">この端末に保存されているデータを読むだけのページです（書き換え・外部送信はしません）。</p>
+  <div id="out"></div>
+  <script src="js/data-diagnostics.js"></script>
+  <script>
+    (function () {
+      var out = document.getElementById('out');
+      var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+      var yen = function (n) { return '¥' + Number(n || 0).toLocaleString(); };
+      var read = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+      // 日本時間の今日
+      var today = (function () {
+        try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
+        catch (e) { var j = new Date(Date.now() + 9 * 3600 * 1000); return j.toISOString().slice(0, 10); }
+      })();
+      var raw = read('uber_log_v1_data');
+      if (!raw) { out.innerHTML = '<div class="card"><span class="warn">この端末（このブラウザ）には UBER_LOG のデータがありません。</span></div>'; return; }
+      var state;
+      try { state = JSON.parse(raw); } catch (e) { out.innerHTML = '<div class="card error">保存データを読めません（JSON 形式ではない）</div>'; return; }
+      var logs = (state && state.dailyLogs) || {};
+      var D = window.UberLogDiagnostics;
+      var dates = Object.keys(logs).filter(D.isRealDate).sort();
+      var months = D.summarizeByMonth(logs);
+      var problems = D.checkDailyLogs(logs, { today: today, knownLegacyCountDates: ['2026-09-14', '2026-09-16', '2026-09-19'] });
+
+      // 同期の状態（ログイン情報は「有無」だけ。中身は表示しない）
+      var hasSession = false, keys = [];
+      try { for (var i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i)); } catch (e) {}
+      keys.forEach(function (k) { if (/^sb-.*-auth-token$/.test(k)) hasSession = true; });
+      var pending = [];
+      try { pending = JSON.parse(read('uber_pending_sync_dates') || '[]'); } catch (e) {}
+
+      var html = '';
+      html += '<div class="card"><h2>この端末のデータ</h2><dl class="kv">' +
+        '<dt>基準日（日本時間）</dt><dd>' + esc(today) + '</dd>' +
+        '<dt>日数</dt><dd>' + dates.length + '日（' + esc(dates[0] || '--') + '〜' + esc(dates[dates.length - 1] || '--') + '）</dd>' +
+        '<dt>クラウドのログイン</dt><dd class="' + (hasSession ? 'ok' : 'warn') + '">' + (hasSession ? 'ログイン情報あり（同期の対象）' : 'ログイン情報なし（この端末の入力はほかの端末に届かない）') + '</dd>' +
+        '<dt>未送信の日</dt><dd class="' + (pending.length ? 'warn' : 'ok') + '">' + (pending.length ? esc(pending.sort().join(', ')) : 'なし') + '</dd>' +
+        '</dl></div>';
+
+      html += '<div class="card"><h2>月ごとの合計（生データ）</h2><table><thead><tr><th>月</th><th>稼働日</th><th>配達件数</th><th>総売上</th><th>必要経費</th><th>経費の件数</th></tr></thead><tbody>' +
+        months.map(function (m) { return '<tr><td>' + esc(m.month) + '</td><td>' + m.workedDays + '日</td><td>' + m.deliveries + '件</td><td>' + yen(m.sales) + '</td><td>' + yen(m.expenses) + '</td><td>' + m.expenseCount + '件</td></tr>'; }).join('') +
+        '</tbody></table></div>';
+
+      html += '<div class="card"><h2>必要経費の種類（月別）</h2><ul>' +
+        months.map(function (m) {
+          var cats = Object.keys(m.expenseByCategory);
+          return '<li>' + esc(m.month) + ': ' + (cats.length ? cats.map(function (c) { return esc(c) + ' ' + yen(m.expenseByCategory[c]); }).join('・') : '<span class="info">登録なし</span>') + '</li>';
+        }).join('') + '</ul></div>';
+
+      var errs = problems.filter(function (p) { return p.level === 'error'; });
+      html += '<div class="card"><h2>整合性チェック</h2>' + (problems.length ? '<ul>' + problems.map(function (p) {
+        return '<li class="' + p.level + '">' + esc(p.date) + ' ' + esc(p.field) + ': ' + esc(p.message) + '</li>';
+      }).join('') + '</ul>' : '<span class="ok">問題なし</span>') +
+        '<p class="note" style="margin:8px 0 0">' + (errs.length ? '<span class="error">error ' + errs.length + '件</span>' : '<span class="ok">error なし</span>') + '。INFO は確認用の情報（既知の旧データ差異・「その他」の金額など）。</p></div>';
+
+      out.innerHTML = html;
+    })();
+  </script>
+</body>
+</html>
