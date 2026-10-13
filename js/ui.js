@@ -1428,7 +1428,7 @@ class UI {
     });
   }
 
-  // 履歴カレンダー（月単位）。稼働日は配達件数と売上、確認済みの非稼働日は「休」。それ以外は日付のみ
+  // 履歴カレンダー（月単位）。稼働日は配達件数と売上、休み（手動指定・自動判定とも）は「休み」。それ以外は日付のみ
   renderHistoryCalendar() {
     const container = document.getElementById('history-calendar-container');
     if (!container || typeof store === 'undefined' || !store.getDayStatus) return;
@@ -1459,7 +1459,7 @@ class UI {
           (st.totalSales !== null ? `<span class="cal-sales">¥${Math.trunc(Number(st.totalSales) / 100) * 100}</span>` : '');
       } else if (st.status === 'off') {
         off++;
-        body = '<span class="cal-off-label">休</span>';
+        body = '<span class="cal-off-label">休み</span>';
       }
       const attrs = st.status === 'worked' ? ` role="button" tabindex="0" data-date="${date}" aria-label="${m}月${d}日 ${st.count}件"` : '';
       const titleAttr = holidayName ? ` title="${holidayName}"` : '';
@@ -1476,7 +1476,7 @@ class UI {
       <div class="cal-grid cal-weekdays">${['日', '月', '火', '水', '木', '金', '土'].map((w, i) => `<div class="cal-wd${i === 0 ? ' cal-red-day' : ''}">${w}</div>`).join('')}</div>
       <div class="cal-grid">${cells.join('')}</div>
       </div>
-      <p class="cal-note">日付をタップすると日別評価が見れます。『休』は非稼働日。金額は100円未満を切り捨てて表示しています。</p>`;
+      <p class="cal-note">日付をタップすると日別評価が見れます。『休み』はUberの稼働実績がない日（公式データ取り込み済みの過去日）。金額は100円未満を切り捨てて表示しています。</p>`;
     container.querySelectorAll('.cal-nav').forEach(btn => btn.addEventListener('click', () => {
       const dir = Number(btn.getAttribute('data-dir'));
       const d = new Date(y, m - 1 + dir, 1);

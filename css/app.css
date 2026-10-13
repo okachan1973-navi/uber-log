@@ -4296,8 +4296,9 @@ select.expense-form-control {
 }
 
 .cal-off-label {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 800;
+  white-space: nowrap;
   color: var(--text-muted);
   background: transparent;
   margin-top: 4px;

@@ -53,6 +53,17 @@ UBER_LOG 正本開発引継ぎドキュメント（MASTER HANDOFF）
 - MAP登録数: 199/348
 <<< 公式取込 自動記録 終了 >>>
 
+■ 2026-10-13: 履歴カレンダーの過去の非稼働日を自動で「休み」（版番号は未更新）
+  - 原因: 「休」は CONFIRMED_DAY_OFF_DATES（9/12・9/13・9/20 の手書きリスト）か dayOff: true の日だけで、
+    日別データ自体が無い 9/25・9/30・10/7 は unknown（空欄）になっていた。
+  - store.getDayStatus(date, today) で表示時に毎回判定（保存しない）:
+      worked = isWorkedDay / off(statusSource: manual) = CONFIRMED_DAY_OFF_DATES または dayOff: true /
+      off(statusSource: auto) = Uber運用開始日以降・今日より前・その日より後の日まで公式データあり・Uber実績なし / それ以外 unknown。
+    公式データの範囲は store.getUberOfficialCoverage()（確定シードの日 or officialImport のある日で isWorkedDay の日。開始 9/10・最新 10/12）。
+  - 後から公式データが取り込まれた日は自動で稼働日に戻る。手動休みのデータには書き込まない。表記は「休み」に統一（カレンダーのセル・説明文）。
+  - 新たに自動「休み」: 2026-09-25 / 09-30 / 10-07。今後は手動で CONFIRMED_DAY_OFF_DATES に追加する必要はない。
+  - テスト 10-5 を更新（自動休み・今日・未来・自動解除・手動休み不変・データ不変）。run-tests 304 passed。
+
 ■ v71（2026-10-12）: 確認済み4店舗の店舗マスタ反映 ＆ del_0916_8 個別紐付け ＆ main worktree の整理
   1. 4店舗反映（commit 2a683a9、version.js --bump で v70→v71）
      - ガスト なんば店: 大阪市中央区難波3-5-1 ナンバー壱番ビル2F / 34.666832,135.501343（新規 st_pjgy4q。照合キーは「ガストなんば店」のみ）

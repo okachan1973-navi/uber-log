@@ -629,23 +629,58 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
   }
 
   // ==========================================================
-  section('10-5. 履歴カレンダーの稼働状況（稼働／休／空欄）');
+  section('10-5. 履歴カレンダーの稼働状況（稼働／休み（手動・自動）／空欄）');
   {
     const r = runNode(`
       const map={uber_log_v1_data:JSON.stringify({version:'1.2',dailyLogs:{'2026-09-20':{date:'2026-09-20',workStartedAt:'10:00',totalDistanceKm:null,workSessions:[],deliveries:[],quests:[]}}})};
       global.localStorage={getItem:k=>map[k]||null,setItem:(k,v)=>{map[k]=v},removeItem:()=>{}};global.window={localStorage:global.localStorage};
-      const {store}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
-      const st={};for(let d=1;d<=30;d++){const k='2026-09-'+String(d).padStart(2,'0');st[k]=store.getDayStatus(k);}
-      st['2099-01-01']=store.getDayStatus('2099-01-01');
+      const {store,CONFIRMED_DAY_OFF_DATES}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      const TODAY='2026-10-13';
+      const S=(d,t=TODAY)=>store.getDayStatus(d,t);
+      const st={};for(let d=1;d<=30;d++){const k='2026-09-'+String(d).padStart(2,'0');st[k]=S(k);}
+      const oct={};for(let d=1;d<=31;d++){const k='2026-10-'+String(d).padStart(2,'0');oct[k]=S(k);}
+      st['2099-01-01']=S('2099-01-01');
       const m20=store.getCalculatedMetrics(store.state.dailyLogs['2026-09-20']);
-      console.log(JSON.stringify({st,p20:m20.netProfit,has20:!!store.state.dailyLogs['2026-09-20']}));`);
-    const byStatus = s => Object.keys(r.st).filter(k => r.st[k].status === s);
-    check(byStatus('off').join() === '2026-09-12,2026-09-13,2026-09-20', `「休」は確認済みの非稼働日だけ（${byStatus('off').map(d => d.slice(5)).join(', ')}）`);
-    const worked = byStatus('worked');
-    check(['10', '11', '14', '15', '16', '17', '18', '19', '21', '22'].every(d => worked.includes(`2026-09-${d}`)), `稼働日は配達実績のある日（${worked.map(d => d.slice(8)).join(', ')}）`);
-    check(r.st['2026-09-22'].count === 25 && r.st['2026-09-22'].totalSales === 9243 && r.st['2026-09-19'].count === 23, '稼働日の件数・売上は一覧と同じ日別データ（9/22 25件 ¥9,243）');
-    check(['2026-09-01', '2026-09-09', '2026-09-30', '2099-01-01'].every(d => r.st[d].status === 'unknown'), 'データの無い日・未来の日は「休」にしない（空欄）');
-    check(r.has20 && r.st['2026-09-20'].status === 'off' && r.p20 === null, '9/20 は端末の日別データを残したまま「休」・利益なし（一覧の「利益 --」は非表示）');
+      const cov=store.getUberOfficialCoverage();
+      const before=JSON.stringify(store.state);
+      const allStatus=[...Object.keys(st),...Object.keys(oct)].map(d=>S(d));
+      const noMutation=JSON.stringify(store.state)===before;
+      const workedBefore=store.getAllDailyLogs().filter(l=>store.isWorkedDay(l)).length;
+      // 今日（10/13）に実績0件のまま日付が進んでも、後続日（10/14以降）の公式データが無ければ休みにしない
+      const t1013Next=S('2026-10-13','2026-10-15');
+      // 5. 自動休みの日（9/25）へ後から公式データが取り込まれた → 自動解除（稼働日）
+      store.state.dailyLogs['2026-09-25']={date:'2026-09-25',tripsCount:3,deliveriesCount:3,totalDistanceKm:5,workSessions:[],quests:[],expenses:[],
+        deliveries:[{id:'del_0925_1',index:1,completedAt:'10:00',restaurant:'テスト店',fee:500}],officialImport:{source:'official-import-v1',importedAt:'2026-10-13T00:00:00Z'}};
+      const s925=S('2026-09-25');
+      // 10/14 の公式データが取り込まれると、0件の 10/13 は（今日が過ぎていれば）自動休み
+      store.state.dailyLogs['2026-10-14']={date:'2026-10-14',tripsCount:1,deliveriesCount:1,workSessions:[],quests:[],expenses:[],
+        deliveries:[{id:'del_1014_1',index:1,completedAt:'10:00',restaurant:'テスト店',fee:400}],officialImport:{source:'official-import-v1',importedAt:'2026-10-15T00:00:00Z'}};
+      const t1013After=S('2026-10-13','2026-10-15');
+      // 6. 手動休み（dayOff: true）は自動処理で変更されない（未来日・公式データの後でも手動のまま）
+      store.state.dailyLogs['2026-10-07']={date:'2026-10-07',dayOff:true,deliveries:[],quests:[]};
+      store.state.dailyLogs['2026-10-20']={date:'2026-10-20',dayOff:true,deliveries:[],quests:[]};
+      const manual={d1007:S('2026-10-07'),d1020:S('2026-10-20'),d0912:S('2026-09-12'),flag1007:store.state.dailyLogs['2026-10-07'].dayOff,list:CONFIRMED_DAY_OFF_DATES.join()};
+      console.log(JSON.stringify({st,oct,cov,p20:m20.netProfit,has20:!!store.state.dailyLogs['2026-09-20'],noMutation,workedBefore,t1013Next,s925,t1013After,manual}));`);
+    const byStatus = (o, s, src) => Object.keys(o).filter(k => o[k].status === s && (!src || o[k].statusSource === src));
+    check(r.cov.startDate === '2026-09-10' && r.cov.latestDate >= '2026-10-12', `Uber運用開始日 ${r.cov.startDate}・公式データの最新日 ${r.cov.latestDate}`);
+    check(byStatus(r.st, 'off', 'manual').join() === '2026-09-12,2026-09-13,2026-09-20', `手動の休み（statusSource: manual）: ${byStatus(r.st, 'off', 'manual').map(d => d.slice(5)).join(', ')}`);
+    check(byStatus(r.st, 'off', 'auto').join() === '2026-09-25,2026-09-30', `1. 過去日・Uber実績0件・後続日データあり → 自動で休み（9月: ${byStatus(r.st, 'off', 'auto').map(d => d.slice(5)).join(', ')}）`);
+    check(byStatus(r.oct, 'off', 'auto').join() === '2026-10-07', `1. 10月の自動休み: ${byStatus(r.oct, 'off', 'auto').map(d => d.slice(5)).join(', ')}`);
+    const worked = byStatus(r.st, 'worked');
+    check(['10', '11', '14', '15', '16', '17', '18', '19', '21', '22'].every(d => worked.includes(`2026-09-${d}`)) && byStatus(r.oct, 'worked').length === 11, `2. 実績のある過去日は通常表示（9月 ${worked.length}日・10月 ${byStatus(r.oct, 'worked').length}日）`);
+    check(r.st['2026-09-22'].count === 25 && r.st['2026-09-22'].totalSales === 9243 && r.st['2026-09-19'].count === 23 && !r.st['2026-09-22'].statusSource, '稼働日の件数・売上は一覧と同じ日別データ（9/22 25件 ¥9,243）');
+    check(r.oct['2026-10-13'].status === 'unknown' && r.t1013Next.status === 'unknown', '3. 今日・実績0件 → 休みにしない（翌日以降も後続日の公式データが無いうちは休みにしない）');
+    check(r.oct['2026-10-14'].status === 'unknown' && r.oct['2026-10-31'].status === 'unknown' && r.st['2099-01-01'].status === 'unknown', '4. 未来日 → 休みにしない');
+    check(['2026-09-01', '2026-09-09'].every(d => r.st[d].status === 'unknown'), 'Uber運用開始日（9/10）より前の日は休みにしない');
+    check(r.s925.status === 'worked' && r.s925.count === 3 && !r.s925.statusSource,'5. 自動休みの日（9/25）へ後から公式データ追加 → 自動休みを解除して稼働日表示');
+    check(r.t1013After.status === 'off' && r.t1013After.statusSource === 'auto', '5. 今日（10/13）が終わり後続日（10/14）の公式データが入った段階で 0件なら自動休み');
+    check(r.manual.d1007.status === 'off' && r.manual.d1007.statusSource === 'manual' && r.manual.flag1007 === true && r.manual.d1020.status === 'off' && r.manual.d1020.statusSource === 'manual' && r.manual.d0912.statusSource === 'manual' && r.manual.list === '2026-09-12,2026-09-13,2026-09-20',
+      '6. 手動休み（dayOff・確認済みリスト）は自動判定で変更されない（未来日の手動休みもそのまま）');
+    check(r.noMutation, '7. 判定は表示時の計算だけ（日別データ・売上・件数・距離へ書き込まない）');
+    check(r.has20 && r.st['2026-09-20'].status === 'off' && r.p20 === null, '9/20 は端末の日別データを残したまま「休み」・利益なし（一覧の「利益 --」は非表示）');
+    const uiSrc = fs.readFileSync(path.join(ROOT, 'js', 'ui.js'), 'utf8');
+    const calSrc = uiSrc.slice(uiSrc.indexOf('renderHistoryCalendar() {'), uiSrc.indexOf('renderHistoryView(expandedDate'));
+    check(calSrc.includes('>休み</span>') && !calSrc.includes('>休</span>') && !calSrc.includes('非稼働'), 'カレンダーの表記は「休み」に統一（「休」「非稼働日」を混在させない）');
   }
 
   // ==========================================================
@@ -845,7 +880,7 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
         bdays:b.days,btotal:b.totalSales,
         a24:{days:a24.activeDaysCount,cnt:a24.totalDeliveries,avgDaily:a24.avgDailyEarnings,avgPer:a24.avgPerDelivery,total:a24.totalSalesSum,cmp:a24.dailyComparison.length}}));`);
     check(r.cmp.every(d => !['2026-09-12', '2026-09-13', '2026-09-20'].includes(d)) && !r.cmp.some(d => d.startsWith('2099-02-')), `日別比較に 9/20（稼働開始時刻・workSessionだけ）・9/12・9/13・非稼働の日は出ない（${r.cmp.length}日）`);
-    check(r.st['2026-09-20'] === 'off' && r.st['2026-09-12'] === 'off' && r.st['2026-09-13'] === 'off', 'カレンダーでは 9/12・9/13・9/20 は「休」のまま');
+    check(r.st['2026-09-20'] === 'off' && r.st['2026-09-12'] === 'off' && r.st['2026-09-13'] === 'off', 'カレンダーでは 9/12・9/13・9/20 は「休み」のまま');
     check(r.keep20.ws === '10:00' && r.keep20.sess === 1, '9/20 の稼働開始時刻・workSession は削除しない（表示だけ除外）');
     check(!r.todayTap.worked && !r.todayTap.inCmp && r.todayTap.status === 'unknown', `今日（${r.today}）: 稼働開始・手動タップだけなら非稼働（一覧・日別比較に出さない・「休」にもしない）`);
     check(r.todayReal.worked && r.todayReal.inCmp && r.todayReal.status === 'worked', '今日に配達実績が1件入ると自動で稼働日（一覧・日別比較に表示）');

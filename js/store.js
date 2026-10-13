@@ -75,8 +75,8 @@ const LEGACY_80_QUEST = {
 // 二重計上になるのを防ぐため、この値が一致する保存データのみ手動補正を採用する。
 const QUEST_OFFICIAL_BASELINE = '20260922_official';
 
-// 稼働していないことが確認済みの日（履歴カレンダーの「休」表示用）。
-// 配達データが無い日を自動で「休」にはしない（未来・未入力・判定できない日と区別するため、確認済みの日だけをここに記録する）。
+// 手動指定の休み（履歴カレンダーの「休み」表示用。statusSource: manual）。
+// それ以外の過去の非稼働日は store.getDayStatus が公式データの取り込み範囲から自動判定する（statusSource: auto）。
 const CONFIRMED_DAY_OFF_DATES = ['2026-09-12', '2026-09-13', '2026-09-20'];
 
 // 公式正本売上（2026-09-14 ～ 2026-09-17）
@@ -11755,18 +11755,48 @@ class Store {
     return metrics.deliverySales !== null && metrics.deliverySales > 0;
   }
 
-  // 日別の稼働状況（履歴カレンダー用。一覧・日別比較と同じ isWorkedDay で判定）
+  // Uber公式データの取り込み範囲（自動「休み」判定用）。
+  // 公式データの日 = 確定シード（CONFIRMED_SEED_DATA。公式画面から確定した日別データ）の日、
+  // または公式取込（officialImport）のある日で、かつ稼働日（isWorkedDay）の日。
+  //  startDate : Uber運用開始日（公式データの最も古い日）
+  //  latestDate: 公式データが取り込まれている最も新しい日
+  getUberOfficialCoverage() {
+    const logs = this.state && this.state.dailyLogs ? this.state.dailyLogs : {};
+    const seedLogs = CONFIRMED_SEED_DATA.dailyLogs || {};
+    const dates = new Set([...Object.keys(seedLogs), ...Object.keys(logs)]);
+    let startDate = null;
+    let latestDate = null;
+    dates.forEach(date => {
+      const log = logs[date] || seedLogs[date];
+      if (!seedLogs[date] && !(log && log.officialImport)) return;
+      if (!this.isWorkedDay(log)) return;
+      if (!startDate || date < startDate) startDate = date;
+      if (!latestDate || date > latestDate) latestDate = date;
+    });
+    return { startDate, latestDate };
+  }
+
+  // 日別の稼働状況（履歴カレンダー用。一覧・日別比較と同じ isWorkedDay で判定）。Uber履歴としての判定
   //  worked : 稼働日（isWorkedDay）
-  //  off    : 稼働していないことが確認済みの日（CONFIRMED_DAY_OFF_DATES、または日別データの dayOff: true）
-  //  unknown: それ以外（未来・未入力・判定できない日）。「休」にはしない
-  getDayStatus(dateStr) {
+  //  off    : 休み。statusSource で区別する
+  //           manual: 手動指定（CONFIRMED_DAY_OFF_DATES、または日別データの dayOff: true）
+  //           auto  : 自動判定（Uber運用開始日以降・今日より前・その日より後の日まで公式データ取り込み済み・
+  //                   その日にUberの稼働実績なし）。保存せず毎回判定するため、後から公式データが
+  //                   取り込まれれば自動で稼働日に戻る（手動指定のデータには一切書き込まない）
+  //  unknown: それ以外（今日・未来・公式データ未取り込みの日）。「休み」にはしない
+  // ※ 他サービス（Rocket Now 等）が同日に稼働していても、Uberの稼働実績が無ければUber履歴上は休み
+  getDayStatus(dateStr, today = getTodayDateString()) {
     const log = this.state && this.state.dailyLogs ? this.state.dailyLogs[dateStr] : null;
     const metrics = log ? this.getCalculatedMetrics(log) : null;
     if (metrics && this.isWorkedDay(log)) {
       return { status: 'worked', count: metrics.count, totalSales: metrics.totalSales, netProfit: metrics.netProfit };
     }
     if (CONFIRMED_DAY_OFF_DATES.includes(dateStr) || (log && log.dayOff === true)) {
-      return { status: 'off' };
+      return { status: 'off', statusSource: 'manual' };
+    }
+    const { startDate, latestDate } = this.getUberOfficialCoverage();
+    if (startDate && dateStr >= startDate && dateStr < today && dateStr < latestDate) {
+      return { status: 'off', statusSource: 'auto' };
     }
     return { status: 'unknown' };
   }
