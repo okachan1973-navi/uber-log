@@ -48,7 +48,7 @@ UBER_LOG の数字（売上・必要経費・利益・件数・時間・距離�
 | `officialImport` | 公式取込で反映した日の印（`source`・`importedAt`） | 公式 |
 | `manualUberSales` / `manualQuest` | 旧来の手入力売上（`sales` が無い日だけ使う） | 手動 |
 
-- 天気（`weather`）はまだ無い。追加するなら手動項目（または取得元を `source` に持つ項目）として持ち、§10 の同期ルールで残る。
+| `weather` | 天気（任意・手動）。`{ type: 'sunny'｜'cloudy'｜'rain'｜'unknown', source, raw, observedDate }`。あれば気象庁データより優先（§15） | 手動 |
 
 ## 2. 売上（日別の計算は `store.getCalculatedMetrics`）
 
@@ -123,7 +123,13 @@ UBER_LOG の数字（売上・必要経費・利益・件数・時間・距離�
 
 - **稼働日**（`store.isWorkedDay`）: 次のいずれか — `deliveriesCount > 0` または `tripsCount > 0`／店舗名か報酬のある配達が1件以上／配達売上 > 0。
   稼働開始時刻・稼働セッション・手動タップだけ・経費だけの日、空のレコードは稼働日ではない。
-- **稼働日数（今月）** ＝ 当月1日〜今日の稼働日の数 / 当月1日〜今日の日数（今日は 0 件でも分母に入る。未来日は入れない）。例 `11 / 13日`。休みの数から逆算しない。
+- **稼働 / 休み（今月・分析画面）** ＝ `稼働` / `休み`（例 `11 / 1`）。
+  - 稼働 ＝ 当月1日〜今日の稼働日の数（今日も1件でも実績が入れば数える）。休みの数から逆算しない。
+  - 休み ＝ 当月1日〜今日で §9 の `off`（手動休み＋自動休み）の日の数。
+  - **今日は終わるまでどちらにも入れない**（今日 0 件でも休みにしない。手動休みにした日は除く）。未来日は数えない。
+  - 前日以前の 0 件の日も、§9 の自動休みの条件（その日より後の日の公式データがある）を満たすまでは休みに数えない。
+    例: 10/14 の朝、10/13 が 0 件でも 10/14 以降の公式データを取り込むまでは「未確定」（`11 / 1`）。取り込むと休み（`11 / 2`）。
+  - `getRevenueSummary().thisMonth` の `workedDays` / `offDays`（うち手動 `offDaysManual`）。`elapsedDays`（当月1日〜今日の日数）も残す。
 
 ## 9. 休み（`store.getDayStatus`）
 
@@ -135,7 +141,8 @@ UBER_LOG の数字（売上・必要経費・利益・件数・時間・距離�
 ## 10. 公式管理データと手動管理データ・同期のルール
 
 **公式管理**（公式取込・同梱データが正）: `deliveries[]`（trip）・`deliveriesCount`・`tripsCount`・`officialPoints`・`totalDistanceKm`・`quests[]`・`adjustments[]`・`sales.delivery/quest/adjustment/other/total`・`officialImport`。
-**手動管理**（端末・クラウドが正）: `expenses[]`・`deletedExpenseIds[]`・`workSessions[]`・`dayOff`・`vehicleType`・`manualTapsArchive[]`・○×評価・メモ・`sales.tip`（旧取込）・今後の天気等。
+**手動管理**（端末・クラウドが正）: `expenses[]`・`deletedExpenseIds[]`・`workSessions[]`・`dayOff`・`vehicleType`・`manualTapsArchive[]`・○×評価・メモ・`sales.tip`（旧取込）・`weather`。
+公式取込・端末への公式反映・クラウド同期のどれも、手動管理の項目を消さない・上書きしない（テスト: `tools/data-audit/spec/data-model-tests.js` §5・§6）。
 
 - **公式取込（同梱データの更新）**: `pipeline.js` は既存の日を丸ごと置き換えず、trip を ID で照合して公式項目だけを更新する（同じ日を何度取り込んでも同じ結果・trip/売上/チップ/クエスト/調整は二重にならない）。
 - **端末への反映**（`syncOfficialImportedDay`）: 公式項目だけを同梱データに合わせ、手動項目には触らない。公式に無い手動タップは削除せず `manualTapsArchive` へ退避。
@@ -188,6 +195,57 @@ UBER_LOG の数字（売上・必要経費・利益・件数・時間・距離�
 9. 数値項目に NaN / Infinity / 数値でない文字列が無い。日付は実在する `YYYY-MM-DD`
 10. 未来日に実績・売上が無い
 
-- テスト: `tools/data-audit/spec/data-model-tests.js`（人工データ）、`tools/official-import/spec/run-tests.js`（実データ・取込）、`tools/official-import/spec/sync-tests.js`（同期）
+## 15. 天気
+
+- **取得元**: 気象庁「過去の気象データ検索」日ごとの値（主な要素）・大阪（府県番号 62・地点番号 47772）。APIキー不要・無料。
+  `node tools/weather/fetch-jma-weather.js` が Uber 運用開始日（2026-09-10）〜昨日のページを読み、`data/uber_weather.json` / `data/uber_weather.js`（`window.UBER_WEATHER`）に保存する（PC で実行して commit）。
+  使う列: 天気概況 昼（06:00-18:00）・夜（18:00-翌06:00）・降水量の合計（「--」は降水なし、0.0 は 0.5mm 未満の降水あり）・日照時間。
+  天気概況は数日後に発表されるため、未発表の日（直近の日）は保存しない。
+- **分類**（`tools/weather/jma-weather.js` の `classify`。昼の天気概況だけで決める）:
+  - 雨 `rain`: 昼の天気概況に「雨」「雪」「みぞれ」「ひょう」「あられ」を含む（一時雨・時々雨・後雨・大雨・雷を伴う も雨）。例「曇後一時雨」「曇時々晴後時々雨、雷を伴う」→ 雨
+  - 晴 `sunny`: 降水なしで、最初の天気が「快晴」「晴」。例「晴後曇」→ 晴
+  - 曇 `cloudy`: 降水なしで、最初の天気が「薄曇」「曇」。例「曇後晴」→ 曇
+  - `unknown`: どれにも当てはまらない（霧など）
+  - 夜の概況は分類に使わず保存だけ（夜だけ雨の日は `nightRain: true`。日別比較の天気欄の説明に表示）。
+- **表示**: 日別比較の「天気」列に ☀ 晴 / ☁ 曇 / 🌧 雨。無い日は「—」（推測で晴にしない）。`store.getWeather(date)` は日別データの `weather`（手動）→ 気象庁データの順。
+- 公式取込・クラウド同期は `weather` を消さない（§10）。気象庁データは別ファイルなので取込・同期の影響を受けない。
+
+## 16. 公式取込の状態（`tools/official-import`）
+
+取込の状態 `phase` を1つに決め、画面は phase だけから「見出し・説明・次に押す緑のボタン（1つ）・進捗」を作る（`lib/import-job.js` / `index.html` の `render`）。
+
+| phase | 意味 | 次に押すボタン |
+|---|---|---|
+| IDLE | 未開始 | Uber Webから取得する |
+| FETCHING | 取得・検証中 | なし（待つ） |
+| PREVIEW_READY | 取得完了・内容の確認待ち（まだ反映していない） | この内容でUBER_LOGへ反映する |
+| PREVIEW_BLOCKED | 反映前に解決が必要な問題（まだ反映していない） | 問題ごと（MAPなし・クエスト重複はカードのボタン／ログイン後は「取得し直す」／スクショ修正後は「検証し直す」） |
+| REFLECTING / REFLECTED | UBER_LOG へ反映中／反映完了 | なし（待つ） |
+| TESTING | 自動テスト中 | なし（待つ） |
+| TEST_FAILED | 反映済み・テスト失敗・GitHub 未保存 | テストと保存を再開する（取得・反映はやり直さない） |
+| SAVING | HANDOFF・commit・push 中 | なし（待つ） |
+| SAVE_FAILED | 反映済み・記録/commit でエラー | テストと保存を再開する |
+| PUSH_FAILED | commit 済み・送信だけ失敗 | GitHubへの送信を再試行する |
+| COMPLETE | 全工程完了（変更なしを含む） | なし |
+| ERROR | 反映前のエラー（UBER_LOG は変更なし） | 最初から取得し直す |
+
+- 進捗の印: ✓ 完了 / ● 実行中 / Ⅱ ユーザー確認待ち / × エラー / ・ 未実行 / － 不要。
+- 「反映済み・保存待ち」はディスクと git から判定する（`detectPending`: 取込対象ファイルに未コミットの変更があり、`staging/<日付>.json` の `generatedAt` ＝ その日の `officialImport.importedAt` で、最新 commit に無い）。
+  サーバーを再起動しても画面に「テストと保存を再開する」を出す（`GET /api/pending`）。この間に別の取込を押しても取得・反映はせず、保存待ちの日の再開へ案内する。
+- 「テストと保存を再開する」（`POST /api/resume`）は 自動テスト → HANDOFF → commit → push だけを行う（commit 済みなら push だけ）。
+- 反映後に店舗マスタ（`data/uber_pickup_stores.*`）を `build-stores.js` で作り直し、取込の commit に含める。
+- 画面の数字は届いた実データだけ。無い値は「—」（仮の件数・金額は出さない）。
+
+## 17. 同じ日の再取込・今日の途中取込
+
+- **同じ日の再取込**: 公式データを最新に更新する。trip は Uber の trip UUID・時刻・金額で既存の trip ID に照合し、新しい trip だけ追加（同じ trip を二重にしない）。
+  件数・売上・クエスト・調整・距離・時間は最新の公式値に置き換える（足し算しない）。既存の trip・クエスト・調整が新しい取得結果に無い場合は消さずに止める（PREVIEW_BLOCKED）。
+  手動管理の項目（必要経費・手動休み・weather・メモ・評価）は §10 のとおり消さない。
+- **今日の取込**: 取込自体はできるが、1日が終わっていない途中のデータ。画面に「本日はまだ終了していません。この後の配達は含まれません。後で再取込すると最新の公式データへ更新できます。」を表示する。
+  例: 2026-10-12 は 15:35 に途中データ（17trip / 20件）を取り込み、翌日の再取込で 21trip / 24件 に更新した（既存の17trip は変更なし）。
+
+## 18. テスト・監査・診断
+
+- テスト: `tools/data-audit/spec/data-model-tests.js`（人工データ）、`tools/official-import/spec/server-tests.js`（取込の状態・再開・再取込）、`tools/official-import/spec/run-tests.js`（実データ・取込）、`tools/official-import/spec/sync-tests.js`（同期）
 - 監査: `node tools/data-audit/data-integrity-audit.js [--file バックアップ.json] [--today YYYY-MM-DD]`
 - 端末の診断: `diag.html`（読み取り専用・外部送信なし。アプリからはリンクしていない）
