@@ -9613,6 +9613,15 @@ function formatMinutes(minutes) {
   return `${m}分`;
 }
 
+// 気象庁の天気データ（data/uber_weather.js が window.UBER_WEATHER に入れる。Node では data/uber_weather.json を読む）
+function getWeatherBundle() {
+  if (typeof window !== 'undefined' && window.UBER_WEATHER) return window.UBER_WEATHER;
+  if (typeof module !== 'undefined' && module.exports && typeof require === 'function') {
+    try { return require('../data/uber_weather.json'); } catch (e) { return null; }
+  }
+  return null;
+}
+
 // 分を HH:MM（2桁ゼロ埋め）に整形。例: 303 → "05:03"、725 → "12:05"
 function formatMinutesHHMM(minutes) {
   const total = Math.max(0, Math.floor(Number(minutes) || 0));
@@ -11830,6 +11839,18 @@ class Store {
     // 稼働日数: 分子 = 当月1日〜基準日でUber実績のある日（isWorkedDay）/ 分母 = 当月1日〜基準日の経過日数（基準日を含む）
     // 休み自動判定（getDayStatus）とは別の指標。基準日がまだ終わっていなくても分母に含める
     const monthElapsedDays = Number(dateStr.slice(8, 10));
+    // 休み（今月）: 当月1日〜基準日で getDayStatus が off の日（手動休み＋自動休み）。
+    // 基準日（今日）は手動休みでない限り休みにならない（自動休みは「今日より前」だけ）。未来日は数えない
+    let monthOffDays = 0;
+    let monthOffManual = 0;
+    for (let d = 1; d <= monthElapsedDays; d++) {
+      const ds = `${currentMonthPrefix}-${String(d).padStart(2, '0')}`;
+      const st = this.getDayStatus(ds, dateStr);
+      if (st.status === 'off') {
+        monthOffDays++;
+        if (st.statusSource === 'manual') monthOffManual++;
+      }
+    }
 
     const thisMonth = {
       label: '今月の実績',
@@ -11842,7 +11863,9 @@ class Store {
       expenses: month.expenses,
       bikeExpenses: month.bikeExpenses,                 // 参考内訳: バイクシェア等
       otherExpenses: month.necessaryCategoryExpenses,   // 参考内訳: 種類「必要経費」
-      workedDays: month.workedDays,
+      workedDays: month.workedDays,   // 稼働（Uber実績のある日）
+      offDays: monthOffDays,          // 休み（手動＋自動。今日は未確定）
+      offDaysManual: monthOffManual,
       elapsedDays: monthElapsedDays,
       deliveriesCount: month.deliveriesCount,
       regularSales: month.regularSales,
@@ -11979,6 +12002,21 @@ class Store {
     return { ...a, startDate, endDate, days: a.workedDays };
   }
 
+  // その日の天気（DATA_MODEL.md「天気」）。推測しない: 登録が無い日は null（画面は「—」）
+  //  1. 日別データの weather（手動・将来の登録。{ type, source, raw, observedDate }）
+  //  2. 気象庁の過去の観測（data/uber_weather.js。tools/weather/fetch-jma-weather.js が生成）
+  // 戻り値: { type: 'sunny'|'cloudy'|'rain'|'unknown', label, icon, source, day, night, nightRain, precipitationMm }
+  getWeather(dateStr) {
+    const META = { sunny: { label: '晴', icon: '☀' }, cloudy: { label: '曇', icon: '☁' }, rain: { label: '雨', icon: '🌧' }, unknown: { label: '不明', icon: '？' } };
+    const log = this.state && this.state.dailyLogs ? this.state.dailyLogs[dateStr] : null;
+    const own = log && log.weather && META[log.weather.type] ? log.weather : null;
+    if (own) return { ...META[own.type], type: own.type, source: own.source || 'manual', day: own.raw || '', night: '', nightRain: false, precipitationMm: null };
+    const bundle = getWeatherBundle();
+    const e = bundle && bundle.days ? bundle.days[dateStr] : null;
+    if (!e || !META[e.type]) return null;
+    return { ...META[e.type], type: e.type, source: 'jma', day: e.day, night: e.night, nightRain: !!e.nightRain, precipitationMm: e.precipitationNone ? null : e.precipitationMm };
+  }
+
   // 全体・累計・直近7日の分析データ取得
   getAnalytics() {
     const allLogs = this.getAllDailyLogs();
@@ -12039,6 +12077,7 @@ class Store {
         workSeconds: metrics.workSeconds,
         durationText,
         durationHHMM,
+        weather: this.getWeather(log.date), // 天気（無い日は null → 画面は「—」）
         hourlyWage: roundedHourly,
         exactHourlyWage: metrics.hourlyWage,
         totalSales: metrics.totalSales,

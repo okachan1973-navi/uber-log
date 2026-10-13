@@ -142,6 +142,55 @@ check(S.d1007.status === 'unknown' && S.d1008.status === 'unknown', '今日（0�
 check(S.d1006.status === 'worked', '実績のある日は稼働日');
 
 // ============================================================
+section('4b. 稼働 / 休み（今月。今日は終わるまでどちらにも入れない）');
+const WO = run(`${loadWith({ ...FIXTURE, '2099-10-20': { date: '2099-10-20', dayOff: true, deliveries: [], quests: [] } })}
+  const m=t=>{const x=store.getRevenueSummary(t).thisMonth;return [x.workedDays,x.offDays,x.offDaysManual];};
+  const base=m('${TODAY}'), at1005=m('2099-10-05'), at1006=m('2099-10-06');
+  // 今日（10/07）に1件でも公式実績が入る
+  store.state.dailyLogs['${TODAY}']=JSON.parse(JSON.stringify(store.state.dailyLogs['2099-10-06']));store.state.dailyLogs['${TODAY}'].date='${TODAY}';
+  store.state.dailyLogs['${TODAY}'].deliveries=[{...store.state.dailyLogs['2099-10-06'].deliveries[0],id:'fx_1007_1'}];
+  const todayWorked=m('${TODAY}');
+  // 自動休みだった 10/05 に後から公式データが入る
+  store.state.dailyLogs['2099-10-05']={...JSON.parse(JSON.stringify(store.state.dailyLogs['2099-10-06'])),date:'2099-10-05',deliveries:[{...store.state.dailyLogs['2099-10-06'].deliveries[0],id:'fx_1005_1'}]};
+  const later=m('${TODAY}');
+  console.log(JSON.stringify({base,at1005,at1006,todayWorked,later}));`);
+check(WO.base.join() === '3,3,1', `今日（10/07）未稼働: 稼働 ${WO.base[0]} / 休み ${WO.base[1]}（10/03 自動・10/04 手動・10/05 自動。今日は数えない。10/20 の未来の手動休みも数えない）`, WO.base);
+check(WO.todayWorked.join() === '4,3,1', `今日に1件でも実績が入ると 稼働 +1（${WO.todayWorked[0]} / ${WO.todayWorked[1]}）`, WO.todayWorked);
+check(WO.at1005[1] === 2 && WO.at1006[1] === 3, `昨日0件・後続の公式データあり → 休み +1（10/05 時点 ${WO.at1005[1]} → 10/06 時点 ${WO.at1006[1]}）`, [WO.at1005, WO.at1006]);
+check(WO.base[2] === 1, '手動休み（dayOff）は休みに含む');
+check(WO.later.join() === '5,2,1', `自動休みの日（10/05）に後から公式データ → 休みから外れて稼働へ（${WO.later[0]} / ${WO.later[1]}）`, WO.later);
+
+// ============================================================
+section('4c. 天気（気象庁の観測・分類・未登録は推測しない）');
+const W = require(path.join(ROOT, 'tools', 'weather', 'jma-weather.js'));
+const fx = fs.readFileSync(path.join(ROOT, 'tools', 'weather', 'spec', 'fixtures', 'jma_osaka_2026_09.html'), 'utf8');
+const rows = W.parseDailyPage(fx, 2026, 9);
+const r29 = rows.find(x => x.date === '2026-09-29');
+const r12 = rows.find(x => x.date === '2026-09-12');
+check(rows.length === 30 && r29.day === '雨' && r29.night === '曇時々雨' && r29.precipitationMm === 30.5 && r12.precipitationNone === true && r12.precipitationMm === null,
+  '気象庁の実ページ（大阪 2026年9月）から 天気概況 昼・夜・降水量・日照 を読む（「--」は降水なし）');
+const C = s => W.classify(s);
+check(C('晴') === 'sunny' && C('快晴') === 'sunny' && C('晴後曇') === 'sunny' && C('晴一時曇') === 'sunny', '晴: 降水なしで最初の天気が 晴・快晴（例: 晴後曇）');
+check(C('曇') === 'cloudy' && C('曇後晴') === 'cloudy' && C('薄曇') === 'cloudy' && C('曇時々晴') === 'cloudy', '曇: 降水なしで最初の天気が 曇・薄曇（例: 曇後晴）');
+check(C('雨') === 'rain' && C('大雨一時曇') === 'rain' && C('曇後一時雨') === 'rain' && C('曇一時晴後時々雨、雷を伴う') === 'rain' && C('晴後雨') === 'rain' && C('曇時々雪') === 'rain',
+  '雨: 昼の天気概況に 雨・雪 等を含めば雨（一時雨・時々雨・後雨・大雨・雷を伴う も雨）');
+check(C('') === null && C('霧') === 'unknown', '天気概況が空欄（未発表）は登録しない・晴/曇/雨のどれでもない表現は unknown');
+check(W.toEntry({ date: '2026-10-13', day: '', night: '', precipitationMm: null, precipitationNone: true, sunshineH: 10.7 }) === null, '天気概況が未発表の日（例: 2026-10-13）は保存しない（画面は「—」）');
+const WT = run(`${loadWith({ ...FIXTURE,
+    '2099-10-01': { ...FIXTURE['2099-10-01'], weather: { type: 'rain', source: 'manual', raw: '雨', observedDate: '2099-10-01' } },
+    '2099-10-02': { ...FIXTURE['2099-10-02'], weather: { type: 'sunny', source: 'manual', raw: '晴', observedDate: '2099-10-02' } },
+    '2099-09-30': { ...FIXTURE['2099-09-30'], weather: { type: 'cloudy', source: 'manual', raw: '曇', observedDate: '2099-09-30' } },
+    '2099-09-29': { ...FIXTURE['2099-09-29'], weather: { type: 'unknown', source: 'manual', raw: '霧', observedDate: '2099-09-29' } } })}
+  const g=d=>{const w=store.getWeather(d);return w&&{t:w.type,l:w.label,i:w.icon,s:w.source};};
+  const cmp=store.getAnalytics().dailyComparison;
+  console.log(JSON.stringify({rain:g('2099-10-01'),sunny:g('2099-10-02'),cloudy:g('2099-09-30'),unk:g('2099-09-29'),none:g('2099-10-06'),
+    jma29:g('2026-09-29'),jma12:g('2026-10-12'),jma13:g('2026-10-13'),row:(cmp.find(d=>d.date==='2026-09-29')||{}).weather,rowNone:'weather' in (cmp.find(d=>d.date==='2099-10-06')||{}) && (cmp.find(d=>d.date==='2099-10-06')||{}).weather}));`);
+check(WT.sunny.t === 'sunny' && WT.sunny.l === '晴' && WT.sunny.i === '☀' && WT.cloudy.l === '曇' && WT.cloudy.i === '☁' && WT.rain.l === '雨' && WT.rain.i === '🌧' && WT.unk.t === 'unknown',
+  '表示: ☀ 晴 / ☁ 曇 / 🌧 雨（日別データの weather があれば優先）', WT);
+check(WT.none === null && WT.rowNone === null && WT.jma13 === null, '天気が無い日は null（画面は「—」。推測で晴にしない）。10/13（未発表）も「—」');
+check(WT.jma29.t === 'rain' && WT.jma29.s === 'jma' && WT.jma12.t === 'sunny' && WT.row && WT.row.type === 'rain', '気象庁のデータ: 2026-09-29 は雨・2026-10-12 は晴。日別比較の行に天気が入る');
+
+// ============================================================
 section('5. 同期マージ（経費・手動項目・公式項目を失わない／二重にしない）');
 const SY = run(`
   const H=require(${JSON.stringify(path.join(ROOT, 'tools', 'official-import', 'spec', 'sync-harness.js'))});
@@ -153,7 +202,7 @@ const SY = run(`
     // 両端末に同じ日のデータがある状態（v75 まではこの統合で dayOff・officialImport・sales.tip が両端末から消えていた）
     B.store.addExpense(D,{category:'駐輪',amount:100,memo:'b'});
     const log=A.store.getDailyLog(D);
-    Object.assign(log,{dayOff:true,weatherNote:'手動メモ（将来項目の代わり）',officialImport:{source:'t'},sales:{delivery:1000,quest:0,adjustment:0,other:0,total:1000,tip:100,updatedAt:'2099-11-20T00:00:00Z'}});
+    Object.assign(log,{dayOff:true,weatherNote:'手動メモ（将来項目の代わり）',weather:{type:'rain',source:'manual',raw:'雨',observedDate:D},officialImport:{source:'t'},sales:{delivery:1000,quest:0,adjustment:0,other:0,total:1000,tip:100,updatedAt:'2099-11-20T00:00:00Z'}});
     A.store.addExpense(D,{category:'バイクシェア',amount:1527,memo:'a'});
     await A.flushPush();
     await B.pull();
@@ -166,29 +215,29 @@ const SY = run(`
     // 過去日の編集は対象日を同期する（今日ではない）
     A.store.addExpense('2099-01-15',{category:'必要経費',amount:50,memo:''});
     const pending=[...A.sync.pendingSyncDates];
-    console.log(JSON.stringify({b1:{dayOff:b1.dayOff,note:b1.weatherNote,oi:!!b1.officialImport,tip:b1.sales&&b1.sales.tip,exp:(b1.expenses||[]).length},
-      a2:(a2.expenses||[]).map(e=>e.category).sort(),b2:(b2.expenses||[]).map(e=>e.category).sort(),a2DayOff:a2.dayOff,a2Tip:a2.sales.tip,
+    console.log(JSON.stringify({b1:{weather:b1.weather&&b1.weather.type,dayOff:b1.dayOff,note:b1.weatherNote,oi:!!b1.officialImport,tip:b1.sales&&b1.sales.tip,exp:(b1.expenses||[]).length},
+      a2:(a2.expenses||[]).map(e=>e.category).sort(),b2:(b2.expenses||[]).map(e=>e.category).sort(),a2DayOff:a2.dayOff,a2Tip:a2.sales.tip,a2Weather:a2.weather&&a2.weather.type,
       exA:A.store.getCalculatedMetrics(a2).totalExpenses,merged:(merged.expenses||[]).length,mergedRev:(mergedRev.expenses||[]).length,pending}));
   })().catch(e=>{console.error(e);process.exit(1);});`);
 check(SY.b1.dayOff === true && SY.b1.note === '手動メモ（将来項目の代わり）' && SY.b1.oi && SY.b1.tip === 100 && SY.b1.exp === 2, '両端末に同じ日がある状態で同期: 手動休み・手動項目・officialImport・うちチップを失わない・経費は両方の和集合', SY.b1);
 check(SY.a2.join() === 'バイクシェア,駐輪' && SY.b2.join() === 'バイクシェア,駐輪' && SY.exA === 1627, '12. 両端末で入れた経費は1件ずつ（同期を繰り返しても重複しない）・必要経費 ¥1,627', SY);
-check(SY.a2DayOff === true && SY.a2Tip === 100, '往復同期後も手動休み・うちチップが残る');
+check(SY.a2DayOff === true && SY.a2Tip === 100 && SY.a2Weather === 'rain' && SY.b1.weather === 'rain', '往復同期後も手動休み・うちチップ・天気（weather）が残る');
 check(SY.merged === 1 && SY.mergedRev === 1, '片方に expenses が無いだけで、もう片方の経費を空配列で上書きしない');
 check(SY.pending.includes('2099-01-15'), '過去日の経費は対象日（2099-01-15）を同期する（今日ではない）', SY.pending);
 
 // ============================================================
 section('6. 公式再取込（手動データを消さない・何度でも同じ結果）');
 const RI = run(`const {syncOfficialImportedDay}=require(${STORE});
-  const target={date:'2099-10-01',dayOff:false,memoUser:'x',expenses:[{id:'e1',category:'バイクシェア',amount:1527}],deletedExpenseIds:['e0'],
+  const target={date:'2099-10-01',dayOff:false,memoUser:'x',weather:{type:'sunny',source:'jma',raw:'晴',observedDate:'2099-10-01'},expenses:[{id:'e1',category:'バイクシェア',amount:1527}],deletedExpenseIds:['e0'],
     deliveries:[{id:'t1',fee:500,evaluation:'OK',evaluationReason:'近い'},{id:'tap1',completedAt:'09:00',restaurant:'',fee:null}],quests:[],sales:{delivery:500,quest:0,adjustment:0,other:0,total:500}};
   const seed={date:'2099-10-01',officialImport:{source:'t'},tripsCount:2,deliveriesCount:3,officialPoints:3,totalDistanceKm:5,
     deliveries:[{id:'t1',fee:600,points:2},{id:'t2',fee:400,points:1}],quests:[{id:'q1',amount:300}],adjustments:[{id:'a1',amount:-100}],
     sales:{delivery:1000,quest:300,adjustment:-100,other:0,total:1200}};
   const c1=syncOfficialImportedDay(target,seed); const snap=JSON.stringify(target); const c2=syncOfficialImportedDay(target,seed);
-  console.log(JSON.stringify({c1,c2,same:snap===JSON.stringify(target),exp:target.expenses.length,del:target.deletedExpenseIds,memo:target.memoUser,
+  console.log(JSON.stringify({c1,c2,same:snap===JSON.stringify(target),weather:target.weather&&target.weather.type,exp:target.expenses.length,del:target.deletedExpenseIds,memo:target.memoUser,
     trips:target.deliveries.map(d=>d.id),ev:target.deliveries[0].evaluation,archive:(target.manualTapsArchive||[]).map(d=>d.id),sales:target.sales.total,adj:target.sales.adjustment,cnt:target.deliveriesCount}));`);
 check(RI.c1 === true && RI.c2 === false && RI.same, '同じ公式データを2回反映しても変化なし（idempotent）');
-check(RI.exp === 1 && RI.del.join() === 'e0' && RI.memo === 'x', '13. 公式再取込で経費・削除済み経費の記録・手動項目を消さない');
+check(RI.exp === 1 && RI.del.join() === 'e0' && RI.memo === 'x' && RI.weather === 'sunny', '13. 公式再取込で経費・削除済み経費の記録・手動項目・天気（weather）を消さない');
 check(RI.trips.join() === 't1,t2' && RI.ev === 'OK' && RI.archive.join() === 'tap1', 'tripは公式に合わせる（重複なし）・○×評価は残す・手動タップは消さず退避');
 check(RI.sales === 1200 && RI.adj === -100 && RI.cnt === 3, '売上・件数は公式値（調整はマイナスのまま）');
 

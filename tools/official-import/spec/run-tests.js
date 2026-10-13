@@ -747,7 +747,8 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
     const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
     const an = html.slice(html.indexOf('<main id="tab-analytics"'), html.indexOf('<main id="tab-avoidance"'));
     check(!/>Bike</.test(an) && !/>バイクシェア</.test(an) && (an.match(/>必要経費</g) || []).length === 2 && /id="month-worked-days-val"/.test(an), '1-2. 分析画面の「Bike」「バイクシェア」を「必要経費」に統一・今月の実績に「稼働日数」');
-    check(!/天気|☀|🌧|☁/.test(an), '10. 天気データが無いため天気を表示しない（推測の天気なし）');
+    check(/<th class="col-weather"[^>]*>天気<\/th>/.test(an) && /d\.weather/.test(uiSrc) && /weather-none">—</.test(uiSrc) && !/☀|🌧|☁/.test(an),
+      '10. 日別比較に天気列（気象庁の観測だけを表示・未登録は「—」。HTML に固定の天気を書かない）');
     check(/d\.durationHHMM \|\| '--'/.test(uiSrc), '日別比較は durationHHMM を表示（記録なしは --）');
   }
 
@@ -872,7 +873,7 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
     const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
     const an = html.slice(html.indexOf('<main id="tab-analytics"'), html.indexOf('<main id="tab-avoidance"')).replace(/<!--[\s\S]*?-->/g, '');
     const labels = [...an.matchAll(/class="(?:stat-card-label|breakdown-label)">([^<]+)</g)].map(x => x[1]);
-    check(labels.join(',') === '配達報酬,チップ,クエスト,特別ボーナス,調整,その他,必要経費,配達件数,総売上,配達件数,平均日給,平均単価,配達時間,配達距離,必要経費,稼働日数'
+    check(labels.join(',') === '配達報酬,チップ,クエスト,特別ボーナス,調整,その他,必要経費,配達件数,総売上,配達件数,平均日給,平均単価,配達時間,配達距離,必要経費,稼働 / 休み'
       && !/Bike|バイク|>経費</.test(an), `分析画面の名称を統一（${labels.join('・')}。「Bike」「バイク」「経費」の旧表記なし）`);
   }
 

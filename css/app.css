@@ -3447,6 +3447,22 @@ a.nav-btn {
   color: var(--text-main);
 }
 
+.comparison-table .col-weather {
+  text-align: center;
+  width: 1.8em;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.comparison-table .weather-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.comparison-table .weather-none {
+  color: var(--text-dim);
+}
+
 .comparison-table .col-count {
   text-align: right;
   font-weight: 600;

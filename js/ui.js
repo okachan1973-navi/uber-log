@@ -1608,7 +1608,7 @@ class UI {
 
       return `
         <div class="history-card" data-date="${log.date}">
-          <!-- 閉じた状態は必ず1行: 日付・件数・距離・総売上・▼（天候は保存データが無いため未表示。足すなら日付の次） -->
+          <!-- 閉じた状態は必ず1行: 日付・件数・距離・総売上・▼（天気は分析の日別比較に表示） -->
           <div class="history-card-header hr-line">
             <span class="hr-date">${shortDate}</span>
             <span class="hr-count"><span class="hr-ic">📦</span>${metrics.count}件</span>
@@ -1882,11 +1882,11 @@ class UI {
     const monthExpensesEl = document.getElementById('month-expenses-val');
     if (monthExpensesEl) monthExpensesEl.textContent = `¥${(rev.thisMonth.expenses || 0).toLocaleString()}`;
 
-    // 稼働日数（当月のUber実績のある日 / 当月1日〜今日の経過日数）
+    // 稼働 / 休み（当月のUber実績のある日 / 休みが確定した日。今日は終わるまでどちらにも入らない）
     const monthWorkedDaysEl = document.getElementById('month-worked-days-val');
-    if (monthWorkedDaysEl) monthWorkedDaysEl.textContent = `${rev.thisMonth.workedDays} / ${rev.thisMonth.elapsedDays}日`;
+    if (monthWorkedDaysEl) monthWorkedDaysEl.textContent = `${rev.thisMonth.workedDays} / ${rev.thisMonth.offDays}`;
 
-    // 3. 日別比較テーブル（5項目：日付 / 件数 / 通常売上 / 配達時間［HH:MM］ / 時給［10円丸め］）
+    // 3. 日別比較テーブル（6項目：日付 / 天気 / 件数 / 通常売上 / 配達時間［HH:MM］ / 時給［10円丸め］）
     const comparisonBody = document.getElementById('analytics-daily-comparison-body') || document.getElementById('recent-7days-table-body');
     if (comparisonBody) {
       const compData = analytics.dailyComparison || [];
@@ -1898,10 +1898,18 @@ class UI {
         const dateHtml = `${d.shortDate}<span class="date-weekday ${colorClass}">（${weekdayChar}）</span>`;
         const wageStr = (d.hourlyWage !== null) ? `¥${d.hourlyWage.toLocaleString()}` : '--';
         const salesStr = (d.regularSales !== null && d.regularSales !== undefined) ? `¥${d.regularSales.toLocaleString()}` : '--';
+        // 天気（気象庁の観測。推測しない: 未登録は「—」）。詳しい天気概況は title（長押し・ホバー）で表示
+        const w = d.weather;
+        const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const weatherTitle = w
+          ? `${w.label}（${w.source === 'jma' ? '気象庁・大阪' : '手動'}）昼: ${w.day || '--'}${w.night ? ` / 夜: ${w.night}` : ''}${w.precipitationMm !== null && w.precipitationMm !== undefined ? ` / 降水量 ${w.precipitationMm}mm` : ''}`
+          : '天気未登録';
+        const weatherHtml = w ? `<span class="weather-icon weather-${w.type}" aria-label="${esc(w.label)}">${w.icon}</span>` : '<span class="weather-none">—</span>';
 
         return `
           <tr>
             <td class="col-date">${dateHtml}</td>
+            <td class="col-weather" title="${esc(weatherTitle)}">${weatherHtml}</td>
             <td class="col-count">${d.count}件</td>
             <td class="col-sales">${salesStr}</td>
             <td class="col-duration">${d.durationHHMM || '--'}</td>

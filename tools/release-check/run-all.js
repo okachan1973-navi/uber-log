@@ -32,6 +32,7 @@ const SUITES = [
   { name: '目標クエスト', cmd: [NODE, 'spec/target-quest-tests.js'] },
   { name: 'データモデル・集計・同期の不変条件', cmd: [NODE, 'tools/data-audit/spec/data-model-tests.js'] },
   { name: 'データ整合性監査（同梱データ）', cmd: [NODE, 'tools/data-audit/data-integrity-audit.js'] },
+  { name: '天気データ（気象庁）が最新の規則と一致', cmd: [NODE, 'tools/weather/fetch-jma-weather.js', '--check'] },
   { name: '公式取込（Uber Web 取得の正規化）', cmd: [NODE, 'tools/official-import/spec/structured-tests.js'] },
   { name: 'DROP照合 単体', cmd: [NODE, 'tools/drop-check/spec/drop-check-tests.js'] },
   { name: 'DROP照合 バックアップ', cmd: [NODE, 'tools/drop-check/spec/drop-backup-tests.js'] },
