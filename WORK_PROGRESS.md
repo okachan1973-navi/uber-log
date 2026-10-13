@@ -17,7 +17,7 @@
 | 13 | 2端末同期テスト | 完了 | （この commit） | sync-model-tests.js 33項目（run-all に追加）。v78 のコードでは 評価が古い値に戻る・古い PC が公式値を 21→17trip に巻き戻す ことを再現、v79 で解消 |
 | 15 | 天気の自動更新 | 完了 | （この commit） | 取込の反映後に未登録の過去日だけ追加（今日・未発表は取らない・登録済みは変えない・失敗は警告だけ）。--missing-only |
 | 17-18 | DATA_MODEL / SYNC_MODEL・監査スクリプト | 完了 | （この commit） | SYNC_MODEL.md 新規・DATA_MODEL §1/§10・監査: 古い版/未送信/競合/同期エラー/公式データの新旧/更新時刻/天気（バックアップの _sync） |
-| 19-23 | 画面確認・全体テスト・HANDOFF・リリース・push | 未着手 | | |
+| 19-23 | 画面確認・全体テスト・HANDOFF・リリース・push | 完了 | release v79 | 画面 1280/390 OK・run-all 20 passed / 2 known / 0 failed・v79・HANDOFF 両方・push |
 
 ## フェーズ1 監査の結果（v78 時点のコード）
 
