@@ -207,7 +207,11 @@ class CloudSyncManager {
     if (!cloudLog) return JSON.parse(JSON.stringify(localLog));
 
     const date = localLog.date || cloudLog.date;
+    // 下で個別に統合しない項目（dayOff・officialImport・今後追加する手動項目など）は、片方にしか無くても消さない（同じ項目は端末側を優先）。
+    // 以前は決まった項目だけで日別データを作り直していたため、それ以外の項目が同期のたびに失われていた
     const merged = {
+      ...JSON.parse(JSON.stringify(cloudLog)),
+      ...JSON.parse(JSON.stringify(localLog)),
       date: date,
       workStartedAt: localLog.workStartedAt || cloudLog.workStartedAt || null,
       workEndedAt: localLog.workEndedAt || cloudLog.workEndedAt || null,
@@ -337,6 +341,9 @@ class CloudSyncManager {
       const chosen = useLocal ? ls : cs;
       const fallback = useLocal ? cs : ls;
       merged.sales = {
+        // 個別に統合しない売上項目（tip: 旧取込の「うちチップ」等）も残す（新しい側を優先）
+        ...fallback,
+        ...chosen,
         delivery: chosen.delivery !== undefined ? chosen.delivery : (fallback.delivery ?? 0),
         quest: chosen.quest !== undefined ? chosen.quest : (fallback.quest ?? 0),
         adjustment: chosen.adjustment !== undefined ? chosen.adjustment : (fallback.adjustment ?? 0),

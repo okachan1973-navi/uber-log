@@ -95,7 +95,7 @@ function createDevice({ storage, cloud = null, loggedIn = true, lazySession = fa
   const ctx = {
     window, document, localStorage: storage, navigator: { onLine: true },
     console: { log() {}, warn() {}, error() {} },
-    setTimeout, clearTimeout, setInterval: () => 0, JSON, Date, Math, Promise, Map, Set, Array, Object, Number, String, Boolean, RegExp, Error, isNaN, parseInt, parseFloat
+    setTimeout, clearTimeout, setInterval: () => 0, JSON, Date, Math, Intl, Promise, Map, Set, Array, Object, Number, String, Boolean, RegExp, Error, isNaN, parseInt, parseFloat
   };
   ctx.globalThis = ctx;
   vm.createContext(ctx);
