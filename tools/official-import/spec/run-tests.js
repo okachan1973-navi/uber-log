@@ -701,6 +701,16 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
           we:r.thisWeek.expenses,wp:r.thisWeek.salesProfit,ws:r.thisWeek.officialSales,
           b:{t:b.totalSales,sum:b.baseDeliverySales+b.questSales+b.guaranteeBonus+b.tipSales+b.adjustmentSales+b.otherSales,e:b.expenses,base:b.baseDeliverySales,q:b.questSales,g:b.guaranteeBonus,tip:b.tipSales,adj:b.adjustmentSales,oth:b.otherSales}};};
       const before=snap();
+      // 生データ（日別の保存値）を直接合計した10月（10/1〜10/13）の値。固定値ではなく同梱データから導く（公式取込で日が増えても正しい期待値になる）
+      const sec=s=>{if(!s)return 0;let t=0;const h=s.match(/(\\d+)時間/),m=s.match(/(\\d+)分/),x=s.match(/(\\d+)秒/);if(h)t+=3600*h[1];if(m)t+=60*m[1];if(x)t+=+x[1];return t;};
+      const pad=n=>String(n).padStart(2,'0');
+      const raw={s:0,c:0,base:0,q:0,g:0,tip:0,adj:0,oth:0,hh:{}};
+      Object.values(store.state.dailyLogs).filter(l=>l.date>='2026-10-01'&&l.date<='2026-10-13').forEach(l=>{
+        const s=l.sales||{};const tips=(l.deliveries||[]).reduce((a,d)=>a+(Number(d.tip)||0),0);
+        const sp=(l.quests||[]).filter(q=>q.questType==='special'&&!q.isDuplicateIgnored&&Number(q.amount)>0).reduce((a,q)=>a+Number(q.amount),0);
+        raw.s+=(s.delivery||0)+(s.quest||0)+(s.adjustment||0)+(s.other||0)+(s.guaranteeBonus||0);raw.c+=Number(l.deliveriesCount)||0;
+        raw.base+=(s.delivery||0)-tips;raw.q+=(s.quest||0)-sp;raw.g+=sp+(s.guaranteeBonus||0);raw.tip+=tips;raw.adj+=s.adjustment||0;raw.oth+=s.other||0;
+        const t=(l.deliveries||[]).reduce((a,d)=>a+sec(d.durationStr),0);const mm=Math.floor(t/60);raw.hh[l.date]=pad(Math.floor(mm/60))+':'+pad(mm%60);});
       const d5=store.getRevenueSummary('2026-10-05').thisMonth;const d7=store.getRevenueSummary('2026-10-07').thisMonth;
       const sep=store.getRevenueSummary('2026-09-30').thisMonth;
       // 経費を登録（バイクシェア・必要経費・旧カテゴリ「駐輪」）→ 1件ずつ1回だけ必要経費に入る
@@ -712,7 +722,7 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
       const hh={a:formatMinutesHHMM(276),b:formatMinutesHHMM(379),c:formatMinutesHHMM(303),d:formatMinutesHHMM(725),e:formatMinutesHHMM(0),f:formatMinutesHHMM(59)};
       const allHH=cmp.every(d=>d.durationHHMM===null||(/^\\d{2}:\\d{2}$/.test(d.durationHHMM)&&d.durationHHMM===formatMinutesHHMM(Math.floor(d.workSeconds/60))));
       const c={};['2026-10-12','2026-10-11','2026-10-10'].forEach(k=>{const x=cmp.find(d=>d.date===k);c[k]=x&&x.durationHHMM;});
-      console.log(JSON.stringify({before,after,d5:{w:d5.workedDays,e:d5.elapsedDays},d7:{w:d7.workedDays,e:d7.elapsedDays},sep:{s:sep.sales,e:sep.expenses,bk:sep.bikeExpenses,p:sep.salesProfit,w:sep.workedDays,ed:sep.elapsedDays},dayExp,hh,allHH,c}));`);
+      console.log(JSON.stringify({before,after,d5:{w:d5.workedDays,e:d5.elapsedDays},d7:{w:d7.workedDays,e:d7.elapsedDays},sep:{s:sep.sales,e:sep.expenses,bk:sep.bikeExpenses,p:sep.salesProfit,w:sep.workedDays,ed:sep.elapsedDays},dayExp,hh,allHH,c,raw}));`);
     const b0 = r.before;
     check(b0.wd === 11 && b0.ed === 13, `1-2. 稼働日数 10/13 時点: ${b0.wd} / ${b0.ed}日（10/1〜10/12 のうち実績のある日・10/7 は休み・今日 10/13 は0件でも分母に含む）`);
     check(r.d5.w === 5 && r.d5.e === 5 && r.d7.w === 6 && r.d7.e === 7 && r.sep.w === 16 && r.sep.ed === 30, `稼働日数は基準日までの経過日数が分母（10/5: ${r.d5.w}/${r.d5.e}・10/7: ${r.d7.w}/${r.d7.e}・9/30: ${r.sep.w}/${r.sep.ed}）`);
@@ -721,11 +731,14 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
     check(r.dayExp === 1927 && a.me === 1927 && a.we === 1927 && a.b.e === 1927, `3. 必要経費に二重計上なし（バイクシェア ¥1,527 ＋ 必要経費 ¥300 ＋ 駐輪 ¥100 ＝ ¥1,927。月・週・期間指定・日別で同額）`);
     check(a.mp === a.ms - 1927 && a.wp === a.ws - 1927 && a.ms === b0.ms, '必要経費は売上利益から1回だけ差し引く（月・週とも）・売上は経費で変わらない');
     check(b0.b.sum === b0.b.t, `4. 売上内訳の合計 ＝ 総売上（¥${b0.b.t.toLocaleString()}）`);
-    check(b0.ms === b0.b.t && b0.ms === 94446 && b0.cnt === 193, `5. 今月の売上 ¥${b0.ms.toLocaleString()} ＝ 売上内訳の総売上（同じ getSalesBreakdown を参照）`);
-    check(b0.b.base === 64185 && b0.b.q === 21100 && b0.b.g === 8840 && b0.b.tip === 321 && b0.b.adj === 0 && b0.b.oth === 0,
-      '11. 10月の内訳は不変（配達報酬 ¥64,185 / クエスト ¥21,100 / 特別ボーナス ¥8,840 / チップ ¥321 / 調整 ¥0 / その他 ¥0）');
+    const raw = r.raw;
+    check(b0.ms === b0.b.t && b0.ms === raw.s && b0.cnt === raw.c, `5. 今月の売上 ¥${b0.ms.toLocaleString()}・${b0.cnt}件 ＝ 売上内訳の総売上 ＝ 日別の保存値の直接合計（¥${raw.s.toLocaleString()}・${raw.c}件）`);
+    check(b0.b.base === raw.base && b0.b.q === raw.q && b0.b.g === raw.g && b0.b.tip === raw.tip && b0.b.adj === raw.adj && b0.b.oth === raw.oth,
+      `11. 10月の内訳 ＝ 日別の保存値の直接合計（配達報酬 ¥${raw.base.toLocaleString()} / クエスト ¥${raw.q.toLocaleString()} / 特別ボーナス ¥${raw.g.toLocaleString()} / チップ ¥${raw.tip} / 調整 ¥${raw.adj} / その他 ¥${raw.oth}）`);
+    check(JSON.stringify(a.b) === JSON.stringify({ ...b0.b, e: a.b.e }), '11. 経費を登録しても売上内訳の各項目は変わらない');
     check(r.hh.a === '04:36' && r.hh.b === '06:19' && r.hh.c === '05:03' && r.hh.d === '12:05' && r.hh.e === '00:00' && r.hh.f === '00:59', '8-9. 配達時間 HH:MM（04:36・06:19・05:03・12:05・2桁ゼロ埋め）');
-    check(r.allHH && r.c['2026-10-12'] === '04:36' && r.c['2026-10-11'] === '06:19' && r.c['2026-10-10'] === '05:03', '日別比較の配達時間（10/12 04:36・10/11 06:19・10/10 05:03。秒は切り捨て）');
+    check(r.allHH && ['2026-10-12', '2026-10-11', '2026-10-10'].every(k => r.c[k] === raw.hh[k]) && r.c['2026-10-11'] === '06:19' && r.c['2026-10-10'] === '05:03',
+      `日別比較の配達時間 ＝ その日のトリップ所要時間の合計（10/12 ${r.c['2026-10-12']}・10/11 06:19・10/10 05:03。秒は切り捨て）`);
     const uiSrc = fs.readFileSync(path.join(ROOT, 'js', 'ui.js'), 'utf8');
     const pb = uiSrc.slice(uiSrc.indexOf('renderPeriodBreakdown() {'), uiSrc.indexOf('openTripMapModal(deliveryId)'));
     const labels = [...pb.matchAll(/\['([^']+)', /g)].map(m => m[1]);
@@ -842,7 +855,9 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
       const rows=store.getAnalytics().dailyComparison;
       const rowOk=rows.every(d=>{const a=store.aggregateForRange(d.date,d.date);const mm=store.getCalculatedMetrics(store.state.dailyLogs[d.date]);
         return d.count===a.deliveriesCount&&d.regularSales===a.regularSales&&d.workSeconds===a.workSeconds&&d.totalSales===a.totalSales&&d.distance===mm.totalDistanceKm;});
-      console.log(JSON.stringify({raw,m,b:{t:b.totalSales,days:b.days,cnt:b.deliveriesCount},rowOk,rows:rows.length,r1012:rows.find(d=>d.date==='2026-10-12')}));`);
+      const s1012=(store.state.dailyLogs['2026-10-12'].deliveries||[]).reduce((a,d)=>a+sec(d.durationStr),0);const m1012=Math.floor(s1012/60);
+      const hh1012=String(Math.floor(m1012/60)).padStart(2,'0')+':'+String(m1012%60).padStart(2,'0');
+      console.log(JSON.stringify({raw,m,b:{t:b.totalSales,days:b.days,cnt:b.deliveriesCount},rowOk,rows:rows.length,r1012:rows.find(d=>d.date==='2026-10-12'),hh1012}));`);
     const raw = r.raw, m = r.m;
     check(m.sales === raw.sales && m.sales === r.b.t, `今月売上 ¥${m.sales.toLocaleString()} ＝ 日別データの直接合計 ¥${raw.sales.toLocaleString()} ＝ 売上内訳の総売上`);
     check(m.salesProfit === raw.sales - raw.exp && m.expenses === raw.exp, `今月利益 ¥${m.salesProfit.toLocaleString()}・必要経費 ¥${m.expenses.toLocaleString()}（直接合計と一致）`);
@@ -850,7 +865,7 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
     check(m.workSeconds === raw.sec && m.distanceKm === raw.km, `今月配達時間 ${m.durationHHMM}・配達距離 ${m.distanceKm}km（直接合計と一致）`);
     check(m.avgDailyEarnings === Math.round((raw.sales - raw.special) / raw.days) && m.avgPerDelivery === Math.round((raw.sales - raw.special) / raw.cnt),
       `今月平均日給 ¥${m.avgDailyEarnings}・平均単価 ¥${m.avgPerDelivery}（通常売上 ＝ 総売上 − 特別クエスト ¥${raw.special.toLocaleString()} で直接計算と一致）`);
-    check(r.rowOk && r.rows > 0 && r.r1012.durationHHMM === '04:36', `日別比較 ${r.rows}行: 件数・通常売上・配達時間・総売上・距離が日別データと一致（10/12 04:36）`);
+    check(r.rowOk && r.rows > 0 && r.r1012.durationHHMM === r.hh1012, `日別比較 ${r.rows}行: 件数・通常売上・配達時間・総売上・距離が日別データと一致（10/12 ${r.hh1012} ＝ トリップ所要時間の合計）`);
     const uiSrc = fs.readFileSync(path.join(ROOT, 'js', 'ui.js'), 'utf8');
     const av = uiSrc.slice(uiSrc.indexOf('renderAnalyticsView() {'), uiSrc.indexOf('renderAvoidanceView() {'));
     check(!/analytics\.(totalDeliveries|avgDailyEarnings|avgPerDelivery|totalDurationText|totalDistanceSum|totalSalesSum)/.test(av), '今月の実績は全期間（getAnalytics）の値を使わない（rev.thisMonth のみ）');
