@@ -17,4 +17,4 @@ v79「同期の一本化（OPPO・PC・クラウド）」。進み具合は WORK
 - バックアップ: ローカルブランチ `backup/pre-v79-sync-overhaul`（v78 = 97ec358）。
 
 ## 現在地
-フェーズ 12 完了（diag.html の同期の状態）。次はフェーズ 13（2端末同期テスト tools/data-audit/spec/sync-model-tests.js。sync-harness.js を使う）。
+フェーズ 13 完了（tools/data-audit/spec/sync-model-tests.js 33項目）。次はフェーズ 15（天気の自動更新: fetch-jma-weather.js に未登録の過去日だけ追加するモードを作り、取込 import-job.js の反映後に呼ぶ。失敗は警告だけ）。
