@@ -111,7 +111,9 @@ UBER_LOG 正本開発引継ぎドキュメント（MASTER HANDOFF）
   7. テスト: run-all 18 passed / 2 known（Excel 原本欠落）/ 0 failed（公式取込 353・同期 35・取込サーバー 38・過去日同期 75・目標クエスト 15・
      データモデル 49・監査 OK・Uber Web 正規化 62・履歴画面 90・配達マップ 単体27/画面197・ルート判断 単体12/画面71・DROP画面 363）。
      画面: ホーム・履歴・分析を iPhone 幅（390px）・PC 幅（1280px）で確認（NaN / undefined なし・横はみ出しなし・JS エラーなし）。
-  8. 未解決・残るリスク
+  8. commit / push（2026-10-13・origin/main へ push 済み）: 42b29ca（同期の修正）→ 9c07b31（日本時間・旧取込・ホーム/履歴の定義と名称）→
+     6ca64b6（DATA_MODEL.md・監査・診断・テスト）→ f45c81d（v76 リリース）。本記録は続く docs commit。Desktop\UBER_HANDOFF.txt も同じ内容に同期。
+  9. 未解決・残るリスク
      - 端末・クラウドの実際の経費・その他・旧取込データ（diag.html か バックアップ JSON で確認が必要）。
      - supabase-js を CDN から @2（メジャー版のみ指定）で読んでいる（自動で新しい版が入る）。版の固定は別作業。
      - 目標クエストの既定期間（ui.getDefaultQuestDates）は端末のタイムゾーン依存のまま（クエスト機能のため今回は変更なし）。
