@@ -77,7 +77,9 @@ UBER_LOG 正本開発引継ぎドキュメント（MASTER HANDOFF）
   3. テスト: run-all 15 passed / 2 known（Excel 原本欠落）/ 0 failed
      （公式取込 306・取込サーバー 38・同期 35・過去日同期 75・目標クエスト 15・履歴画面 90・配達マップ 単体27/画面197・ルート判断 単体12/画面71・DROP画面 363）。structured-tests 62 passed。
      休み判定: 9/25・9/30・10/7 = 休み(auto)、9/12 = 休み(manual)、実績日は稼働、今日(10/13)・未来は空欄、公式追加で解除、データ不変を確認。
-  4. 次にやること: 10/13 以降の公式取込（取込で版番号は全ページに反映される）。取込後の build-stores.js 実行はまだ手動。
+  4. commit / push: 79e9a8f（休み自動判定）→ d66cef7（v73 リリース・店舗マスタ・版反映修正）を origin/main へ push 済み（2026-10-13）。
+     本記録は続く docs commit。main worktree は clean。Desktop\UBER_HANDOFF.txt も同じ内容に同期。
+  5. 次にやること: 10/13 以降の公式取込（取込で版番号は全ページに反映される）。取込後の build-stores.js 実行はまだ手動。
      新しい要確認店舗 3件の住所・座標確認。
 
 ■ v71（2026-10-12）: 確認済み4店舗の店舗マスタ反映 ＆ del_0916_8 個別紐付け ＆ main worktree の整理
