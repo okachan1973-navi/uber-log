@@ -565,27 +565,31 @@ function initAppUpdateChecker() {
       const currentVer = window.UBER_LOG_APP_VERSION || '20260920_v16';
       if (data && data.version && data.version !== currentVer) {
         console.log(`[PWA] Newer version detected: ${data.version} (current: ${currentVer})`);
-
-        // 同一バージョンでの再読込ループ防止ガード（sessionStorage）
-        const reloadKey = 'uber_log_reload_attempt_' + data.version;
-        if (sessionStorage.getItem(reloadKey)) {
-          return;
-        }
-        sessionStorage.setItem(reloadKey, '1');
-
-        // Service Workerの強制更新をトリガー
+        // 以前は自動で再読込していた（入力の途中でも画面が変わる）。いまは「新しい版があります」を出し、押したときだけ更新する
         if ('serviceWorker' in navigator) {
-          const reg = await navigator.serviceWorker.getRegistration();
-          if (reg) await reg.update();
+          try { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await reg.update(); } catch (e) { /* 更新の準備に失敗しても表示は出す */ }
         }
-
-        // 自動再読込を実行
-        window.location.reload();
+        const banner = document.getElementById('app-update-banner');
+        if (banner) banner.hidden = false;
       }
     } catch (e) {
       // オフライン・通信エラー時は静かに無視（ユーザー操作を妨げない）
     }
   };
+
+  // 「更新する」: 新しい版を読み込む（端末内の入力データ・未送信は localStorage に残る）
+  const updateBtn = document.getElementById('btn-app-update');
+  if (updateBtn) {
+    updateBtn.addEventListener('click', async () => {
+      try {
+        if ('serviceWorker' in navigator) {
+          const reg = await navigator.serviceWorker.getRegistration();
+          if (reg) { await reg.update(); if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' }); }
+        }
+      } catch (e) { /* 更新できなくても再読込で最新の HTML を取りに行く（ネットワーク優先） */ }
+      window.location.reload();
+    });
+  }
 
   // 1. 初回起動時のチェック（安定後に実行）
   setTimeout(checkVersion, 1500);
@@ -610,6 +614,27 @@ function initCloudSyncActions() {
   // ヘッダーの同期ドット（⚙️の横）と、同期されていない時の注意バナー
   // 以前はドットが常に緑のままで、未ログイン（端末間で共有されない状態）でも気づけなかった
   function updateSyncIndicators(status) {
+    // 小さな同期表示（正常時は「同期済み HH:MM」だけ。問題があるときだけ目立たせる）
+    const info = window.cloudSync && typeof window.cloudSync.getSyncInfo === 'function' ? window.cloudSync.getSyncInfo() : {};
+    const pending = (info.pendingDates || []).length;
+    const conflicts = (info.conflicts || []).length;
+    const hhmm = iso => { try { return iso ? new Date(iso).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' }) : ''; } catch (e) { return ''; } };
+    const textEl = document.getElementById('header-sync-text');
+    if (textEl) {
+      let text = '';
+      let cls = '';
+      if (status === 'SYNCING') text = '同期中…';
+      else if (status === 'ERROR') { text = '同期できません'; cls = 'error'; }
+      else if (status === 'OFFLINE') { text = pending ? 'オフライン・未送信あり' : 'オフライン'; cls = pending ? 'warn' : ''; }
+      else if (status === 'SYNCED') {
+        if (pending) { text = '未送信あり'; cls = 'warn'; }
+        else if (conflicts) { text = `競合あり（${conflicts}）`; cls = 'warn'; }
+        else text = info.lastSyncAt ? `同期済み ${hhmm(info.lastSyncAt)}` : '同期済み';
+      }
+      textEl.textContent = text;
+      textEl.className = `header-sync-text${cls ? ' ' + cls : ''}`;
+      textEl.title = [info.lastPullAt ? `最終受信 ${hhmm(info.lastPullAt)}` : '', info.lastPushAt ? `最終送信 ${hhmm(info.lastPushAt)}` : '', pending ? `未送信 ${pending}日` : '', conflicts ? `競合 ${conflicts}件（diag.html で確認）` : '', info.lastError && status === 'ERROR' ? `エラー: ${info.lastError}` : ''].filter(Boolean).join(' / ');
+    }
     const dot = document.getElementById('header-sync-dot');
     if (dot) {
       dot.className = 'header-sync-dot';
@@ -629,6 +654,13 @@ function initCloudSyncActions() {
     }
     if (notLoggedIn) {
       messages.push('クラウド同期に未ログインです。この端末で入力した経費などは、ほかの端末（スマホ／PC）に反映されません。<button type="button" class="sync-warning-login">ログイン</button>');
+    }
+    // 問題があるときだけ: 同期できない（入力は端末に保存済み・自動で再試行）／競合（この端末の値を残している）
+    if (status === 'ERROR') {
+      messages.push(`クラウドと同期できません（入力は端末に保存済みです。自動で再試行します）${pending ? `。未送信 ${pending}日` : ''}。`);
+    }
+    if (conflicts && status !== 'SYNCING') {
+      messages.push(`同期の競合が ${conflicts} 件あります（自動で決められなかった項目は、この端末の値を残しています）。<a href="diag.html">診断ページで確認</a>`);
     }
     banner.innerHTML = messages.map(m => `<div>${m}</div>`).join('');
     banner.hidden = messages.length === 0;

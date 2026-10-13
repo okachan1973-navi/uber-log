@@ -118,6 +118,53 @@ body {
   transition: all 0.2s ease;
 }
 
+/* 同期の状態（小さく。問題があるときだけ色を付ける） */
+.header-sync-text {
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--text-muted);
+  white-space: nowrap;
+  margin-right: 4px;
+  max-width: 92px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-sync-text.warn {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.header-sync-text.error {
+  color: #f87171;
+  font-weight: 700;
+}
+
+.app-update-banner {
+  margin: 6px 12px 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(96, 165, 250, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  color: #93c5fd;
+  font-size: 13px;
+}
+
+.app-update-banner[hidden] {
+  display: none !important;
+}
+
+.app-update-btn {
+  margin-left: 8px;
+  border: 1px solid rgba(96, 165, 250, 0.6);
+  background: rgba(96, 165, 250, 0.2);
+  color: #bfdbfe;
+  border-radius: 8px;
+  padding: 2px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
 .header-sync-dot.syncing {
   background-color: #60a5fa;
   animation: syncPulse 1.5s infinite;

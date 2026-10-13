@@ -82,6 +82,8 @@
         <span id="today-date-text" class="header-date-prominent">--月--日</span>
       </div>
       <div class="header-right">
+        <!-- 同期の状態（正常時は「同期済み HH:MM」を小さく。問題があるときだけ「未送信あり」「同期できません」「競合あり」） -->
+        <span id="header-sync-text" class="header-sync-text" aria-live="polite"></span>
         <button id="btn-open-settings" class="btn-icon-header" type="button" title="設定・データ管理" aria-label="設定">
           ⚙️
           <span id="header-sync-dot" class="header-sync-dot" title="同期状態"></span>
@@ -91,6 +93,8 @@
 
     <!-- クラウド同期されていない時の注意（未ログイン・ファイルとして開いている時だけ表示） -->
     <div id="sync-warning-banner" class="sync-warning-banner" hidden></div>
+    <!-- 新しい版があるとき（自動で再読込しない。押したときだけ更新する） -->
+    <div id="app-update-banner" class="app-update-banner" hidden>新しい版があります。<button type="button" id="btn-app-update" class="app-update-btn">更新する</button></div>
 
     <!-- ==========================================
          【1. 稼働】タブコンテンツ（配達中・実稼働メイン画面）
@@ -1209,7 +1213,8 @@
     </div>
 
   <!-- Supabase JS CDN (v2) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- クラウド同期ライブラリは版を固定（2.117.3。v78 まで @2 で読んでいた実体と同じファイル）。SRI で中身の改ざん・差し替えを防ぐ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
 
   <!-- アプリスクリプト（順次読込） -->
   <script src="js/supabase-config.js?v=20261014_v78"></script>
