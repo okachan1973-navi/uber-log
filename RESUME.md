@@ -17,5 +17,4 @@ v79「同期の一本化（OPPO・PC・クラウド）」。進み具合は WORK
 - バックアップ: ローカルブランチ `backup/pre-v79-sync-overhaul`（v78 = 97ec358）。
 
 ## 現在地
-フェーズ 5-8・10-11 完了（ヘッダーの同期表示・版の表示・supabase-js 2.117.3 固定＋SRI）。
-次はフェーズ 12（diag.html 強化）→ 13（2端末同期テスト tools/data-audit/spec/sync-model-tests.js）→ 15（天気の自動更新）→ 17-18（DATA_MODEL / SYNC_MODEL・監査スクリプト）。
+フェーズ 12 完了（diag.html の同期の状態）。次はフェーズ 13（2端末同期テスト tools/data-audit/spec/sync-model-tests.js。sync-harness.js を使う）。
