@@ -317,7 +317,7 @@ bad['2099-13-01'] = { date: '2099-13-01', deliveries: [], quests: [] }; // 実�
 bad['2099-10-02'].deliveries[1].id = bad['2099-10-02'].deliveries[0].id; // 同じ日のトリップID重複
 const badFile = path.join(tmp, 'bad.json');
 fs.writeFileSync(badFile, JSON.stringify({ version: '1.2', dailyLogs: bad }));
-const ng = spawnSync(process.execPath, [AUDIT, '--file', badFile, '--today', TODAY, '--json'], { encoding: 'utf8' });
+const ng = spawnSync(process.execPath, [AUDIT, '--file', badFile, '--today', TODAY, '--now', '2099-12-31T00:00:00Z', '--json'], { encoding: 'utf8' });
 const ngJ = JSON.parse(ng.stdout);
 const has = (date, field) => ngJ.problems.some(p => p.level === 'error' && p.date === date && p.field.startsWith(field));
 check(ng.status === 1 && !ngJ.ok, '不整合のあるバックアップでは exit 1');
@@ -328,9 +328,25 @@ const okFx = JSON.parse(JSON.stringify(FIXTURE));
 delete okFx['2099-10-09']; // 未来日を除いた正しい人工データ
 const okFile = path.join(tmp, 'ok.json');
 fs.writeFileSync(okFile, JSON.stringify({ version: '1.2', dailyLogs: okFx }));
-const ok2 = spawnSync(process.execPath, [AUDIT, '--file', okFile, '--today', TODAY, '--json'], { encoding: 'utf8' });
+const ok2 = spawnSync(process.execPath, [AUDIT, '--file', okFile, '--today', TODAY, '--now', '2099-12-31T00:00:00Z', '--json'], { encoding: 'utf8' });
 const ok2J = JSON.parse(ok2.stdout);
 check(ok2.status === 0 && ok2J.thisMonth.sales === 12850 && ok2J.thisMonth.expenses === 400 && ok2J.thisMonth.workedDays === '3 / 7日', `正しいバックアップ（同梱データ＋人工データ）: 不整合なし・今月 ¥${ok2J.thisMonth.sales}・必要経費 ¥${ok2J.thisMonth.expenses}・稼働 ${ok2J.thisMonth.workedDays}`, ok2J.mismatches);
+// 同期の確認（バックアップの _sync・公式データの新旧・更新時刻・天気）
+const syncBk = JSON.parse(JSON.stringify(okFx));
+syncBk['2099-10-06'].expenses = [{ ...exp('ex_t', '必要経費', 10), updatedAt: 'きのう' }];        // 読めない更新時刻
+syncBk['2099-10-02'].weather = { type: 'snowstorm', source: 'manual' };                             // 不正な天気
+syncBk['2026-10-12'] = { date: '2026-10-12', officialImport: { source: 'official-import-v1', importedAt: '2026-10-12T06:35:24.909Z' }, // 途中の古い公式データ（同梱は新しい）
+  tripsCount: 17, deliveriesCount: 20, deliveries: [], quests: [], expenses: [], sales: { delivery: 6472, quest: 600, adjustment: 0, other: 0, total: 7072 } };
+const syncMeta = { appVersion: '20261013_v76', pendingDates: ['2099-10-06'], conflicts: [{ key: '2099-10-02|vehicleType', date: '2099-10-02', field: 'vehicleType', local: 'a', cloud: 'b' }], status: { lastResult: 'error', lastError: 'offline' } };
+const syncFile = path.join(tmp, 'sync.json');
+fs.writeFileSync(syncFile, JSON.stringify({ version: '1.2', dailyLogs: syncBk, _sync: syncMeta }));
+const sy = spawnSync(process.execPath, [AUDIT, '--file', syncFile, '--today', TODAY, '--now', '2099-12-31T00:00:00Z', '--json'], { encoding: 'utf8' });
+const syJ = JSON.parse(sy.stdout);
+const hasP = (level, field, re) => syJ.problems.some(p => p.level === level && p.field.startsWith(field) && (!re || re.test(p.message)));
+check(hasP('warn', 'appVersion', /20261013_v76/) && hasP('warn', 'pending') && hasP('warn', 'conflict:vehicleType') && hasP('warn', 'sync', /offline/),
+  '同期の確認: 古い版・未送信・競合・同期エラーを表示（バックアップの _sync）', syJ.problems.filter(p => p.level !== 'info').map(p => `${p.date} ${p.field}`));
+check(hasP('warn', 'officialImport', /端末の公式データが古い/), '同期の確認: 端末の公式データが同梱データより古い（途中取込のまま）ことを表示');
+check(hasP('error', 'expenses[0].updatedAt') && hasP('error', 'weather') && sy.status === 1, '同期の更新時刻が読めない・天気の値が不正 → error（exit 1）');
 fs.rmSync(tmp, { recursive: true, force: true });
 
 console.log(`\n結果: ${passed} passed, ${failed} failed`);

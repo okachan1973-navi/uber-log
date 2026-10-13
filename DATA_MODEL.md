@@ -44,7 +44,9 @@ UBER_LOG の数字（売上・必要経費・利益・件数・時間・距離�
 | `workMinutes` | 旧来の稼働分（集計には使わない。配達時間は §6） | 手動 |
 | `manualTapsArchive[]` | 公式データで置き換えた手動タップの退避 | 手動 |
 | `vehicleType` | 移動手段 | 手動 |
-| `dayOff: true` | 手動の休み | 手動 |
+| `dayOff` | 手動の休み（`true`。解除は `false` として残す） | 手動 |
+| `manualUpdatedAt` | 手動の日別項目の更新時刻 `{ dayOff, weather, vehicleType }`（同期で新しい方を選ぶ） | 手動 |
+| `deliveries[].evaluationUpdatedAt` / `mapMemoUpdatedAt` | ○×評価・理由 / MAP一口メモの更新時刻（同期で新しい方を選ぶ） | 手動 |
 | `officialImport` | 公式取込で反映した日の印（`source`・`importedAt`） | 公式 |
 | `manualUberSales` / `manualQuest` | 旧来の手入力売上（`sales` が無い日だけ使う） | 手動 |
 
@@ -147,8 +149,10 @@ UBER_LOG の数字（売上・必要経費・利益・件数・時間・距離�
 - **公式取込（同梱データの更新）**: `pipeline.js` は既存の日を丸ごと置き換えず、trip を ID で照合して公式項目だけを更新する（同じ日を何度取り込んでも同じ結果・trip/売上/チップ/クエスト/調整は二重にならない）。
 - **端末への反映**（`syncOfficialImportedDay`）: 公式項目だけを同梱データに合わせ、手動項目には触らない。公式に無い手動タップは削除せず `manualTapsArchive` へ退避。
 - **端末内の保存**（`persistState` / `mergeDayUserData`）: 保存済みと日ごとに統合（経費は ID 単位の和集合・削除済みは復活させない）。
-- **クラウド同期**（`cloudSync.mergeDailyLog`）: 片方にしか無い日はそのまま採用。両方にある日は、個別ルールのある項目（trip は ID 単位・経費は ID 単位の和集合＋tombstone・稼働セッション・クエスト・調整・売上は `updatedAt` の新しい側）以外の **すべての項目を残す**（同じ項目は端末側優先）。
-  片方に無いだけで、もう片方の値を 0 や空配列で上書きしない。
+- **クラウド同期**（`cloudSync.mergeDailyLog`。詳しくは **SYNC_MODEL.md**）: pull-first（受け取って統合してから、未送信の日だけ送る）。
+  公式の値は `officialImport.importedAt` の新しい側、経費は ID 単位の和集合＋tombstone、○×評価・理由・MAPメモは trip ごとの更新時刻（`evaluationUpdatedAt` / `mapMemoUpdatedAt`）、
+  手動休み・天気・移動手段は `manualUpdatedAt[項目]` の新しい側。決められないときは端末側を残して競合として記録（`uber_sync_conflicts`）。
+  片方に無いだけで、もう片方の値を 0 や空配列で上書きしない。個別ルールの無い項目も両方から残す。
 - **過去日の編集**: 経費・稼働等の変更は、その **対象日** を同期待ち（`uber_pending_sync_dates`）に入れて送る（今日の日付ではない）。
 - 端末に残っている旧来の誤ったデータは自動で書き換えない（必要なときは before / after・根拠・影響日数・金額を確認してから）。
 

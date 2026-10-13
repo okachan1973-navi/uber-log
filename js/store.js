@@ -12187,8 +12187,21 @@ class Store {
   }
 
   // 全データエクスポート（JSON）
+  // _sync: 書き出した端末の版・同期の記録・未送信・競合（tools/data-audit/data-integrity-audit.js --file で確認する。読み込み時は捨てる）
   exportJSON() {
-    return JSON.stringify(this.state, null, 2);
+    let sync = null;
+    try {
+      const get = k => { const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(k) : null; return raw ? JSON.parse(raw) : null; };
+      sync = {
+        appVersion: (typeof window !== 'undefined' && window.UBER_LOG_APP_VERSION) || null,
+        exportedAt: new Date().toISOString(),
+        status: get('uber_sync_status'),
+        pendingDates: get('uber_pending_sync_dates') || [],
+        conflicts: get('uber_sync_conflicts') || [],
+        clientId: get('uber_sync_client_id')
+      };
+    } catch (e) { sync = null; }
+    return JSON.stringify(sync ? { ...this.state, _sync: sync } : this.state, null, 2);
   }
 
   // 全データインポート
@@ -12198,6 +12211,7 @@ class Store {
       if (!data.dailyLogs) {
         throw new Error('無効なデータ形式です（dailyLogsが見つかりません）');
       }
+      delete data._sync; // 書き出し時の記録（同期の状態）は端末データに入れない
       this.state = data;
       this.saveToStorage(null, { replace: true });
       return { success: true };

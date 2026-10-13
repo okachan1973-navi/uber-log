@@ -50,13 +50,45 @@ function readBackup(file) {
   return state;
 }
 
+// 同期の確認（バックアップの _sync・書き出した端末の公式データの新旧）。SYNC_MODEL.md
+function syncChecks(backup, getConfirmedSeedData) {
+  const out = [];
+  const add = (level, date, field, message) => out.push({ level, date, field, message });
+  if (!backup) return out;
+  const meta = backup._sync || null;
+  const repoVersion = (() => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).version; } catch (e) { return null; } })();
+  if (!meta) {
+    add('info', '-', '_sync', 'このバックアップには同期の記録（_sync）がありません（v79 より前の版で書き出したもの）');
+  } else {
+    if (meta.appVersion && repoVersion && meta.appVersion !== repoVersion) add('warn', '-', 'appVersion', `書き出した端末の版 ${meta.appVersion} ≠ 最新 ${repoVersion}（古い版のままなら、アプリの「更新する」で新しくする）`);
+    (meta.pendingDates || []).forEach(d => add('warn', d, 'pending', '未送信（この日の変更がまだクラウドに送られていない）'));
+    (meta.conflicts || []).forEach(c => add('warn', c.date || '-', `conflict:${c.field}`, `競合（端末 ${JSON.stringify(c.local)} を残し、クラウド ${JSON.stringify(c.cloud)} と違う）`));
+    const st = meta.status || {};
+    if (st.lastResult === 'error') add('warn', '-', 'sync', `最後の同期がエラー: ${st.lastError || ''}`);
+    if (st.lastResult === 'not_logged_in' || st.loggedIn === false) add('warn', '-', 'sync', 'クラウドにログインしていない端末（この端末の入力はほかの端末に届かない）');
+  }
+  // 公式データの新旧（書き出した端末の officialImport と、この版の同梱データ）
+  const seed = getConfirmedSeedData().dailyLogs || {};
+  Object.entries(backup.dailyLogs || {}).forEach(([d, l]) => {
+    const own = l && l.officialImport && l.officialImport.importedAt;
+    const bundled = seed[d] && seed[d].officialImport && seed[d].officialImport.importedAt;
+    if (own && bundled && own < bundled) add('warn', d, 'officialImport', `端末の公式データが古い（端末 ${own} / 最新 ${bundled}。新しい版を開くか同期すると更新される）`);
+    if (own && bundled && own > bundled) add('info', d, 'officialImport', `端末の公式データがこの版の同梱データより新しい（${own}）。巻き戻さない`);
+  });
+  return out;
+}
+
 function main() {
-  const backup = FILE ? readBackup(FILE) : null;
-  const { store, getTodayDateString, getWeekRange, getPreviousWeekRange } = loadStore(backup);
+  const raw = FILE ? readBackup(FILE) : null;
+  const backup = raw ? { ...raw } : null;
+  const dataOnly = backup ? (() => { const c = { ...backup }; delete c._sync; return c; })() : null;
+  const { store, getTodayDateString, getWeekRange, getPreviousWeekRange, getConfirmedSeedData } = loadStore(dataOnly);
   const D = require(path.join(ROOT, 'js', 'data-diagnostics.js'));
   const today = opt('--today') || getTodayDateString();
   const logs = store.state.dailyLogs;
-  const problems = D.checkDailyLogs(logs, { today, knownLegacyCountDates: Object.keys(KNOWN_LEGACY) });
+  const now = opt('--now') || new Date().toISOString(); // 同期の更新時刻が未来かどうかの基準（テストでは指定する）
+  const problems = D.checkDailyLogs(logs, { today, now, knownLegacyCountDates: Object.keys(KNOWN_LEGACY) })
+    .concat(syncChecks(backup, getConfirmedSeedData));
   const mismatches = [];
   const eq = (label, a, b) => { if (!(a === b || (typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) < 0.005))) mismatches.push(`${label}: 集計 ${JSON.stringify(a)} ≠ 直接合計 ${JSON.stringify(b)}`); };
 

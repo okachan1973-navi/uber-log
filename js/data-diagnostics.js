@@ -133,6 +133,25 @@
         if (Array.isArray(log.deletedExpenseIds) && e.id && log.deletedExpenseIds.includes(e.id)) add('error', key, 'expenses', `削除済み（tombstone）の経費 ${e.id} が残っている`);
       });
 
+      // 同期に使う更新時刻（読めない・遠い未来の時刻は新旧の判定を狂わせる）
+      const badTime = v => v !== undefined && v !== null && (typeof v !== 'string' || isNaN(Date.parse(v)));
+      const futureTime = v => typeof v === 'string' && !isNaN(Date.parse(v)) && opts.now && Date.parse(v) > Date.parse(opts.now) + 86400000;
+      const timeChecks = [];
+      (log.expenses || []).forEach((e, i) => { if (e) { timeChecks.push([`expenses[${i}].updatedAt`, e.updatedAt]); timeChecks.push([`expenses[${i}].createdAt`, e.createdAt]); } });
+      Object.entries(log.manualUpdatedAt || {}).forEach(([f, v]) => timeChecks.push([`manualUpdatedAt.${f}`, v]));
+      trips.forEach((d, i) => { if (d) { timeChecks.push([`deliveries[${i}].evaluationUpdatedAt`, d.evaluationUpdatedAt]); timeChecks.push([`deliveries[${i}].mapMemoUpdatedAt`, d.mapMemoUpdatedAt]); } });
+      if (log.officialImport) timeChecks.push(['officialImport.importedAt', log.officialImport.importedAt]);
+      timeChecks.forEach(([f, v]) => {
+        if (badTime(v)) add('error', key, f, `同期の更新時刻が読めない（${JSON.stringify(v)}）`);
+        else if (futureTime(v)) add('warn', key, f, `同期の更新時刻が未来（${v}。端末の時計がずれている可能性。新旧の判定で常に勝ってしまう）`);
+      });
+
+      // 天気（手動）
+      if (log.weather !== undefined && log.weather !== null) {
+        if (typeof log.weather !== 'object' || !['sunny', 'cloudy', 'rain', 'unknown'].includes(log.weather.type)) add('error', key, 'weather', `天気の値が不正: ${JSON.stringify(log.weather)}`);
+        else if (log.weather.observedDate && log.weather.observedDate !== key) add('warn', key, 'weather.observedDate', `天気の日付（${log.weather.observedDate}）が日別データの日と違う`);
+      }
+
       // 未来日
       if (today && key > today) {
         if (hasUberActivity(log) || (s && rawDayTotal(log) !== 0)) add('error', key, 'date', `未来日（今日 ${today} より後）に実績・売上がある`);

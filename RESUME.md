@@ -17,4 +17,5 @@ v79「同期の一本化（OPPO・PC・クラウド）」。進み具合は WORK
 - バックアップ: ローカルブランチ `backup/pre-v79-sync-overhaul`（v78 = 97ec358）。
 
 ## 現在地
-フェーズ 15 完了（天気の自動更新）。次はフェーズ 17-18（DATA_MODEL.md 更新・SYNC_MODEL.md 作成・data-integrity-audit.js の同期項目）。
+フェーズ 17-18 完了（SYNC_MODEL.md・DATA_MODEL.md・監査スクリプトの同期項目・バックアップに _sync）。
+次はフェーズ 19-23（PC 1280px / スマホ 390px でホーム・履歴・分析・設定・diag の画面確認 → run-all → v79 リリース → HANDOFF 両方 → push）。
