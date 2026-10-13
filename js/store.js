@@ -9558,6 +9558,9 @@ function parseUberSalesText(rawText) {
       questSales: 0,
       adjustmentSales: 0,
       otherSales: 0,
+      tipSales: 0,
+      detectedTipSales: 0,
+      tipStatus: 'none',
       totalSales: 0,
       deliveryCount: 0,
       detectedQuests: [],
@@ -9596,6 +9599,7 @@ function parseUberSalesText(rawText) {
   let detectedQuests = [];
   let detectedAdjustments = [];
   let otherIncome = 0;
+  let detectedTipTotal = 0;
   let totalSales = null;
   let deliveryCount = 0;
 
@@ -9648,11 +9652,12 @@ function parseUberSalesText(rawText) {
       }
     }
 
-    // チップ / その他
-    if (/チップ|Tip/i.test(line)) {
+    // チップ（「その他」には入れない。配達報酬に含まれるかは下で総売上の行から判定する）
+    // 「Multiple」等の単語の一部に反応しないよう、英語は単語の Tip / Tips だけ
+    if (/チップ|\bTips?\b/i.test(line)) {
       const amt = extractAmount(line) || extractAmount(nextLine);
       if (amt !== null && amt > 0) {
-        otherIncome += amt;
+        detectedTipTotal += amt;
       }
     }
 
@@ -9673,6 +9678,29 @@ function parseUberSalesText(rawText) {
 
   const adjustmentTotal = detectedAdjustments.reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
 
+  // チップの扱い（UBER_LOG では配達報酬 = チップを含む最終売上。チップはその内訳 tipSales）。
+  // 元テキストの総売上の行で、配達の行がチップを含むかを判定する（推測で足し引きしない）:
+  //  included: 総売上 = 配達 + クエスト + 調整 → 配達の行はチップ込み（配達報酬はそのまま・うちチップ = チップ）
+  //  separate: 総売上 = 配達 + クエスト + 調整 + チップ → 配達の行はチップ別（配達報酬 = 配達 + チップ・うちチップ = チップ）
+  //  unknown : 総売上の行が無い／どちらとも一致しない → 自動では配達報酬・その他のどちらにも入れない（画面で確認してもらう）
+  let tipStatus = 'none';
+  let tipSales = 0;
+  if (detectedTipTotal > 0) {
+    if (deliveryTotal === null && totalSales !== null) {
+      // 配達の行が無い場合は 総売上 − クエスト − 調整 を配達報酬にする（チップは総売上に含まれる）
+      const derived = totalSales - validQuestTotal - adjustmentTotal;
+      tipStatus = derived >= detectedTipTotal ? 'included' : 'unknown';
+    } else if (deliveryTotal !== null && totalSales !== null && totalSales === deliveryTotal + validQuestTotal + adjustmentTotal) {
+      tipStatus = deliveryTotal >= detectedTipTotal ? 'included' : 'unknown';
+    } else if (deliveryTotal !== null && totalSales !== null && totalSales === deliveryTotal + validQuestTotal + adjustmentTotal + detectedTipTotal) {
+      tipStatus = 'separate';
+      deliveryTotal += detectedTipTotal;
+    } else {
+      tipStatus = 'unknown';
+    }
+    if (tipStatus !== 'unknown') tipSales = detectedTipTotal;
+  }
+
   // 配達売上の補正: もし配達ラベルが見当たらず総売上がある場合
   if (deliveryTotal === null && totalSales !== null) {
     deliveryTotal = Math.max(0, totalSales - validQuestTotal - adjustmentTotal - otherIncome);
@@ -9689,7 +9717,10 @@ function parseUberSalesText(rawText) {
     deliverySales: deliveryTotal,
     questSales: validQuestTotal,
     adjustmentSales: adjustmentTotal,
-    otherSales: otherIncome,
+    otherSales: otherIncome, // その他（現在の解析では自動で入れる行は無い。画面で手入力のみ）
+    tipSales,                // うちチップ（配達報酬に含まれる額。総売上には別途加算しない）
+    detectedTipSales: detectedTipTotal,
+    tipStatus,
     totalSales: totalSales,
     deliveryCount: deliveryCount,
     detectedQuests: dedupedQuests,
@@ -11118,6 +11149,11 @@ class Store {
         tipCount++;
       }
     });
+    // 配達ごとのチップが無い日（売上取込画面で日合計だけ登録した日）は sales.tip（配達報酬に含まれる額）を使う。
+    // 公式取込の日は配達ごとの tip が正なので使わない（二重計上しない）。件数は不明のため tipCount は 0 のまま
+    if (tipSales === 0 && !log.officialImport && log.sales && Number(log.sales.tip) > 0 && deliverySales !== null) {
+      tipSales = Math.min(Number(log.sales.tip), Math.max(deliverySales, 0));
+    }
     const baseDeliverySales = deliverySales !== null ? deliverySales - tipSales : null;
 
     // 特別クエスト（questType: 'special'。例: 80回乗車クエスト）。クエスト報酬（questSales）の内訳で、別途加算はしない
@@ -11295,12 +11331,14 @@ class Store {
   }
 
   // 日別売上データ（Delivery, Quest, Adjustment, Other, Total）の確定保存
-  saveDailySales(dateStr, { delivery, quest, adjustment, other, rawText, guaranteeBonus, guaranteeBonusNote }) {
+  // tip: うちチップ（配達報酬 delivery に含まれる額。総売上には別途加算しない。0〜配達報酬の範囲）
+  saveDailySales(dateStr, { delivery, quest, adjustment, other, tip, rawText, guaranteeBonus, guaranteeBonusNote }) {
     const log = this.getDailyLog(dateStr);
     const d = Number(delivery) || 0;
     const q = Number(quest) || 0;
     const a = Number(adjustment) || 0;
     const o = Number(other) || 0;
+    const t = Math.min(Math.max(Number(tip) || 0, 0), Math.max(d, 0));
     const existingBonus = log.sales ? (log.sales.guaranteeBonus || 0) : (log.guaranteeBonus || 0);
     const existingBonusNote = log.sales ? (log.sales.guaranteeBonusNote || '') : (log.guaranteeBonusNote || '');
     const finalBonus = guaranteeBonus !== undefined ? Number(guaranteeBonus) : existingBonus;
@@ -11312,6 +11350,7 @@ class Store {
       quest: q,
       adjustment: a,
       other: o,
+      tip: t,
       total: tot,
       guaranteeBonus: finalBonus,
       guaranteeBonusNote: finalBonusNote,
@@ -11491,97 +11530,84 @@ class Store {
     };
   }
 
-  // 週・月・累計の売上サマリー取得（今週の売上を最重要管理）
+  // 期間集計の共通ロジック（今週・先週・今月・期間指定・全期間で共用。startDate / endDate は両端を含む。null は制限なし）
+  // 金額は日別の getCalculatedMetrics をそのまま合計する（日別表示と同じ数字）。
+  //  総売上        = 配達報酬（チップ除く）＋ クエスト ＋ 特別ボーナス ＋ チップ ＋ 調整 ＋ その他
+  //  クエスト      = 通常クエスト（特別クエスト questType: special は特別ボーナスへ。二重計上しない）
+  //  特別ボーナス  = 特別収入・保証（guaranteeBonus）＋ 特別クエスト
+  //  必要経費      = 登録済み経費（amount > 0）を1件1回ずつ（日別利益の totalExpenses と同じ。バイクシェア等を含む）
+  //  利益          = 総売上 − 必要経費
+  //  稼働日数・件数・配達時間・配達距離・通常売上は稼働日（isWorkedDay）だけで集計
+  //  平均日給      = 通常売上 ÷ 稼働日数 / 平均単価 = 通常売上 ÷ 件数（v37: 特別クエスト・特別ボーナス・その他は効率指標から除外）
+  aggregateForRange(startDate, endDate) {
+    const out = {
+      startDate: startDate || null, endDate: endDate || null, hasData: false,
+      workedDays: 0, deliveriesCount: 0, tripsCount: 0,
+      totalSales: 0, deliverySales: 0, baseDeliverySales: 0, tipSales: 0, tipCount: 0,
+      questSales: 0, specialQuestSales: 0, guaranteeOnlySales: 0, guaranteeBonus: 0,
+      adjustmentSales: 0, otherSales: 0,
+      expenses: 0, bikeExpenses: 0, necessaryCategoryExpenses: 0,
+      regularSales: 0, workSeconds: 0, distanceKm: 0
+    };
+    this.getAllDailyLogs()
+      .filter(l => (!startDate || l.date >= startDate) && (!endDate || l.date <= endDate))
+      .forEach(l => {
+        const m = this.getCalculatedMetrics(l);
+        if (!(m.count > 0 || m.totalSales !== null || m.totalExpenses > 0)) return;
+        out.hasData = true;
+        out.deliverySales += (m.deliverySales || 0);
+        out.baseDeliverySales += (m.baseDeliverySales || 0);
+        out.tipSales += (m.tipSales || 0);
+        out.tipCount += (m.tipCount || 0);
+        out.questSales += (m.questSales || 0) - (m.specialQuestSales || 0);
+        out.specialQuestSales += (m.specialQuestSales || 0);
+        out.guaranteeOnlySales += (m.guaranteeBonus || 0);
+        out.guaranteeBonus += (m.guaranteeBonus || 0) + (m.specialQuestSales || 0);
+        out.adjustmentSales += (m.adjustmentSales || 0);
+        out.otherSales += (m.otherSales || 0);
+        out.totalSales += (m.totalSales || 0);
+        out.expenses += (m.totalExpenses || 0);
+        (l.expenses || []).forEach(e => {
+          if (isBikeExpense(e)) out.bikeExpenses += Number(e.amount);
+          else if (Number(e.amount) > 0 && String(e.category || '').trim() === '必要経費') out.necessaryCategoryExpenses += Number(e.amount);
+        });
+        if (this.isWorkedDay(l)) {
+          out.workedDays++;
+          // 件数は稼働日だけ（店舗名も報酬もない手動タップだけの日は配達件数に入れない）
+          out.deliveriesCount += m.count;
+          out.tripsCount += (m.tripsCount || 0);
+          out.regularSales += (m.regularSales || 0);
+          out.workSeconds += (m.workSeconds || 0);
+          out.distanceKm += (m.totalDistanceKm || 0);
+        }
+      });
+    out.distanceKm = Number(out.distanceKm.toFixed(2));
+    out.profit = out.totalSales - out.expenses;
+    out.avgDailyEarnings = out.workedDays > 0 ? Math.round(out.regularSales / out.workedDays) : null;
+    out.avgPerDelivery = out.deliveriesCount > 0 ? Math.round(out.regularSales / out.deliveriesCount) : null;
+    out.durationHHMM = formatMinutesHHMM(Math.floor(out.workSeconds / 60));
+    return out;
+  }
+
+  // 週・月・累計の売上サマリー取得（今週の売上を最重要管理）。集計はすべて aggregateForRange
+  //  今週: 基準日を含む月曜〜日曜（振込対象週。日付の区切りは0時） / 先週: その前の月曜〜日曜 / 今月: 当月1日〜基準日（未来日は含めない）
   getRevenueSummary(dateStr = getTodayDateString()) {
-    const audit = this.getSourceOfTruthAudit();
-    
-    // 先週の確定売上利益集計（先週比較用：推測・捏造せずデータ存在時のみ比較）
-    const prevWeekRange = getPreviousWeekRange(dateStr);
     const allLogs = this.getAllDailyLogs();
-    const prevLogs = allLogs.filter(l => l.date >= prevWeekRange.startStr && l.date <= prevWeekRange.endStr);
 
-    let hasPrevWeekData = false;
-    let prevWeekDeliverySales = 0;
-    let prevWeekQuestSales = 0;
-    let prevWeekGuaranteeBonus = 0;
-    let prevWeekOtherSales = 0;
-    let prevWeekExpenses = 0; // 必要経費（今週と同じ定義: 登録済み経費をすべて1回ずつ）
-    let prevWeekDeliveriesCount = 0;
-
-    prevLogs.forEach(l => {
-      const m = this.getCalculatedMetrics(l);
-      if (m.count > 0 || m.totalSales !== null || m.totalExpenses > 0) {
-        hasPrevWeekData = true;
-        prevWeekDeliverySales += (m.deliverySales || 0);
-        prevWeekQuestSales += (m.questSales || 0);
-        prevWeekGuaranteeBonus += (m.guaranteeBonus || 0);
-        prevWeekOtherSales += ((m.adjustmentSales || 0) + (m.otherSales || 0));
-        prevWeekExpenses += (m.totalExpenses || 0);
-        prevWeekDeliveriesCount += m.count;
-      }
-    });
-
-    const prevWeekSalesProfit = prevWeekDeliverySales + prevWeekQuestSales + prevWeekGuaranteeBonus + prevWeekOtherSales - prevWeekExpenses;
+    // 先週（先週比較用：推測・捏造せずデータ存在時のみ比較）
+    const prevWeekRange = getPreviousWeekRange(dateStr);
+    const prevWeek = this.aggregateForRange(prevWeekRange.startStr, prevWeekRange.endStr);
+    const hasPrevWeekData = prevWeek.hasData;
+    const prevWeekSalesProfit = prevWeek.profit;
 
     let prevWeekComparison = null;
-    // 今週の確定売上利益集計（当週の全登録日を動的に集計）
+    // 今週
     const weekRange = getWeekRange(dateStr);
-    const weekLogs = allLogs.filter(l => l.date >= weekRange.startStr && l.date <= weekRange.endStr);
+    const week = this.aggregateForRange(weekRange.startStr, weekRange.endStr);
+    const weekOfficialSales = week.totalSales;
 
-    let weekCalculatedSales = 0;
-    let weekDeliverySales = 0;
-    let weekQuestSales = 0;
-    let weekAdjustmentSales = 0;
-    let weekOtherSales = 0;
-    let weekTipSales = 0;       // チップ（配達報酬に含まれる内訳。総売上へは別途加算しない）
-    let weekOtherOnlySales = 0; // 調整以外のその他
-    let weekGuaranteeBonus = 0;      // 特別ボーナス（特別収入・保証 ＋ 特別クエスト）
-    let weekGuaranteeOnly = 0;       // うち特別収入・保証
-    let weekSpecialQuestSales = 0;   // うち特別クエスト
-    let weekBikeExpenses = 0;   // うちバイクシェア等（履歴の B バッジと同じ isBikeExpense 判定。内訳の参考値）
-    let weekExpenses = 0;       // 必要経費（登録済み経費をすべて1回ずつ。日別利益の totalExpenses と同じ定義）
-    let weekDeliveriesCount = 0;
-    let weekTripsCount = 0;
-
-    weekLogs.forEach(l => {
-      const m = this.getCalculatedMetrics(l);
-      if (m.count > 0 || m.totalSales !== null || m.totalExpenses > 0) {
-        weekDeliverySales += (m.deliverySales || 0);
-        // 分析の分類: 通常クエスト → クエスト / 特別クエスト（questType: special）→ 特別ボーナス（二重計上しない）
-        weekQuestSales += (m.questSales || 0) - (m.specialQuestSales || 0);
-        weekSpecialQuestSales += (m.specialQuestSales || 0);
-        weekAdjustmentSales += (m.adjustmentSales || 0);
-        weekOtherSales += ((m.adjustmentSales || 0) + (m.otherSales || 0));
-        weekTipSales += (m.tipSales || 0);
-        weekOtherOnlySales += (m.otherSales || 0);
-        weekCalculatedSales += (m.totalSales || 0);
-        weekDeliveriesCount += m.count;
-        weekTripsCount += (l.tripsCount || (l.deliveries ? l.deliveries.length : 0));
-        weekGuaranteeBonus += (m.guaranteeBonus || 0) + (m.specialQuestSales || 0);
-        weekGuaranteeOnly += (m.guaranteeBonus || 0);
-
-        let logBike = 0;
-        if (Array.isArray(l.expenses)) {
-          l.expenses.forEach(e => {
-            const cat = (e.category || '').trim();
-            const amt = Number(e.amount);
-            if (!isNaN(amt) && amt > 0) {
-              if (isBikeExpenseCategory(cat)) {
-                logBike += amt;
-              }
-            }
-          });
-        }
-        weekBikeExpenses += logBike;
-        weekExpenses += (m.totalExpenses || 0);
-      }
-    });
-
-    // 内訳の数学的合計（¥43,461）と完全一致させる公式売上
-    const weekOfficialSales = weekCalculatedSales;
-
-    // 「今週の売上利益」＝ 配達報酬 ＋ クエスト ＋ 特別ボーナス ＋ その他 － 必要経費
-    const weekSalesProfit = weekDeliverySales + weekQuestSales + weekGuaranteeBonus + weekOtherSales - weekExpenses;
+    // 「今週の売上利益」＝ 総売上 － 必要経費（先週比も先週の同じ「売上利益」と比較）
+    const weekSalesProfit = week.profit;
 
     if (hasPrevWeekData) {
       const diff = weekSalesProfit - prevWeekSalesProfit;
@@ -11612,80 +11638,63 @@ class Store {
       endDate: weekRange.endStr,
       salesProfit: weekSalesProfit,
       officialSales: weekOfficialSales,
-      calculatedSales: weekCalculatedSales,
-      deliverySales: weekDeliverySales,
-      questSales: weekQuestSales,
-      adjustmentSales: weekOtherSales,
-      otherSales: weekOtherSales,
-      // 内訳表示用（合計すると officialSales と一致: 配達報酬(チップ除く) + チップ + クエスト + 特別ボーナス + 調整 + その他）
-      baseDeliverySales: weekDeliverySales - weekTipSales,
-      tipSales: weekTipSales,
-      adjustmentOnlySales: weekAdjustmentSales,
-      otherOnlySales: weekOtherOnlySales,
-      bikeExpenses: weekBikeExpenses,
-      expenses: weekExpenses,
-      deliveriesCount: weekDeliveriesCount,
-      deliveryCount: weekDeliveriesCount,
-      tripsCount: weekTripsCount,
-      guaranteeBonus: weekGuaranteeBonus,
-      bonusSales: weekGuaranteeBonus,
-      guaranteeOnlySales: weekGuaranteeOnly,
-      specialQuestSales: weekSpecialQuestSales,
+      calculatedSales: weekOfficialSales,
+      deliverySales: week.deliverySales,
+      questSales: week.questSales,
+      // 後方互換（旧名）: adjustmentSales / otherSales は「調整＋その他」の合計。画面は adjustmentOnlySales / otherOnlySales を使う
+      adjustmentSales: week.adjustmentSales + week.otherSales,
+      otherSales: week.adjustmentSales + week.otherSales,
+      // 内訳表示用（合計すると officialSales と一致: 配達報酬(チップ除く) + クエスト + 特別ボーナス + チップ + 調整 + その他）
+      baseDeliverySales: week.baseDeliverySales,
+      tipSales: week.tipSales,
+      adjustmentOnlySales: week.adjustmentSales,
+      otherOnlySales: week.otherSales,
+      bikeExpenses: week.bikeExpenses,
+      expenses: week.expenses,
+      deliveriesCount: week.deliveriesCount,
+      deliveryCount: week.deliveriesCount,
+      tripsCount: week.tripsCount,
+      guaranteeBonus: week.guaranteeBonus,
+      bonusSales: week.guaranteeBonus,
+      guaranteeOnlySales: week.guaranteeOnlySales,
+      specialQuestSales: week.specialQuestSales,
       payoutDateText: getNextPayoutDate(weekRange.endStr),
       note: '次回振込対象・当週確定売上利益',
+      prevWeek: { startDate: prevWeekRange.startStr, endDate: prevWeekRange.endStr, sales: prevWeek.totalSales, expenses: prevWeek.expenses, salesProfit: prevWeek.profit },
       prevWeekComparison
     };
 
-    // 今月の実績（当月の全登録日を動的に集計）
+    // 今月の実績（当月1日〜基準日。未来日は含めない）。売上内訳（期間指定）の既定（今月1日〜今日）と同じ範囲・同じ集計
     const currentMonthPrefix = dateStr.substring(0, 7);
-    const monthLogs = allLogs.filter(l => l.date.startsWith(currentMonthPrefix));
-    // 売上・件数・必要経費は「売上内訳（期間指定）」と同じ集計（getSalesBreakdown）を参照する（月初〜月末）
-    const monthBreakdown = this.getSalesBreakdown(`${currentMonthPrefix}-01`, `${currentMonthPrefix}-31`);
-    const monthSales = monthBreakdown.totalSales;
-    const monthDeliveriesCount = monthBreakdown.deliveriesCount;
-    const monthExpenses = monthBreakdown.expenses;
-    // 参考内訳（後方互換）: バイクシェア等 / 種類「必要経費」の経費。どちらにも該当しない経費も monthExpenses には含まれる
-    let monthBikeExpenses = 0;
-    let monthOtherExpenses = 0;
-    monthLogs.forEach(l => {
-      if (Array.isArray(l.expenses)) {
-        l.expenses.forEach(e => {
-          const cat = (e.category || '').trim();
-          const amt = Number(e.amount);
-          if (!isNaN(amt) && amt > 0) {
-            if (isBikeExpenseCategory(cat)) {
-              monthBikeExpenses += amt;
-            } else if (cat === '必要経費') {
-              monthOtherExpenses += amt;
-            }
-          }
-        });
-      }
-    });
-
-    // 月次利益 = 売上 - 必要経費（登録済み経費をすべて1回ずつ）
-    const monthSalesProfit = monthSales - monthExpenses;
+    const month = this.aggregateForRange(`${currentMonthPrefix}-01`, dateStr);
     const [mY, mM] = currentMonthPrefix.split('-').map(Number);
     const cleanMonthPeriod = `${mY}年${mM}月`;
 
-    // 稼働日数: 分子 = 当月1日〜基準日でUber実績のある日（isWorkedDay）/ 分母 = 当月1日〜基準日の経過日数（基準日を含む。未来日は含めない）
+    // 稼働日数: 分子 = 当月1日〜基準日でUber実績のある日（isWorkedDay）/ 分母 = 当月1日〜基準日の経過日数（基準日を含む）
     // 休み自動判定（getDayStatus）とは別の指標。基準日がまだ終わっていなくても分母に含める
     const monthElapsedDays = Number(dateStr.slice(8, 10));
-    const monthWorkedDays = monthLogs.filter(l => l.date <= dateStr && this.isWorkedDay(l)).length;
 
     const thisMonth = {
       label: '今月の実績',
       periodLabel: cleanMonthPeriod,
-      sales: monthSales,
-      salesProfit: monthSalesProfit,
-      calculatedSales: monthSales,
-      expenses: monthExpenses,
-      bikeExpenses: monthBikeExpenses,
-      otherExpenses: monthOtherExpenses,
-      workedDays: monthWorkedDays,
+      startDate: month.startDate,
+      endDate: month.endDate,
+      sales: month.totalSales,
+      salesProfit: month.profit,
+      calculatedSales: month.totalSales,
+      expenses: month.expenses,
+      bikeExpenses: month.bikeExpenses,                 // 参考内訳: バイクシェア等
+      otherExpenses: month.necessaryCategoryExpenses,   // 参考内訳: 種類「必要経費」
+      workedDays: month.workedDays,
       elapsedDays: monthElapsedDays,
-      deliveriesCount: monthDeliveriesCount,
-      note: `※${mM}月度 登録分（全${monthDeliveriesCount}件）`
+      deliveriesCount: month.deliveriesCount,
+      regularSales: month.regularSales,
+      avgDailyEarnings: month.avgDailyEarnings,
+      avgPerDelivery: month.avgPerDelivery,
+      workSeconds: month.workSeconds,
+      durationHHMM: month.durationHHMM,
+      distanceKm: month.distanceKm,
+      note: `※${mM}月度 登録分（全${month.deliveriesCount}件）`
     };
 
     // 登録済み累計売上（全登録日を動的に集計）
@@ -11808,80 +11817,26 @@ class Store {
   // 配達報酬はチップを除いた額、チップは配達の最終売上に含まれる内訳（総売上へは二重に加算しない）。
   // 合計: 配達報酬 + チップ + クエスト + 特別ボーナス + 調整 + その他 = 総売上
   getSalesBreakdown(startDate, endDate) {
-    const out = {
-      startDate, endDate, days: 0, deliveriesCount: 0,
-      deliverySales: 0, baseDeliverySales: 0, tipSales: 0, tipCount: 0,
-      questSales: 0, guaranteeBonus: 0, guaranteeOnlySales: 0, specialQuestSales: 0, adjustmentSales: 0, otherSales: 0, totalSales: 0, bikeExpenses: 0,
-      expenses: 0 // 必要経費（登録済み経費をすべて1回ずつ。バイクシェア等を含む）
-    };
-    this.getAllDailyLogs()
-      .filter(l => (!startDate || l.date >= startDate) && (!endDate || l.date <= endDate))
-      .forEach(l => {
-        const m = this.getCalculatedMetrics(l);
-        if (!(m.count > 0 || m.totalSales !== null || m.totalExpenses > 0)) return;
-        // 「稼働 N日」は共通の稼働日判定で数える（金額の集計対象は従来どおり）
-        if (this.isWorkedDay(l)) out.days++;
-        out.deliveriesCount += m.count;
-        out.deliverySales += (m.deliverySales || 0);
-        out.baseDeliverySales += (m.baseDeliverySales || 0);
-        out.tipSales += (m.tipSales || 0);
-        out.tipCount += (m.tipCount || 0);
-        // 分析の分類: 通常クエスト → クエスト / 特別クエスト → 特別ボーナス（二重計上しない）
-        out.questSales += (m.questSales || 0) - (m.specialQuestSales || 0);
-        out.specialQuestSales += (m.specialQuestSales || 0);
-        out.guaranteeOnlySales += (m.guaranteeBonus || 0);
-        out.guaranteeBonus += (m.guaranteeBonus || 0) + (m.specialQuestSales || 0);
-        out.adjustmentSales += (m.adjustmentSales || 0);
-        out.otherSales += (m.otherSales || 0);
-        out.totalSales += (m.totalSales || 0);
-        (l.expenses || []).forEach(e => { if (isBikeExpense(e)) out.bikeExpenses += Number(e.amount); });
-        out.expenses += (m.totalExpenses || 0);
-      });
-    return out;
+    // 共通の期間集計（aggregateForRange）をそのまま使う。days = 稼働日数（isWorkedDay）
+    const a = this.aggregateForRange(startDate, endDate);
+    return { ...a, startDate, endDate, days: a.workedDays };
   }
 
   // 全体・累計・直近7日の分析データ取得
   getAnalytics() {
     const allLogs = this.getAllDailyLogs();
-    
-    let totalDeliveries = 0;
-    let totalSalesSum = 0;
-    let totalRegularSalesSum = 0; // 通常稼働売上（大型特別ボーナス除外）
-    let totalMinutesSum = 0;
-    let totalSecondsSum = 0; // 全公式トリップ所要時間秒数合計
-    let totalDistanceSum = 0;
-    let activeDaysCount = 0;
 
-    allLogs.forEach(log => {
-      const metrics = this.getCalculatedMetrics(log);
-      // 稼働日数・平均は稼働日（isWorkedDay）だけで集計（稼働開始時刻だけの日などは含めない）
-      if (this.isWorkedDay(log)) {
-        activeDaysCount++;
-        totalDeliveries += metrics.count;
-        if (metrics.totalSales !== null) {
-          totalSalesSum += metrics.totalSales;
-        }
-        // 通常稼働売上（通常報酬 ＋ 通常クエスト ＋ 通常の売上調整金等。新規保証等の大型特別ボーナスと特別クエストは除外）
-        const reg = metrics.regularSales !== null && metrics.regularSales !== undefined ? metrics.regularSales : 0;
-        totalRegularSalesSum += reg;
-
-        if (metrics.workMinutes) {
-          totalMinutesSum += metrics.workMinutes;
-        }
-        if (metrics.workSeconds) {
-          totalSecondsSum += metrics.workSeconds;
-        }
-        if (metrics.totalDistanceKm) {
-          totalDistanceSum += metrics.totalDistanceKm;
-        }
-      }
-    });
-
-    // 平均日給: 通常稼働売上 ÷ 稼働日数（特別ボーナス除外）
-    const avgDailyEarnings = activeDaysCount > 0 ? Math.round(totalRegularSalesSum / activeDaysCount) : null;
-    const avgHourlyWage = totalMinutesSum > 0 ? Math.round(totalRegularSalesSum / (totalMinutesSum / 60)) : null;
-    // 平均1件単価: 通常稼働売上 ÷ 配達件数（特別ボーナス除外）
-    const avgPerDelivery = totalDeliveries > 0 ? Math.round(totalRegularSalesSum / totalDeliveries) : null;
+    // 全期間の合計（共通の期間集計 aggregateForRange を期間制限なしで使う）。分析画面の「今月」は getRevenueSummary().thisMonth を使う
+    const all = this.aggregateForRange(null, null);
+    const activeDaysCount = all.workedDays;
+    const totalDeliveries = all.deliveriesCount;
+    const totalSalesSum = all.totalSales;
+    const totalRegularSalesSum = all.regularSales;
+    const totalSecondsSum = all.workSeconds;
+    const totalDistanceSum = all.distanceKm;
+    const avgDailyEarnings = all.avgDailyEarnings;
+    const avgPerDelivery = all.avgPerDelivery;
+    const avgHourlyWage = totalSecondsSum > 0 ? Math.round(totalRegularSalesSum / (totalSecondsSum / 3600)) : null;
 
     // 配達時間テキスト（全期間の公式トリップ所要時間合計、秒省略「xx時間xx分」）
     const totalDurationText = totalSecondsSum > 0

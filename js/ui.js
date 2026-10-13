@@ -1588,7 +1588,7 @@ class UI {
       const revenueRows = [
         row('総売上', metrics.totalSales !== null ? yen(metrics.totalSales) : '--', 'hd-total'),
         row('配達報酬', metrics.deliverySales !== null ? yen(metrics.deliverySales) : '--'),
-        metrics.tipSales > 0 ? row(`うちチップ（${metrics.tipCount}件）`, yen(metrics.tipSales), 'hd-sub') : '',
+        metrics.tipSales > 0 ? row(metrics.tipCount > 0 ? `うちチップ（${metrics.tipCount}件）` : 'うちチップ', yen(metrics.tipSales), 'hd-sub') : '',
         row('クエスト', yen(normalQuestSales)),
         row('特別クエスト', yen(specialSales)),
         specialSales > 0 && specialNames.length ? `<div class="hd-note">${specialNames.join('・')}</div>` : '',
@@ -1849,36 +1849,31 @@ class UI {
     if (monthPeriodEl) monthPeriodEl.textContent = rev.thisMonth.periodLabel;
 
     const monthProfitEl = document.getElementById('month-profit-val');
-    if (monthProfitEl) {
-      const profit = (rev.thisMonth.salesProfit !== undefined) ? rev.thisMonth.salesProfit : (analytics.totalSalesSum - (rev.thisMonth.bikeExpenses || 3507));
-      monthProfitEl.textContent = profit.toLocaleString();
-    }
+    if (monthProfitEl) monthProfitEl.textContent = rev.thisMonth.salesProfit.toLocaleString();
 
     const monthValEl = document.getElementById('month-sales-val');
     if (monthValEl) monthValEl.textContent = `¥${rev.thisMonth.sales.toLocaleString()}`;
 
+    // 今月の実績の各指標はすべて当月1日〜今日（rev.thisMonth。全期間の analytics は使わない）
+    const month = rev.thisMonth;
     const totalDelEl = document.getElementById('analytics-total-deliveries');
-    if (totalDelEl) totalDelEl.textContent = `${analytics.totalDeliveries}件`;
+    if (totalDelEl) totalDelEl.textContent = `${month.deliveriesCount}件`;
 
     const avgDailyEl = document.getElementById('analytics-avg-daily');
     if (avgDailyEl) {
-      avgDailyEl.textContent = analytics.avgDailyEarnings !== null ? `¥${analytics.avgDailyEarnings.toLocaleString()}` : '--';
+      avgDailyEl.textContent = month.avgDailyEarnings !== null ? `¥${month.avgDailyEarnings.toLocaleString()}` : '--';
     }
 
     const avgPerDelEl = document.getElementById('analytics-avg-per-delivery');
     if (avgPerDelEl) {
-      avgPerDelEl.textContent = analytics.avgPerDelivery !== null ? `¥${analytics.avgPerDelivery.toLocaleString()}` : '--';
+      avgPerDelEl.textContent = month.avgPerDelivery !== null ? `¥${month.avgPerDelivery.toLocaleString()}` : '--';
     }
 
     const totalDurEl = document.getElementById('analytics-total-duration');
-    if (totalDurEl) {
-      totalDurEl.textContent = analytics.totalDurationText || '--';
-    }
+    if (totalDurEl) totalDurEl.textContent = month.durationHHMM;
 
     const totalDistEl = document.getElementById('analytics-total-distance');
-    if (totalDistEl) {
-      totalDistEl.textContent = analytics.totalDistanceSum !== null ? `${Math.round(analytics.totalDistanceSum)} km` : '--';
-    }
+    if (totalDistEl) totalDistEl.textContent = `${Math.round(month.distanceKm)} km`;
 
     // 必要経費（バイクシェア等を含む登録済み経費の合計。売上利益の計算と同じ額）
     const monthExpensesEl = document.getElementById('month-expenses-val');
@@ -2116,6 +2111,19 @@ class UI {
     if (adjEl) adjEl.value = parsed.adjustmentSales;
     if (otherEl) otherEl.value = parsed.otherSales;
 
+    // チップは「その他」に入れない。配達報酬に含まれる額（うちチップ）として扱い、総売上には別途加算しない
+    const tipEl = document.getElementById('import-sales-tip');
+    const tipNotesEl = document.getElementById('import-sales-tip-notes');
+    if (tipEl) tipEl.value = parsed.tipSales || 0;
+    if (tipNotesEl) {
+      const tipYen = `¥${(parsed.detectedTipSales || 0).toLocaleString()}`;
+      tipNotesEl.textContent = {
+        included: `チップ ${tipYen} は配達報酬に含まれています（総売上の行で確認）。`,
+        separate: `チップ ${tipYen} は配達の行に含まれていなかったため、配達報酬に加えました（総売上の行で確認）。`,
+        unknown: `⚠️ チップ ${tipYen} が配達報酬に含まれるか総売上の行から判定できません。配達報酬とうちチップを確認してください。`
+      }[parsed.tipStatus] || '';
+    }
+
     if (questNotesEl) {
       if (parsed.detectedQuests && parsed.detectedQuests.length > 0) {
         const ignoredCount = parsed.detectedQuests.filter(q => q.isDuplicateIgnored).length;
@@ -2163,6 +2171,8 @@ class UI {
     const quest = Number(questEl ? questEl.value : 0) || 0;
     const adjustment = Number(adjEl ? adjEl.value : 0) || 0;
     const other = Number(otherEl ? otherEl.value : 0) || 0;
+    const tipEl = document.getElementById('import-sales-tip');
+    const tip = Number(tipEl ? tipEl.value : 0) || 0;
     const rawText = rawTextEl ? rawTextEl.value : '';
 
     store.saveDailySales(this.currentDate, {
@@ -2170,6 +2180,7 @@ class UI {
       quest,
       adjustment,
       other,
+      tip,
       rawText
     });
 

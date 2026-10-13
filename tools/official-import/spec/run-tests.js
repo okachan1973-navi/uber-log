@@ -739,6 +739,129 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
   }
 
   // ==========================================================
+  section('10-5c. 分析画面の集計期間（今週・先週・今月・期間指定・全期間の分離 / aggregateForRange）');
+  {
+    // 合成データ（2099年。実データと重ならない）。基準日 2099-04-15（水）: 今週 04-13〜04-19 / 先週 04-06〜04-12 / 今月 04-01〜04-15
+    const r = runNode(`
+      const T=(id,fee,dur,tip)=>({id,index:1,completedAt:'10:00',restaurant:'テスト店',area:'',fee,distanceKm:1,durationStr:dur,memo:'',...(tip?{tip}:{})});
+      const D=(date,cnt,sales,km,dur,extra={})=>({date,deliveriesCount:cnt,tripsCount:cnt,totalDistanceKm:km,workSessions:[],quests:[],expenses:[],
+        sales:{delivery:sales.d||0,quest:sales.q||0,adjustment:sales.a||0,other:sales.o||0,total:(sales.d||0)+(sales.q||0)+(sales.a||0)+(sales.o||0)},
+        deliveries:[T('t_'+date,sales.d||0,dur,extra.tip)],...extra});
+      const logs={
+        '2099-03-31':D('2099-03-31',5,{d:1000},10,'1時間0分0秒'),
+        '2099-04-01':D('2099-04-01',2,{d:2000,q:300},20,'2時間0分0秒',{tip:100,expenses:[{id:'x1',category:'バイクシェア',amount:1527,memo:''}]}),
+        '2099-04-07':D('2099-04-07',3,{d:3000},30,'3時間0分0秒',{expenses:[{id:'x2',category:'必要経費',amount:200,memo:''}]}),
+        '2099-04-12':D('2099-04-12',4,{d:4000,q:1000},40,'4時間0分0秒',{quests:[{id:'q1',questName:'特別',title:'特別',amount:1000,time:'20:00',questType:'special'}]}),
+        '2099-04-13':D('2099-04-13',6,{d:5000,a:-100,o:50},50,'5時間3分0秒',{expenses:[{id:'x3',category:'駐輪',amount:100,memo:''}]}),
+        '2099-04-15':D('2099-04-15',1,{d:600},6,'0時間30分0秒'),
+        '2099-04-25':D('2099-04-25',7,{d:7000},70,'7時間0分0秒',{expenses:[{id:'x4',category:'必要経費',amount:999,memo:''}]}),
+        '2099-05-01':D('2099-05-01',8,{d:8000},80,'8時間0分0秒')
+      };
+      Object.values(logs).forEach(l=>{l.deliveries[0].tip=l.tip;delete l.tip;if(!l.deliveries[0].tip)delete l.deliveries[0].tip;});
+      const map={uber_log_v1_data:JSON.stringify({version:'1.2',dailyLogs:logs})};
+      global.localStorage={getItem:k=>map[k]||null,setItem:(k,v)=>{map[k]=v},removeItem:()=>{}};global.window={localStorage:global.localStorage};
+      const {store,parseUberSalesText}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      const rev=store.getRevenueSummary('2099-04-15');
+      const pick=a=>({sales:a.totalSales,exp:a.expenses,profit:a.profit,cnt:a.deliveriesCount,days:a.workedDays,sec:a.workSeconds,km:a.distanceKm,reg:a.regularSales,avgD:a.avgDailyEarnings,avgP:a.avgPerDelivery,hh:a.durationHHMM,
+        parts:[a.baseDeliverySales,a.questSales,a.guaranteeBonus,a.tipSales,a.adjustmentSales,a.otherSales]});
+      const period=pick(store.getSalesBreakdown('2099-04-07','2099-04-12'));
+      const all=pick(store.aggregateForRange(null,null));
+      // 全期間の直接合計（稼働日の件数）
+      let allCnt=0,allSales=0;store.getAllDailyLogs().forEach(l=>{const m=store.getCalculatedMetrics(l);if(store.isWorkedDay(l))allCnt+=m.count;allSales+=(m.totalSales||0);});
+      const empty=store.getRevenueSummary('2099-08-10').thisMonth;
+      // 旧売上テキスト取込: チップは「その他」に入らない
+      const p1=parseUberSalesText('配達\\n¥3,000\\nチップ\\n¥200\\nクエスト\\n¥500\\n総売上\\n¥3,500');
+      const p2=parseUberSalesText('配達\\n¥2,800\\nチップ\\n¥200\\nクエスト\\n¥500\\n総売上\\n¥3,500');
+      const p3=parseUberSalesText('配達\\n¥3,000\\nチップ\\n¥200');
+      const p4=parseUberSalesText('Multiple\\n¥300\\n総売上\\n¥300');
+      const P=p=>({d:p.deliverySales,t:p.tipSales,o:p.otherSales,tot:p.totalSales,st:p.tipStatus});
+      store.saveDailySales('2099-06-02',{delivery:p1.deliverySales,quest:p1.questSales,adjustment:p1.adjustmentSales,other:p1.otherSales,tip:p1.tipSales});
+      const m62=store.getCalculatedMetrics(store.getDailyLog('2099-06-02'));
+      const b62=store.getSalesBreakdown('2099-06-02','2099-06-02');
+      // 公式取込の日は sales.tip を使わない（配達ごとの tip が正）
+      const off=store.getDailyLog('2026-10-12');off.sales={...off.sales,tip:500};
+      const mOff=store.getCalculatedMetrics(off);
+      console.log(JSON.stringify({month:pick(store.aggregateForRange('2099-04-01','2099-04-15')),m:rev.thisMonth,week:pick(store.aggregateForRange('2099-04-13','2099-04-19')),
+        w:{sales:rev.thisWeek.officialSales,exp:rev.thisWeek.expenses,profit:rev.thisWeek.salesProfit,cnt:rev.thisWeek.deliveriesCount,range:[rev.thisWeek.startDate,rev.thisWeek.endDate],
+          parts:[rev.thisWeek.baseDeliverySales,rev.thisWeek.questSales,rev.thisWeek.guaranteeBonus,rev.thisWeek.tipSales,rev.thisWeek.adjustmentOnlySales,rev.thisWeek.otherOnlySales],
+          prev:rev.thisWeek.prevWeek,diff:rev.thisWeek.prevWeekComparison.diffAmount},
+        period,all,allCnt,allSales,empty:{s:empty.sales,c:empty.deliveriesCount,ad:empty.avgDailyEarnings,ap:empty.avgPerDelivery,hh:empty.durationHHMM,km:empty.distanceKm,wd:empty.workedDays,ed:empty.elapsedDays,p:empty.salesProfit},
+        p1:P(p1),p2:P(p2),p3:P(p3),p4:P(p4),m62:{t:m62.tipSales,base:m62.baseDeliverySales,o:m62.otherSales,tot:m62.totalSales},b62:{tip:b62.tipSales,oth:b62.otherSales,tot:b62.totalSales},
+        off:{t:mOff.tipSales,cnt:mOff.tipCount}}));`);
+    const M = r.month, m = r.m;
+    check(m.startDate === '2099-04-01' && m.endDate === '2099-04-15', `今月の範囲は当月1日〜基準日（${m.startDate}〜${m.endDate}）`);
+    check(m.sales === 15850 && M.sales === 15850, `1. 今月に前月（3/31）・翌月（5/1）が混ざらない: 総売上 ¥${m.sales}（期待 ¥15,850）`);
+    check(m.deliveriesCount === 16, `2. 今月件数は当月のみ ${m.deliveriesCount}件（期待 16件）`);
+    check(m.workSeconds === 52380 && m.durationHHMM === '14:33', `3. 今月の配達時間は当月のみ ${m.durationHHMM}（期待 14:33）`);
+    check(m.distanceKm === 146, `4. 今月の配達距離は当月のみ ${m.distanceKm}km（期待 146km）`);
+    check(m.regularSales === 14800 && m.workedDays === 5 && m.avgDailyEarnings === 2960, `5. 今月平均日給は当月のみ ¥${m.avgDailyEarnings}（通常売上 ¥14,800 ÷ 5日。特別クエスト・その他は除外）`);
+    check(m.avgPerDelivery === 925, `6. 今月平均単価は当月のみ ¥${m.avgPerDelivery}（¥14,800 ÷ 16件）`);
+    check(r.w.range.join() === '2099-04-13,2099-04-19' && r.w.sales === 5550 && r.w.cnt === 7 && r.w.exp === 100 && r.w.profit === 5450, `7. 今週（月〜日）に先週が混ざらない: 売上 ¥${r.w.sales} / ${r.w.cnt}件 / 必要経費 ¥${r.w.exp} / 利益 ¥${r.w.profit}`);
+    check(r.w.prev.startDate === '2099-04-06' && r.w.prev.sales === 8000 && r.w.prev.expenses === 200 && r.w.prev.salesProfit === 7800, `8. 先週に今週が混ざらない: 先週 売上 ¥${r.w.prev.sales} / 利益 ¥${r.w.prev.salesProfit}`);
+    check(r.w.diff === 5450 - 7800, `先週比は「今週の売上利益 − 先週の売上利益」（同じ種類の比較） ${r.w.diff}`);
+    check(r.period.sales === 8000 && r.period.cnt === 7 && r.period.days === 2 && r.period.exp === 200, `9. 期間指定（4/7〜4/12）に外側が混ざらない: ¥${r.period.sales} / ${r.period.cnt}件 / ${r.period.days}日`);
+    check(r.all.cnt === r.allCnt && r.all.sales === r.allSales && r.all.cnt > M.cnt + 5, `10. 全期間は全期間（${r.all.cnt}件 / ¥${r.all.sales.toLocaleString()} = 全日別データの直接合計）`);
+    check(m.expenses === 1827 && m.bikeExpenses === 1527 && m.otherExpenses === 200 && m.salesProfit === 15850 - 1827, `11. 必要経費は1件1回（バイクシェア ¥1,527 ＋ 駐輪 ¥100 ＋ 必要経費 ¥200 ＝ ¥1,827。4/25 の未来分は含めない）・利益 ¥${m.salesProfit}`);
+    const sum = a => a.reduce((s, x) => s + x, 0);
+    check(sum(M.parts) === M.sales && sum(r.week.parts) === r.week.sales && sum(r.w.parts) === r.w.sales && sum(r.period.parts) === r.period.sales,
+      `12. 売上内訳の合計 ＝ 総売上（今月 [${M.parts.join(', ')}]・今週・期間指定）`);
+    check(M.parts.join() === '14500,300,1000,100,-100,50', '内訳: 配達報酬 ¥14,500 / クエスト ¥300 / 特別ボーナス ¥1,000 / チップ ¥100 / 調整 -¥100 / その他 ¥50（重複なし）');
+    check(m.sales === M.sales && r.w.sales === r.week.sales, '13. 上部の売上（今月・今週）＝ 同じ期間の売上内訳の総売上');
+    check(r.p1.st === 'included' && r.p1.d === 3000 && r.p1.t === 200 && r.p1.o === 0 && r.p1.tot === 3500, `14. 旧取込: チップ込みの配達（総売上で確認）→ 配達報酬 ¥3,000・うちチップ ¥200・その他 ¥0`);
+    check(r.p2.st === 'separate' && r.p2.d === 3000 && r.p2.t === 200 && r.p2.o === 0 && r.p2.tot === 3500, `14. 旧取込: チップ別の配達 → 配達報酬 ¥3,000（¥2,800＋チップ）・うちチップ ¥200・その他 ¥0・総売上 ¥3,500`);
+    check(r.p3.st === 'unknown' && r.p3.t === 0 && r.p3.o === 0 && r.p3.d === 3000, '14. 旧取込: 総売上の行が無くチップの扱いを判定できない → 配達報酬・その他に推測で入れない');
+    check(r.p4.st === 'none' && r.p4.o === 0, '「Multiple」等の単語の一部をチップと誤検知しない');
+    check(r.m62.t === 200 && r.m62.base === 2800 && r.m62.o === 0 && r.m62.tot === 3500 && r.b62.tip === 200 && r.b62.oth === 0 && r.b62.tot === 3500,
+      '14. 旧取込で登録した日: チップ ¥200 はチップ（配達報酬 ¥2,800 ＋ チップ ¥200）、その他 ¥0、総売上 ¥3,500（二重計上なし）');
+    check(r.off.t === 0, '公式取込の日は sales.tip を使わない（配達ごとの tip が正・二重計上しない）');
+    const e = r.empty;
+    check(e.s === 0 && e.c === 0 && e.ad === null && e.ap === null && e.hh === '00:00' && e.km === 0 && e.wd === 0 && e.ed === 10 && e.p === 0, '15. 0件の月でもクラッシュしない（売上 ¥0・件数 0・平均 --・配達時間 00:00・稼働 0 / 10日）');
+    check(m.sales === 15850 && m.expenses === 1827, '16. 未来日（4/25 の売上 ¥7,000・経費 ¥999）は今月の集計に入らない');
+  }
+
+  // ==========================================================
+  section('10-5d. 分析画面の実データ照合（2026年10月・日別データの直接合計 / 日別比較）');
+  {
+    const r = runNode(`
+      global.localStorage={getItem:()=>null,setItem:()=>{},removeItem:()=>{}};global.window={localStorage:global.localStorage};
+      const {store}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      const TODAY='2026-10-13';
+      // 日別の生データを直接合計（集計関数を使わない）
+      const sec=s=>{if(!s)return 0;let t=0;const h=s.match(/(\\d+)時間/),m=s.match(/(\\d+)分/),x=s.match(/(\\d+)秒/);if(h)t+=3600*h[1];if(m)t+=60*m[1];if(x)t+=+x[1];return t;};
+      const raw={days:0,cnt:0,sales:0,special:0,sec:0,km:0,exp:0};
+      Object.values(store.state.dailyLogs).filter(l=>l.date>='2026-10-01'&&l.date<=TODAY).forEach(l=>{
+        const c=Number(l.deliveriesCount)||0;if(c>0)raw.days++;raw.cnt+=c;
+        raw.sales+=(l.sales?Number(l.sales.total)||0:0)+(l.sales?Number(l.sales.guaranteeBonus)||0:0);
+        raw.special+=(l.quests||[]).filter(q=>q.questType==='special'&&!q.isDuplicateIgnored&&Number(q.amount)>0).reduce((s,q)=>s+Number(q.amount),0);
+        raw.sec+=(l.deliveries||[]).reduce((s,d)=>s+sec(d.durationStr),0);raw.km+=Number(l.totalDistanceKm)||0;
+        raw.exp+=(l.expenses||[]).reduce((s,e)=>s+(Number(e.amount)>0?Number(e.amount):0),0);});
+      raw.km=Number(raw.km.toFixed(2));
+      const m=store.getRevenueSummary(TODAY).thisMonth;
+      const b=store.getSalesBreakdown('2026-10-01',TODAY);
+      // 日別比較の各行 ＝ その日1日だけの集計
+      const rows=store.getAnalytics().dailyComparison;
+      const rowOk=rows.every(d=>{const a=store.aggregateForRange(d.date,d.date);const mm=store.getCalculatedMetrics(store.state.dailyLogs[d.date]);
+        return d.count===a.deliveriesCount&&d.regularSales===a.regularSales&&d.workSeconds===a.workSeconds&&d.totalSales===a.totalSales&&d.distance===mm.totalDistanceKm;});
+      console.log(JSON.stringify({raw,m,b:{t:b.totalSales,days:b.days,cnt:b.deliveriesCount},rowOk,rows:rows.length,r1012:rows.find(d=>d.date==='2026-10-12')}));`);
+    const raw = r.raw, m = r.m;
+    check(m.sales === raw.sales && m.sales === r.b.t, `今月売上 ¥${m.sales.toLocaleString()} ＝ 日別データの直接合計 ¥${raw.sales.toLocaleString()} ＝ 売上内訳の総売上`);
+    check(m.salesProfit === raw.sales - raw.exp && m.expenses === raw.exp, `今月利益 ¥${m.salesProfit.toLocaleString()}・必要経費 ¥${m.expenses.toLocaleString()}（直接合計と一致）`);
+    check(m.deliveriesCount === raw.cnt && m.workedDays === raw.days && m.elapsedDays === 13, `今月件数 ${m.deliveriesCount}件・稼働日数 ${m.workedDays} / ${m.elapsedDays}日（直接合計 ${raw.cnt}件・${raw.days}日）`);
+    check(m.workSeconds === raw.sec && m.distanceKm === raw.km, `今月配達時間 ${m.durationHHMM}・配達距離 ${m.distanceKm}km（直接合計と一致）`);
+    check(m.avgDailyEarnings === Math.round((raw.sales - raw.special) / raw.days) && m.avgPerDelivery === Math.round((raw.sales - raw.special) / raw.cnt),
+      `今月平均日給 ¥${m.avgDailyEarnings}・平均単価 ¥${m.avgPerDelivery}（通常売上 ＝ 総売上 − 特別クエスト ¥${raw.special.toLocaleString()} で直接計算と一致）`);
+    check(r.rowOk && r.rows > 0 && r.r1012.durationHHMM === '04:36', `日別比較 ${r.rows}行: 件数・通常売上・配達時間・総売上・距離が日別データと一致（10/12 04:36）`);
+    const uiSrc = fs.readFileSync(path.join(ROOT, 'js', 'ui.js'), 'utf8');
+    const av = uiSrc.slice(uiSrc.indexOf('renderAnalyticsView() {'), uiSrc.indexOf('renderAvoidanceView() {'));
+    check(!/analytics\.(totalDeliveries|avgDailyEarnings|avgPerDelivery|totalDurationText|totalDistanceSum|totalSalesSum)/.test(av), '今月の実績は全期間（getAnalytics）の値を使わない（rev.thisMonth のみ）');
+    const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+    const an = html.slice(html.indexOf('<main id="tab-analytics"'), html.indexOf('<main id="tab-avoidance"')).replace(/<!--[\s\S]*?-->/g, '');
+    const labels = [...an.matchAll(/class="(?:stat-card-label|breakdown-label)">([^<]+)</g)].map(x => x[1]);
+    check(labels.join(',') === '配達報酬,チップ,クエスト,特別ボーナス,調整,その他,必要経費,配達件数,総売上,配達件数,平均日給,平均単価,配達時間,配達距離,必要経費,稼働日数'
+      && !/Bike|バイク|>経費</.test(an), `分析画面の名称を統一（${labels.join('・')}。「Bike」「バイク」「経費」の旧表記なし）`);
+  }
+
+  // ==========================================================
   section('10-6. 日本の祝日（年ごとの計算）');
   {
     const r = runNode(`
