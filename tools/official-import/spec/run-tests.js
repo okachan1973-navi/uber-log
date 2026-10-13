@@ -690,6 +690,55 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
   }
 
   // ==========================================================
+  section('10-5b. 分析画面（必要経費・稼働日数・売上内訳・配達時間 HH:MM）');
+  {
+    const r = runNode(`
+      const map={};
+      global.localStorage={getItem:k=>map[k]||null,setItem:(k,v)=>{map[k]=v},removeItem:()=>{}};global.window={localStorage:global.localStorage};
+      const {store,formatMinutesHHMM}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      const snap=()=>{const r=store.getRevenueSummary('2026-10-13');const b=store.getSalesBreakdown('2026-10-01','2026-10-13');
+        return {ms:r.thisMonth.sales,mp:r.thisMonth.salesProfit,me:r.thisMonth.expenses,wd:r.thisMonth.workedDays,ed:r.thisMonth.elapsedDays,cnt:r.thisMonth.deliveriesCount,
+          we:r.thisWeek.expenses,wp:r.thisWeek.salesProfit,ws:r.thisWeek.officialSales,
+          b:{t:b.totalSales,sum:b.baseDeliverySales+b.questSales+b.guaranteeBonus+b.tipSales+b.adjustmentSales+b.otherSales,e:b.expenses,base:b.baseDeliverySales,q:b.questSales,g:b.guaranteeBonus,tip:b.tipSales,adj:b.adjustmentSales,oth:b.otherSales}};};
+      const before=snap();
+      const d5=store.getRevenueSummary('2026-10-05').thisMonth;const d7=store.getRevenueSummary('2026-10-07').thisMonth;
+      const sep=store.getRevenueSummary('2026-09-30').thisMonth;
+      // 経費を登録（バイクシェア・必要経費・旧カテゴリ「駐輪」）→ 1件ずつ1回だけ必要経費に入る
+      const day=store.getDailyLog('2026-10-12');
+      day.expenses=[{id:'e1',category:'バイクシェア',amount:1527,memo:'1日パス'},{id:'e2',category:'必要経費',amount:300,memo:'x'},{id:'e3',category:'駐輪',amount:100,memo:'y'}];
+      const after=snap();
+      const dayExp=store.getCalculatedMetrics(day).totalExpenses;
+      const cmp=store.getAnalytics().dailyComparison;
+      const hh={a:formatMinutesHHMM(276),b:formatMinutesHHMM(379),c:formatMinutesHHMM(303),d:formatMinutesHHMM(725),e:formatMinutesHHMM(0),f:formatMinutesHHMM(59)};
+      const allHH=cmp.every(d=>d.durationHHMM===null||(/^\\d{2}:\\d{2}$/.test(d.durationHHMM)&&d.durationHHMM===formatMinutesHHMM(Math.floor(d.workSeconds/60))));
+      const c={};['2026-10-12','2026-10-11','2026-10-10'].forEach(k=>{const x=cmp.find(d=>d.date===k);c[k]=x&&x.durationHHMM;});
+      console.log(JSON.stringify({before,after,d5:{w:d5.workedDays,e:d5.elapsedDays},d7:{w:d7.workedDays,e:d7.elapsedDays},sep:{s:sep.sales,e:sep.expenses,bk:sep.bikeExpenses,p:sep.salesProfit,w:sep.workedDays,ed:sep.elapsedDays},dayExp,hh,allHH,c}));`);
+    const b0 = r.before;
+    check(b0.wd === 11 && b0.ed === 13, `1-2. 稼働日数 10/13 時点: ${b0.wd} / ${b0.ed}日（10/1〜10/12 のうち実績のある日・10/7 は休み・今日 10/13 は0件でも分母に含む）`);
+    check(r.d5.w === 5 && r.d5.e === 5 && r.d7.w === 6 && r.d7.e === 7 && r.sep.w === 16 && r.sep.ed === 30, `稼働日数は基準日までの経過日数が分母（10/5: ${r.d5.w}/${r.d5.e}・10/7: ${r.d7.w}/${r.d7.e}・9/30: ${r.sep.w}/${r.sep.ed}）`);
+    check(r.sep.e === 6561 && r.sep.bk === 6561 && r.sep.p === r.sep.s - 6561, `9月の必要経費 ¥${r.sep.e}（バイクシェア利用 4件）・売上利益 = 売上 − 必要経費（従来と同額）`);
+    const a = r.after;
+    check(r.dayExp === 1927 && a.me === 1927 && a.we === 1927 && a.b.e === 1927, `3. 必要経費に二重計上なし（バイクシェア ¥1,527 ＋ 必要経費 ¥300 ＋ 駐輪 ¥100 ＝ ¥1,927。月・週・期間指定・日別で同額）`);
+    check(a.mp === a.ms - 1927 && a.wp === a.ws - 1927 && a.ms === b0.ms, '必要経費は売上利益から1回だけ差し引く（月・週とも）・売上は経費で変わらない');
+    check(b0.b.sum === b0.b.t, `4. 売上内訳の合計 ＝ 総売上（¥${b0.b.t.toLocaleString()}）`);
+    check(b0.ms === b0.b.t && b0.ms === 94446 && b0.cnt === 193, `5. 今月の売上 ¥${b0.ms.toLocaleString()} ＝ 売上内訳の総売上（同じ getSalesBreakdown を参照）`);
+    check(b0.b.base === 64185 && b0.b.q === 21100 && b0.b.g === 8840 && b0.b.tip === 321 && b0.b.adj === 0 && b0.b.oth === 0,
+      '11. 10月の内訳は不変（配達報酬 ¥64,185 / クエスト ¥21,100 / 特別ボーナス ¥8,840 / チップ ¥321 / 調整 ¥0 / その他 ¥0）');
+    check(r.hh.a === '04:36' && r.hh.b === '06:19' && r.hh.c === '05:03' && r.hh.d === '12:05' && r.hh.e === '00:00' && r.hh.f === '00:59', '8-9. 配達時間 HH:MM（04:36・06:19・05:03・12:05・2桁ゼロ埋め）');
+    check(r.allHH && r.c['2026-10-12'] === '04:36' && r.c['2026-10-11'] === '06:19' && r.c['2026-10-10'] === '05:03', '日別比較の配達時間（10/12 04:36・10/11 06:19・10/10 05:03。秒は切り捨て）');
+    const uiSrc = fs.readFileSync(path.join(ROOT, 'js', 'ui.js'), 'utf8');
+    const pb = uiSrc.slice(uiSrc.indexOf('renderPeriodBreakdown() {'), uiSrc.indexOf('openTripMapModal(deliveryId)'));
+    const labels = [...pb.matchAll(/\['([^']+)', /g)].map(m => m[1]);
+    check(labels.join(',') === '配達報酬,クエスト,特別ボーナス,チップ,調整,その他,総売上', `7. 売上内訳の順番（${labels.join(' → ')}）`);
+    check(!/tipCount/.test(pb) && !/Bike/.test(pb), '6. 売上内訳にチップ件数を表示しない・「Bike」表記なし（必要経費）');
+    const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+    const an = html.slice(html.indexOf('<main id="tab-analytics"'), html.indexOf('<main id="tab-avoidance"'));
+    check(!/>Bike</.test(an) && !/>バイクシェア</.test(an) && (an.match(/>必要経費</g) || []).length === 2 && /id="month-worked-days-val"/.test(an), '1-2. 分析画面の「Bike」「バイクシェア」を「必要経費」に統一・今月の実績に「稼働日数」');
+    check(!/天気|☀|🌧|☁/.test(an), '10. 天気データが無いため天気を表示しない（推測の天気なし）');
+    check(/d\.durationHHMM \|\| '--'/.test(uiSrc), '日別比較は durationHHMM を表示（記録なしは --）');
+  }
+
+  // ==========================================================
   section('10-6. 日本の祝日（年ごとの計算）');
   {
     const r = runNode(`

@@ -1218,7 +1218,7 @@ class UI {
     `;
   }
 
-  // 売上内訳（期間指定）: 配達報酬（チップ除く）/ チップ / クエスト / 特別ボーナス / 調整 / その他 / 総売上
+  // 売上内訳（期間指定）: 配達報酬（チップ除く）/ クエスト / 特別ボーナス / チップ / 調整 / その他 / 総売上
   renderPeriodBreakdown() {
     const startEl = document.getElementById('period-start');
     const endEl = document.getElementById('period-end');
@@ -1242,9 +1242,9 @@ class UI {
     const signed = n => (n > 0 ? `+${yen(n)}` : yen(n));
     const rows = [
       ['配達報酬', yen(b.baseDeliverySales), ''],
-      ['チップ', `${yen(b.tipSales)}${b.tipCount ? `<small>（${b.tipCount}件）</small>` : ''}`, 'val-tip'],
       ['クエスト', yen(b.questSales), ''],
       ['特別ボーナス', yen(b.guaranteeBonus), 'val-bonus'],
+      ['チップ', yen(b.tipSales), 'val-tip'],
       ['調整', signed(b.adjustmentSales), b.adjustmentSales < 0 ? 'val-bike' : 'val-adj'],
       ['その他', signed(b.otherSales), ''],
       ['総売上', yen(b.totalSales), 'val-total']
@@ -1254,7 +1254,7 @@ class UI {
         <span class="period-row-label">${label}</span>
         <span class="period-row-val ${cls}">${val}</span>
       </div>`).join('') +
-      `<div class="period-row period-row-sub"><span class="period-row-label">稼働 ${b.days}日 / ${b.deliveriesCount}件</span><span class="period-row-val">Bike -${yen(b.bikeExpenses)}</span></div>`;
+      `<div class="period-row period-row-sub"><span class="period-row-label">稼働 ${b.days}日 / ${b.deliveriesCount}件</span><span class="period-row-val">必要経費 ${b.expenses > 0 ? '-' : ''}${yen(b.expenses)}</span></div>`;
   }
 
   // 公式トリップ地図モーダルを開く
@@ -1833,10 +1833,11 @@ class UI {
     // 売上内訳（期間指定）
     this.renderPeriodBreakdown();
 
+    // 必要経費（バイクシェア等を含む登録済み経費の合計。売上利益から差し引く額と同じ）
     const weekBikeEl = document.getElementById('week-bike-expenses');
     if (weekBikeEl) {
-      const bike = rev.thisWeek.bikeExpenses || 0;
-      weekBikeEl.textContent = (bike > 0) ? `-¥${bike.toLocaleString()}` : '¥0';
+      const exp = rev.thisWeek.expenses || 0;
+      weekBikeEl.textContent = (exp > 0) ? `-¥${exp.toLocaleString()}` : '¥0';
       weekBikeEl.className = 'breakdown-val val-bike';
     }
 
@@ -1879,19 +1880,15 @@ class UI {
       totalDistEl.textContent = analytics.totalDistanceSum !== null ? `${Math.round(analytics.totalDistanceSum)} km` : '--';
     }
 
-    const monthBikeEl = document.getElementById('month-bikeshare-val');
-    if (monthBikeEl) {
-      const bike = (rev.thisMonth.bikeExpenses !== undefined) ? rev.thisMonth.bikeExpenses : 3507;
-      monthBikeEl.textContent = `¥${bike.toLocaleString()}`;
-    }
-
+    // 必要経費（バイクシェア等を含む登録済み経費の合計。売上利益の計算と同じ額）
     const monthExpensesEl = document.getElementById('month-expenses-val');
-    if (monthExpensesEl) {
-      const exp = (rev.thisMonth.otherExpenses !== undefined) ? rev.thisMonth.otherExpenses : 0;
-      monthExpensesEl.textContent = `¥${exp.toLocaleString()}`;
-    }
+    if (monthExpensesEl) monthExpensesEl.textContent = `¥${(rev.thisMonth.expenses || 0).toLocaleString()}`;
 
-    // 3. 日別比較テーブル（5項目：日付 / 件数 / 通常売上 / 配達時間 / 時給［10円丸め］）
+    // 稼働日数（当月のUber実績のある日 / 当月1日〜今日の経過日数）
+    const monthWorkedDaysEl = document.getElementById('month-worked-days-val');
+    if (monthWorkedDaysEl) monthWorkedDaysEl.textContent = `${rev.thisMonth.workedDays} / ${rev.thisMonth.elapsedDays}日`;
+
+    // 3. 日別比較テーブル（5項目：日付 / 件数 / 通常売上 / 配達時間［HH:MM］ / 時給［10円丸め］）
     const comparisonBody = document.getElementById('analytics-daily-comparison-body') || document.getElementById('recent-7days-table-body');
     if (comparisonBody) {
       const compData = analytics.dailyComparison || [];
@@ -1909,7 +1906,7 @@ class UI {
             <td class="col-date">${dateHtml}</td>
             <td class="col-count">${d.count}件</td>
             <td class="col-sales">${salesStr}</td>
-            <td class="col-duration">${d.durationText}</td>
+            <td class="col-duration">${d.durationHHMM || '--'}</td>
             <td class="col-wage">${wageStr}</td>
           </tr>
         `;

@@ -9484,6 +9484,12 @@ function formatMinutes(minutes) {
   return `${m}分`;
 }
 
+// 分を HH:MM（2桁ゼロ埋め）に整形。例: 303 → "05:03"、725 → "12:05"
+function formatMinutesHHMM(minutes) {
+  const total = Math.max(0, Math.floor(Number(minutes) || 0));
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
+
 // クエスト二重計上検知・排除ロジック（同一時刻・同額および「クエスト」と「1回乗車クエスト」の重複排除）
 function deduplicateQuests(questList = []) {
   if (!Array.isArray(questList)) return [];
@@ -11499,7 +11505,7 @@ class Store {
     let prevWeekQuestSales = 0;
     let prevWeekGuaranteeBonus = 0;
     let prevWeekOtherSales = 0;
-    let prevWeekBikeExpenses = 0;
+    let prevWeekExpenses = 0; // 必要経費（今週と同じ定義: 登録済み経費をすべて1回ずつ）
     let prevWeekDeliveriesCount = 0;
 
     prevLogs.forEach(l => {
@@ -11510,25 +11516,12 @@ class Store {
         prevWeekQuestSales += (m.questSales || 0);
         prevWeekGuaranteeBonus += (m.guaranteeBonus || 0);
         prevWeekOtherSales += ((m.adjustmentSales || 0) + (m.otherSales || 0));
-
-        let logBike = 0;
-        if (Array.isArray(l.expenses)) {
-          l.expenses.forEach(e => {
-            const cat = (e.category || '').trim();
-            const amt = Number(e.amount);
-            if (!isNaN(amt) && amt > 0) {
-              if (isBikeExpenseCategory(cat)) {
-                logBike += amt;
-              }
-            }
-          });
-        }
-        prevWeekBikeExpenses += logBike;
+        prevWeekExpenses += (m.totalExpenses || 0);
         prevWeekDeliveriesCount += m.count;
       }
     });
 
-    const prevWeekSalesProfit = prevWeekDeliverySales + prevWeekQuestSales + prevWeekGuaranteeBonus + prevWeekOtherSales - prevWeekBikeExpenses;
+    const prevWeekSalesProfit = prevWeekDeliverySales + prevWeekQuestSales + prevWeekGuaranteeBonus + prevWeekOtherSales - prevWeekExpenses;
 
     let prevWeekComparison = null;
     // 今週の確定売上利益集計（当週の全登録日を動的に集計）
@@ -11545,7 +11538,8 @@ class Store {
     let weekGuaranteeBonus = 0;      // 特別ボーナス（特別収入・保証 ＋ 特別クエスト）
     let weekGuaranteeOnly = 0;       // うち特別収入・保証
     let weekSpecialQuestSales = 0;   // うち特別クエスト
-    let weekBikeExpenses = 0;
+    let weekBikeExpenses = 0;   // うちバイクシェア等（履歴の B バッジと同じ isBikeExpense 判定。内訳の参考値）
+    let weekExpenses = 0;       // 必要経費（登録済み経費をすべて1回ずつ。日別利益の totalExpenses と同じ定義）
     let weekDeliveriesCount = 0;
     let weekTripsCount = 0;
 
@@ -11579,14 +11573,15 @@ class Store {
           });
         }
         weekBikeExpenses += logBike;
+        weekExpenses += (m.totalExpenses || 0);
       }
     });
 
     // 内訳の数学的合計（¥43,461）と完全一致させる公式売上
     const weekOfficialSales = weekCalculatedSales;
 
-    // 「今週の売上利益」＝ 配達報酬 ＋ クエスト ＋ 特別ボーナス ＋ その他 － Bike経費
-    const weekSalesProfit = weekDeliverySales + weekQuestSales + weekGuaranteeBonus + weekOtherSales - weekBikeExpenses;
+    // 「今週の売上利益」＝ 配達報酬 ＋ クエスト ＋ 特別ボーナス ＋ その他 － 必要経費
+    const weekSalesProfit = weekDeliverySales + weekQuestSales + weekGuaranteeBonus + weekOtherSales - weekExpenses;
 
     if (hasPrevWeekData) {
       const diff = weekSalesProfit - prevWeekSalesProfit;
@@ -11628,6 +11623,7 @@ class Store {
       adjustmentOnlySales: weekAdjustmentSales,
       otherOnlySales: weekOtherOnlySales,
       bikeExpenses: weekBikeExpenses,
+      expenses: weekExpenses,
       deliveriesCount: weekDeliveriesCount,
       deliveryCount: weekDeliveriesCount,
       tripsCount: weekTripsCount,
@@ -11643,16 +11639,15 @@ class Store {
     // 今月の実績（当月の全登録日を動的に集計）
     const currentMonthPrefix = dateStr.substring(0, 7);
     const monthLogs = allLogs.filter(l => l.date.startsWith(currentMonthPrefix));
-    let monthSales = 0;
-    let monthDeliveriesCount = 0;
+    // 売上・件数・必要経費は「売上内訳（期間指定）」と同じ集計（getSalesBreakdown）を参照する（月初〜月末）
+    const monthBreakdown = this.getSalesBreakdown(`${currentMonthPrefix}-01`, `${currentMonthPrefix}-31`);
+    const monthSales = monthBreakdown.totalSales;
+    const monthDeliveriesCount = monthBreakdown.deliveriesCount;
+    const monthExpenses = monthBreakdown.expenses;
+    // 参考内訳（後方互換）: バイクシェア等 / 種類「必要経費」の経費。どちらにも該当しない経費も monthExpenses には含まれる
     let monthBikeExpenses = 0;
     let monthOtherExpenses = 0;
     monthLogs.forEach(l => {
-      const m = this.getCalculatedMetrics(l);
-      if (m.count > 0 || m.totalSales !== null) {
-        monthSales += (m.totalSales || 0);
-        monthDeliveriesCount += m.count;
-      }
       if (Array.isArray(l.expenses)) {
         l.expenses.forEach(e => {
           const cat = (e.category || '').trim();
@@ -11668,10 +11663,15 @@ class Store {
       }
     });
 
-    // 月次利益 = 売上 - Bike経費 - 必要経費
-    const monthSalesProfit = monthSales - monthBikeExpenses - monthOtherExpenses;
+    // 月次利益 = 売上 - 必要経費（登録済み経費をすべて1回ずつ）
+    const monthSalesProfit = monthSales - monthExpenses;
     const [mY, mM] = currentMonthPrefix.split('-').map(Number);
     const cleanMonthPeriod = `${mY}年${mM}月`;
+
+    // 稼働日数: 分子 = 当月1日〜基準日でUber実績のある日（isWorkedDay）/ 分母 = 当月1日〜基準日の経過日数（基準日を含む。未来日は含めない）
+    // 休み自動判定（getDayStatus）とは別の指標。基準日がまだ終わっていなくても分母に含める
+    const monthElapsedDays = Number(dateStr.slice(8, 10));
+    const monthWorkedDays = monthLogs.filter(l => l.date <= dateStr && this.isWorkedDay(l)).length;
 
     const thisMonth = {
       label: '今月の実績',
@@ -11679,8 +11679,11 @@ class Store {
       sales: monthSales,
       salesProfit: monthSalesProfit,
       calculatedSales: monthSales,
+      expenses: monthExpenses,
       bikeExpenses: monthBikeExpenses,
       otherExpenses: monthOtherExpenses,
+      workedDays: monthWorkedDays,
+      elapsedDays: monthElapsedDays,
       deliveriesCount: monthDeliveriesCount,
       note: `※${mM}月度 登録分（全${monthDeliveriesCount}件）`
     };
@@ -11808,7 +11811,8 @@ class Store {
     const out = {
       startDate, endDate, days: 0, deliveriesCount: 0,
       deliverySales: 0, baseDeliverySales: 0, tipSales: 0, tipCount: 0,
-      questSales: 0, guaranteeBonus: 0, guaranteeOnlySales: 0, specialQuestSales: 0, adjustmentSales: 0, otherSales: 0, totalSales: 0, bikeExpenses: 0
+      questSales: 0, guaranteeBonus: 0, guaranteeOnlySales: 0, specialQuestSales: 0, adjustmentSales: 0, otherSales: 0, totalSales: 0, bikeExpenses: 0,
+      expenses: 0 // 必要経費（登録済み経費をすべて1回ずつ。バイクシェア等を含む）
     };
     this.getAllDailyLogs()
       .filter(l => (!startDate || l.date >= startDate) && (!endDate || l.date <= endDate))
@@ -11831,6 +11835,7 @@ class Store {
         out.otherSales += (m.otherSales || 0);
         out.totalSales += (m.totalSales || 0);
         (l.expenses || []).forEach(e => { if (isBikeExpense(e)) out.bikeExpenses += Number(e.amount); });
+        out.expenses += (m.totalExpenses || 0);
       });
     return out;
   }
@@ -11904,6 +11909,11 @@ class Store {
       } else if (metrics.workMinutes !== null && metrics.workMinutes > 0) {
         durationText = formatMinutes(metrics.workMinutes);
       }
+      // 日別比較の表示用（HH:MM・2桁ゼロ埋め。秒は切り捨て。例: 5時間3分 → 05:03）。記録なしは null
+      const durationMinutesTotal = (metrics.workSeconds !== null && metrics.workSeconds > 0)
+        ? Math.floor(metrics.workSeconds / 60)
+        : ((metrics.workMinutes !== null && metrics.workMinutes > 0) ? metrics.workMinutes : null);
+      const durationHHMM = durationMinutesTotal !== null ? formatMinutesHHMM(durationMinutesTotal) : null;
 
       // 日付フォーマット
       const [y, mon, d] = log.date.split('-');
@@ -11916,6 +11926,7 @@ class Store {
         regularSales: regSales,
         workSeconds: metrics.workSeconds,
         durationText,
+        durationHHMM,
         hourlyWage: roundedHourly,
         exactHourlyWage: metrics.hourlyWage,
         totalSales: metrics.totalSales,
@@ -12017,6 +12028,7 @@ if (typeof window !== 'undefined') {
   window.parseDurationToSeconds = parseDurationToSeconds;
   window.calculateMinutesBetween = calculateMinutesBetween;
   window.formatMinutes = formatMinutes;
+  window.formatMinutesHHMM = formatMinutesHHMM;
   window.deduplicateQuests = deduplicateQuests;
   window.parseUberSalesText = parseUberSalesText;
   window.getNextPayoutDate = getNextPayoutDate;
@@ -12060,6 +12072,7 @@ if (typeof module !== 'undefined' && module.exports) {
     parseDurationToSeconds,
     calculateMinutesBetween,
     formatMinutes,
+    formatMinutesHHMM,
     deduplicateQuests,
     parseUberSalesText,
     Store,
