@@ -32,7 +32,7 @@ const tmpRoots = [];
 function makeRoot() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'uberlog-import-'));
   tmpRoots.push(dir);
-  ['js/store.js', 'js/trip-maps.js', 'js/cloud-sync.js', 'index.html', 'sw.js', 'version.json'].forEach(rel => {
+  ['js/store.js', 'js/trip-maps.js', 'js/cloud-sync.js', 'index.html', 'sw.js', 'pickup-map.html', 'route-judge.html', 'version.json', 'tools/release-check/version.js'].forEach(rel => {
     fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
     fs.copyFileSync(path.join(ROOT, rel), path.join(dir, rel));
   });
@@ -383,6 +383,12 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
     check(rebuilt.deliveries.every(d => !/^\d/.test(d.area) && !/[０-９]/.test(d.area)), '配達先の都道府県コード除去・全角数字の正規化');
     check(r.staging.summary.maps === '18/18', `既存MAPカタログを上書きせず使用（${r.staging.summary.maps}）`);
     check(r.version && /_v\d+$/.test(r.version.to) && r.version.to !== r.version.from, `バージョン更新 ${r.version && r.version.from} → ${r.version && r.version.to}`);
+    {
+      const { TARGETS } = require(path.join(ROOT, 'tools', 'release-check', 'version.js'));
+      const stale = TARGETS.map(t => ({ file: t.file, found: t.find(fs.readFileSync(path.join(root, t.file), 'utf8')) }))
+        .filter(x => !x.found.length || x.found.some(v => v !== r.version.to)).map(x => x.file);
+      check(r.version && stale.length === 0, `取込の版更新は version.js と同じ反映先すべてに反映（index.html・sw.js・pickup-map.html・route-judge.html）${stale.length ? ' 古い版: ' + stale.join(', ') : ''}`);
+    }
     const again = pipeline.apply(root, '2026-09-22');
     check(again.unchanged === true, '同日を再取込 → 変更なし（二重登録防止）');
 

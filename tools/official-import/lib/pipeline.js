@@ -930,12 +930,17 @@ function bumpVersion(root) {
   const tz = -now.getTimezoneOffset();
   const iso = new Date(now.getTime() + tz * 60000).toISOString().slice(0, 19) +
     `${tz >= 0 ? '+' : '-'}${String(Math.floor(Math.abs(tz) / 60)).padStart(2, '0')}:${String(Math.abs(tz) % 60).padStart(2, '0')}`;
-  ['index.html', 'sw.js', 'version.json'].forEach(f => {
-    const file = path.join(root, f);
+  const vFileContent = fs.readFileSync(vFile, 'utf8').split(v.version).join(next)
+    .replace(/"releasedAt": "[^"]*"/, `"releasedAt": "${iso}"`);
+  fs.writeFileSync(vFile, vFileContent, 'utf8');
+  // 反映先は版番号の一本化（tools/release-check/version.js）と同じ規則（index.html・sw.js・pickup-map.html・route-judge.html）
+  const { TARGETS } = require('../../release-check/version.js');
+  TARGETS.forEach(t => {
+    const file = path.join(root, t.file);
     if (!fs.existsSync(file)) return;
-    let c = fs.readFileSync(file, 'utf8').split(v.version).join(next);
-    if (f === 'version.json') c = c.replace(/"releasedAt": "[^"]*"/, `"releasedAt": "${iso}"`);
-    fs.writeFileSync(file, c, 'utf8');
+    const src = fs.readFileSync(file, 'utf8');
+    const out = t.apply(src, next);
+    if (out !== src) fs.writeFileSync(file, out, 'utf8');
   });
   return { from: v.version, to: next };
 }

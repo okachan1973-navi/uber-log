@@ -29,7 +29,7 @@ const STEPS = [
 ];
 const NEEDS_REVIEW_MESSAGE = '確認待ちのため停止しています';
 // 取込で変更してよいファイル（これ以外はコミットしない）
-const IMPORT_PATHS = ['js/store.js', 'js/trip-maps.js', 'assets/maps', 'index.html', 'sw.js', 'version.json', 'HANDOFF.md'];
+const IMPORT_PATHS = ['js/store.js', 'js/trip-maps.js', 'assets/maps', 'index.html', 'sw.js', 'pickup-map.html', 'route-judge.html', 'version.json', 'HANDOFF.md'];
 const IMAGE_EXT = /\.(png|jpe?g)$/i;
 const SCREEN_FIELDS = ['date', 'time', 'amount', 'durationStr', 'distanceKm', 'restaurant', 'area', 'points'];
 

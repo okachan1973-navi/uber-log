@@ -30,10 +30,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 58,
+      "pickup_count": 63,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-11 16:38",
-      "active_days": 18,
+      "last_pickup": "2026-10-12 09:01",
+      "active_days": 19,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
         "マクドナルド 九　条　店 McDonald's KUJO",
@@ -76,10 +76,10 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 16,
+      "pickup_count": 17,
       "first_pickup": "2026-09-23 16:27",
-      "last_pickup": "2026-10-11 15:44",
-      "active_days": 9,
+      "last_pickup": "2026-10-12 13:06",
+      "active_days": 10,
       "original_names": [
         "マクドナルド イオンモール大阪ドームシティ店",
         "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY"
@@ -120,10 +120,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 14,
+      "pickup_count": 15,
       "first_pickup": "2026-09-18 11:09",
-      "last_pickup": "2026-10-11 13:00",
-      "active_days": 9,
+      "last_pickup": "2026-10-12 11:07",
+      "active_days": 10,
       "original_names": [
         "バーガーキング 九条店",
         "バーガーキング 九条店 Burger King Kujo"
@@ -224,6 +224,50 @@
       "address_short": "西区千代崎"
     },
     {
+      "id": "st_189ay5t",
+      "canonical_name": "マクドナルド 弁天町駅前店",
+      "name_keys": [
+        "マクドナルド弁天町駅前店"
+      ],
+      "category": "mcdonalds",
+      "address": "大阪府大阪市港区弁天1-3-1",
+      "latitude": 34.668415,
+      "longitude": 135.461288,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区弁天一丁目３番１号",
+      "address_source": "map.yahoo.co.jp; tabelog 27153101",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市港区弁天一丁目３番１号",
+        "osm_nearest": {
+          "id": "node/11434320584",
+          "name": "ファミリーマート弁天町駅前店 Docomo Bike Share",
+          "distance_m": 187
+        },
+        "reverse": {
+          "muniCd": "27107",
+          "lv01Nm": "弁天一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 9,
+      "first_pickup": "2026-09-15 09:04",
+      "last_pickup": "2026-10-12 07:25",
+      "active_days": 6,
+      "original_names": [
+        "マクドナルド 弁天町駅前店",
+        "マクドナルド 弁天町駅前店 McDonald's BENTENCHO EKIMAE"
+      ],
+      "brand_id": "mcdonalds",
+      "brand_name": "マクドナルド",
+      "brand_reading": null,
+      "branch_name": "弁天町駅前店",
+      "site_id": null,
+      "display_name": "弁天町駅前店",
+      "address_short": "港区弁天"
+    },
+    {
       "id": "st_t581ya",
       "canonical_name": "【伝説のクロックムッシュ】サンドイッチ九条店",
       "name_keys": [
@@ -313,50 +357,6 @@
       "site_id": null,
       "display_name": "みなと通夕凪店",
       "address_short": "港区磯路"
-    },
-    {
-      "id": "st_189ay5t",
-      "canonical_name": "マクドナルド 弁天町駅前店",
-      "name_keys": [
-        "マクドナルド弁天町駅前店"
-      ],
-      "category": "mcdonalds",
-      "address": "大阪府大阪市港区弁天1-3-1",
-      "latitude": 34.668415,
-      "longitude": 135.461288,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区弁天一丁目３番１号",
-      "address_source": "map.yahoo.co.jp; tabelog 27153101",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市港区弁天一丁目３番１号",
-        "osm_nearest": {
-          "id": "node/11434320584",
-          "name": "ファミリーマート弁天町駅前店 Docomo Bike Share",
-          "distance_m": 187
-        },
-        "reverse": {
-          "muniCd": "27107",
-          "lv01Nm": "弁天一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 8,
-      "first_pickup": "2026-09-15 09:04",
-      "last_pickup": "2026-10-06 09:26",
-      "active_days": 5,
-      "original_names": [
-        "マクドナルド 弁天町駅前店",
-        "マクドナルド 弁天町駅前店 McDonald's BENTENCHO EKIMAE"
-      ],
-      "brand_id": "mcdonalds",
-      "brand_name": "マクドナルド",
-      "brand_reading": null,
-      "branch_name": "弁天町駅前店",
-      "site_id": null,
-      "display_name": "弁天町駅前店",
-      "address_short": "港区弁天"
     },
     {
       "id": "st_1omw10z",
@@ -538,6 +538,50 @@
       "address_short": "福島区野田"
     },
     {
+      "id": "st_tbe250",
+      "canonical_name": "マクドナルド 大正店",
+      "name_keys": [
+        "マクドナルド大正店"
+      ],
+      "category": "mcdonalds",
+      "address": "大阪府大阪市大正区千島1-19-11",
+      "latitude": 34.653633,
+      "longitude": 135.472748,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市大正区千島一丁目１９番１１号",
+      "address_source": "map.mcdonalds.co.jp/map/27753",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市大正区千島一丁目１９番１１号",
+        "osm_nearest": {
+          "id": "node/1940245651",
+          "name": "マクドナルド 大正店 マクドナルド",
+          "distance_m": 14
+        },
+        "reverse": {
+          "muniCd": "27108",
+          "lv01Nm": "千島一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 6,
+      "first_pickup": "2026-09-21 10:41",
+      "last_pickup": "2026-10-12 11:56",
+      "active_days": 4,
+      "original_names": [
+        "マクドナルド 大　正　店 McDonald's TAISHO",
+        "マクドナルド 大正店"
+      ],
+      "brand_id": "mcdonalds",
+      "brand_name": "マクドナルド",
+      "brand_reading": null,
+      "branch_name": "大正店",
+      "site_id": null,
+      "display_name": "大正店",
+      "address_short": "大正区千島"
+    },
+    {
       "id": "st_1jtin90",
       "canonical_name": "やよい軒 九条店",
       "name_keys": [
@@ -669,6 +713,50 @@
       "address_short": "此花区高見"
     },
     {
+      "id": "st_xvzzmy",
+      "canonical_name": "マクドナルド 南堀江関西スーパー店",
+      "name_keys": [
+        "マクドナルド南堀江関西スーパー店"
+      ],
+      "category": "mcdonalds",
+      "address": "大阪府大阪市西区南堀江4-5-22",
+      "latitude": 34.670895,
+      "longitude": 135.486282,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区南堀江四丁目５番２２号",
+      "address_source": "map.yahoo.co.jp; mapion",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区南堀江四丁目５番２２号",
+        "osm_nearest": {
+          "id": "node/1634143819",
+          "name": "マクドナルド マクドナルド",
+          "distance_m": 28
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "南堀江四丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 5,
+      "first_pickup": "2026-09-16 10:54",
+      "last_pickup": "2026-10-12 10:15",
+      "active_days": 4,
+      "original_names": [
+        "マクドナルド 南堀江関西スーパー店",
+        "マクドナルド 南堀江関西スーパー店 McDonald's MINAMI-HORIE KANSAI S.M."
+      ],
+      "brand_id": "mcdonalds",
+      "brand_name": "マクドナルド",
+      "brand_reading": null,
+      "branch_name": "南堀江関西スーパー店",
+      "site_id": null,
+      "display_name": "南堀江関西スーパー店",
+      "address_short": "西区南堀江"
+    },
+    {
       "id": "st_1i6vnp7",
       "canonical_name": "松のや 九条店",
       "name_keys": [
@@ -757,92 +845,47 @@
       "address_short": "西区千代崎"
     },
     {
-      "id": "st_tbe250",
-      "canonical_name": "マクドナルド 大正店",
+      "id": "st_17dn6fz",
+      "canonical_name": "ローソン 大阪ドームシティ",
       "name_keys": [
-        "マクドナルド大正店"
+        "ローソン大阪ドームシティ"
       ],
-      "category": "mcdonalds",
-      "address": "大阪府大阪市大正区千島1-19-11",
-      "latitude": 34.653633,
-      "longitude": 135.472748,
+      "category": "convenience",
+      "address": "大阪府大阪市西区千代崎3-1-8",
+      "latitude": 34.670979,
+      "longitude": 135.479263,
       "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市大正区千島一丁目１９番１１号",
-      "address_source": "map.mcdonalds.co.jp/map/27753",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市大正区千島一丁目１９番１１号",
-        "osm_nearest": {
-          "id": "node/1940245651",
-          "name": "マクドナルド 大正店 マクドナルド",
-          "distance_m": 14
-        },
-        "reverse": {
-          "muniCd": "27108",
-          "lv01Nm": "千島一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 4,
-      "first_pickup": "2026-09-21 10:41",
-      "last_pickup": "2026-10-10 08:46",
-      "active_days": 3,
-      "original_names": [
-        "マクドナルド 大　正　店 McDonald's TAISHO",
-        "マクドナルド 大正店"
-      ],
-      "brand_id": "mcdonalds",
-      "brand_name": "マクドナルド",
-      "brand_reading": null,
-      "branch_name": "大正店",
-      "site_id": null,
-      "display_name": "大正店",
-      "address_short": "大正区千島"
-    },
-    {
-      "id": "st_xvzzmy",
-      "canonical_name": "マクドナルド 南堀江関西スーパー店",
-      "name_keys": [
-        "マクドナルド南堀江関西スーパー店"
-      ],
-      "category": "mcdonalds",
-      "address": "大阪府大阪市西区南堀江4-5-22",
-      "latitude": 34.670895,
-      "longitude": 135.486282,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区南堀江四丁目５番２２号",
-      "address_source": "map.yahoo.co.jp; mapion",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区千代崎三丁目１番８号",
+      "address_source": "mapion; ekiten 671192",
       "address_evidence": "map_directory",
       "geocode_check": {
-        "gsi_title": "大阪府大阪市西区南堀江四丁目５番２２号",
+        "gsi_title": "大阪府大阪市西区千代崎三丁目１番８号",
         "osm_nearest": {
-          "id": "node/1634143819",
-          "name": "マクドナルド マクドナルド",
-          "distance_m": 28
+          "id": "way/150214944",
+          "name": "ローソン 大阪ドームシティ店‎ ローソン",
+          "distance_m": 5
         },
         "reverse": {
           "muniCd": "27106",
-          "lv01Nm": "南堀江四丁目"
+          "lv01Nm": "千代崎三丁目"
         }
       },
       "same_building": null,
       "notes": null,
       "pickup_count": 4,
-      "first_pickup": "2026-09-16 10:54",
-      "last_pickup": "2026-09-24 08:44",
-      "active_days": 3,
+      "first_pickup": "2026-09-22 09:58",
+      "last_pickup": "2026-10-12 09:21",
+      "active_days": 4,
       "original_names": [
-        "マクドナルド 南堀江関西スーパー店",
-        "マクドナルド 南堀江関西スーパー店 McDonald's MINAMI-HORIE KANSAI S.M."
+        "ローソン 大阪ドームシティ"
       ],
-      "brand_id": "mcdonalds",
-      "brand_name": "マクドナルド",
+      "brand_id": "lawson",
+      "brand_name": "ローソン",
       "brand_reading": null,
-      "branch_name": "南堀江関西スーパー店",
+      "branch_name": "大阪ドームシティ",
       "site_id": null,
-      "display_name": "南堀江関西スーパー店",
-      "address_short": "西区南堀江"
+      "display_name": "大阪ドームシティ",
+      "address_short": "西区千代崎"
     },
     {
       "id": "st_zm9ew6",
@@ -964,6 +1007,38 @@
       "site_id": null
     },
     {
+      "id": "st_lw9vud",
+      "canonical_name": "バーガーキングフレスポ阿波座店",
+      "name_keys": [
+        "バーガーキングフレスポ阿波座店"
+      ],
+      "category": "fastfood",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-11 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 3,
+      "first_pickup": "2026-10-08 13:10",
+      "last_pickup": "2026-10-12 10:48",
+      "active_days": 3,
+      "original_names": [
+        "バーガーキングフレスポ阿波座店 Burger King Frespo Awaza"
+      ],
+      "brand_id": "burger_king",
+      "brand_name": "バーガーキング",
+      "brand_reading": null,
+      "branch_name": "フレスポ阿波座店",
+      "display_name": "フレスポ阿波座店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_1otgpzi",
       "canonical_name": "マクドナルド 野田阪神店",
       "name_keys": [
@@ -1052,47 +1127,47 @@
       "address_short": "西区九条"
     },
     {
-      "id": "st_17dn6fz",
-      "canonical_name": "ローソン 大阪ドームシティ",
+      "id": "st_lkuf3l",
+      "canonical_name": "ローソンストア100 西区新町店",
       "name_keys": [
-        "ローソン大阪ドームシティ"
+        "ローソンストア100西区新町店"
       ],
       "category": "convenience",
-      "address": "大阪府大阪市西区千代崎3-1-8",
-      "latitude": 34.670979,
-      "longitude": 135.479263,
+      "address": "大阪府大阪市西区新町1-32-11",
+      "latitude": 34.677212,
+      "longitude": 135.49353,
       "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区千代崎三丁目１番８号",
-      "address_source": "mapion; ekiten 671192",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区新町一丁目３２番１１号",
+      "address_source": "dwifi.mapion LW011763; mapion",
       "address_evidence": "map_directory",
       "geocode_check": {
-        "gsi_title": "大阪府大阪市西区千代崎三丁目１番８号",
+        "gsi_title": "大阪府大阪市西区新町一丁目３２番１１号",
         "osm_nearest": {
-          "id": "way/150214944",
-          "name": "ローソン 大阪ドームシティ店‎ ローソン",
-          "distance_m": 5
+          "id": "node/6501392585",
+          "name": "ローソンストア100 LAWSON STORE 100",
+          "distance_m": 10
         },
         "reverse": {
           "muniCd": "27106",
-          "lv01Nm": "千代崎三丁目"
+          "lv01Nm": "新町一丁目"
         }
       },
       "same_building": null,
       "notes": null,
       "pickup_count": 3,
-      "first_pickup": "2026-09-22 09:58",
-      "last_pickup": "2026-10-09 12:33",
+      "first_pickup": "2026-09-26 08:13",
+      "last_pickup": "2026-10-12 09:42",
       "active_days": 3,
       "original_names": [
-        "ローソン 大阪ドームシティ"
+        "ローソンストア100 西区新町店"
       ],
-      "brand_id": "lawson",
-      "brand_name": "ローソン",
+      "brand_id": "lawson_store100",
+      "brand_name": "ローソンストア100",
       "brand_reading": null,
-      "branch_name": "大阪ドームシティ",
+      "branch_name": "西区新町店",
       "site_id": null,
-      "display_name": "大阪ドームシティ",
-      "address_short": "西区千代崎"
+      "display_name": "西区新町店",
+      "address_short": "西区新町"
     },
     {
       "id": "st_1njqw93",
@@ -1566,38 +1641,6 @@
       "address_short": "西区千代崎"
     },
     {
-      "id": "st_lw9vud",
-      "canonical_name": "バーガーキングフレスポ阿波座店",
-      "name_keys": [
-        "バーガーキングフレスポ阿波座店"
-      ],
-      "category": "fastfood",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
-      "same_building": null,
-      "notes": "2026-10-11 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
-      "pickup_count": 2,
-      "first_pickup": "2026-10-08 13:10",
-      "last_pickup": "2026-10-10 12:20",
-      "active_days": 2,
-      "original_names": [
-        "バーガーキングフレスポ阿波座店 Burger King Frespo Awaza"
-      ],
-      "brand_id": "burger_king",
-      "brand_name": "バーガーキング",
-      "brand_reading": null,
-      "branch_name": "フレスポ阿波座店",
-      "display_name": "フレスポ阿波座店",
-      "address_short": null,
-      "site_id": null
-    },
-    {
       "id": "st_19kklfr",
       "canonical_name": "バーガーキング 御堂筋本町店",
       "name_keys": [
@@ -1855,49 +1898,6 @@
       "site_id": null,
       "display_name": "港区南市岡一丁目",
       "address_short": "港区南市岡"
-    },
-    {
-      "id": "st_lkuf3l",
-      "canonical_name": "ローソンストア100 西区新町店",
-      "name_keys": [
-        "ローソンストア100西区新町店"
-      ],
-      "category": "convenience",
-      "address": "大阪府大阪市西区新町1-32-11",
-      "latitude": 34.677212,
-      "longitude": 135.49353,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区新町一丁目３２番１１号",
-      "address_source": "dwifi.mapion LW011763; mapion",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区新町一丁目３２番１１号",
-        "osm_nearest": {
-          "id": "node/6501392585",
-          "name": "ローソンストア100 LAWSON STORE 100",
-          "distance_m": 10
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "新町一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 2,
-      "first_pickup": "2026-09-26 08:13",
-      "last_pickup": "2026-10-10 09:43",
-      "active_days": 2,
-      "original_names": [
-        "ローソンストア100 西区新町店"
-      ],
-      "brand_id": "lawson_store100",
-      "brand_name": "ローソンストア100",
-      "brand_reading": null,
-      "branch_name": "西区新町店",
-      "site_id": null,
-      "display_name": "西区新町店",
-      "address_short": "西区新町"
     },
     {
       "id": "st_pdcnnc",
@@ -3494,6 +3494,38 @@
       "address_short": "西区北堀江"
     },
     {
+      "id": "st_1d3jfox",
+      "canonical_name": "ドリアとパスタとピザ カルボリア",
+      "name_keys": [
+        "ドリアとパスタとピザカルボリア"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-13 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-12 13:27",
+      "last_pickup": "2026-10-12 13:27",
+      "active_days": 1,
+      "original_names": [
+        "ドリアとパスタとピザ　カルボリア"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "ドリアとパスタとピザ カルボリア",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_va28ja",
       "canonical_name": "【もっちり玄米と低脂質チキン】とりげん食堂 弁天町店",
       "name_keys": [
@@ -3900,6 +3932,38 @@
       "site_id": null,
       "display_name": "靱本町店",
       "address_short": "西区靱本町"
+    },
+    {
+      "id": "st_1g9zkjb",
+      "canonical_name": "松のや 桜川店",
+      "name_keys": [
+        "松のや桜川店"
+      ],
+      "category": "gyudon_teishoku",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-13 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-12 09:30",
+      "last_pickup": "2026-10-12 09:30",
+      "active_days": 1,
+      "original_names": [
+        "松のや 桜川店 Matsunoya Sakuragawa"
+      ],
+      "brand_id": "matsunoya",
+      "brand_name": "松のや",
+      "brand_reading": "まつのや",
+      "branch_name": "桜川店",
+      "display_name": "桜川店",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_15io1qn",
@@ -4789,6 +4853,38 @@
       "site_id": null
     },
     {
+      "id": "st_x23hio",
+      "canonical_name": "【出汁の親子丼】鶏ヶ屋(TORIGAYA)～大正店～",
+      "name_keys": [
+        "【出汁の親子丼】鶏ヶ屋(TORIGAYA)～大正店～"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-13 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-12 10:22",
+      "last_pickup": "2026-10-12 10:22",
+      "active_days": 1,
+      "original_names": [
+        "【出汁の親子丼】鶏ヶ屋(TORIGAYA)～大正店～"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "【出汁の親子丼】鶏ヶ屋(TORIGAYA)～大正店～",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_bta35b",
       "canonical_name": "【唐揚げ弁当・からあげ】鶏よし 土佐堀店",
       "name_keys": [
@@ -5060,14 +5156,14 @@
   "summary": {
     "period": {
       "from": "2026-09-10",
-      "to": "2026-10-11",
-      "days": 26
+      "to": "2026-10-12",
+      "days": 27
     },
-    "total_trips": 331,
-    "total_pickups": 331,
-    "store_count": 120,
+    "total_trips": 348,
+    "total_pickups": 348,
+    "store_count": 123,
     "confirmed_count": 110,
-    "needs_review_count": 10,
+    "needs_review_count": 13,
     "trips_without_restaurant": 0
   },
   "category_labels": {

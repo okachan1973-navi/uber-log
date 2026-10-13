@@ -38,7 +38,7 @@ const tmpRoots = [];
 function makeRoot() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'uberlog-structured-test-'));
   tmpRoots.push(dir);
-  ['js/store.js', 'js/trip-maps.js', 'js/cloud-sync.js', 'index.html', 'sw.js', 'version.json'].forEach(rel => {
+  ['js/store.js', 'js/trip-maps.js', 'js/cloud-sync.js', 'index.html', 'sw.js', 'pickup-map.html', 'route-judge.html', 'version.json', 'tools/release-check/version.js'].forEach(rel => {
     fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
     fs.copyFileSync(path.join(ROOT, rel), path.join(dir, rel));
   });

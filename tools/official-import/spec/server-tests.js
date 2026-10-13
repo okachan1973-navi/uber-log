@@ -76,8 +76,8 @@ function copy(rel) {
 }
 
 function setupRoot() {
-  ['js/store.js', 'js/trip-maps.js', 'js/cloud-sync.js', 'js/ui.js', 'js/app.js', 'index.html', 'sw.js', 'version.json', 'manifest.json', '.gitignore', 'HANDOFF.md',
-    'tools/official-import/server.js', 'tools/official-import/index.html', 'tools/official-import/import.js'].forEach(copy);
+  ['js/store.js', 'js/trip-maps.js', 'js/cloud-sync.js', 'js/ui.js', 'js/app.js', 'index.html', 'sw.js', 'pickup-map.html', 'route-judge.html', 'version.json', 'manifest.json', '.gitignore', 'HANDOFF.md',
+    'tools/release-check/version.js', 'tools/official-import/server.js', 'tools/official-import/index.html', 'tools/official-import/import.js'].forEach(copy);
   fs.readdirSync(path.join(ROOT, 'tools', 'official-import', 'lib')).filter(f => /\.(js|py)$/.test(f)).forEach(f => copy(`tools/official-import/lib/${f}`));
   fs.mkdirSync(path.join(root, 'assets', 'maps'), { recursive: true });
   fs.copyFileSync(path.join(ROOT, 'HANDOFF.md'), handoff);
@@ -189,8 +189,10 @@ async function startServer(env) {
     check(res.committed && res.pushed && head() !== head0 && sh('git', ['rev-parse', 'main'], remote) === head(), `commit ${res.commit} を作成し push 済み（送信先と一致）`);
     check(sh('git', ['log', '-1', '--format=%s'], root) === 'data(2026-09-22): official import (18 trips, ¥9,243)', 'commit メッセージ（data(日付): official import）');
     const changedFiles = sh('git', ['show', '--name-only', '--format=', 'HEAD'], root).split(/\r?\n/);
-    check(changedFiles.every(f => /^(js\/store\.js|js\/trip-maps\.js|assets\/maps\/|index\.html|sw\.js|version\.json|HANDOFF\.md)/.test(f)) && !changedFiles.some(f => /inbox|staging|logs/.test(f)),
+    check(changedFiles.every(f => /^(js\/store\.js|js\/trip-maps\.js|assets\/maps\/|index\.html|sw\.js|pickup-map\.html|route-judge\.html|version\.json|HANDOFF\.md)/.test(f)) && !changedFiles.some(f => /inbox|staging|logs/.test(f)),
       `commit は取込対象ファイルのみ（生データ・staging は含まない）: ${changedFiles.length}ファイル`);
+    check(['pickup-map.html', 'route-judge.html'].every(f => changedFiles.includes(f)) && sh('git', ['status', '--porcelain'], root) === '',
+      '版更新した pickup-map.html・route-judge.html も同じ commit に含まれ、取込後に未コミットの変更が残らない');
     check(sh('git', ['status', '--porcelain'], root) === '', 'git status clean');
     const ho = fs.readFileSync(handoff, 'utf8');
     check(ho.includes('公式取込 自動記録 開始') && /- 2026-09-22 \(火\): 配達 25件 \(18トリップ\).*売上 ¥9,243.*MAP 17\/18/.test(ho), 'HANDOFF の自動記録ブロックに 9/22 の行を追加');
