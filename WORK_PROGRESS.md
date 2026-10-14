@@ -16,7 +16,7 @@
 | 12-14 | 巻き戻り防止の再確認・2端末テスト追加 | 完了 | d10f8cc | sync-model-tests 33 → 64 項目（v80 で 31 項目追加） |
 | 15-16 | ヘッダーの「競合あり」の表示 | 完了 | f472cab | 「同期の確認 N件」（押すと diag の競合へ）・バナーに項目名と影響。0 件なら「同期済み HH:MM」だけ |
 | 18-20 | DATA_MODEL / SYNC_MODEL / 監査スクリプト | 完了 | c27d62a /（この commit） | 監査: 旧名称・同義の競合・空の日・稼働記録の二重・あり得ない形・差分（data-model-tests 70 → 74） |
-| 21-28 | 画面確認・全体テスト・HANDOFF・リリース v80・push | 未着手 | | |
+| 21-28 | 画面確認・全体テスト・HANDOFF・リリース v80・push | 完了 | release v80 | 画面 1280/390 OK・run-all 20 passed / 2 known / 0 failed・v80・HANDOFF 両方・push |
 
 ## 調査の結果
 

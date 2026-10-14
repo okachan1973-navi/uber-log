@@ -18,4 +18,4 @@ v80「同期の最終監査（9/19 vehicleType の競合・端末/クラウド�
 - バックアップ: ローカルブランチ `backup/pre-v80-sync-final-audit`（v79 = 302baa8）。
 
 ## 現在地
-フェーズ0〜20 完了（コード・diag・テスト・DATA_MODEL/SYNC_MODEL・監査）。次はフェーズ21-28（画面確認・run-all・v80 リリース・HANDOFF 両方・push）。
+v80 の全フェーズ完了・リリース済み（origin/main へ push）。残りは実機（OPPO / PC）での確認（HANDOFF.md「■ v80」9.）。
