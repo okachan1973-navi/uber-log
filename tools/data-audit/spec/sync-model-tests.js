@@ -221,6 +221,167 @@ function pair() {
       const ei = E.sync.getSyncInfo();
       check(ei.lastResult === 'error' && ei.lastError && ei.pendingDates.includes(D), `同期できないときはエラーと未送信を記録（${ei.lastError}）`);
     }
+
+    // ==========================================================
+    // v80: 移動手段の旧名称・競合の解決・日数の差（端末だけの日・送信漏れ）
+    // ==========================================================
+    const putCloud = (cloud, date, data) => cloud.tables.uber_daily_logs.set(date, { user_id: 'user-1', date, data: JSON.parse(JSON.stringify(data)), updated_at: new Date().toISOString() });
+    const upserts = (cloud, date) => { let n = 0; cloud.onUpsert = async row => { if (!date || row.date === date) n++; }; return () => n; };
+    const diffOf = dev => {
+      const D = dev.window.UberLogDiagnostics;
+      const idx = JSON.parse(dev.storage.getItem('uber_sync_cloud_index') || 'null');
+      return D.diffLocalCloud(dev.store.state.dailyLogs, idx, { pendingDates: Array.from(dev.sync.pendingSyncDates), conflicts: dev.sync.getConflicts() });
+    };
+
+    section('v80-1. 移動手段の旧名称（レンタサイクル = バイクシェア利用）は競合にしない・保存値は書き換えない');
+    {
+      const { cloud, A, B } = pair();
+      const VD = '2099-09-19';
+      putCloud(cloud, VD, { date: VD, deliveries: [], quests: [], expenses: [], vehicleType: 'レンタサイクル' }); // 古い同梱データが送られたままのクラウド
+      A.store.state.dailyLogs[VD] = { date: VD, deliveries: [], quests: [], expenses: [], vehicleType: 'バイクシェア利用' };
+      A.store.persistState();
+      // v79 で記録された同じ競合が端末に残っている状態
+      A.storage.setItem('uber_sync_conflicts', JSON.stringify([{ key: `${VD}|vehicleType`, date: VD, field: 'vehicleType', local: 'バイクシェア利用', cloud: 'レンタサイクル', kept: 'local', at: '2026-10-14T00:00:00Z' }]));
+      const count = upserts(cloud, VD);
+      await A.pull();
+      check(!A.sync.getConflicts().some(c => c.date === VD), '1. 同義の旧名称は比べる前にそろえる → v79 で残った競合も次の同期で消える');
+      check(A.day(VD).vehicleType === 'バイクシェア利用' && cloud.row(VD).vehicleType === 'レンタサイクル' && count() === 0, '保存値はどちらも書き換えない（端末「バイクシェア利用」・クラウド「レンタサイクル」のまま。送信もしない）');
+      await B.pull();
+      check(!B.sync.getConflicts().length && A.window.UberLogDiagnostics.canonicalVehicleType(B.day(VD).vehicleType) === 'バイクシェア利用', 'PC でも競合にならない（表示上は同じ「バイクシェア利用」）');
+      const d = diffOf(A);
+      check(!d.different.some(x => x.date === VD), '端末とクラウドの差分でも「同じ」扱い');
+      check(A.window.UberLogDiagnostics.canonicalVehicleType('自前自転車') === '自前自転車' && A.window.UberLogDiagnostics.canonicalVehicleType('電動レンタル') === '電動レンタル', '意味の違う値（自前自転車・電動レンタル）はそろえない');
+    }
+
+    section('v80-2〜6. 本当の競合は利用者が選ぶ（この端末の値 / クラウドの値）→ 両端末で一致・競合 0');
+    {
+      const { cloud, A, B } = pair();
+      const CD = '2099-09-20';
+      putCloud(cloud, CD, { date: CD, deliveries: [], quests: [], expenses: [], vehicleType: '自前自転車' });
+      for (const dev of [A, B]) { dev.store.state.dailyLogs[CD] = { date: CD, deliveries: [], quests: [], expenses: [], vehicleType: 'バイクシェア利用' }; dev.store.persistState(); }
+      const count = upserts(cloud, CD);
+      await A.pull(); await B.pull();
+      const key = `${CD}|vehicleType`;
+      check(A.sync.getConflicts().some(c => c.key === key) && B.sync.getConflicts().some(c => c.key === key), '2. 意味の違う値（時刻なし）は両端末で競合として残る');
+      check(cloud.row(CD).vehicleType === '自前自転車' && count() === 0, '2. 競合中は勝手に送らない（送信漏れの自動再送の対象外）');
+      // 二重押し: 2回目は「処理中」で何もしない
+      const p1 = B.sync.resolveConflictChoice(key, 'cloud');
+      const p2 = await B.sync.resolveConflictChoice(key, 'local');
+      const r1 = await p1;
+      check(r1.ok && r1.message === '競合を解決しました' && p2.ok === false && /処理中/.test(p2.message), `二重押しを防ぐ（1回目: ${r1.message} / 2回目: ${p2.message}）`);
+      check(B.day(CD).vehicleType === '自前自転車' && B.day(CD).manualUpdatedAt.vehicleType && cloud.row(CD).vehicleType === '自前自転車' && cloud.row(CD).manualUpdatedAt.vehicleType === B.day(CD).manualUpdatedAt.vehicleType,
+        '4. 「クラウドの値を採用」→ PC の値がクラウドの値になり、新しい更新時刻つきでクラウドへ');
+      check(!B.sync.getConflicts().some(c => c.key === key), '6. PC の競合は消える');
+      await A.pull();
+      check(A.day(CD).vehicleType === '自前自転車' && !A.sync.getConflicts().some(c => c.key === key), '5-6. OPPO は次の同期で同じ値になり、競合も消える（A/B 一致・競合 0）');
+
+      // 「この端末の値を採用」
+      const { cloud: c2, A: A2, B: B2 } = pair();
+      putCloud(c2, CD, { date: CD, deliveries: [], quests: [], expenses: [], dayOff: false });
+      A2.store.state.dailyLogs[CD] = { date: CD, deliveries: [], quests: [], expenses: [], dayOff: true }; A2.store.persistState();
+      await A2.pull();
+      const k2 = `${CD}|dayOff`;
+      check(A2.sync.getConflicts().some(c => c.key === k2), '前提: 手動休みの競合（OPPO 休み / クラウド 休みではない）');
+      const r = await A2.sync.resolveConflictChoice(k2, 'local');
+      check(r.ok && A2.day(CD).dayOff === true && c2.row(CD).dayOff === true && !A2.sync.getConflicts().length, '3. 「この端末の値を採用」→ 端末の値（休み）がクラウドへ・競合が消える');
+      await B2.pull();
+      check(B2.day(CD).dayOff === true && B2.store.getDayStatus(CD, '2099-12-31').status === 'off' && !B2.sync.getConflicts().length, '5. PC にも同じ値（休み）が届く・競合なし');
+
+      // 失敗しても値を失わない（オフライン）
+      const { cloud: c3, A: A3 } = pair();
+      putCloud(c3, CD, { date: CD, deliveries: [], quests: [], expenses: [], vehicleType: '自前自転車' });
+      A3.store.state.dailyLogs[CD] = { date: CD, deliveries: [], quests: [], expenses: [], vehicleType: 'バイクシェア利用' }; A3.store.persistState();
+      await A3.pull();
+      c3.setOnline(false);
+      const rf = await A3.sync.resolveConflictChoice(`${CD}|vehicleType`, 'cloud');
+      check(!rf.ok && /解決できませんでした/.test(rf.message) && A3.day(CD).vehicleType === 'バイクシェア利用' && !(A3.day(CD).manualUpdatedAt || {}).vehicleType && A3.sync.getConflicts().length === 1 && !A3.sync.pendingSyncDates.has(CD),
+        `失敗したら値は元のまま・競合も残る（${rf.message}）`);
+      c3.setOnline(true);
+
+      // trip の評価の競合も選べる
+      const { cloud: c4, A: A4 } = pair();
+      const base = A4.store.state.dailyLogs[TRIP_DAY];
+      const cloudCopy = JSON.parse(JSON.stringify(base));
+      cloudCopy.deliveries.find(d => d.id === TRIP).evaluation = 'AVOID';
+      putCloud(c4, TRIP_DAY, cloudCopy);
+      base.deliveries.find(d => d.id === TRIP).evaluation = 'OK';
+      A4.store.persistState();
+      await A4.pull();
+      const tk = A4.sync.getConflicts().find(c => c.date === TRIP_DAY);
+      check(tk && tk.kind === 'trip' && tk.tripId === TRIP, '前提: 時刻のない評価の競合（記録に trip の ID）');
+      const rt = await A4.sync.resolveConflictChoice(tk.key, 'cloud');
+      check(rt.ok && A4.store.getTripEvaluationData(TRIP).evaluation === 'AVOID' && c4.row(TRIP_DAY).deliveries.find(d => d.id === TRIP).evaluation === 'AVOID' && !A4.sync.getConflicts().length,
+        '評価の競合も「クラウドの値を採用」で解決（端末の控えも同じ値）');
+      const A4b = H.createDevice({ storage: A4.storage, cloud: c4 });
+      check(A4b.store.getTripEvaluationData(TRIP).evaluation === 'AVOID', '開き直しても解決した値のまま');
+    }
+
+    section('v80-7〜13. 日数の差: 空の日・Uber 実績だけの日は送らない／手動のデータの送信漏れは自動で送る');
+    {
+      const { cloud, A, B } = pair();
+      const EMPTY = '2099-08-01', MEAN = '2099-08-02', HOLD = '2099-08-03';
+      A.store.peekDailyLog('2099-08-05');
+      check(!A.day('2099-08-05'), '8. 画面で日付を開くだけ（peekDailyLog）では空の日を作らない');
+      A.store.getDailyLog(EMPTY); // v79 までの画面表示で作られた空の日（既存データ）
+      A.store.persistState();
+      A.store.addExpense(D, { category: '駐輪', amount: 100, memo: '' });
+      await settle(); await A.pull();
+      let d = diffOf(A);
+      const lo = date => d.localOnly.find(x => x.date === date);
+      check(lo(EMPTY) && lo(EMPTY).status === 'empty' && !cloud.row(EMPTY), '7. 端末だけの空の日 → 「空」と分類し、クラウドへ送らない（消しもしない）');
+      check(lo(TRIP_DAY) && lo(TRIP_DAY).status === 'official' && !cloud.row(TRIP_DAY), '10. 同梱の Uber 実績だけの日 → クラウドに無くて正常（送らない）');
+      check(d.problems === 0 && d.local.total > d.cloudCount, `11. 端末の日数（${d.local.total}）とクラウドの日数（${d.cloudCount}）が違っても、問題 0 件（正常）`);
+      // 本当の送信漏れ: 手動のデータが入ったのに未送信の印が無い（v79 までのバックアップ読込・ログイン前の入力など）
+      A.store.state.dailyLogs[MEAN] = { date: MEAN, deliveries: [], quests: [], expenses: [{ id: 'exp_leak_1', category: '交通費', amount: 300, memo: '', createdAt: '2099-08-02T01:00:00Z' }] };
+      A.store.persistState();
+      d = diffOf(A);
+      check(d.localOnly.some(x => x.date === MEAN && x.status === 'unsent') && d.problems === 1, '12. 本当の送信漏れ（端末だけの手動のデータ）を「送信漏れ」として検出');
+      await A.pull();
+      check(cloud.row(MEAN) && (cloud.row(MEAN).expenses || []).some(e => e.id === 'exp_leak_1'), '13. 次の同期で自動で送る（送信ボタン不要）');
+      await B.pull();
+      check(expIds(B, MEAN).includes('exp_leak_1') && diffOf(A).problems === 0 && diffOf(B).problems === 0, '13. PC にも届き、両端末とも差分の問題 0 件');
+      // 9. クラウドだけの手動の日（別端末が送った休み）→ 受信で端末に入る
+      putCloud(cloud, HOLD, { date: HOLD, deliveries: [], quests: [], expenses: [], dayOff: true, manualUpdatedAt: { dayOff: '2099-08-03T00:00:00Z' } });
+      const D2 = A.window.UberLogDiagnostics;
+      const pre = D2.diffLocalCloud(A.store.state.dailyLogs, { days: { [HOLD]: D2.daySignature(cloud.row(HOLD)) } }, {});
+      check(pre.cloudOnly.some(x => x.date === HOLD), '9. クラウドだけの日を「クラウドだけ」と表示できる');
+      await A.pull();
+      check(A.day(HOLD) && A.day(HOLD).dayOff === true && !diffOf(A).cloudOnly.length, '9. 受信するとこの端末にも入り、クラウドだけの日は 0');
+      // 既存の手動データが同じなら送り直さない（同期のたびに送らない）
+      const count = upserts(cloud);
+      await A.pull(); await B.pull();
+      check(count() === 0, '一致しているときは何も送らない（送り直しの繰り返しなし）');
+    }
+
+    section('v80-14〜15. 送信漏れの自動再送・競合の解決で、公式値の巻き戻り・削除した経費の復活が起きない');
+    {
+      const { cloud, A, B } = pair();
+      const OD = '2099-07-20';
+      const official = (importedAt, trips) => ({
+        date: OD, officialImport: { source: 'official-import-v1', importedAt }, tripsCount: trips, deliveriesCount: trips, officialPoints: trips, totalDistanceKm: trips,
+        deliveries: Array.from({ length: trips }, (_, i) => ({ id: `del_y_${i + 1}`, index: i + 1, completedAt: `1${i}:00`, restaurant: `店${i + 1}`, fee: 500, points: 1, distanceKm: 1 })),
+        quests: [], expenses: [], workSessions: [], sales: { delivery: trips * 500, quest: 0, adjustment: 0, other: 0, total: trips * 500 }
+      });
+      putCloud(cloud, OD, { ...official('2099-07-21T00:00:00Z', 21), vehicleType: '自前自転車' });
+      // 古い PC: 昼の途中データ（17trip）＋送信漏れの経費＋時刻のない別の移動手段
+      B.store.state.dailyLogs[OD] = { ...official('2099-07-20T06:00:00Z', 17), vehicleType: 'バイクシェア利用', expenses: [{ id: 'exp_pc_1', category: '駐輪', amount: 100, memo: '', createdAt: '2099-07-20T05:00:00Z' }] };
+      B.store.persistState();
+      await B.pull();
+      check(cloud.row(OD).tripsCount === 21 && cloud.row(OD).sales.total === 10500 && (cloud.row(OD).expenses || []).some(e => e.id === 'exp_pc_1'),
+        '14. 送信漏れの再送でも、古い PC の公式値（17trip）でクラウド（21trip）を巻き戻さない（経費だけ加わる）');
+      const r = await B.sync.resolveConflictChoice(`${OD}|vehicleType`, 'local');
+      check(r.ok && cloud.row(OD).tripsCount === 21 && cloud.row(OD).vehicleType === 'バイクシェア利用' && B.day(OD).tripsCount === 21, '14. 競合の解決で送っても公式値は 21trip のまま');
+      // 15. tombstone: OPPO で削除 → 古いコピーを持つ PC の送信漏れ再送で復活しない
+      A.store.addExpense(D, { category: 'バイクシェア', amount: 1527, memo: '' });
+      await settle(); await B.pull();
+      const eid = expIds(B, D)[0];
+      A.store.deleteExpense(D, eid);
+      await settle();
+      const stale = JSON.parse(JSON.stringify(B.day(D))); // PC の古いコピー（削除前）
+      B.store.state.dailyLogs[D] = stale; B.store.persistState();
+      await B.pull(); await A.pull();
+      check(!expIds(A, D).includes(eid) && !expIds(B, D).includes(eid) && !(cloud.row(D).expenses || []).some(e => e.id === eid), '15. 削除した経費は、送信漏れの再送でも復活しない（tombstone）');
+    }
   } catch (e) {
     failed++;
     console.log(`  ❌ 例外: ${e.stack}`);

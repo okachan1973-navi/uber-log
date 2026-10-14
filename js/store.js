@@ -10948,6 +10948,14 @@ class Store {
     return log;
   }
 
+  // 表示だけに使う日別ログ（無い日は空のログを返すが、端末データには作らない）。
+  // 以前は画面で日付を開いただけで getDailyLog が空の日を作り、次の保存で端末に残っていた
+  // （端末ごとに「存在する日」の数が違って見える原因。SYNC_MODEL.md「日数の意味」）。入力・保存は getDailyLog を使う
+  peekDailyLog(dateStr = getTodayDateString()) {
+    if (this.state.dailyLogs[dateStr]) return this.getDailyLog(dateStr);
+    return { date: dateStr, workStartedAt: null, workEndedAt: null, workMinutes: null, totalDistanceKm: null, workSessions: [], deliveries: [], quests: [] };
+  }
+
   // すべての日次ログを取得（日付降順）
   getAllDailyLogs() {
     return Object.values(this.state.dailyLogs).sort((a, b) => {
@@ -11247,7 +11255,7 @@ class Store {
     const yDay = String(currentDate.getDate()).padStart(2, '0');
     const yesterdayStr = `${yYear}-${yMonth}-${yDay}`;
 
-    const todayLog = this.getDailyLog(dateStr);
+    const todayLog = this.peekDailyLog(dateStr);
     const todayMetrics = this.getCalculatedMetrics(todayLog);
 
     const yesterdayLog = this.state.dailyLogs[yesterdayStr];
@@ -11661,7 +11669,9 @@ class Store {
   // 移動手段/車両種別の更新
   updateVehicleType(dateStr, vehicleType) {
     const log = this.getDailyLog(dateStr);
-    log.vehicleType = vehicleType || null;
+    // 旧名称（レンタサイクル等）は正式な値で保存する（DATA_MODEL.md §1。既存の保存値は書き換えない）
+    const D = typeof window !== 'undefined' ? window.UberLogDiagnostics : null;
+    log.vehicleType = (D && vehicleType ? D.canonicalVehicleType(vehicleType) : vehicleType) || null;
     this.touchManualField(log, 'vehicleType');
     this.saveToStorage(dateStr);
     return log.vehicleType;

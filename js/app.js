@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 稼働中なら1分ごとに稼働時間・時給を自動更新
   setInterval(() => {
-    const log = store.getDailyLog(ui.currentDate);
+    const log = store.peekDailyLog(ui.currentDate);
     const sessions = log.workSessions || [];
     const hasActiveSession = sessions.some(s => !s.end);
     if (hasActiveSession || (log.workStartedAt && !log.workEndedAt)) {

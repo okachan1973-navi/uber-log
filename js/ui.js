@@ -57,7 +57,7 @@ class UI {
       this.populateSessionTimeOptions();
     }
 
-    const log = store.getDailyLog(this.currentDate);
+    const log = store.peekDailyLog(this.currentDate);
     const sessions = log.workSessions || [];
     const session = sessionId ? sessions.find(s => s.id === sessionId) : null;
 
@@ -112,7 +112,7 @@ class UI {
   renderTodayView() {
     this.renderAuditBanner();
 
-    const log = store.getDailyLog(this.currentDate);
+    const log = store.peekDailyLog(this.currentDate);
     const metrics = store.getCalculatedMetrics(log);
     const sessions = log.workSessions || [];
     const ongoingSession = sessions.find(s => !s.end);
@@ -430,7 +430,7 @@ class UI {
 
   // 経費修正フォームをインラインで表示
   showExpenseEditForm(dateStr, expenseId) {
-    const log = store.getDailyLog(dateStr);
+    const log = store.peekDailyLog(dateStr);
     if (!log.expenses) return;
     const exp = log.expenses.find(e => e.id === expenseId);
     if (!exp) return;
@@ -1374,7 +1374,7 @@ class UI {
 
   // 配達詳細モーダルを開く
   openDeliveryModal(deliveryId) {
-    const log = store.getDailyLog(this.currentDate);
+    const log = store.peekDailyLog(this.currentDate);
     const del = log.deliveries.find(d => d.id === deliveryId);
     if (!del) return;
 
@@ -2203,12 +2203,14 @@ class UI {
   // 経費管理モーダルを開く
   openExpensesModal() {
     const overlay = document.getElementById('expenses-modal-overlay');
-    const log = store.getDailyLog(this.currentDate);
+    const log = store.peekDailyLog(this.currentDate);
     
     // 車両種別のセット
     const vehicleEl = document.getElementById('expense-vehicle-type');
     if (vehicleEl) {
-      vehicleEl.value = log.vehicleType || 'レンタサイクル';
+      // 旧名称（レンタサイクル等）は正式な値（バイクシェア利用）で選ぶ（DATA_MODEL.md §1）
+      const D = window.UberLogDiagnostics;
+      vehicleEl.value = (D ? D.canonicalVehicleType(log.vehicleType) : log.vehicleType) || 'バイクシェア利用';
     }
 
     this.renderExpensesModalList();
@@ -2224,7 +2226,7 @@ class UI {
 
   // 経費モーダル内の明細一覧と合計プレビューの描画
   renderExpensesModalList() {
-    const log = store.getDailyLog(this.currentDate);
+    const log = store.peekDailyLog(this.currentDate);
     const expenses = log.expenses || [];
     const container = document.getElementById('expense-items-container');
     const totalPreview = document.getElementById('expense-total-preview');

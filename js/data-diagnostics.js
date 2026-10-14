@@ -195,7 +195,170 @@
     return Object.values(months);
   }
 
-  const api = { checkDailyLogs, summarizeByMonth, hasUberActivity, rawDayTotal, isRealDate };
+  // ------------------------------------------------------------
+  // 移動手段（vehicleType）の正式な値と旧名称（DATA_MODEL.md §1）
+  // 「レンタサイクル」「レンタバイク」は、同梱データの同じ記録（ドコモ・バイクシェア1日パス）を
+  // 開発途中で「バイクシェア利用」へ改名する前の名前（b6733f9 → 11c0968 → 3cd9361）。
+  // 保存されている値は書き換えず、比べるとき・表示するときだけ正式な値にそろえる。
+  // 「自前自転車」「電動レンタル」「その他」は別の意味（同じ候補一覧に並んでいた別の選択肢）なので、そろえない。
+  // ------------------------------------------------------------
+  const VEHICLE_TYPE_CANONICAL = { BIKE_SHARE: 'バイクシェア利用' };
+  const VEHICLE_TYPE_ALIASES = { 'レンタサイクル': 'バイクシェア利用', 'レンタバイク': 'バイクシェア利用', 'バイクシェア': 'バイクシェア利用' };
+  function canonicalVehicleType(v) {
+    if (v === undefined || v === null) return v;
+    const s = String(v).trim();
+    if (!s) return '';
+    return VEHICLE_TYPE_ALIASES[s] || s;
+  }
+  const isLegacyVehicleType = v => typeof v === 'string' && Object.prototype.hasOwnProperty.call(VEHICLE_TYPE_ALIASES, v.trim());
+  // 手動の日別項目の値が同じか（vehicleType は旧名称をそろえて比べる）
+  function sameManualValue(field, a, b) {
+    const norm = v => (field === 'vehicleType' ? canonicalVehicleType(v) : v);
+    const x = norm(a), y = norm(b);
+    return JSON.stringify(x === undefined ? null : x) === JSON.stringify(y === undefined ? null : y);
+  }
+
+  // ------------------------------------------------------------
+  // 1日の中身の分類（SYNC_MODEL.md「日数の意味」）
+  //  - 存在する日: 日別データ（dailyLogs のキー）がある日。画面で日付を開いただけの空の日も含む
+  //  - 中身のある日: 下のどれか1つでもある日。空の日: どれも無い日
+  //  - 手動のデータ: 経費・削除記録・手動休み・天気・移動手段・評価/メモ・稼働時間・手入力の配達/売上（クラウドで共有する対象）
+  //  - Uber 実績だけの日: 公式（同梱）データだけ。アプリに同梱されて各端末へ届くので、クラウドへ送る必要はない
+  // ------------------------------------------------------------
+  const CONTENT_LABELS = {
+    uber: 'Uber実績', official: '公式取込', expense: '経費', tombstone: '経費の削除記録', dayOff: '手動休み', dayOn: '休みの解除',
+    weather: '手動の天気', vehicle: '移動手段', notes: '評価・メモ', sessions: '稼働時間', taps: '手入力の配達', archive: '手入力の退避記録', sales: '売上の手入力'
+  };
+  const MANUAL_CONTENT = ['expense', 'tombstone', 'dayOff', 'dayOn', 'weather', 'vehicle', 'notes', 'sessions', 'taps', 'archive', 'sales'];
+  const isOfficialTrip = d => d && ((d.restaurant && String(d.restaurant).trim()) || (d.fee !== null && d.fee !== undefined));
+  const hasTripNote = d => d && ((d.evaluation !== undefined && d.evaluation !== null) || (d.evaluationReason && String(d.evaluationReason).trim()) || (d.mapMemo && String(d.mapMemo).trim()));
+  function dayContents(log) {
+    const keys = [];
+    const counts = {};
+    if (!log || typeof log !== 'object') return { keys, counts, meaningful: false, manual: false, empty: true, uberOnly: false };
+    const trips = Array.isArray(log.deliveries) ? log.deliveries : [];
+    const uber = hasUberActivity(log);
+    if (uber) keys.push('uber');
+    if (log.officialImport) keys.push('official');
+    const exps = (Array.isArray(log.expenses) ? log.expenses : []).filter(e => e && typeof e === 'object');
+    if (exps.length) { keys.push('expense'); counts.expense = exps.length; }
+    if (Array.isArray(log.deletedExpenseIds) && log.deletedExpenseIds.length) { keys.push('tombstone'); counts.tombstone = log.deletedExpenseIds.length; }
+    const mu = log.manualUpdatedAt || {};
+    if (log.dayOff === true) keys.push('dayOff');
+    else if (log.dayOff === false && mu.dayOff) keys.push('dayOn');
+    if (log.weather && typeof log.weather === 'object' && log.weather.type) keys.push('weather');
+    if (log.vehicleType) keys.push('vehicle');
+    const notes = trips.filter(hasTripNote).length;
+    if (notes) { keys.push('notes'); counts.notes = notes; }
+    if ((Array.isArray(log.workSessions) && log.workSessions.length) || log.workStartedAt) keys.push('sessions');
+    const taps = trips.filter(d => d && !isOfficialTrip(d)).length;
+    if (taps) { keys.push('taps'); counts.taps = taps; }
+    if (Array.isArray(log.manualTapsArchive) && log.manualTapsArchive.length) keys.push('archive');
+    if (!uber && !log.officialImport && rawDayTotal(log) !== 0) keys.push('sales');
+    const manual = keys.some(k => MANUAL_CONTENT.includes(k));
+    return { keys, counts, meaningful: keys.length > 0, manual, empty: keys.length === 0, uberOnly: (uber || !!log.officialImport) && !manual };
+  }
+  function describeContents(c) {
+    if (!c || c.empty) return '空（中身なし）';
+    return c.keys.filter(k => !(k === 'official' && c.keys.includes('uber'))).map(k => {
+      const label = k === 'uber' && c.keys.includes('official') ? 'Uber実績（公式取込）' : CONTENT_LABELS[k];
+      return c.counts[k] ? `${label} ${c.counts[k]}件` : label;
+    }).join('・');
+  }
+
+  // 端末とクラウドの比較に使う、1日の要約（大きな JSON をそのまま比べない・表示しない）
+  const shortHash = s => { let h = 0; const t = String(s); for (let i = 0; i < t.length; i++) h = ((h << 5) - h + t.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
+  function daySignature(log) {
+    if (!log || typeof log !== 'object') return null;
+    const trips = Array.isArray(log.deliveries) ? log.deliveries : [];
+    const mu = log.manualUpdatedAt || {};
+    return {
+      oi: (log.officialImport && log.officialImport.importedAt) || null,
+      trips: trips.filter(isOfficialTrip).length,
+      cnt: (log.deliveriesCount === undefined || log.deliveriesCount === null) ? null : num(log.deliveriesCount),
+      total: rawDayTotal(log),
+      exp: (Array.isArray(log.expenses) ? log.expenses : []).filter(e => e && typeof e === 'object').map(e => `${e.id || 'noid'}:${num(e.amount)}:${shortHash(`${e.category || ''}|${e.memo || ''}`)}`).sort(),
+      tomb: (Array.isArray(log.deletedExpenseIds) ? log.deletedExpenseIds : []).slice().sort(),
+      off: (log.dayOff === undefined || log.dayOff === null) ? null : (log.dayOff === false && !mu.dayOff ? null : !!log.dayOff),
+      w: (log.weather && log.weather.type) || null,
+      veh: canonicalVehicleType(log.vehicleType) || null,
+      notes: trips.filter(hasTripNote).map(d => `${d.id}:${shortHash(`${d.evaluation || ''}|${d.evaluationReason || ''}|${d.mapMemo || ''}`)}`).sort(),
+      ses: (Array.isArray(log.workSessions) ? log.workSessions : []).map(s => `${s && s.id}:${(s && s.start) || ''}-${(s && s.end) || ''}`).sort(),
+      taps: trips.filter(d => d && !isOfficialTrip(d)).length
+    };
+  }
+  const SIGNATURE_FIELDS = [
+    { key: 'oi', label: '公式取込の時刻', kind: 'official' },
+    { key: 'trips', label: 'トリップ数', kind: 'official' },
+    { key: 'cnt', label: '配達件数', kind: 'official' },
+    { key: 'total', label: '総売上', kind: 'official' },
+    { key: 'exp', label: '経費', kind: 'manual' },
+    { key: 'tomb', label: '経費の削除記録', kind: 'manual' },
+    { key: 'off', label: '手動休み', kind: 'manual', field: 'dayOff' },
+    { key: 'w', label: '手動の天気', kind: 'manual', field: 'weather' },
+    { key: 'veh', label: '移動手段', kind: 'manual', field: 'vehicleType' },
+    { key: 'notes', label: '評価・メモ', kind: 'manual' },
+    { key: 'ses', label: '稼働時間', kind: 'manual' },
+    { key: 'taps', label: '手入力の配達', kind: 'manual' }
+  ];
+  function compareSignatures(l, c) {
+    if (!l || !c) return [];
+    return SIGNATURE_FIELDS.filter(f => JSON.stringify(l[f.key] === undefined ? null : l[f.key]) !== JSON.stringify(c[f.key] === undefined ? null : c[f.key]))
+      .map(f => ({ key: f.key, label: f.label, kind: f.kind, field: f.field || null }));
+  }
+
+  /**
+   * 端末とクラウドの日付の差分（diag.html・監査スクリプト）
+   * @param {object} localLogs 端末の dailyLogs
+   * @param {object|null} cloudIndex クラウドの要約（cloud-sync.js が最終受信時に保存: { at, days: { 日付: daySignature } }）
+   * @param {{pendingDates?: string[], conflicts?: object[]}} opts
+   * 判定（status）:
+   *  - 端末だけの日: empty（空の日・送らない）/ official（Uber 実績だけ・同梱データ・送らない）/ pending（未送信・自動で送る）/ unsent（手動のデータがクラウドに無い＝送信漏れ。次の同期で送る）
+   *  - 違う日の項目: official-local-newer（端末の公式データが新しい・問題なし）/ official-cloud-newer / official（公式の値の差）/ conflict / pending / unsent
+   */
+  function diffLocalCloud(localLogs, cloudIndex, opts = {}) {
+    const logs = localLogs || {};
+    const cloudDays = (cloudIndex && cloudIndex.days) || null;
+    const pending = new Set(opts.pendingDates || []);
+    const conflictKeys = new Set((opts.conflicts || []).map(x => `${x.date}|${x.field}`));
+    const localDates = Object.keys(logs).filter(isRealDate).sort();
+    const counts = { total: localDates.length, meaningful: 0, empty: 0, manual: 0, uberOnly: 0 };
+    localDates.forEach(d => { const c = dayContents(logs[d]); if (c.empty) counts.empty++; else counts.meaningful++; if (c.manual) counts.manual++; if (c.uberOnly) counts.uberOnly++; });
+    const result = { available: !!cloudDays, local: counts, cloudCount: cloudDays ? Object.keys(cloudDays).length : null, localOnly: [], cloudOnly: [], different: [], same: 0, problems: 0 };
+    if (!cloudDays) return result;
+    localDates.forEach(d => {
+      const log = logs[d];
+      const c = dayContents(log);
+      if (!cloudDays[d]) {
+        const status = c.empty ? 'empty' : (!c.manual ? 'official' : (pending.has(d) ? 'pending' : 'unsent'));
+        if (status === 'unsent') result.problems++;
+        result.localOnly.push({ date: d, contents: describeContents(c), keys: c.keys, status });
+        return;
+      }
+      const diffs = compareSignatures(daySignature(log), cloudDays[d]).map(f => {
+        let status;
+        if (f.kind === 'official') {
+          const lo = (log.officialImport && log.officialImport.importedAt) || null;
+          const co = cloudDays[d].oi || null;
+          status = lo && (!co || lo > co) ? 'official-local-newer' : (co && (!lo || co > lo) ? 'official-cloud-newer' : 'official');
+        } else if (f.field && conflictKeys.has(`${d}|${f.field}`)) status = 'conflict';
+        else if (f.key === 'notes' && [...conflictKeys].some(k => k.startsWith(`${d}|trip `))) status = 'conflict';
+        else status = pending.has(d) ? 'pending' : 'unsent';
+        if (status === 'unsent') result.problems++;
+        return { ...f, status };
+      });
+      if (diffs.length) result.different.push({ date: d, fields: diffs });
+      else result.same++;
+    });
+    Object.keys(cloudDays).filter(isRealDate).sort().forEach(d => { if (!logs[d]) result.cloudOnly.push({ date: d }); });
+    return result;
+  }
+
+  const api = {
+    checkDailyLogs, summarizeByMonth, hasUberActivity, rawDayTotal, isRealDate,
+    VEHICLE_TYPE_CANONICAL, VEHICLE_TYPE_ALIASES, canonicalVehicleType, isLegacyVehicleType, sameManualValue,
+    CONTENT_LABELS, dayContents, describeContents, daySignature, compareSignatures, diffLocalCloud
+  };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.UberLogDiagnostics = api;
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

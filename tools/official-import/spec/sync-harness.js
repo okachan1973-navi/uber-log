@@ -13,6 +13,7 @@ const vm = require('vm');
 
 const ROOT = process.env.UBER_LOG_ROOT ? path.resolve(process.env.UBER_LOG_ROOT) : path.resolve(__dirname, '..', '..', '..');
 const SRC = {
+  diagnostics: fs.readFileSync(path.join(ROOT, 'js', 'data-diagnostics.js'), 'utf8'),
   store: fs.readFileSync(path.join(ROOT, 'js', 'store.js'), 'utf8'),
   sync: fs.readFileSync(path.join(ROOT, 'js', 'cloud-sync.js'), 'utf8')
 };
@@ -99,6 +100,7 @@ function createDevice({ storage, cloud = null, loggedIn = true, lazySession = fa
   };
   ctx.globalThis = ctx;
   vm.createContext(ctx);
+  vm.runInContext(SRC.diagnostics, ctx, { filename: 'data-diagnostics.js' }); // index.html と同じく store.js より先に読む
   vm.runInContext(SRC.store, ctx, { filename: 'store.js' });
   vm.runInContext(SRC.sync, ctx, { filename: 'cloud-sync.js' });
   vm.runInContext('window.cloudSync = cloudSync;', ctx);
