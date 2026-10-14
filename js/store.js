@@ -12208,6 +12208,7 @@ class Store {
         status: get('uber_sync_status'),
         pendingDates: get('uber_pending_sync_dates') || [],
         conflicts: get('uber_sync_conflicts') || [],
+        cloudIndex: get('uber_sync_cloud_index'), // クラウドにある日の要約（端末とクラウドの差分の監査用）
         clientId: get('uber_sync_client_id')
       };
     } catch (e) { sync = null; }

@@ -347,6 +347,27 @@ check(hasP('warn', 'appVersion', /20261013_v76/) && hasP('warn', 'pending') && h
   '同期の確認: 古い版・未送信・競合・同期エラーを表示（バックアップの _sync）', syJ.problems.filter(p => p.level !== 'info').map(p => `${p.date} ${p.field}`));
 check(hasP('warn', 'officialImport', /端末の公式データが古い/), '同期の確認: 端末の公式データが同梱データより古い（途中取込のまま）ことを表示');
 check(hasP('error', 'expenses[0].updatedAt') && hasP('error', 'weather') && sy.status === 1, '同期の更新時刻が読めない・天気の値が不正 → error（exit 1）');
+
+// v80: 移動手段の旧名称・同義の競合・空の日・重複した稼働記録・あり得ない形・端末とクラウドの差分（_sync.cloudIndex）
+const D80 = require(path.join(ROOT, 'js', 'data-diagnostics.js'));
+const v80 = JSON.parse(JSON.stringify(okFx));
+v80['2099-10-03'] = { ...(v80['2099-10-03'] || { date: '2099-10-03', deliveries: [], quests: [] }), vehicleType: 'レンタサイクル' };
+v80['2099-10-04'] = { date: '2099-10-04', workStartedAt: null, workSessions: [], deliveries: [], quests: [] };              // 空の日
+v80['2099-10-05'] = { date: '2099-10-05', deliveries: [], quests: [], workSessions: [{ id: 's1', start: '09:00', end: '12:00' }, { id: 's2', start: '09:00', end: '12:00' }] };
+v80['2099-10-07'] = { date: '2099-10-07', deliveries: [], quests: [], expenses: [{ id: 'exp_leak', category: '交通費', amount: 300, memo: '' }] }; // クラウドに無い手動のデータ
+const cloudDays = {};
+['2099-10-01', '2099-10-02', '2099-10-03', '2099-10-05'].forEach(d => { if (v80[d]) cloudDays[d] = D80.daySignature(v80[d]); });
+const v80Meta = { appVersion: null, pendingDates: [], conflicts: [{ key: '2099-10-03|vehicleType', date: '2099-10-03', field: 'vehicleType', local: 'バイクシェア利用', cloud: 'レンタサイクル' }], status: { lastResult: 'ok' }, cloudIndex: { at: '2099-10-08T00:00:00Z', days: cloudDays } };
+const v80File = path.join(tmp, 'v80.json');
+fs.writeFileSync(v80File, JSON.stringify({ version: '1.2', dailyLogs: v80, _sync: v80Meta }));
+const v8 = spawnSync(process.execPath, [AUDIT, '--file', v80File, '--today', TODAY, '--now', '2099-12-31T00:00:00Z', '--json'], { encoding: 'utf8' });
+const v8J = JSON.parse(v8.stdout);
+const hasV = (level, date, field, re) => v8J.problems.some(p => p.level === level && (!date || p.date === date) && p.field.startsWith(field) && (!re || re.test(p.message)));
+check(hasV('info', '2099-10-03', 'vehicleType', /旧名称「レンタサイクル」/) && hasV('info', '2099-10-03', 'conflict:vehicleType', /同義/), '監査: 移動手段の旧名称と、同義の旧名称どうしの競合を表示（保存値は変えない）');
+check(hasV('info', '-', 'emptyDays', /2099-10-04/) && hasV('warn', '2099-10-05', 'workSessions', /二重/), '監査: 空の日（消さない）・同じ時間の稼働記録の二重を表示');
+check(hasV('warn', '2099-10-07', 'unsent', /送信漏れ/) && hasV('info', '-', 'days', /端末だけ/) && !hasV('warn', '2099-10-04', 'unsent'), '監査: 端末とクラウドの差分（送信漏れは手動のデータがある日だけ。空の日は送信漏れにしない）');
+const shape = D80.checkDailyLogs({ '2099-10-01': { date: '2099-10-01', deliveries: {}, expenses: 'x', manualUpdatedAt: [] } }, {});
+check(['deliveries', 'expenses', 'manualUpdatedAt'].every(f => shape.some(p => p.level === 'error' && p.field === f)), '監査: あり得ない形（配列であるべき項目が配列でない等）を error');
 fs.rmSync(tmp, { recursive: true, force: true });
 
 console.log(`\n結果: ${passed} passed, ${failed} failed`);

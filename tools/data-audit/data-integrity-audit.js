@@ -67,6 +67,34 @@ function syncChecks(backup, getConfirmedSeedData) {
     if (st.lastResult === 'error') add('warn', '-', 'sync', `最後の同期がエラー: ${st.lastError || ''}`);
     if (st.lastResult === 'not_logged_in' || st.loggedIn === false) add('warn', '-', 'sync', 'クラウドにログインしていない端末（この端末の入力はほかの端末に届かない）');
   }
+  // 移動手段の旧名称（同義。DATA_MODEL.md §1）・空の日・重複した手動データ・端末とクラウドの差分（SYNC_MODEL.md「日数の意味」）
+  const D = require(path.join(ROOT, 'js', 'data-diagnostics.js'));
+  const logs = backup.dailyLogs || {};
+  const empties = [];
+  Object.entries(logs).forEach(([d, l]) => {
+    if (!l || typeof l !== 'object') return;
+    if (D.isLegacyVehicleType(l.vehicleType)) add('info', d, 'vehicleType', `旧名称「${l.vehicleType}」（= ${D.canonicalVehicleType(l.vehicleType)}。比べるときは正式な値にそろえる。保存値は変えない）`);
+    if (D.dayContents(l).empty) empties.push(d);
+    const seen = new Map();
+    (Array.isArray(l.workSessions) ? l.workSessions : []).forEach(s => {
+      const k = `${s && s.start}-${s && s.end}`;
+      if (s && s.start && seen.has(k) && seen.get(k) !== s.id) add('warn', d, 'workSessions', `同じ時間（${k}）の稼働記録が別の ID で2件（${seen.get(k)} / ${s.id}）。二重の可能性`);
+      if (s) seen.set(k, s.id);
+    });
+  });
+  if (empties.length) add('info', '-', 'emptyDays', `空の日 ${empties.length}日（中身なし。以前の版で日付を開いたときに作られたもの。消さなくてよい）: ${empties.sort().join(', ')}`);
+  (meta && meta.conflicts || []).forEach(c => {
+    if (c.field === 'vehicleType' && D.sameManualValue('vehicleType', c.local, c.cloud)) add('info', c.date || '-', 'conflict:vehicleType', '同義の旧名称どうしの競合（v80 以降のアプリで同期すると自動で消える）');
+  });
+  if (meta && meta.cloudIndex) {
+    const diff = D.diffLocalCloud(logs, meta.cloudIndex, { pendingDates: meta.pendingDates || [], conflicts: meta.conflicts || [] });
+    add('info', '-', 'days', `端末にある日 ${diff.local.total}日（中身のある日 ${diff.local.meaningful}・空の日 ${diff.local.empty}）／ クラウドに保存された日 ${diff.cloudCount}日 ／ 端末だけ ${diff.localOnly.length}・クラウドだけ ${diff.cloudOnly.length}・違う ${diff.different.length}・同じ ${diff.same}`);
+    diff.localOnly.filter(x => x.status === 'unsent').forEach(x => add('warn', x.date, 'unsent', `送信漏れ（端末だけにある手動のデータ: ${x.contents}。v80 以降のアプリで同期すると自動で送る）`));
+    diff.different.forEach(x => x.fields.filter(f => f.status === 'unsent').forEach(f => add('warn', x.date, `diff:${f.key}`, `クラウドと違う（${f.label}。次の同期で自動でそろえる）`)));
+  } else if (meta) {
+    add('info', '-', 'cloudIndex', 'クラウドの日付の記録がありません（v80 より前の版で書き出したもの）。端末とクラウドの差分は diag.html で確認する');
+  }
+
   // 公式データの新旧（書き出した端末の officialImport と、この版の同梱データ）
   const seed = getConfirmedSeedData().dailyLogs || {};
   Object.entries(backup.dailyLogs || {}).forEach(([d, l]) => {

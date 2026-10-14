@@ -20,12 +20,13 @@
   const num = v => (v === null || v === undefined || v === '') ? 0 : Number(v);
   const isBad = v => v !== null && v !== undefined && v !== '' && !Number.isFinite(Number(v));
   const round2 = n => Math.round(n * 100) / 100;
+  const arr = v => (Array.isArray(v) ? v : []); // 壊れたデータ（配列でない項目）でも診断を止めない
 
   // 実績のある日（DATA_MODEL.md「稼働日」）: 公式の件数・トリップ数が1以上、または店舗名か報酬のある配達が1件以上
   function hasUberActivity(log) {
     if (!log) return false;
     if (num(log.deliveriesCount) > 0 || num(log.tripsCount) > 0) return true;
-    return (log.deliveries || []).some(d => d && ((d.restaurant && String(d.restaurant).trim()) || num(d.fee) > 0));
+    return arr(log.deliveries).some(d => d && ((d.restaurant && String(d.restaurant).trim()) || num(d.fee) > 0));
   }
 
   // 生データからの1日の総売上（store.getCalculatedMetrics と同じ規則を最小限で再計算）
@@ -35,8 +36,8 @@
     if (s && (s.delivery !== undefined || s.quest !== undefined)) {
       return num(s.delivery) + num(s.quest) + num(s.adjustment) + num(s.other) + num(s.guaranteeBonus);
     }
-    const fees = (log.deliveries || []).reduce((a, d) => a + (Number.isFinite(Number(d && d.fee)) ? num(d.fee) : 0), 0);
-    const quests = (log.quests || []).filter(q => q && !q.isDuplicateIgnored).reduce((a, q) => a + num(q.amount), 0);
+    const fees = arr(log.deliveries).reduce((a, d) => a + (Number.isFinite(Number(d && d.fee)) ? num(d.fee) : 0), 0);
+    const quests = arr(log.quests).filter(q => q && !q.isDuplicateIgnored).reduce((a, q) => a + num(q.amount), 0);
     return fees + quests + num(s && s.adjustment) + num(s && s.other) + num(s && s.guaranteeBonus) + num(log.guaranteeBonus);
   }
 
@@ -59,6 +60,11 @@
       if (!isRealDate(key)) { add('error', key, 'date', `日付の形式が不正（YYYY-MM-DD の実在日ではない）`); return; }
       if (!log || typeof log !== 'object') { add('error', key, 'log', '日別データがオブジェクトではない'); return; }
       if (log.date !== undefined && log.date !== key) add('error', key, 'date', `中の date（${log.date}）がキーと違う`);
+      // あり得ない形（配列であるべき項目が配列でない等）は、同期・集計で値が失われる原因になる
+      ['deliveries', 'quests', 'expenses', 'workSessions', 'deletedExpenseIds', 'adjustments', 'manualTapsArchive'].forEach(f => {
+        if (log[f] !== undefined && log[f] !== null && !Array.isArray(log[f])) add('error', key, f, `配列ではない（${typeof log[f]}）`);
+      });
+      if (log.manualUpdatedAt !== undefined && log.manualUpdatedAt !== null && (typeof log.manualUpdatedAt !== 'object' || Array.isArray(log.manualUpdatedAt))) add('error', key, 'manualUpdatedAt', '更新時刻の記録がオブジェクトではない');
 
       // 数値項目: NaN / Infinity / 数値でない文字列
       ['deliveriesCount', 'tripsCount', 'officialPoints', 'totalDistanceKm'].forEach(f => {
@@ -137,7 +143,7 @@
       const badTime = v => v !== undefined && v !== null && (typeof v !== 'string' || isNaN(Date.parse(v)));
       const futureTime = v => typeof v === 'string' && !isNaN(Date.parse(v)) && opts.now && Date.parse(v) > Date.parse(opts.now) + 86400000;
       const timeChecks = [];
-      (log.expenses || []).forEach((e, i) => { if (e) { timeChecks.push([`expenses[${i}].updatedAt`, e.updatedAt]); timeChecks.push([`expenses[${i}].createdAt`, e.createdAt]); } });
+      arr(log.expenses).forEach((e, i) => { if (e) { timeChecks.push([`expenses[${i}].updatedAt`, e.updatedAt]); timeChecks.push([`expenses[${i}].createdAt`, e.createdAt]); } });
       Object.entries(log.manualUpdatedAt || {}).forEach(([f, v]) => timeChecks.push([`manualUpdatedAt.${f}`, v]));
       trips.forEach((d, i) => { if (d) { timeChecks.push([`deliveries[${i}].evaluationUpdatedAt`, d.evaluationUpdatedAt]); timeChecks.push([`deliveries[${i}].mapMemoUpdatedAt`, d.mapMemoUpdatedAt]); } });
       if (log.officialImport) timeChecks.push(['officialImport.importedAt', log.officialImport.importedAt]);
@@ -155,7 +161,7 @@
       // 未来日
       if (today && key > today) {
         if (hasUberActivity(log) || (s && rawDayTotal(log) !== 0)) add('error', key, 'date', `未来日（今日 ${today} より後）に実績・売上がある`);
-        else if ((log.expenses || []).some(e => num(e && e.amount) > 0)) add('warn', key, 'expenses', `未来日（今日 ${today} より後）に経費がある（今月・今週の集計には入らない）`);
+        else if (arr(log.expenses).some(e => num(e && e.amount) > 0)) add('warn', key, 'expenses', `未来日（今日 ${today} より後）に経費がある（今月・今週の集計には入らない）`);
       }
     });
     return out;
@@ -182,7 +188,7 @@
       r.sales += rawDayTotal(log);
       if (log.officialImport) r.officialDays++;
       if (log.sales && num(log.sales.other) !== 0) r.otherSalesDays++;
-      if ((log.deliveries || []).some(d => num(d && d.tip) > 0) || (log.sales && num(log.sales.tip) > 0)) r.tipDays++;
+      if (arr(log.deliveries).some(d => num(d && d.tip) > 0) || (log.sales && num(log.sales.tip) > 0)) r.tipDays++;
       (Array.isArray(log.expenses) ? log.expenses : []).forEach(e => {
         const amt = num(e && e.amount);
         if (!(amt > 0)) return;
