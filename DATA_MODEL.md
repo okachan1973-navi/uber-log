@@ -43,7 +43,7 @@ UBER_LOG の数字（売上・必要経費・利益・件数・時間・距離�
 | `workSessions[]` / `workStartedAt` / `workEndedAt` | 稼働開始・終了の記録 | 手動 |
 | `workMinutes` | 旧来の稼働分（集計には使わない。配達時間は §6） | 手動 |
 | `manualTapsArchive[]` | 公式データで置き換えた手動タップの退避 | 手動 |
-| `vehicleType` | 移動手段 | 手動 |
+| `vehicleType` | 移動手段（正式な値と旧名称は下の「移動手段」。集計・B バッジには使わない） | 手動 |
 | `dayOff` | 手動の休み（`true`。解除は `false` として残す） | 手動 |
 | `manualUpdatedAt` | 手動の日別項目の更新時刻 `{ dayOff, weather, vehicleType }`（同期で新しい方を選ぶ） | 手動 |
 | `deliveries[].evaluationUpdatedAt` / `mapMemoUpdatedAt` | ○×評価・理由 / MAP一口メモの更新時刻（同期で新しい方を選ぶ） | 手動 |
@@ -51,6 +51,21 @@ UBER_LOG の数字（売上・必要経費・利益・件数・時間・距離�
 | `manualUberSales` / `manualQuest` | 旧来の手入力売上（`sales` が無い日だけ使う） | 手動 |
 
 | `weather` | 天気（任意・手動）。`{ type: 'sunny'｜'cloudy'｜'rain'｜'unknown', source, raw, observedDate }`。あれば気象庁データより優先（§15） | 手動 |
+### 移動手段（`vehicleType`）の正式な値と旧名称（v80）
+
+- 正式な値（canonical）: `バイクシェア利用`（ドコモ・バイクシェア等の電動アシスト自転車を使った日。画面の表示名は「バイクシェア」）。
+- 旧名称（legacy alias）: `レンタサイクル`・`レンタバイク`・`バイクシェア` → すべて `バイクシェア利用` と同じ意味。
+  根拠: 9/18・9/19 の同梱データは同じ記録（ドコモ・バイクシェア1日パス）を `レンタサイクル`（b6733f9）→ `レンタバイク`（11c0968・v10）→ `バイクシェア利用`（3cd9361・v12）と改名しただけ。
+- 別の意味の値（そろえない）: `自前自転車`・`電動レンタル`・`その他`（旧経費モーダルで `レンタサイクル` と並んでいた別の選択肢）。
+- **保存されている値は書き換えない**。比べるとき（同期・診断・監査）と表示するときだけ `canonicalVehicleType()`（`js/data-diagnostics.js`）で正式な値にそろえる。新しく保存する値は正式な値。
+- 更新時刻: `manualUpdatedAt.vehicleType`。同期は SYNC_MODEL.md §5（同義の旧名称どうしは競合にしない）。
+
+### 「日がある」の意味（v80）
+
+- **存在する日**: `dailyLogs` にキーがある日。v79 までは画面で日付を開いただけで空の日が作られて端末に残った（v80 から表示だけでは作らない: `store.peekDailyLog`）。
+- **中身のある日**: Uber 実績・公式取込・経費・削除記録・手動休み（解除の記録を含む）・天気・移動手段・評価/メモ・稼働時間・手入力の配達/売上 のどれかがある日（`dayContents()`）。**空の日**はどれも無い日（消さなくてよい。集計にも影響しない）。
+- **Uber 実績だけの日（bundled official day）**: 公式データ（同梱）だけで手動のデータが無い日。各端末に同梱データとして届くので、クラウドには送らない。
+- **クラウドに保存された日**: 手動のデータを送ったことがある日（＋ v79 以前に初回移行で送った日）。端末の日数より少なくて正常。
 
 ## 2. 売上（日別の計算は `store.getCalculatedMetrics`）
 
@@ -151,7 +166,8 @@ UBER_LOG の数字（売上・必要経費・利益・件数・時間・距離�
 - **端末内の保存**（`persistState` / `mergeDayUserData`）: 保存済みと日ごとに統合（経費は ID 単位の和集合・削除済みは復活させない）。
 - **クラウド同期**（`cloudSync.mergeDailyLog`。詳しくは **SYNC_MODEL.md**）: pull-first（受け取って統合してから、未送信の日だけ送る）。
   公式の値は `officialImport.importedAt` の新しい側、経費は ID 単位の和集合＋tombstone、○×評価・理由・MAPメモは trip ごとの更新時刻（`evaluationUpdatedAt` / `mapMemoUpdatedAt`）、
-  手動休み・天気・移動手段は `manualUpdatedAt[項目]` の新しい側。決められないときは端末側を残して競合として記録（`uber_sync_conflicts`）。
+  手動休み・天気・移動手段は `manualUpdatedAt[項目]` の新しい側（移動手段は旧名称を正式な値にそろえて比べる）。決められないときは端末側を残して競合として記録（`uber_sync_conflicts`）し、
+  利用者が `diag.html` の「競合の解決」で「この端末の値 / クラウドの値」を選ぶ（選んだ値に新しい更新時刻を付けて保存・送信。SYNC_MODEL.md §5-2）。
   片方に無いだけで、もう片方の値を 0 や空配列で上書きしない。個別ルールの無い項目も両方から残す。
 - **過去日の編集**: 経費・稼働等の変更は、その **対象日** を同期待ち（`uber_pending_sync_dates`）に入れて送る（今日の日付ではない）。
 - 端末に残っている旧来の誤ったデータは自動で書き換えない（必要なときは before / after・根拠・影響日数・金額を確認してから）。
@@ -252,4 +268,4 @@ UBER_LOG の数字（売上・必要経費・利益・件数・時間・距離�
 
 - テスト: `tools/data-audit/spec/data-model-tests.js`（人工データ）、`tools/official-import/spec/server-tests.js`（取込の状態・再開・再取込）、`tools/official-import/spec/run-tests.js`（実データ・取込）、`tools/official-import/spec/sync-tests.js`（同期）
 - 監査: `node tools/data-audit/data-integrity-audit.js [--file バックアップ.json] [--today YYYY-MM-DD]`
-- 端末の診断: `diag.html`（読み取り専用・外部送信なし。アプリからはリンクしていない）
+- 端末の診断: `diag.html`（表示は読み取り専用・外部送信なし。例外は「競合の解決」のボタンだけ。アプリからはヘッダーの「同期の確認 N件」からリンク）

@@ -18,4 +18,4 @@ v80「同期の最終監査（9/19 vehicleType の競合・端末/クラウド�
 - バックアップ: ローカルブランチ `backup/pre-v80-sync-final-audit`（v79 = 302baa8）。
 
 ## 現在地
-フェーズ0 完了。次はフェーズ1-3（vehicleType の正式な値と同義語の自動解消）。
+フェーズ0〜20 完了（コード・diag・テスト・DATA_MODEL/SYNC_MODEL・監査）。次はフェーズ21-28（画面確認・run-all・v80 リリース・HANDOFF 両方・push）。
