@@ -928,7 +928,11 @@ class CloudSyncManager {
 
       // 3-4. 送信漏れ（端末にだけある手動のデータ）を未送信に戻す
       const cloudByDate = new Map((Array.isArray(cloudLogs) ? cloudLogs : []).map(r => [r.date, r.data]));
-      const unsent = this.findUnsentDates(cloudByDate);
+      // 同じ日の自動再送は10分に1回まで（万一 merge の結果がクラウドとそろわない日があっても、60秒ごとに送り続けない）
+      this.resentAt = this.resentAt || {};
+      const nowMs = Date.now();
+      const unsent = this.findUnsentDates(cloudByDate).filter(d => !(this.resentAt[d] && nowMs - this.resentAt[d] < 10 * 60 * 1000));
+      unsent.forEach(d => { this.resentAt[d] = nowMs; });
       if (unsent.length) {
         unsent.forEach(d => this.pendingSyncDates.add(d));
         this.savePendingSyncDates();
