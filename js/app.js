@@ -628,11 +628,19 @@ function initCloudSyncActions() {
       else if (status === 'OFFLINE') { text = pending ? 'オフライン・未送信あり' : 'オフライン'; cls = pending ? 'warn' : ''; }
       else if (status === 'SYNCED') {
         if (pending) { text = '未送信あり'; cls = 'warn'; }
-        else if (conflicts) { text = `競合あり（${conflicts}）`; cls = 'warn'; }
+        // 競合は「同期の確認」として小さく出す（押すと診断ページの競合の解決へ）。売上・経費は競合にならない（DATA_MODEL.md §10）
+        else if (conflicts) { text = `同期の確認 ${conflicts}件`; cls = 'warn link'; }
         else text = info.lastSyncAt ? `同期済み ${hhmm(info.lastSyncAt)}` : '同期済み';
       }
       textEl.textContent = text;
       textEl.className = `header-sync-text${cls ? ' ' + cls : ''}`;
+      if (cls.includes('link')) { textEl.setAttribute('role', 'link'); textEl.tabIndex = 0; } else { textEl.removeAttribute('role'); textEl.removeAttribute('tabindex'); }
+      if (!textEl.dataset.linkBound) {
+        textEl.dataset.linkBound = '1';
+        const go = () => { if (textEl.classList.contains('link')) window.location.href = 'diag.html#conflicts'; };
+        textEl.addEventListener('click', go);
+        textEl.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+      }
       textEl.title = [info.lastPullAt ? `最終受信 ${hhmm(info.lastPullAt)}` : '', info.lastPushAt ? `最終送信 ${hhmm(info.lastPushAt)}` : '', pending ? `未送信 ${pending}日` : '', conflicts ? `競合 ${conflicts}件（diag.html で確認）` : '', info.lastError && status === 'ERROR' ? `エラー: ${info.lastError}` : ''].filter(Boolean).join(' / ');
     }
     const dot = document.getElementById('header-sync-dot');
@@ -660,7 +668,11 @@ function initCloudSyncActions() {
       messages.push(`クラウドと同期できません（入力は端末に保存済みです。自動で再試行します）${pending ? `。未送信 ${pending}日` : ''}。`);
     }
     if (conflicts && status !== 'SYNCING') {
-      messages.push(`同期の競合が ${conflicts} 件あります（自動で決められなかった項目は、この端末の値を残しています）。<a href="diag.html">診断ページで確認</a>`);
+      const D = window.UberLogDiagnostics;
+      const infos = (info.conflicts || []).map(c => (D && typeof D.describeConflict === 'function') ? D.describeConflict(c) : { title: c.field, important: true });
+      const names = Array.from(new Set(infos.map(x => x.title))).slice(0, 3).join('・');
+      const important = infos.some(x => x.important);
+      messages.push(`同期の確認が必要な項目が ${conflicts} 件あります（${names}）。${important ? '「稼働 / 休み」の日数に関わる項目があります。' : '売上・件数・経費には影響しません。'}今はこの端末の値を残しています。<a href="diag.html#conflicts">確認して選ぶ</a>`);
     }
     banner.innerHTML = messages.map(m => `<div>${m}</div>`).join('');
     banner.hidden = messages.length === 0;

@@ -354,7 +354,44 @@
     return result;
   }
 
+  // ------------------------------------------------------------
+  // 競合の説明（diag.html の競合カード・アプリのヘッダー）。値は人が読める言葉にする
+  // important: 集計（稼働 / 休みの日数）に影響する項目。売上・件数・経費は競合にならない（公式は新しい取込・経費は ID 単位で統合）
+  // ------------------------------------------------------------
+  const WEATHER_LABELS = { sunny: '晴', cloudy: '曇', rain: '雨', unknown: '不明' };
+  function describeConflict(c) {
+    const field = String((c && c.field) || '');
+    const none = '（未設定）';
+    const trip = /^trip (\S+) (.+)$/.exec(field);
+    let title, impact, important = false, fmt;
+    if (field === 'vehicleType') {
+      title = '移動手段'; impact = '表示だけの項目です。売上・件数・経費には影響しません';
+      fmt = v => (v === null || v === undefined || v === '') ? none : (isLegacyVehicleType(v) ? `${v}（旧名称。= ${canonicalVehicleType(v)}）` : String(v));
+    } else if (field === 'dayOff') {
+      title = '手動休み'; impact = '「稼働 / 休み」の日数に影響します。売上・件数・経費には影響しません'; important = true;
+      fmt = v => v === true ? '休み' : (v === false ? '休みではない' : none);
+    } else if (field === 'weather') {
+      title = '天気（手動）'; impact = '表示だけの項目です。売上・件数・経費には影響しません';
+      fmt = v => (v && typeof v === 'object' && v.type) ? (WEATHER_LABELS[v.type] || v.type) + (v.raw && v.raw !== WEATHER_LABELS[v.type] ? `（${v.raw}）` : '') : none;
+    } else if (trip && /評価/.test(trip[2])) {
+      title = `○×評価・理由（${trip[1]}）`; impact = '評価のメモです。売上・件数・経費には影響しません';
+      fmt = v => {
+        if (!Array.isArray(v)) return none;
+        const e = v[0] === 'OK' ? '○' : (v[0] === 'AVOID' ? '×' : '評価なし');
+        return v[1] ? `${e}・理由「${v[1]}」` : e;
+      };
+    } else if (trip) {
+      title = `MAP一口メモ（${trip[1]}）`; impact = 'メモです。売上・件数・経費には影響しません';
+      fmt = v => (Array.isArray(v) && v[0]) ? `「${v[0]}」` : none;
+    } else {
+      title = field || '（不明な項目）'; impact = '内容を確認してください';
+      fmt = v => (v === null || v === undefined) ? none : JSON.stringify(v);
+    }
+    return { title, impact, important, local: fmt(c && c.local), cloud: fmt(c && c.cloud) };
+  }
+
   const api = {
+    describeConflict,
     checkDailyLogs, summarizeByMonth, hasUberActivity, rawDayTotal, isRealDate,
     VEHICLE_TYPE_CANONICAL, VEHICLE_TYPE_ALIASES, canonicalVehicleType, isLegacyVehicleType, sameManualValue,
     CONTENT_LABELS, dayContents, describeContents, daySignature, compareSignatures, diffLocalCloud

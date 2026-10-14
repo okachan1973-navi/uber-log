@@ -5,18 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex">
   <title>UBER_LOG データ診断</title>
-  <!-- 開発用のデータ診断ページ（読み取り専用・外部送信なし）。アプリの画面からはリンクしていない。
-       この端末に保存されている日別データ（localStorage の uber_log_v1_data）をそのまま読み、月ごとの件数・売上・必要経費と整合性チェックを表示する。
-       store.js は読み込まない（読み込むと端末保存の補完・書き込みが走るため）。判定の定義は DATA_MODEL.md / js/data-diagnostics.js -->
+  <!-- 開発用のデータ診断ページ。アプリの画面からは「同期の確認」のときだけリンクしている。
+       表示は読み取り専用: この端末に保存されている日別データ（localStorage の uber_log_v1_data）と同期の記録をそのまま読み、
+       月ごとの件数・売上・必要経費、端末とクラウドの差分、整合性チェックを表示する（store.js は読み込まない。読み込むと端末保存の補完・書き込みが走るため）。
+       例外は「競合の解決」だけ: 利用者がボタンを押して確認したときに限り、アプリと同じ store.js / cloud-sync.js を読み込んで、選んだ値を保存・送信する。
+       判定の定義は DATA_MODEL.md / SYNC_MODEL.md / js/data-diagnostics.js -->
   <style>
-    :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --ok: #3fb950; --warn: #d29922; --err: #f85149; }
-    @media (prefers-color-scheme: light) { :root { --bg: #f6f8fa; --card: #ffffff; --border: #d0d7de; --text: #1f2328; --muted: #57606a; --ok: #1a7f37; --warn: #9a6700; --err: #cf222e; } }
+    :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --ok: #3fb950; --warn: #d29922; --err: #f85149; --act: #f0883e; --btn: #21262d; }
+    @media (prefers-color-scheme: light) { :root { --bg: #f6f8fa; --card: #ffffff; --border: #d0d7de; --text: #1f2328; --muted: #57606a; --ok: #1a7f37; --warn: #9a6700; --err: #cf222e; --act: #bc4c00; --btn: #f6f8fa; } }
     * { box-sizing: border-box; }
     body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; }
+    main { max-width: 860px; margin: 0 auto; }
     h1 { font-size: 18px; margin: 0 0 4px; }
     .note { color: var(--muted); font-size: 12px; margin: 0 0 14px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; overflow-x: auto; }
     .card h2 { font-size: 14px; margin: 0 0 8px; }
+    .card h3 { font-size: 13px; margin: 10px 0 4px; }
     table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
     th, td { padding: 5px 6px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; font-size: 13px; }
     th:first-child, td:first-child { text-align: left; }
@@ -25,12 +29,32 @@
     .kv dt { color: var(--muted); } .kv dd { margin: 0; word-break: break-all; }
     .error { color: var(--err); } .warn { color: var(--warn); } .ok { color: var(--ok); } .info { color: var(--muted); }
     ul { margin: 0; padding-left: 18px; } li { margin: 2px 0; }
+    .summary { border-color: var(--ok); }
+    .summary.has-problem { border-color: var(--warn); }
+    .summary .kv { font-variant-numeric: tabular-nums; }
+    .datelist li { word-break: break-word; }
+    .datelist .d { font-variant-numeric: tabular-nums; font-weight: 600; margin-right: 6px; }
+    /* データを変更する操作（競合の解決）は、読み取り専用の表示とはっきり分ける */
+    .action-zone { border: 2px dashed var(--act); border-radius: 12px; padding: 12px; margin: 18px 0 12px; }
+    .action-zone > h2 { font-size: 15px; margin: 0 0 4px; color: var(--act); }
+    .conflict { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-top: 12px; }
+    .conflict dl { display: grid; grid-template-columns: 7.5em 1fr; gap: 4px 10px; margin: 0 0 12px; }
+    .conflict dt { color: var(--muted); }
+    .conflict dd { margin: 0; word-break: break-word; overflow-wrap: anywhere; }
+    .conflict .val { font-weight: 700; font-size: 15px; }
+    .conflict .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .conflict button { min-height: 48px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--btn); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; }
+    .conflict button:disabled { opacity: .5; cursor: default; }
+    .conflict .msg { margin-top: 10px; font-weight: 700; }
+    @media (max-width: 520px) { .conflict .btns { grid-template-columns: 1fr; gap: 14px; } .conflict dl { grid-template-columns: 6.5em 1fr; } }
   </style>
 </head>
 <body>
+<main>
   <h1>UBER_LOG データ診断</h1>
-  <p class="note">この端末に保存されているデータを読むだけのページです（書き換え・外部送信はしません）。</p>
+  <p class="note">この端末に保存されているデータを読んで表示するページです（表示だけでは書き換え・外部送信はしません。データを変えるのは、下の「競合の解決」でボタンを押したときだけです）。</p>
   <div id="out"></div>
+</main>
   <script src="js/data-diagnostics.js"></script>
   <script src="data/uber_weather.js"></script>
   <script>
@@ -39,6 +63,7 @@
       var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
       var yen = function (n) { return '¥' + Number(n || 0).toLocaleString(); };
       var read = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+      var readJson = function (k, fb) { try { var v = JSON.parse(read(k) || 'null'); return v === null ? fb : v; } catch (e) { return fb; } };
       // 日本時間の今日
       var today = (function () {
         try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
@@ -58,41 +83,103 @@
       var hasSession = false, keys = [];
       try { for (var i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i)); } catch (e) {}
       keys.forEach(function (k) { if (/^sb-.*-auth-token$/.test(k)) hasSession = true; });
-      var pending = [];
-      try { pending = JSON.parse(read('uber_pending_sync_dates') || '[]'); } catch (e) {}
-
-      // 同期の記録（js/cloud-sync.js が保存。この端末の最終 pull / push・結果・エラー・競合）
-      var sync = {}; try { sync = JSON.parse(read('uber_sync_status') || '{}') || {}; } catch (e) {}
-      var conflicts = []; try { conflicts = JSON.parse(read('uber_sync_conflicts') || '[]') || []; } catch (e) {}
-      var clientId = ''; try { clientId = JSON.parse(read('uber_sync_client_id') || '""') || ''; } catch (e) {}
+      var pending = readJson('uber_pending_sync_dates', []);
+      // 同期の記録（js/cloud-sync.js が保存。この端末の最終 pull / push・結果・エラー・競合・クラウドの要約）
+      var sync = readJson('uber_sync_status', {}) || {};
+      var conflicts = readJson('uber_sync_conflicts', []) || [];
+      var clientId = readJson('uber_sync_client_id', '') || '';
+      var cloudIndex = readJson('uber_sync_cloud_index', null);
       var jst = function (iso) { if (!iso) return '—'; try { return new Date(iso).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }); } catch (e) { return iso; } };
       var pendingItems = 0;
       pending.forEach(function (d) { var l = logs[d]; if (l) pendingItems += 1 + ((l.expenses || []).length); });
       var RESULT = { ok: '正常', error: 'エラー', offline: 'オフライン', not_logged_in: '未ログイン', unconfigured: '接続未設定' };
       var weatherBundle = (window.UBER_WEATHER && window.UBER_WEATHER.days) || {};
       var manualWeather = dates.filter(function (d) { return logs[d] && logs[d].weather && logs[d].weather.type; }).length;
+      var diff = D.diffLocalCloud(logs, cloudIndex, { pendingDates: pending, conflicts: conflicts });
+      var thisMonth = today.slice(0, 7);
+      var mNow = months.filter(function (m) { return m.month === thisMonth; })[0] || { sales: 0, deliveries: 0, expenses: 0, expenseCount: 0, workedDays: 0 };
+      var range = function (list) { return list.length ? '（' + list[0] + '〜' + list[list.length - 1] + '）' : ''; };
+      var lastSync = jst(sync.lastSyncAt || sync.lastCheckAt);
+
+      var LOCAL_ONLY = {
+        empty: ['info', '空の日（中身なし。以前の版で日付を開いたときに作られたもの。送る必要なし）'],
+        official: ['info', 'Uber実績だけ（公式データはアプリに同梱。クラウドに送らない設計）'],
+        pending: ['warn', '未送信（自動で送ります）'],
+        unsent: ['error', '送信漏れ（次の同期で自動で送ります）']
+      };
+      var FIELD_STATUS = {
+        'official-local-newer': ['info', 'この端末の公式データが新しい（新しい方が使われるので問題なし）'],
+        'official-cloud-newer': ['warn', 'クラウドの公式データが新しい（次の同期でこの端末へ）'],
+        official: ['info', '公式の値の差（この端末の同梱データを使用）'],
+        conflict: ['warn', '競合（下で選んでください）'],
+        pending: ['warn', '未送信（自動で送ります）'],
+        unsent: ['error', 'クラウドと違う（次の同期で自動でそろえます）']
+      };
+      var hasProblem = !hasSession || sync.lastResult !== 'ok' || !!sync.lastError || pending.length > 0 || conflicts.length > 0 || diff.problems > 0;
 
       var html = '';
+      // 比較用まとめ（OPPO と PC で同じ場所を見比べる。スクリーンショット1枚で確認できるように）
+      html += '<div class="card summary' + (hasProblem ? ' has-problem' : '') + '" id="summary"><h2>比較用まとめ（OPPO と PC で見比べる）</h2><dl class="kv">' +
+        '<dt>版</dt><dd id="sum-ver">' + esc(sync.appVersion || '—') + '</dd>' +
+        '<dt>ログイン</dt><dd class="' + (hasSession ? 'ok' : 'warn') + '">' + (hasSession ? 'あり' : 'なし') + '</dd>' +
+        '<dt>最終同期</dt><dd class="' + (sync.lastResult === 'ok' ? 'ok' : 'warn') + '">' + esc(RESULT[sync.lastResult] || sync.lastResult || '—') + '（' + esc(lastSync) + '）</dd>' +
+        '<dt>未送信</dt><dd class="' + (pending.length ? 'warn' : 'ok') + '">' + (pending.length ? pending.length + '日' : 'なし') + '</dd>' +
+        '<dt>競合</dt><dd class="' + (conflicts.length ? 'warn' : 'ok') + '">' + (conflicts.length ? conflicts.length + '件' : 'なし') + '</dd>' +
+        '<dt>中身のある日</dt><dd>' + diff.local.meaningful + '日（端末にある日 ' + diff.local.total + '日・うち空の日 ' + diff.local.empty + '日）</dd>' +
+        '<dt>クラウドに保存された日</dt><dd>' + (diff.available ? diff.cloudCount + '日' : (sync.cloudDays !== undefined ? sync.cloudDays + '日' : '—')) + '</dd>' +
+        '<dt>端末だけ / クラウドだけ / 違う</dt><dd>' + (diff.available ? diff.localOnly.length + '日 / ' + diff.cloudOnly.length + '日 / ' + diff.different.length + '日' : '—（v80 のアプリで一度同期すると表示）') + '</dd>' +
+        '<dt>差分の判定</dt><dd class="' + (!diff.available ? 'info' : (diff.problems ? 'error' : 'ok')) + '">' + (!diff.available ? '—' : (diff.problems ? '送信漏れ ' + diff.problems + '件（次の同期で自動で送ります）' : '問題なし（差は設計どおり）')) + '</dd>' +
+        '<dt>' + esc(thisMonth.replace('-', '年') + '月') + ' 総売上</dt><dd>' + yen(mNow.sales) + '</dd>' +
+        '<dt>' + esc(thisMonth.replace('-', '年') + '月') + ' 配達件数</dt><dd>' + mNow.deliveries + '件</dd>' +
+        '<dt>' + esc(thisMonth.replace('-', '年') + '月') + ' 必要経費</dt><dd>' + yen(mNow.expenses) + '（' + mNow.expenseCount + '件）</dd>' +
+        '</dl></div>';
+
       html += '<div class="card"><h2>同期の状態</h2><dl class="kv">' +
         '<dt>この端末で動いている版</dt><dd id="ver-running">' + esc(sync.appVersion || '（まだアプリで同期していない）') + '</dd>' +
         '<dt>公開中の最新版</dt><dd id="ver-latest">確認中…</dd>' +
         '<dt>クラウドのログイン</dt><dd class="' + (hasSession ? 'ok' : 'warn') + '">' + (hasSession ? 'ログイン情報あり（同期の対象）' : 'ログイン情報なし（この端末の入力はほかの端末に届かない）') + '</dd>' +
         '<dt>この端末の識別</dt><dd>' + esc(clientId || '—') + '</dd>' +
-        '<dt>最終の同期結果</dt><dd class="' + (sync.lastResult === 'ok' ? 'ok' : (sync.lastResult ? 'warn' : '')) + '">' + esc(RESULT[sync.lastResult] || sync.lastResult || '—') + '（' + esc(jst(sync.lastSyncAt || sync.lastCheckAt)) + '）</dd>' +
+        '<dt>最終の同期結果</dt><dd class="' + (sync.lastResult === 'ok' ? 'ok' : (sync.lastResult ? 'warn' : '')) + '">' + esc(RESULT[sync.lastResult] || sync.lastResult || '—') + '（' + esc(lastSync) + '）</dd>' +
         '<dt>最終 受信（pull）</dt><dd>' + esc(jst(sync.lastPullAt)) + '</dd>' +
         '<dt>最終 送信（push）</dt><dd>' + esc(jst(sync.lastPushAt)) + (sync.lastPushDays ? '（' + sync.lastPushDays + '日分）' : '') + '</dd>' +
+        (sync.lastResendDates && sync.lastResendDates.length ? '<dt>送信漏れの自動再送</dt><dd>' + esc(jst(sync.lastResendAt)) + '（' + esc(sync.lastResendDates.join(', ')) + '）</dd>' : '') +
         '<dt>同期エラー</dt><dd class="' + (sync.lastError ? 'error' : 'ok') + '">' + (sync.lastError ? esc(sync.lastError) + '（' + esc(jst(sync.lastErrorAt)) + '）' : 'なし') + '</dd>' +
-        '<dt>未送信</dt><dd class="' + (pending.length ? 'warn' : 'ok') + '">' + (pending.length ? pending.length + '日・' + pendingItems + '件（' + esc(pending.sort().join(', ')) + '）' : 'なし') + '</dd>' +
-        '<dt>競合</dt><dd class="' + (conflicts.length ? 'warn' : 'ok') + '">' + (conflicts.length ? conflicts.length + '件（この端末の値を残しています）' : 'なし') + '</dd>' +
-        '<dt>保存されている日数</dt><dd>この端末 ' + dates.length + '日（' + esc(dates[0] || '--') + '〜' + esc(dates[dates.length - 1] || '--') + '）／ クラウド ' + (sync.cloudDays !== undefined ? sync.cloudDays + '日（最終受信時）' : '—') + '</dd>' +
+        '<dt>未送信</dt><dd class="' + (pending.length ? 'warn' : 'ok') + '">' + (pending.length ? pending.length + '日・' + pendingItems + '件（' + esc(pending.slice().sort().join(', ')) + '）' : 'なし') + '</dd>' +
+        '<dt>競合</dt><dd class="' + (conflicts.length ? 'warn' : 'ok') + '">' + (conflicts.length ? conflicts.length + '件（この端末の値を残しています。下の「競合の解決」で選べます）' : 'なし') + '</dd>' +
         '<dt>天気</dt><dd>気象庁 ' + Object.keys(weatherBundle).length + '日・手動 ' + manualWeather + '日</dd>' +
         '<dt>基準日（日本時間）</dt><dd>' + esc(today) + '</dd>' +
         '</dl></div>';
-      if (conflicts.length) {
-        html += '<div class="card"><h2>競合の内容（自動で決められなかった項目）</h2><ul>' + conflicts.map(function (c) {
-          return '<li>' + esc(c.date) + ' ' + esc(c.field) + ': この端末 ' + esc(JSON.stringify(c.local)) + ' ／ クラウド ' + esc(JSON.stringify(c.cloud)) + '（' + esc(jst(c.at)) + '）</li>';
-        }).join('') + '</ul></div>';
+
+      // 日数の意味（SYNC_MODEL.md「日数の意味」）と、端末とクラウドの差分
+      var dl = function (list, fn) { return list.length ? '<ul class="datelist">' + list.map(fn).join('') + '</ul>' : '<span class="info">なし</span>'; };
+      html += '<div class="card"><h2>日数（端末とクラウドの差分）</h2><dl class="kv">' +
+        '<dt>端末にある日</dt><dd>' + diff.local.total + '日' + esc(range(dates)) + '</dd>' +
+        '<dt>　うち中身のある日</dt><dd>' + diff.local.meaningful + '日（手動のデータがある日 ' + diff.local.manual + '日・Uber実績だけの日 ' + diff.local.uberOnly + '日）</dd>' +
+        '<dt>　うち空の日</dt><dd>' + diff.local.empty + '日（画面で日付を開いたときに作られた中身の無い日。消さなくてよい）</dd>' +
+        '<dt>クラウドに保存された日</dt><dd>' + (diff.available ? diff.cloudCount + '日（最終受信 ' + esc(jst(cloudIndex.at)) + '）' : (sync.cloudDays !== undefined ? sync.cloudDays + '日（日付の一覧は v80 のアプリで一度同期すると表示）' : '—')) + '</dd>' +
+        (diff.available ? '<dt>両方にあって同じ</dt><dd>' + diff.same + '日</dd>' : '') +
+        '</dl>' +
+        '<p class="note" style="margin:8px 0 0">クラウドには「手動のデータ（経費・休み・天気・評価など）を送った日」だけが保存されます。Uber の公式データはアプリに同梱されて各端末に届くので、公式データだけの日はクラウドに無くて正常です。</p>';
+      if (diff.available) {
+        // 正常な分類（空の日・Uber実績だけの日）は日付をまとめて1行。未送信・送信漏れは1日ずつ中身も出す
+        var grouped = ['empty', 'official'].map(function (st) {
+          var ds = diff.localOnly.filter(function (x) { return x.status === st; }).map(function (x) { return x.date; });
+          var s = LOCAL_ONLY[st];
+          return ds.length ? '<li><span class="' + s[0] + '">' + esc(s[1]) + '</span>: ' + ds.length + '日（' + esc(ds.join(', ')) + '）</li>' : '';
+        }).join('');
+        var single = diff.localOnly.filter(function (x) { return x.status !== 'empty' && x.status !== 'official'; }).map(function (x) {
+          var s = LOCAL_ONLY[x.status] || ['', x.status];
+          return '<li><span class="d">' + esc(x.date) + '</span>' + esc(x.contents) + ' — <span class="' + s[0] + '">' + esc(s[1]) + '</span></li>';
+        }).join('');
+        html += '<h3>端末だけにある日（' + diff.localOnly.length + '日）</h3>' + (diff.localOnly.length ? '<ul class="datelist">' + single + grouped + '</ul>' : '<span class="info">なし</span>');
+        html += '<h3>クラウドだけにある日（' + diff.cloudOnly.length + '日）</h3>' + dl(diff.cloudOnly, function (x) {
+          return '<li><span class="d">' + esc(x.date) + '</span><span class="warn">次の同期でこの端末に入ります</span></li>';
+        });
+        html += '<h3>両方にあって中身が違う日（' + diff.different.length + '日）</h3>' + dl(diff.different, function (x) {
+          return '<li><span class="d">' + esc(x.date) + '</span>' + x.fields.map(function (f) { var s = FIELD_STATUS[f.status] || ['', f.status]; return esc(f.label) + ': <span class="' + s[0] + '">' + esc(s[1]) + '</span>'; }).join(' ／ ') + '</li>';
+        });
       }
+      html += '</div>';
 
       html += '<div class="card"><h2>月ごとの合計（生データ）</h2><table><thead><tr><th>月</th><th>稼働日</th><th>配達件数</th><th>総売上</th><th>必要経費</th><th>経費の件数</th></tr></thead><tbody>' +
         months.map(function (m) { return '<tr><td>' + esc(m.month) + '</td><td>' + m.workedDays + '日</td><td>' + m.deliveries + '件</td><td>' + yen(m.sales) + '</td><td>' + yen(m.expenses) + '</td><td>' + m.expenseCount + '件</td></tr>'; }).join('') +
@@ -110,7 +197,93 @@
       }).join('') + '</ul>' : '<span class="ok">問題なし</span>') +
         '<p class="note" style="margin:8px 0 0">' + (errs.length ? '<span class="error">error ' + errs.length + '件</span>' : '<span class="ok">error なし</span>') + '。INFO は確認用の情報（既知の旧データ差異・「その他」の金額など）。</p></div>';
 
+      // ===== ここから下だけがデータを変更する操作（競合の解決） =====
+      if (conflicts.length) {
+        html += '<section class="action-zone" id="conflicts"><h2>⚠ 競合の解決（データを変更する操作）</h2>' +
+          '<p class="note" style="margin:0">自動で決められなかった項目です。今はこの端末の値を残しています。どちらかを選ぶと、選んだ値に新しい更新時刻を付けて保存し、クラウド経由でほかの端末にも届きます。押すと確認が出ます。</p>' +
+          conflicts.map(function (c, idx) {
+            var info = D.describeConflict(c);
+            return '<div class="conflict" data-idx="' + idx + '"><dl>' +
+              '<dt>日付</dt><dd>' + esc(c.date) + '</dd>' +
+              '<dt>項目</dt><dd>' + esc(info.title) + '</dd>' +
+              '<dt>影響</dt><dd class="' + (info.important ? 'warn' : 'info') + '">' + esc(info.impact) + '</dd>' +
+              '<dt>この端末の値</dt><dd class="val">' + esc(info.local) + '</dd>' +
+              '<dt>クラウドの値</dt><dd class="val">' + esc(info.cloud) + '</dd>' +
+              '</dl><div class="btns">' +
+              '<button type="button" data-side="local">この端末の値を採用</button>' +
+              '<button type="button" data-side="cloud">クラウドの値を採用</button>' +
+              '</div><div class="msg" aria-live="polite"></div></div>';
+          }).join('') + '</section>';
+      }
+
       out.innerHTML = html;
+
+      // 前回の解決結果（解決後に読み直した画面で表示）
+      try {
+        var done = sessionStorage.getItem('uber_diag_resolve_msg');
+        if (done) { sessionStorage.removeItem('uber_diag_resolve_msg'); var n = document.createElement('div'); n.className = 'card ok'; n.textContent = done; out.insertBefore(n, out.firstChild); }
+      } catch (e) {}
+
+      // 競合の解決: ボタンを押して確認したときだけ、アプリと同じ store.js / cloud-sync.js を読み込んで実行する
+      var runtime = null;
+      var loadScript = function (src, integrity) {
+        return new Promise(function (resolve, reject) {
+          var s = document.createElement('script');
+          s.src = src;
+          if (integrity) { s.integrity = integrity; s.crossOrigin = 'anonymous'; }
+          s.onload = resolve;
+          s.onerror = function () { reject(new Error('読み込めません: ' + src)); };
+          document.body.appendChild(s);
+        });
+      };
+      var ensureRuntime = function () {
+        if (runtime) return runtime;
+        var v = '?v=' + encodeURIComponent(sync.appVersion || Date.now());
+        runtime = loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js', 'sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R')
+          .then(function () { return loadScript('js/supabase-config.js' + v); })
+          .then(function () { return loadScript('js/supabase-client.js' + v); })
+          .then(function () { return loadScript('js/store.js' + v); })
+          .then(function () { return loadScript('js/cloud-sync.js' + v); })
+          .then(function () { if (!window.cloudSync || typeof window.cloudSync.resolveConflictChoice !== 'function') throw new Error('同期の機能を読み込めません'); return window.cloudSync; });
+        runtime.catch(function () { runtime = null; });
+        return runtime;
+      };
+      var busy = false;
+      Array.prototype.forEach.call(document.querySelectorAll('.conflict button'), function (btn) {
+        btn.addEventListener('click', function () {
+          if (busy) return;
+          var card = btn.closest('.conflict');
+          var c = conflicts[Number(card.getAttribute('data-idx'))];
+          var info = D.describeConflict(c);
+          var side = btn.getAttribute('data-side');
+          var label = side === 'local' ? 'この端末の値「' + info.local + '」' : 'クラウドの値「' + info.cloud + '」';
+          if (!window.confirm(c.date + ' の「' + info.title + '」を、' + label + 'にそろえます。\nほかの端末にも届きます。よろしいですか？')) return;
+          busy = true;
+          var allBtns = document.querySelectorAll('.conflict button');
+          Array.prototype.forEach.call(allBtns, function (b) { b.disabled = true; });
+          var msg = card.querySelector('.msg');
+          msg.className = 'msg info';
+          msg.textContent = '処理中…（保存 → クラウドへ送信 → 確認）';
+          ensureRuntime().then(function (cs) { return cs.resolveConflictChoice(c.key, side); }).then(function (r) {
+            if (r && r.ok) {
+              msg.className = 'msg ok';
+              msg.textContent = r.message || '競合を解決しました';
+              try { sessionStorage.setItem('uber_diag_resolve_msg', c.date + ' の「' + info.title + '」: ' + (r.message || '競合を解決しました')); } catch (e) {}
+              setTimeout(function () { location.reload(); }, 1200);
+            } else {
+              msg.className = 'msg error';
+              msg.textContent = (r && r.message) || '解決できませんでした。値は元のままです';
+              busy = false;
+              Array.prototype.forEach.call(allBtns, function (b) { b.disabled = false; });
+            }
+          }).catch(function (e) {
+            msg.className = 'msg error';
+            msg.textContent = '解決できませんでした（' + (e && e.message ? e.message : '読み込みエラー') + '）。値は元のままです';
+            busy = false;
+            Array.prototype.forEach.call(allBtns, function (b) { b.disabled = false; });
+          });
+        });
+      });
 
       // 公開中の最新版（同じサイトの version.json。外部には送らない）と、この端末で動いている版を比べる
       try {
@@ -121,6 +294,8 @@
           var same = latest && sync.appVersion && latest === sync.appVersion;
           el.textContent = (latest || '—') + (sync.appVersion ? (same ? '（この端末は最新）' : '（この端末は古い版です。アプリの「更新する」で新しい版にしてください）') : '');
           el.className = sync.appVersion && !same ? 'warn' : 'ok';
+          var sv = document.getElementById('sum-ver');
+          if (sv && sync.appVersion && !same) { sv.className = 'warn'; sv.textContent = sync.appVersion + '（最新は ' + latest + '）'; }
         }).catch(function () { var el = document.getElementById('ver-latest'); if (el) el.textContent = '確認できません（オフライン）'; });
       } catch (e) { /* 古いブラウザ */ }
     })();

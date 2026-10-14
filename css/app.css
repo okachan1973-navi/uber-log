@@ -135,6 +135,12 @@ body {
   font-weight: 700;
 }
 
+.header-sync-text.link {
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+
 .header-sync-text.error {
   color: #f87171;
   font-weight: 700;
