@@ -5,6 +5,7 @@
  *   node tools/data-audit/data-integrity-audit.js                       … 同梱データ（js/store.js のシード）を監査
  *   node tools/data-audit/data-integrity-audit.js --file backup.json    … アプリの「バックアップ書き出し」JSON（端末データ）を監査
  *   node tools/data-audit/data-integrity-audit.js --today 2026-10-13    … 基準日（省略時は日本時間の今日）
+ *   node tools/data-audit/data-integrity-audit.js --as-of 2026-10-13    … その日の時点で監査（基準日＝その日。より後の日のデータは対象外。テスト用）
  *   node tools/data-audit/data-integrity-audit.js --json                … 結果を JSON で出力
  *
  * 調べること（DATA_MODEL.md の不変条件）
@@ -112,7 +113,10 @@ function main() {
   const dataOnly = backup ? (() => { const c = { ...backup }; delete c._sync; return c; })() : null;
   const { store, getTodayDateString, getWeekRange, getPreviousWeekRange, getConfirmedSeedData } = loadStore(dataOnly);
   const D = require(path.join(ROOT, 'js', 'data-diagnostics.js'));
-  const today = opt('--today') || getTodayDateString();
+  const asOf = opt('--as-of');
+  const today = asOf || opt('--today') || getTodayDateString();
+  // --as-of: その日の時点の監査（その日より後のデータは、まだ無いものとして集計・チェックから外す。メモリ上だけで保存はしない）
+  if (asOf) Object.keys(store.state.dailyLogs).filter(d => d > asOf).forEach(d => { delete store.state.dailyLogs[d]; });
   const logs = store.state.dailyLogs;
   const now = opt('--now') || new Date().toISOString(); // 同期の更新時刻が未来かどうかの基準（テストでは指定する）
   const problems = D.checkDailyLogs(logs, { today, now, knownLegacyCountDates: Object.keys(KNOWN_LEGACY) })

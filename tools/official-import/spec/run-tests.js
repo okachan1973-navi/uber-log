@@ -642,6 +642,9 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
       global.localStorage={getItem:k=>map[k]||null,setItem:(k,v)=>{map[k]=v},removeItem:()=>{}};global.window={localStorage:global.localStorage};
       const {store,CONFIRMED_DAY_OFF_DATES}=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
       const TODAY='2026-10-13';
+      // 基準日（TODAY）の時点では、TODAY より後の実データ（後日の公式取込）はまだ無い。中身のない日に置き換えて判定から外す
+      // （メモリ上だけ。後日の取込でこのテストの期待値は変わらない）
+      Object.keys(store.state.dailyLogs).filter(d=>d>TODAY).forEach(d=>{store.state.dailyLogs[d]={date:d,deliveries:[],quests:[]};});
       const S=(d,t=TODAY)=>store.getDayStatus(d,t);
       const st={};for(let d=1;d<=30;d++){const k='2026-09-'+String(d).padStart(2,'0');st[k]=S(k);}
       const oct={};for(let d=1;d<=31;d++){const k='2026-10-'+String(d).padStart(2,'0');oct[k]=S(k);}

@@ -176,6 +176,12 @@ check(C('雨') === 'rain' && C('大雨一時曇') === 'rain' && C('曇後一時�
   '雨: 昼の天気概況に 雨・雪 等を含めば雨（一時雨・時々雨・後雨・大雨・雷を伴う も雨）');
 check(C('') === null && C('霧') === 'unknown', '天気概況が空欄（未発表）は登録しない・晴/曇/雨のどれでもない表現は unknown');
 check(W.toEntry({ date: '2026-10-13', day: '', night: '', precipitationMm: null, precipitationNone: true, sunshineH: 10.7 }) === null, '天気概況が未発表の日（例: 2026-10-13）は保存しない（画面は「—」）');
+// 同梱の気象庁データの最終日の翌日（まだ取得していない日）。実データが後日追加されても、その時点のデータ範囲を基準にする
+const WEATHER_NEXT = (() => {
+  const last = Object.keys(JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'uber_weather.json'), 'utf8')).days || {}).sort().pop();
+  const d = new Date(`${last}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+})();
 const WT = run(`${loadWith({ ...FIXTURE,
     '2099-10-01': { ...FIXTURE['2099-10-01'], weather: { type: 'rain', source: 'manual', raw: '雨', observedDate: '2099-10-01' } },
     '2099-10-02': { ...FIXTURE['2099-10-02'], weather: { type: 'sunny', source: 'manual', raw: '晴', observedDate: '2099-10-02' } },
@@ -184,10 +190,10 @@ const WT = run(`${loadWith({ ...FIXTURE,
   const g=d=>{const w=store.getWeather(d);return w&&{t:w.type,l:w.label,i:w.icon,s:w.source};};
   const cmp=store.getAnalytics().dailyComparison;
   console.log(JSON.stringify({rain:g('2099-10-01'),sunny:g('2099-10-02'),cloudy:g('2099-09-30'),unk:g('2099-09-29'),none:g('2099-10-06'),
-    jma29:g('2026-09-29'),jma12:g('2026-10-12'),jma13:g('2026-10-13'),row:(cmp.find(d=>d.date==='2026-09-29')||{}).weather,rowNone:'weather' in (cmp.find(d=>d.date==='2099-10-06')||{}) && (cmp.find(d=>d.date==='2099-10-06')||{}).weather}));`);
+    jma29:g('2026-09-29'),jma12:g('2026-10-12'),jmaNext:g(${JSON.stringify(WEATHER_NEXT)}),row:(cmp.find(d=>d.date==='2026-09-29')||{}).weather,rowNone:'weather' in (cmp.find(d=>d.date==='2099-10-06')||{}) && (cmp.find(d=>d.date==='2099-10-06')||{}).weather}));`);
 check(WT.sunny.t === 'sunny' && WT.sunny.l === '晴' && WT.sunny.i === '☀' && WT.cloudy.l === '曇' && WT.cloudy.i === '☁' && WT.rain.l === '雨' && WT.rain.i === '🌧' && WT.unk.t === 'unknown',
   '表示: ☀ 晴 / ☁ 曇 / 🌧 雨（日別データの weather があれば優先）', WT);
-check(WT.none === null && WT.rowNone === null && WT.jma13 === null, '天気が無い日は null（画面は「—」。推測で晴にしない）。10/13（未発表）も「—」');
+check(WT.none === null && WT.rowNone === null && WT.jmaNext === null, `天気が無い日は null（画面は「—」。推測で晴にしない）。気象庁データの範囲外（${WEATHER_NEXT}・未取得）も「—」`);
 check(WT.jma29.t === 'rain' && WT.jma29.s === 'jma' && WT.jma12.t === 'sunny' && WT.row && WT.row.type === 'rain', '気象庁のデータ: 2026-09-29 は雨・2026-10-12 は晴。日別比較の行に天気が入る');
 
 // ============================================================
@@ -304,7 +310,8 @@ for (const tz of ['Asia/Tokyo', 'UTC', 'America/Los_Angeles']) {
 // ============================================================
 section('9. データ整合性監査スクリプト');
 const AUDIT = path.join(ROOT, 'tools', 'data-audit', 'data-integrity-audit.js');
-const ok = spawnSync(process.execPath, [AUDIT, '--today', '2026-10-13', '--json'], { encoding: 'utf8' });
+// 基準日を固定するため --as-of（2026-10-13 より後に取り込まれた実データは対象外。後日の取込でこのテストは変わらない）
+const ok = spawnSync(process.execPath, [AUDIT, '--as-of', '2026-10-13', '--json'], { encoding: 'utf8' });
 const okJ = JSON.parse(ok.stdout);
 check(ok.status === 0 && okJ.ok && okJ.mismatches.length === 0, `同梱データ: 不整合なし（月 ${okJ.months.length}・今月 ${okJ.thisMonth.sales}円）`);
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'uberlog-audit-'));
