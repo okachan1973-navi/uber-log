@@ -7,8 +7,8 @@
   "urlTemplate": "https://www.data.jma.go.jp/stats/etrn/view/daily_s1.php?prec_no=62&block_no=47772&year=YYYY&month=MM&day=&view=",
   "rule": "昼（06:00-18:00）の天気概況で分類。雨・雪・みぞれ・ひょう・あられを含めば雨、それ以外は最初の天気（快晴・晴→晴／薄曇・曇→曇）"
  },
- "fetchedAt": "2026-10-13T22:57:49.322Z",
- "range": "2026-09-10〜2026-10-12",
+ "fetchedAt": "2026-10-15T22:48:21.873Z",
+ "range": "2026-09-10〜2026-10-14",
  "days": {
   "2026-09-10": {
    "type": "rain",
@@ -306,6 +306,24 @@
    "precipitationMm": 0,
    "precipitationNone": false,
    "sunshineH": 7.5
+  },
+  "2026-10-13": {
+   "type": "sunny",
+   "day": "快晴",
+   "night": "晴後曇時々雨",
+   "nightRain": true,
+   "precipitationMm": null,
+   "precipitationNone": true,
+   "sunshineH": 10.7
+  },
+  "2026-10-14": {
+   "type": "rain",
+   "day": "曇後晴時々雨",
+   "night": "晴",
+   "nightRain": false,
+   "precipitationMm": 0.5,
+   "precipitationNone": false,
+   "sunshineH": 2.4
   }
  }
 }
