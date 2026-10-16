@@ -89,9 +89,13 @@ async function cloudScenario(label, date, { official }) {
   const other = createDevice({ storage: createStorage(), cloud });
   await other.pull();
   const o = other.day(date) || {};
-  const officialDistance = official ? createDevice({ storage: createStorage() }).day(date).totalDistanceKm : null;
-  check((o.workSessions || []).some(x => x.id === s.id && x.end === '13:00') && o.totalDistanceKm === (official ? officialDistance : 12.3) && (o.quests || []).some(x => x.id === q.id)
-    && (!del || (o.deliveries || []).some(x => x.id === del.id)), official ? '別端末で pull → 稼働セッション・クエストが届く（距離は公式の値のまま）' : '別端末で pull → 同じ内容（稼働セッション・クエスト・距離・配達）', { sessions: (o.workSessions || []).map(x => x.id === s.id ? x.end : '-'), distance: o.totalDistanceKm, quest: (o.quests || []).some(x => x.id === q.id), official: !!o.officialImport });
+  // 公式取込済みの日は、距離・クエストとも公式の値（SYNC_MODEL.md「公式の値」: importedAt が新しい側の件数・距離・クエスト・調整を採用）。
+  // 手入力のクエストは公式のクエストに置き換わる（今日の公式取込を反映した後に、このテストを実行した場合もこちら）
+  const officialDay = official ? createDevice({ storage: createStorage() }).day(date) : null;
+  const questIds = (o.quests || []).map(x => x.id).sort().join();
+  const questOk = official ? questIds === (officialDay.quests || []).map(x => x.id).sort().join() : (o.quests || []).some(x => x.id === q.id);
+  check((o.workSessions || []).some(x => x.id === s.id && x.end === '13:00') && o.totalDistanceKm === (official ? officialDay.totalDistanceKm : 12.3) && questOk
+    && (!del || (o.deliveries || []).some(x => x.id === del.id)), official ? '別端末で pull → 稼働セッションが届く（距離・クエストは公式の値のまま）' : '別端末で pull → 同じ内容（稼働セッション・クエスト・距離・配達）', { sessions: (o.workSessions || []).map(x => x.id === s.id ? x.end : '-'), distance: o.totalDistanceKm, quests: questIds, official: !!o.officialImport });
 
   // 既知の未対応: 削除はクラウドへ届かない（統合で復活する）
   dev.store.deleteWorkSession(date, s.id);

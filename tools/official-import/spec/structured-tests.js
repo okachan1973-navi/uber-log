@@ -194,7 +194,13 @@ function runTests() {
   section('5. パイプライン統合テスト（単配達・ダブル・クエスト・調整の一括取込）');
   // ============================================================
   const root = makeRoot();
-  const testDate = '2026-10-15'; // テスト用新規日
+  // テスト用の日付は実データと重ならない 2099 年にする（以前は 2026-10-15〜17 を使っていて、
+  // 実際の 10/16 を取り込んだ後に「既存データとの整合」で 7. が失敗した。ID は月日だけを使うため del_1015_* のまま）
+  const testDate = '2099-10-15'; // テスト用新規日
+  const dupDate = '2099-10-16';
+  const partialDate = '2099-10-17';
+  const realLogs = pipeline.readSeed(path.join(ROOT, 'js', 'store.js')).data.dailyLogs;
+  check([testDate, dupDate, partialDate].every(d => !realLogs[d]), `テスト用の日付（${testDate}・${dupDate}・${partialDate}）が実データに無い`);
 
   const structuredPayload = {
     source: 'uber-driver-web',
@@ -264,7 +270,6 @@ function runTests() {
   section('7. 同一trip UUID 再取得（重複排除テスト）');
   // ============================================================
   // 一覧および詳細にまったく同一の tripUuid が2重に紛れ込んだ場合
-  const dupDate = '2026-10-16';
   const dupPayload = {
     source: 'uber-driver-web',
     fetchedAt: new Date().toISOString(),
@@ -289,7 +294,6 @@ function runTests() {
   section('8. 途中取得失敗時の安全装置');
   // ============================================================
   // 詳細取得が1件欠落している場合（一覧2件に対し詳細1件）
-  const partialDate = '2026-10-17';
   const partialPayload = {
     source: 'uber-driver-web',
     fetchedAt: new Date().toISOString(),
