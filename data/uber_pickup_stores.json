@@ -30,10 +30,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 65,
+      "pickup_count": 70,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-14 11:26",
-      "active_days": 20,
+      "last_pickup": "2026-10-16 12:43",
+      "active_days": 21,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
         "マクドナルド 九　条　店 McDonald's KUJO",
@@ -76,10 +76,10 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 19,
+      "pickup_count": 20,
       "first_pickup": "2026-09-23 16:27",
-      "last_pickup": "2026-10-14 15:24",
-      "active_days": 11,
+      "last_pickup": "2026-10-16 10:57",
+      "active_days": 12,
       "original_names": [
         "マクドナルド イオンモール大阪ドームシティ店",
         "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY"
@@ -120,10 +120,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 15,
+      "pickup_count": 16,
       "first_pickup": "2026-09-18 11:09",
-      "last_pickup": "2026-10-12 11:07",
-      "active_days": 10,
+      "last_pickup": "2026-10-16 10:17",
+      "active_days": 11,
       "original_names": [
         "バーガーキング 九条店",
         "バーガーキング 九条店 Burger King Kujo"
@@ -135,6 +135,49 @@
       "site_id": null,
       "display_name": "九条店",
       "address_short": "西区九条"
+    },
+    {
+      "id": "st_1tevs71",
+      "canonical_name": "KFC イオンモール大阪ドームシティ店",
+      "name_keys": [
+        "ケンタッキーフライドチキンイオンモール大阪ドームシティ店"
+      ],
+      "category": "fastfood",
+      "address": "大阪府大阪市西区千代崎3-13-1",
+      "latitude": 34.6703688,
+      "longitude": 135.477939,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "OSM relation/14378487 建物中心（住所 千代崎3-13-1 は丁目までしか測位できないため）",
+      "address_source": "search.kfc.co.jp/map/3188",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区千代崎三丁目",
+        "osm_nearest": {
+          "id": "node/1509364249",
+          "name": "ケンタッキーフライドチキン 大阪ドーム店 ケンタッキーフライドチキン",
+          "distance_m": 170
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "千代崎三丁目"
+        }
+      },
+      "same_building": "イオンモール大阪ドームシティ",
+      "notes": null,
+      "pickup_count": 14,
+      "first_pickup": "2026-09-10 11:04",
+      "last_pickup": "2026-10-16 11:46",
+      "active_days": 12,
+      "original_names": [
+        "ケンタッキーフライドチキン イオンモール大阪ドームシティ店"
+      ],
+      "brand_id": "kfc",
+      "brand_name": "KFC",
+      "brand_reading": "ケーエフシー",
+      "branch_name": "イオンモール大阪ドームシティ店",
+      "site_id": "site_c4h33y",
+      "display_name": "イオンモール大阪ドームシティ店",
+      "address_short": "西区千代崎"
     },
     {
       "id": "st_76kdj3",
@@ -181,49 +224,6 @@
       "address_short": "此花区西九条"
     },
     {
-      "id": "st_1tevs71",
-      "canonical_name": "KFC イオンモール大阪ドームシティ店",
-      "name_keys": [
-        "ケンタッキーフライドチキンイオンモール大阪ドームシティ店"
-      ],
-      "category": "fastfood",
-      "address": "大阪府大阪市西区千代崎3-13-1",
-      "latitude": 34.6703688,
-      "longitude": 135.477939,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "OSM relation/14378487 建物中心（住所 千代崎3-13-1 は丁目までしか測位できないため）",
-      "address_source": "search.kfc.co.jp/map/3188",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区千代崎三丁目",
-        "osm_nearest": {
-          "id": "node/1509364249",
-          "name": "ケンタッキーフライドチキン 大阪ドーム店 ケンタッキーフライドチキン",
-          "distance_m": 170
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "千代崎三丁目"
-        }
-      },
-      "same_building": "イオンモール大阪ドームシティ",
-      "notes": null,
-      "pickup_count": 13,
-      "first_pickup": "2026-09-10 11:04",
-      "last_pickup": "2026-10-14 12:06",
-      "active_days": 11,
-      "original_names": [
-        "ケンタッキーフライドチキン イオンモール大阪ドームシティ店"
-      ],
-      "brand_id": "kfc",
-      "brand_name": "KFC",
-      "brand_reading": "ケーエフシー",
-      "branch_name": "イオンモール大阪ドームシティ店",
-      "site_id": "site_c4h33y",
-      "display_name": "イオンモール大阪ドームシティ店",
-      "address_short": "西区千代崎"
-    },
-    {
       "id": "st_1omw10z",
       "canonical_name": "餃子の王将 大阪九条",
       "name_keys": [
@@ -251,10 +251,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 9,
+      "pickup_count": 10,
       "first_pickup": "2026-09-22 14:07",
-      "last_pickup": "2026-10-12 17:37",
-      "active_days": 6,
+      "last_pickup": "2026-10-16 13:07",
+      "active_days": 7,
       "original_names": [
         "餃子の王将 大阪九条"
       ],
@@ -265,6 +265,54 @@
       "site_id": null,
       "display_name": "大阪九条",
       "address_short": "西区九条"
+    },
+    {
+      "id": "st_t581ya",
+      "canonical_name": "【伝説のクロックムッシュ】サンドイッチ九条店",
+      "name_keys": [
+        "【伝説のクロックムッシュ】サンドイッチ九条店",
+        "【伝説のクロックムッシュ】サンドイッチ九条店Sandwichkujyo～お持ち帰り専門店～",
+        "【伝説のクロックムッシュ】サンドイッチ九条店Sandwichkujyo～お持帰り専門店～"
+      ],
+      "category": "cafe",
+      "address": "大阪府大阪市西区千代崎1-27-11",
+      "latitude": 34.674683,
+      "longitude": 135.47821,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区千代崎一丁目２７番１１号",
+      "address_source": "map.yahoo.co.jp 3krGz6UNWy-; demae-can 3064002",
+      "address_evidence": "delivery_listing",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区千代崎一丁目２７番１１号",
+        "osm_nearest": {
+          "id": "node/1735949599",
+          "name": "ドコモショップ 九条店 NTT docomo",
+          "distance_m": 61
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "千代崎一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 9,
+      "first_pickup": "2026-09-19 10:15",
+      "last_pickup": "2026-10-16 10:40",
+      "active_days": 9,
+      "original_names": [
+        "【伝説のクロックムッシュ】サンドイッチ 九条店",
+        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo〜お持帰り専門店〜",
+        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持ち帰り専門店～",
+        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持帰り専門店～"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "site_id": null,
+      "display_name": "【伝説のクロックムッシュ】サンドイッチ九条店",
+      "address_short": "西区千代崎"
     },
     {
       "id": "st_189ay5t",
@@ -309,54 +357,6 @@
       "site_id": null,
       "display_name": "弁天町駅前店",
       "address_short": "港区弁天"
-    },
-    {
-      "id": "st_t581ya",
-      "canonical_name": "【伝説のクロックムッシュ】サンドイッチ九条店",
-      "name_keys": [
-        "【伝説のクロックムッシュ】サンドイッチ九条店",
-        "【伝説のクロックムッシュ】サンドイッチ九条店Sandwichkujyo～お持ち帰り専門店～",
-        "【伝説のクロックムッシュ】サンドイッチ九条店Sandwichkujyo～お持帰り専門店～"
-      ],
-      "category": "cafe",
-      "address": "大阪府大阪市西区千代崎1-27-11",
-      "latitude": 34.674683,
-      "longitude": 135.47821,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区千代崎一丁目２７番１１号",
-      "address_source": "map.yahoo.co.jp 3krGz6UNWy-; demae-can 3064002",
-      "address_evidence": "delivery_listing",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区千代崎一丁目２７番１１号",
-        "osm_nearest": {
-          "id": "node/1735949599",
-          "name": "ドコモショップ 九条店 NTT docomo",
-          "distance_m": 61
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "千代崎一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 8,
-      "first_pickup": "2026-09-19 10:15",
-      "last_pickup": "2026-10-11 06:44",
-      "active_days": 8,
-      "original_names": [
-        "【伝説のクロックムッシュ】サンドイッチ 九条店",
-        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo〜お持帰り専門店〜",
-        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持ち帰り専門店～",
-        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持帰り専門店～"
-      ],
-      "brand_id": null,
-      "brand_name": null,
-      "brand_reading": null,
-      "branch_name": null,
-      "site_id": null,
-      "display_name": "【伝説のクロックムッシュ】サンドイッチ九条店",
-      "address_short": "西区千代崎"
     },
     {
       "id": "st_qri0e3",
@@ -2601,6 +2601,38 @@
       "site_id": null,
       "display_name": "かつ丼 吉兵衛 なんば道具屋筋店",
       "address_short": "中央区難波千日前"
+    },
+    {
+      "id": "st_1v9fzn2",
+      "canonical_name": "キッチンオリジン 阿波座",
+      "name_keys": [
+        "キッチンオリジン阿波座"
+      ],
+      "category": "gyudon_teishoku",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-16 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-16 13:13",
+      "last_pickup": "2026-10-16 13:13",
+      "active_days": 1,
+      "original_names": [
+        "キッチンオリジン 阿波座"
+      ],
+      "brand_id": "origin",
+      "brand_name": "キッチンオリジン",
+      "brand_reading": null,
+      "branch_name": "阿波座",
+      "display_name": "阿波座",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_1ydwm1l",
@@ -5156,14 +5188,14 @@
   "summary": {
     "period": {
       "from": "2026-09-10",
-      "to": "2026-10-14",
-      "days": 28
+      "to": "2026-10-16",
+      "days": 29
     },
-    "total_trips": 363,
-    "total_pickups": 363,
-    "store_count": 123,
+    "total_trips": 374,
+    "total_pickups": 374,
+    "store_count": 124,
     "confirmed_count": 110,
-    "needs_review_count": 13,
+    "needs_review_count": 14,
     "trips_without_restaurant": 0
   },
   "category_labels": {
