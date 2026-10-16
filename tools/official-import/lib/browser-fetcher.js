@@ -95,6 +95,30 @@ function httpGetJson(url) {
   });
 }
 
+// HTTP リクエスト（CDP API 用。ステータスと本文を返す）
+function httpRequest(method, url) {
+  return new Promise((resolve, reject) => {
+    const req = http.request(url, { method }, res => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => resolve({ status: res.statusCode, body: data }));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+const ACTIVITIES_URL = 'https://drivers.uber.com/earnings/activities';
+
+// CDP で新しいタブを開く。Chromium 111 以降（Edge も同じ）は /json/new が PUT のみ（GET は 405 で開かない）
+async function openCdpTab(port, url) {
+  const endpoint = `http://127.0.0.1:${port}/json/new?${url}`;
+  let r = await httpRequest('PUT', endpoint);
+  if (r.status !== 200) r = await httpRequest('GET', endpoint); // PUT を受け付けない古いブラウザ
+  if (r.status !== 200) throw new Error(`Uberのタブを開けませんでした（HTTP ${r.status}: ${String(r.body).slice(0, 120)}）`);
+  return JSON.parse(r.body);
+}
+
 // 簡易 CDP クライアント（Node.js 標準 WebSocket を使用）
 class CdpClient {
   constructor(wsUrl) {
@@ -217,6 +241,17 @@ function getBrowserWindowInfo(port = DEFAULT_PORT) {
   });
 }
 
+// 新しく開いたUberのタブが一覧に現れるまで待つ（最大 timeoutMs）
+async function waitForUberPage(port, timeoutMs = 15000, intervalMs = 500) {
+  for (let waited = 0; waited <= timeoutMs; waited += intervalMs) {
+    try {
+      if (selectUberPage(await httpGetJson(`http://127.0.0.1:${port}/json/list`))) return true;
+    } catch (_) {}
+    await new Promise(r => setTimeout(r, intervalMs));
+  }
+  return false;
+}
+
 /**
  * デバッグ用ブラウザプロセスを起動（または既存ポートに接続）
  */
@@ -229,21 +264,24 @@ async function launchOrConnectBrowser(root, opts = {}) {
     const version = await httpGetJson(`http://127.0.0.1:${port}/json/version`);
     if (version && version.webSocketDebuggerUrl) {
       // 既に起動している場合、Uberアクティビティ画面が開かれているか確認
+      // （Uberのタブがアカウント画面 account.uber.com などへ移っている／閉じられている場合は、アクティビティ画面を新しいタブで開く）
+      let tabError = null;
       try {
         const targets = await httpGetJson(`http://127.0.0.1:${port}/json/list`);
         const uberPage = selectUberPage(targets);
         if (!uberPage) {
-          // Uberページが開かれていない場合は新規オープン
-          await httpGetJson(`http://127.0.0.1:${port}/json/new?https://drivers.uber.com/earnings/activities`);
+          await openCdpTab(port, ACTIVITIES_URL);
+          await waitForUberPage(port);
         } else if (uberPage.id) {
           // 既存Uberページを前面化
-          await httpGetJson(`http://127.0.0.1:${port}/json/activate/${uberPage.id}`);
+          await httpGetJson(`http://127.0.0.1:${port}/json/activate/${uberPage.id}`).catch(() => {});
         }
       } catch (e) {
-        // タブ操作の失敗は接続自体には影響させない
+        // 接続自体は続ける。理由は呼び出し側のエラー表示に使う（握りつぶさない）
+        tabError = e.message;
       }
       const windowInfo = await getBrowserWindowInfo(port);
-      return { port, attached: true, version, windowInfo };
+      return { port, attached: true, version, windowInfo, tabError };
     }
   } catch (e) {
     // 未起動
@@ -331,8 +369,13 @@ async function checkAuthStatus(root, opts = {}) {
   };
   if (typeof opts.onDiagnostic === 'function') opts.onDiagnostic(diagnostics);
   if (!page) {
-    return { ok: false, running: true, authenticated: false, needsLogin: false, unknown: true,
-      ...diagnostics, message: 'CDP専用ブラウザにUberのページがありません。表示中のEdgeとの接続先を確認してください。' };
+    // Uberの別画面（アカウント画面 account.uber.com など）だけが開いている場合は、その旨を伝える
+    const otherUber = (targets || []).filter(t => t && t.type === 'page' && /^https:\/\/([a-z0-9-]+\.)*uber\.com\//i.test(t.url || ''))
+      .map(t => targetSummary(t).url);
+    const message = otherUber.length
+      ? `専用EdgeのUberタブがアクティビティ画面ではありません（${otherUber.join(', ')}）。専用Edgeで ${ACTIVITIES_URL} を開いてから、もう一度実行してください。`
+      : 'CDP専用ブラウザにUberのページがありません。表示中のEdgeとの接続先を確認してください。';
+    return { ok: false, running: true, authenticated: false, needsLogin: false, unknown: true, ...diagnostics, message };
   }
 
   let client;
@@ -493,11 +536,17 @@ async function fetchUberDataForDate(root, date, opts = {}, onProgress = () => {}
 
   const port = opts.port || DEFAULT_PORT;
   onProgress('ブラウザの接続を確認中...');
-  await launchOrConnectBrowser(root, { port });
+  const conn = await launchOrConnectBrowser(root, { port });
 
-  const auth = await checkAuthStatus(root, { port });
+  // 開いたばかりのタブは読み込み中のことがあるため、判定不能（unknown）の間だけ少し待って確認し直す（最大 約15秒）
+  let auth = await checkAuthStatus(root, { port });
+  for (let i = 0; i < (opts.authRetries == null ? 10 : opts.authRetries) && auth.unknown && auth.running && auth.selectedTarget; i++) {
+    await new Promise(r => setTimeout(r, opts.authRetryMs || 1500));
+    auth = await checkAuthStatus(root, { port });
+  }
   if (!auth.ok || !auth.authenticated) {
-    throw new Error(auth.message || 'Uberへのログインが必要です。開いたブラウザでログインを完了してから再度実行してください。');
+    const base = auth.message || 'Uberへのログインが必要です。開いたブラウザでログインを完了してから再度実行してください。';
+    throw new Error(conn && conn.tabError ? `${base}（${conn.tabError}）` : base);
   }
 
   const targets = await httpGetJson(`http://127.0.0.1:${port}/json/list`);
@@ -636,6 +685,7 @@ module.exports = {
   selectUberPage,
   findBrowserExecutable,
   launchOrConnectBrowser,
+  openCdpTab,
   checkAuthStatus,
   determineAuthState,
   fetchUberDataForDate,

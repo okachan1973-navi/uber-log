@@ -61,6 +61,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\official-import\instal
 | クエスト重複の確認が必要です（検証名「クエスト重複候補あり」） | 画面の［同じ報酬（1回だけ計上）］か［別々の報酬（両方計上）］を押す（下の `questDuplicates` に保存される）。候補が0件のときだけ「クエスト重複候補なし」 |
 | 一覧の先頭に表の見出し（イベント 日時 売り上げ 表示する）が入っている | 対処不要（見出しは自動で無視し、注意に表示） |
 | 特別報酬・チップ単独などの未対応項目 | Claude Code に内容を伝えて相談（自動では入れません） |
+| 「専用EdgeのUberタブがアクティビティ画面ではありません」／「CDP専用ブラウザにUberのページがありません」 | 取得は専用Edge（ポート 9223・`.browser-data` のプロファイル。ウィンドウ名「プロファイル 1」）の `drivers.uber.com/earnings/activities` タブを使う。そのタブをアカウント画面（`account.uber.com`）へ移したり閉じたりしても、取込実行時にアクティビティ画面を新しいタブで自動で開く（v81 以降。CDP の `/json/new` は Edge 111+ では PUT のみで、以前の GET は 405 で黙って失敗していた）。それでも出る場合は専用Edgeでアクティビティ画面を開いてから再実行 |
 
 ### 確認が必要なとき（decisions.json）
 
