@@ -9405,10 +9405,10 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": 21.17,
-      "tripsCount": 11,
-      "officialPoints": 15,
-      "deliveriesCount": 15,
+      "totalDistanceKm": 34.2,
+      "tripsCount": 17,
+      "officialPoints": 22,
+      "deliveriesCount": 22,
       "workSessions": [],
       "deliveries": [
         {
@@ -9732,6 +9732,171 @@ const CONFIRMED_SEED_DATA = {
             }
           ],
           "sequence": null
+        },
+        {
+          "id": "del_1016_12",
+          "index": 12,
+          "completedAt": "17:29",
+          "restaurant": "マクドナルド イオンモール大阪ドームシティ店",
+          "area": "大阪市大正区三軒家東1丁目",
+          "fee": 322,
+          "distanceKm": 2.67,
+          "durationStr": "19分21秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "3a196ca8-bcb6-44a3-b668-9ba6aa3020f7",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "3a196ca8-bcb6-44a3-b668-9ba6aa3020f7",
+              "restaurant": "マクドナルド イオンモール大阪ドームシティ店",
+              "pickupAddress": "マクドナルド イオンモール大阪ドームシティ店",
+              "dropoffAddress": "27大阪市大正区三軒家東１丁目",
+              "area": "大阪市大正区三軒家東1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1016_13",
+          "index": 13,
+          "completedAt": "17:58",
+          "restaurant": "マクドナルド イオンモール大阪ドームシティ店",
+          "area": "大阪市大正区三軒家東4丁目",
+          "fee": 323,
+          "distanceKm": 1.98,
+          "durationStr": "19分1秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "032df2aa-34cd-438b-9dcf-d562e9b615b8",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "032df2aa-34cd-438b-9dcf-d562e9b615b8",
+              "restaurant": "マクドナルド イオンモール大阪ドームシティ店",
+              "pickupAddress": "マクドナルド イオンモール大阪ドームシティ店",
+              "dropoffAddress": "27大阪市大正区三軒家東４丁目",
+              "area": "大阪市大正区三軒家東4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1016_14",
+          "index": 14,
+          "completedAt": "18:31",
+          "restaurant": "マクドナルド 九　条　店 McDonald's KUJO",
+          "area": "大阪市西区本田4丁目",
+          "fee": 320,
+          "distanceKm": 1.21,
+          "durationStr": "18分9秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "d84171b8-2e53-4877-a472-a74bc910a0af",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "d84171b8-2e53-4877-a472-a74bc910a0af",
+              "restaurant": "マクドナルド 九　条　店 McDonald's KUJO",
+              "pickupAddress": "マクドナルド 九　条　店 McDonald's KUJO",
+              "dropoffAddress": "27大阪市西区本田４丁目",
+              "area": "大阪市西区本田4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1016_15",
+          "index": 15,
+          "completedAt": "19:01",
+          "restaurant": "餃子の王将 大阪九条",
+          "area": "大阪市西区北堀江3丁目",
+          "fee": 320,
+          "distanceKm": 1.87,
+          "durationStr": "12分28秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "1f20af01-e445-4640-b459-d64b1c284651",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "1f20af01-e445-4640-b459-d64b1c284651",
+              "restaurant": "餃子の王将 大阪九条",
+              "pickupAddress": "餃子の王将 大阪九条",
+              "dropoffAddress": "27大阪市西区北堀江３丁目",
+              "area": "大阪市西区北堀江3丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1016_16",
+          "index": 16,
+          "completedAt": "19:25",
+          "restaurant": "やよい軒 九条店",
+          "area": "大阪市西区本田1丁目",
+          "fee": 320,
+          "distanceKm": 0.71,
+          "durationStr": "7分31秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "850df9eb-6d20-44f5-bf58-e13d755a37ea",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "850df9eb-6d20-44f5-bf58-e13d755a37ea",
+              "restaurant": "やよい軒 九条店",
+              "pickupAddress": "やよい軒 九条店",
+              "dropoffAddress": "27大阪市西区本田１丁目",
+              "area": "大阪市西区本田1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1016_17",
+          "index": 17,
+          "completedAt": "19:42",
+          "restaurant": "松のや 桜川店 Matsunoya Sakuragawa",
+          "area": "大阪市浪速区塩草/大阪市浪速区大国1丁目",
+          "fee": 695,
+          "distanceKm": 4.59,
+          "durationStr": "32分22秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）／2件完了/2pt",
+          "tripUuid": "9219f312-9e71-4828-8e3a-d598328a6cb8",
+          "tripLegCount": 2,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "689359f7-6ebb-41be-b2f6-ef7ae09506df",
+              "restaurant": "",
+              "pickupAddress": "27大阪市浪速区桜川３丁目",
+              "dropoffAddress": "27大阪市浪速区塩草",
+              "area": "大阪市浪速区塩草",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Acenter%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.6685%2C135.48747&markers=%7Canchor%3Acenter%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.65954%2C135.49134&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3AcerrEuk%7DyXf%40_Cx%5BXb%40mMhPjAf%40mEtFQPmA%7D%40N&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=5Tuiw0OuTnib-8HRQRpOAulpUmg="
+            },
+            {
+              "legIndex": 1,
+              "legUuid": "791d8cf5-3e23-4f2e-acd0-2c0aebcc0e6b",
+              "restaurant": "",
+              "pickupAddress": "27大阪市西区千代崎３丁目",
+              "dropoffAddress": "27大阪市浪速区大国１丁目",
+              "area": "大阪市浪速区大国1丁目",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Abottom%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.66985%2C135.47824&markers=%7Canchor%3Abottom%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.65486%2C135.4974&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3AomrrE_r%7ByX%7C%40eFxI_An%40gA_Ei%5CfAsAq%40oPn%5C%3Fb%40mMhPjAf%40mEtFQPmAu%40%5CpA_BjBL%7EBsIfJqJdDkJnBc%40F%7D%40e%40Z&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=TXg-hpjcJ33vW9ZSJV-zaOpK8MQ="
+            }
+          ],
+          "sequence": null
         }
       ],
       "quests": [
@@ -9767,19 +9932,40 @@ const CONFIRMED_SEED_DATA = {
           "questType": "normal",
           "achievedAt": "13:33",
           "note": "公式一覧は 13:33「3 回乗車クエスト ¥490」（達成表示）と 13:34「クエスト ¥490」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1016_4",
+          "time": "18:50",
+          "title": "クエスト",
+          "amount": 200,
+          "isDuplicateIgnored": false,
+          "questName": "3回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "18:49",
+          "note": "公式一覧は 18:49「3 回乗車クエスト ¥200」（達成表示）と 18:50「クエスト ¥200」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1016_5",
+          "time": "20:08",
+          "title": "クエスト",
+          "amount": 340,
+          "isDuplicateIgnored": false,
+          "questName": "3回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥340」「3 回乗車クエスト ¥340」の2表示だが同一報酬のため1件のみ計上（二重計上防止）。21:00の「3 回乗車クエスト」¥0は報酬0のため売上非加算"
         }
       ],
       "sales": {
-        "delivery": 4072,
-        "quest": 910,
+        "delivery": 6372,
+        "quest": 1450,
         "adjustment": 0,
         "other": 0,
-        "total": 4982
+        "total": 7822
       },
       "expenses": [],
       "officialImport": {
         "source": "official-import-v1",
-        "importedAt": "2026-10-16T07:54:22.522Z"
+        "importedAt": "2026-10-16T12:11:12.467Z"
       }
     }
   },

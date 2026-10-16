@@ -30,9 +30,9 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 70,
+      "pickup_count": 71,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-16 12:43",
+      "last_pickup": "2026-10-16 18:31",
       "active_days": 21,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
@@ -76,9 +76,9 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 20,
+      "pickup_count": 22,
       "first_pickup": "2026-09-23 16:27",
-      "last_pickup": "2026-10-16 10:57",
+      "last_pickup": "2026-10-16 17:58",
       "active_days": 12,
       "original_names": [
         "マクドナルド イオンモール大阪ドームシティ店",
@@ -251,9 +251,9 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 10,
+      "pickup_count": 11,
       "first_pickup": "2026-09-22 14:07",
-      "last_pickup": "2026-10-16 13:07",
+      "last_pickup": "2026-10-16 19:01",
       "active_days": 7,
       "original_names": [
         "餃子の王将 大阪九条"
@@ -449,6 +449,49 @@
       "address_short": "港区磯路"
     },
     {
+      "id": "st_1jtin90",
+      "canonical_name": "やよい軒 九条店",
+      "name_keys": [
+        "やよい軒九条店"
+      ],
+      "category": "gyudon_teishoku",
+      "address": "大阪府大阪市西区九条1-10-7",
+      "latitude": 34.674503,
+      "longitude": 135.477509,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１０番７号",
+      "address_source": "store.yayoiken.com/b/yayoiken/info/1075/",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目１０番７号",
+        "osm_nearest": {
+          "id": "node/1619040366",
+          "name": "やよい軒 九条店 ごはん処 やよい軒",
+          "distance_m": 8
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 7,
+      "first_pickup": "2026-09-26 11:49",
+      "last_pickup": "2026-10-16 19:25",
+      "active_days": 6,
+      "original_names": [
+        "やよい軒 九条店"
+      ],
+      "brand_id": "yayoiken",
+      "brand_name": "やよい軒",
+      "brand_reading": null,
+      "branch_name": "九条店",
+      "site_id": null,
+      "display_name": "九条店",
+      "address_short": "西区九条"
+    },
+    {
       "id": "st_4px7w0",
       "canonical_name": "スターバックス コーヒー JR弁天町駅店",
       "name_keys": [
@@ -580,49 +623,6 @@
       "site_id": null,
       "display_name": "大正店",
       "address_short": "大正区千島"
-    },
-    {
-      "id": "st_1jtin90",
-      "canonical_name": "やよい軒 九条店",
-      "name_keys": [
-        "やよい軒九条店"
-      ],
-      "category": "gyudon_teishoku",
-      "address": "大阪府大阪市西区九条1-10-7",
-      "latitude": 34.674503,
-      "longitude": 135.477509,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１０番７号",
-      "address_source": "store.yayoiken.com/b/yayoiken/info/1075/",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１０番７号",
-        "osm_nearest": {
-          "id": "node/1619040366",
-          "name": "やよい軒 九条店 ごはん処 やよい軒",
-          "distance_m": 8
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 6,
-      "first_pickup": "2026-09-26 11:49",
-      "last_pickup": "2026-10-11 08:09",
-      "active_days": 5,
-      "original_names": [
-        "やよい軒 九条店"
-      ],
-      "brand_id": "yayoiken",
-      "brand_name": "やよい軒",
-      "brand_reading": null,
-      "branch_name": "九条店",
-      "site_id": null,
-      "display_name": "九条店",
-      "address_short": "西区九条"
     },
     {
       "id": "st_xrov9e",
@@ -1769,6 +1769,38 @@
       "site_id": null,
       "display_name": "四ツ橋店",
       "address_short": "西区新町"
+    },
+    {
+      "id": "st_1g9zkjb",
+      "canonical_name": "松のや 桜川店",
+      "name_keys": [
+        "松のや桜川店"
+      ],
+      "category": "gyudon_teishoku",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-13 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 2,
+      "first_pickup": "2026-10-12 09:30",
+      "last_pickup": "2026-10-16 19:42",
+      "active_days": 2,
+      "original_names": [
+        "松のや 桜川店 Matsunoya Sakuragawa"
+      ],
+      "brand_id": "matsunoya",
+      "brand_name": "松のや",
+      "brand_reading": "まつのや",
+      "branch_name": "桜川店",
+      "display_name": "桜川店",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_19i7a1t",
@@ -3998,38 +4030,6 @@
       "address_short": "西区靱本町"
     },
     {
-      "id": "st_1g9zkjb",
-      "canonical_name": "松のや 桜川店",
-      "name_keys": [
-        "松のや桜川店"
-      ],
-      "category": "gyudon_teishoku",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
-      "same_building": null,
-      "notes": "2026-10-13 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
-      "pickup_count": 1,
-      "first_pickup": "2026-10-12 09:30",
-      "last_pickup": "2026-10-12 09:30",
-      "active_days": 1,
-      "original_names": [
-        "松のや 桜川店 Matsunoya Sakuragawa"
-      ],
-      "brand_id": "matsunoya",
-      "brand_name": "松のや",
-      "brand_reading": "まつのや",
-      "branch_name": "桜川店",
-      "display_name": "桜川店",
-      "address_short": null,
-      "site_id": null
-    },
-    {
       "id": "st_15io1qn",
       "canonical_name": "松屋 天満橋店",
       "name_keys": [
@@ -5191,8 +5191,8 @@
       "to": "2026-10-16",
       "days": 29
     },
-    "total_trips": 374,
-    "total_pickups": 374,
+    "total_trips": 380,
+    "total_pickups": 380,
     "store_count": 124,
     "confirmed_count": 110,
     "needs_review_count": 14,
