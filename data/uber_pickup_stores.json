@@ -30,10 +30,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 71,
+      "pickup_count": 74,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-16 18:31",
-      "active_days": 21,
+      "last_pickup": "2026-10-17 09:18",
+      "active_days": 22,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
         "マクドナルド 九　条　店 McDonald's KUJO",
@@ -120,10 +120,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 16,
+      "pickup_count": 17,
       "first_pickup": "2026-09-18 11:09",
-      "last_pickup": "2026-10-16 10:17",
-      "active_days": 11,
+      "last_pickup": "2026-10-17 11:38",
+      "active_days": 12,
       "original_names": [
         "バーガーキング 九条店",
         "バーガーキング 九条店 Burger King Kujo"
@@ -296,10 +296,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 9,
+      "pickup_count": 10,
       "first_pickup": "2026-09-19 10:15",
-      "last_pickup": "2026-10-16 10:40",
-      "active_days": 9,
+      "last_pickup": "2026-10-17 08:38",
+      "active_days": 10,
       "original_names": [
         "【伝説のクロックムッシュ】サンドイッチ 九条店",
         "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo〜お持帰り専門店〜",
@@ -342,10 +342,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 9,
+      "pickup_count": 10,
       "first_pickup": "2026-09-15 09:04",
-      "last_pickup": "2026-10-12 07:25",
-      "active_days": 6,
+      "last_pickup": "2026-10-17 09:47",
+      "active_days": 7,
       "original_names": [
         "マクドナルド 弁天町駅前店",
         "マクドナルド 弁天町駅前店 McDonald's BENTENCHO EKIMAE"
@@ -492,6 +492,50 @@
       "address_short": "西区九条"
     },
     {
+      "id": "st_xrov9e",
+      "canonical_name": "かっぱ寿司 境川店",
+      "name_keys": [
+        "かっぱ寿司境川店"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市港区南市岡1-1-52",
+      "latitude": 34.668774,
+      "longitude": 135.471802,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区南市岡一丁目１番５２号",
+      "address_source": "kappasushi.jp/shop/0587 (公式; 旧住所 西区境川1-2-27)",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市港区南市岡一丁目１番５２号",
+        "osm_nearest": {
+          "id": "way/302852523",
+          "name": "かっぱ寿司 かっぱ寿司",
+          "distance_m": 18
+        },
+        "reverse": {
+          "muniCd": "27107",
+          "lv01Nm": "南市岡一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 6,
+      "first_pickup": "2026-09-23 15:28",
+      "last_pickup": "2026-10-17 10:18",
+      "active_days": 5,
+      "original_names": [
+        "かっぱ寿司 境川店 Kappa Sushi Sakaigawa",
+        "かっぱ寿司 境川店　Kappa Sushi Sakaigawa"
+      ],
+      "brand_id": "kappa_sushi",
+      "brand_name": "かっぱ寿司",
+      "brand_reading": "かっぱずし",
+      "branch_name": "境川店",
+      "site_id": null,
+      "display_name": "境川店",
+      "address_short": "港区南市岡"
+    },
+    {
       "id": "st_4px7w0",
       "canonical_name": "スターバックス コーヒー JR弁天町駅店",
       "name_keys": [
@@ -625,48 +669,47 @@
       "address_short": "大正区千島"
     },
     {
-      "id": "st_xrov9e",
-      "canonical_name": "かっぱ寿司 境川店",
+      "id": "st_17dn6fz",
+      "canonical_name": "ローソン 大阪ドームシティ",
       "name_keys": [
-        "かっぱ寿司境川店"
+        "ローソン大阪ドームシティ"
       ],
-      "category": "other",
-      "address": "大阪府大阪市港区南市岡1-1-52",
-      "latitude": 34.668774,
-      "longitude": 135.471802,
+      "category": "convenience",
+      "address": "大阪府大阪市西区千代崎3-1-8",
+      "latitude": 34.670979,
+      "longitude": 135.479263,
       "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区南市岡一丁目１番５２号",
-      "address_source": "kappasushi.jp/shop/0587 (公式; 旧住所 西区境川1-2-27)",
-      "address_evidence": "official",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区千代崎三丁目１番８号",
+      "address_source": "mapion; ekiten 671192",
+      "address_evidence": "map_directory",
       "geocode_check": {
-        "gsi_title": "大阪府大阪市港区南市岡一丁目１番５２号",
+        "gsi_title": "大阪府大阪市西区千代崎三丁目１番８号",
         "osm_nearest": {
-          "id": "way/302852523",
-          "name": "かっぱ寿司 かっぱ寿司",
-          "distance_m": 18
+          "id": "way/150214944",
+          "name": "ローソン 大阪ドームシティ店‎ ローソン",
+          "distance_m": 5
         },
         "reverse": {
-          "muniCd": "27107",
-          "lv01Nm": "南市岡一丁目"
+          "muniCd": "27106",
+          "lv01Nm": "千代崎三丁目"
         }
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 5,
-      "first_pickup": "2026-09-23 15:28",
-      "last_pickup": "2026-10-05 19:32",
-      "active_days": 4,
+      "pickup_count": 6,
+      "first_pickup": "2026-09-22 09:58",
+      "last_pickup": "2026-10-17 11:53",
+      "active_days": 6,
       "original_names": [
-        "かっぱ寿司 境川店 Kappa Sushi Sakaigawa",
-        "かっぱ寿司 境川店　Kappa Sushi Sakaigawa"
+        "ローソン 大阪ドームシティ"
       ],
-      "brand_id": "kappa_sushi",
-      "brand_name": "かっぱ寿司",
-      "brand_reading": "かっぱずし",
-      "branch_name": "境川店",
+      "brand_id": "lawson",
+      "brand_name": "ローソン",
+      "brand_reading": null,
+      "branch_name": "大阪ドームシティ",
       "site_id": null,
-      "display_name": "境川店",
-      "address_short": "港区南市岡"
+      "display_name": "大阪ドームシティ",
+      "address_short": "西区千代崎"
     },
     {
       "id": "st_bhb0ka",
@@ -831,49 +874,6 @@
       "site_id": "site_15arb50",
       "display_name": "九条店",
       "address_short": "西区九条"
-    },
-    {
-      "id": "st_17dn6fz",
-      "canonical_name": "ローソン 大阪ドームシティ",
-      "name_keys": [
-        "ローソン大阪ドームシティ"
-      ],
-      "category": "convenience",
-      "address": "大阪府大阪市西区千代崎3-1-8",
-      "latitude": 34.670979,
-      "longitude": 135.479263,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区千代崎三丁目１番８号",
-      "address_source": "mapion; ekiten 671192",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区千代崎三丁目１番８号",
-        "osm_nearest": {
-          "id": "way/150214944",
-          "name": "ローソン 大阪ドームシティ店‎ ローソン",
-          "distance_m": 5
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "千代崎三丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 5,
-      "first_pickup": "2026-09-22 09:58",
-      "last_pickup": "2026-10-14 11:00",
-      "active_days": 5,
-      "original_names": [
-        "ローソン 大阪ドームシティ"
-      ],
-      "brand_id": "lawson",
-      "brand_name": "ローソン",
-      "brand_reading": null,
-      "branch_name": "大阪ドームシティ",
-      "site_id": null,
-      "display_name": "大阪ドームシティ",
-      "address_short": "西区千代崎"
     },
     {
       "id": "st_zm9ew6",
@@ -1769,6 +1769,50 @@
       "site_id": null,
       "display_name": "四ツ橋店",
       "address_short": "西区新町"
+    },
+    {
+      "id": "st_16xmdl4",
+      "canonical_name": "マクドナルド 靱本町店",
+      "name_keys": [
+        "マクドナルド靱本町店"
+      ],
+      "category": "mcdonalds",
+      "address": "大阪府大阪市西区靱本町1-4-17",
+      "latitude": 34.684307,
+      "longitude": 135.497131,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区靱本町一丁目４番１７号",
+      "address_source": "navitime 06399-27782; mapion",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区靱本町一丁目４番１７号",
+        "osm_nearest": {
+          "id": "node/6366253585",
+          "name": "マクドナルド マクドナルド",
+          "distance_m": 4
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "靱本町一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 2,
+      "first_pickup": "2026-09-19 09:25",
+      "last_pickup": "2026-10-17 10:37",
+      "active_days": 2,
+      "original_names": [
+        "マクドナルド 靱本町店",
+        "マクドナルド 靱本町店 McDonald's UTSUBOHONMACHI"
+      ],
+      "brand_id": "mcdonalds",
+      "brand_name": "マクドナルド",
+      "brand_reading": null,
+      "branch_name": "靱本町店",
+      "site_id": null,
+      "display_name": "靱本町店",
+      "address_short": "西区靱本町"
     },
     {
       "id": "st_1g9zkjb",
@@ -3987,49 +4031,6 @@
       "address_short": "福島区福島"
     },
     {
-      "id": "st_16xmdl4",
-      "canonical_name": "マクドナルド 靱本町店",
-      "name_keys": [
-        "マクドナルド靱本町店"
-      ],
-      "category": "mcdonalds",
-      "address": "大阪府大阪市西区靱本町1-4-17",
-      "latitude": 34.684307,
-      "longitude": 135.497131,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区靱本町一丁目４番１７号",
-      "address_source": "navitime 06399-27782; mapion",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区靱本町一丁目４番１７号",
-        "osm_nearest": {
-          "id": "node/6366253585",
-          "name": "マクドナルド マクドナルド",
-          "distance_m": 4
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "靱本町一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-19 09:25",
-      "last_pickup": "2026-09-19 09:25",
-      "active_days": 1,
-      "original_names": [
-        "マクドナルド 靱本町店"
-      ],
-      "brand_id": "mcdonalds",
-      "brand_name": "マクドナルド",
-      "brand_reading": null,
-      "branch_name": "靱本町店",
-      "site_id": null,
-      "display_name": "靱本町店",
-      "address_short": "西区靱本町"
-    },
-    {
       "id": "st_15io1qn",
       "canonical_name": "松屋 天満橋店",
       "name_keys": [
@@ -5188,11 +5189,11 @@
   "summary": {
     "period": {
       "from": "2026-09-10",
-      "to": "2026-10-16",
-      "days": 29
+      "to": "2026-10-17",
+      "days": 30
     },
-    "total_trips": 380,
-    "total_pickups": 380,
+    "total_trips": 389,
+    "total_pickups": 389,
     "store_count": 124,
     "confirmed_count": 110,
     "needs_review_count": 14,
