@@ -921,16 +921,23 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
       const mb=s.getCalculatedMetrics(s.state.dailyLogs['2099-01-03']);
       const bothN=trophies('2099-01-03');
       const labels=Object.values(m.DAY_ATTRIBUTE_DEFINITIONS).map(d=>d.label);
-      console.log(JSON.stringify({attrs,two,none,bothN,bothG:mb.guaranteeBonus,bothSq:mb.specialQuestSales,labels,hasSQdef:!!m.DAY_ATTRIBUTE_DEFINITIONS.special_quest}));`);
+      // 期待値は保存データから直接判定（集計コードを通さない）: 新規保証・特別収入 > 0、または特別クエスト（重複除外でない・金額 > 0）がある日
+      const expected=s.getAllDailyLogs().filter(l=>!l.date.startsWith('2099-')).filter(l=>Number((l.sales||{}).guaranteeBonus)>0
+        ||(l.quests||[]).some(q=>q.questType==='special'&&!q.isDuplicateIgnored&&Number(q.amount)>0)).map(l=>l.date);
+      console.log(JSON.stringify({attrs,two,none,bothN,bothG:mb.guaranteeBonus,bothSq:mb.specialQuestSales,labels,hasSQdef:!!m.DAY_ATTRIBUTE_DEFINITIONS.special_quest,expected}));`);
     const a24 = r.attrs['2026-09-24'] || [];
     const a19 = r.attrs['2026-09-19'] || [];
     check(a19.map(x => x.split(':')[1]).join(' ') === 'B 🏆', `9/19（新規保証 ¥12,132）は「賞」ではなく 🏆（${a19.map(x => x.split(':')[1]).join(' ')}）`);
     check(a24.filter(x => x.split(':')[1] === '🏆').length === 1, `9/24（特別クエスト ¥8,890）は 🏆 を1個のまま（${a24.map(x => x.split(':')[1]).join(' ')}）`);
     check([...a19, ...a24].filter(x => x.split(':')[1] === '🏆').every(x => x.endsWith(':attr-bonus attr-quest-trophy')), '🏆 は従来の金色系（attr-bonus）を使用');
     check(!r.labels.includes('賞') && !Object.values(r.attrs).some(v => v.some(x => x.split(':')[1] === '賞')), '日別属性から「賞」を廃止（どの日にも出ない）');
-    const withTrophy = Object.entries(r.attrs).filter(([, v]) => v.some(x => x.split(':')[1] === '🏆')).map(([k]) => k).sort();
-    // 2026-10-11: 70回乗車クエスト ¥8,840（questType: special）
-    check(withTrophy.join() === '2026-09-19,2026-09-24,2026-09-27,2026-10-11', `🏆 は特別ボーナス系のある日だけ（${withTrophy.join(', ')}）`);
+    const withTrophy = Object.entries(r.attrs).filter(([k, v]) => !k.startsWith('2099-') && v.some(x => x.split(':')[1] === '🏆')).map(([k]) => k).sort();
+    const expectedTrophy = [...r.expected].sort();
+    // 取込で実データが増えても壊れないよう、期待する日は保存データ（新規保証・特別クエスト）から判定する。
+    // 既知の確定日（9/19 新規保証・9/24 80回・9/27 50回・10/11 70回乗車クエスト）は必ず含まれること
+    const knownTrophy = ['2026-09-19', '2026-09-24', '2026-09-27', '2026-10-11'];
+    check(withTrophy.join() === expectedTrophy.join() && knownTrophy.every(d => withTrophy.includes(d)),
+      `🏆 は特別ボーナス系のある日だけ（表示 ${withTrophy.join(', ')} / データ上 ${expectedTrophy.join(', ')}）`);
     check(r.two === 1 && r.none === 0, '特別クエストが複数でも 🏆 は1個・通常クエストだけの日は表示しない');
     check(r.bothN === 1 && r.bothG === 5000 && r.bothSq === 8890, '新規保証と特別クエストが同じ日でも 🏆 は1個（内部は guaranteeBonus / specialQuestSales で別管理）');
     const order = ['bike_share', 'adjustment', 'special_bonus', 'tip'];
