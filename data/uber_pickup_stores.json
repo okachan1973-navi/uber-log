@@ -30,10 +30,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 74,
+      "pickup_count": 77,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-17 09:18",
-      "active_days": 22,
+      "last_pickup": "2026-10-18 12:21",
+      "active_days": 23,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
         "マクドナルド 九　条　店 McDonald's KUJO",
@@ -137,6 +137,50 @@
       "address_short": "西区九条"
     },
     {
+      "id": "st_76kdj3",
+      "canonical_name": "マクドナルド 阪神西九条駅前店",
+      "name_keys": [
+        "マクドナルド阪神西九条駅前店"
+      ],
+      "category": "mcdonalds",
+      "address": "大阪府大阪市此花区西九条1-32-17",
+      "latitude": 34.681774,
+      "longitude": 135.466171,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市此花区西九条一丁目３２番１７号",
+      "address_source": "crewrecruiting.mcdonalds.co.jp/map/27845",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市此花区西九条一丁目３２番１７号",
+        "osm_nearest": {
+          "id": "node/1539450680",
+          "name": "マクドナルド 阪神西九条駅前店 マクドナルド",
+          "distance_m": 22
+        },
+        "reverse": {
+          "muniCd": "27104",
+          "lv01Nm": "西九条一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 15,
+      "first_pickup": "2026-09-22 17:07",
+      "last_pickup": "2026-10-18 10:01",
+      "active_days": 12,
+      "original_names": [
+        "マクドナルド 阪神西九条駅前店",
+        "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE"
+      ],
+      "brand_id": "mcdonalds",
+      "brand_name": "マクドナルド",
+      "brand_reading": null,
+      "branch_name": "阪神西九条駅前店",
+      "site_id": null,
+      "display_name": "阪神西九条駅前店",
+      "address_short": "此花区西九条"
+    },
+    {
       "id": "st_1tevs71",
       "canonical_name": "KFC イオンモール大阪ドームシティ店",
       "name_keys": [
@@ -178,50 +222,6 @@
       "site_id": "site_c4h33y",
       "display_name": "イオンモール大阪ドームシティ店",
       "address_short": "西区千代崎"
-    },
-    {
-      "id": "st_76kdj3",
-      "canonical_name": "マクドナルド 阪神西九条駅前店",
-      "name_keys": [
-        "マクドナルド阪神西九条駅前店"
-      ],
-      "category": "mcdonalds",
-      "address": "大阪府大阪市此花区西九条1-32-17",
-      "latitude": 34.681774,
-      "longitude": 135.466171,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市此花区西九条一丁目３２番１７号",
-      "address_source": "crewrecruiting.mcdonalds.co.jp/map/27845",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市此花区西九条一丁目３２番１７号",
-        "osm_nearest": {
-          "id": "node/1539450680",
-          "name": "マクドナルド 阪神西九条駅前店 マクドナルド",
-          "distance_m": 22
-        },
-        "reverse": {
-          "muniCd": "27104",
-          "lv01Nm": "西九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 14,
-      "first_pickup": "2026-09-22 17:07",
-      "last_pickup": "2026-10-14 08:53",
-      "active_days": 11,
-      "original_names": [
-        "マクドナルド 阪神西九条駅前店",
-        "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE"
-      ],
-      "brand_id": "mcdonalds",
-      "brand_name": "マクドナルド",
-      "brand_reading": null,
-      "branch_name": "阪神西九条駅前店",
-      "site_id": null,
-      "display_name": "阪神西九条駅前店",
-      "address_short": "此花区西九条"
     },
     {
       "id": "st_1omw10z",
@@ -296,10 +296,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 10,
+      "pickup_count": 11,
       "first_pickup": "2026-09-19 10:15",
-      "last_pickup": "2026-10-17 08:38",
-      "active_days": 10,
+      "last_pickup": "2026-10-18 10:10",
+      "active_days": 11,
       "original_names": [
         "【伝説のクロックムッシュ】サンドイッチ 九条店",
         "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo〜お持帰り専門店〜",
@@ -342,10 +342,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 10,
+      "pickup_count": 11,
       "first_pickup": "2026-09-15 09:04",
-      "last_pickup": "2026-10-17 09:47",
-      "active_days": 7,
+      "last_pickup": "2026-10-18 08:11",
+      "active_days": 8,
       "original_names": [
         "マクドナルド 弁天町駅前店",
         "マクドナルド 弁天町駅前店 McDonald's BENTENCHO EKIMAE"
@@ -404,6 +404,51 @@
       "site_id": null,
       "display_name": "辰巳橋店",
       "address_short": "西区境川"
+    },
+    {
+      "id": "st_t9q3ll",
+      "canonical_name": "マクドナルド JR野田駅前店",
+      "name_keys": [
+        "マクドナルドJR野田駅前店"
+      ],
+      "category": "mcdonalds",
+      "address": "大阪府大阪市福島区野田3-12-18",
+      "latitude": 34.689396,
+      "longitude": 135.475906,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市福島区野田三丁目１２番１８号",
+      "address_source": "crewrecruiting.mcdonalds.co.jp/map/s27142; navitime",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市福島区野田三丁目１２番１８号",
+        "osm_nearest": {
+          "id": "node/12997441014",
+          "name": "マクドナルド JR野田駅前店 マクドナルド",
+          "distance_m": 2
+        },
+        "reverse": {
+          "muniCd": "27103",
+          "lv01Nm": "野田三丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 8,
+      "first_pickup": "2026-09-11 11:11",
+      "last_pickup": "2026-10-18 11:19",
+      "active_days": 6,
+      "original_names": [
+        "マクドナルド JR野田駅前店",
+        "マクドナルド ＪＲ野田駅前店",
+        "マクドナルド ＪＲ野田駅前店 McDonald's JR NODA EKI-MAE"
+      ],
+      "brand_id": "mcdonalds",
+      "brand_name": "マクドナルド",
+      "brand_reading": null,
+      "branch_name": "JR野田駅前店",
+      "site_id": null,
+      "display_name": "JR野田駅前店",
+      "address_short": "福島区野田"
     },
     {
       "id": "st_hwl7j2",
@@ -621,51 +666,6 @@
       "site_id": null,
       "display_name": "JR弁天町駅店",
       "address_short": "港区波除"
-    },
-    {
-      "id": "st_t9q3ll",
-      "canonical_name": "マクドナルド JR野田駅前店",
-      "name_keys": [
-        "マクドナルドJR野田駅前店"
-      ],
-      "category": "mcdonalds",
-      "address": "大阪府大阪市福島区野田3-12-18",
-      "latitude": 34.689396,
-      "longitude": 135.475906,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市福島区野田三丁目１２番１８号",
-      "address_source": "crewrecruiting.mcdonalds.co.jp/map/s27142; navitime",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市福島区野田三丁目１２番１８号",
-        "osm_nearest": {
-          "id": "node/12997441014",
-          "name": "マクドナルド JR野田駅前店 マクドナルド",
-          "distance_m": 2
-        },
-        "reverse": {
-          "muniCd": "27103",
-          "lv01Nm": "野田三丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 6,
-      "first_pickup": "2026-09-11 11:11",
-      "last_pickup": "2026-09-28 08:50",
-      "active_days": 5,
-      "original_names": [
-        "マクドナルド JR野田駅前店",
-        "マクドナルド ＪＲ野田駅前店",
-        "マクドナルド ＪＲ野田駅前店 McDonald's JR NODA EKI-MAE"
-      ],
-      "brand_id": "mcdonalds",
-      "brand_name": "マクドナルド",
-      "brand_reading": null,
-      "branch_name": "JR野田駅前店",
-      "site_id": null,
-      "display_name": "JR野田駅前店",
-      "address_short": "福島区野田"
     },
     {
       "id": "st_tbe250",
@@ -963,6 +963,93 @@
       "address_short": "西区千代崎"
     },
     {
+      "id": "st_akh9d5",
+      "canonical_name": "松屋 九条店",
+      "name_keys": [
+        "松屋九条店"
+      ],
+      "category": "gyudon_teishoku",
+      "address": "大阪府大阪市西区九条1-14-26",
+      "latitude": 34.675159,
+      "longitude": 135.474838,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１４番２６号",
+      "address_source": "pkg.navitime.co.jp/matsuyafoods2 (松のや併設); OSM",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目１４番２６号",
+        "osm_nearest": {
+          "id": "node/1735950052",
+          "name": "松屋 九条店 松屋",
+          "distance_m": 7
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": "九条1-14-26（松屋・松のや併設）",
+      "notes": null,
+      "pickup_count": 4,
+      "first_pickup": "2026-09-18 13:55",
+      "last_pickup": "2026-10-18 09:00",
+      "active_days": 4,
+      "original_names": [
+        "松屋 九条店",
+        "松屋 九条店 Matsuya Kujo"
+      ],
+      "brand_id": "matsuya",
+      "brand_name": "松屋",
+      "brand_reading": "まつや",
+      "branch_name": "九条店",
+      "site_id": "site_15arb50",
+      "display_name": "九条店",
+      "address_short": "西区九条"
+    },
+    {
+      "id": "st_1njqw93",
+      "canonical_name": "【チキンステーキ弁当】Master Of Chicken～大正店～",
+      "name_keys": [
+        "【チキンステーキ弁当】MasterOfChicken～大正店～"
+      ],
+      "category": "gyudon_teishoku",
+      "address": "大阪府大阪市大正区三軒家東1-17-33",
+      "latitude": 34.665455,
+      "longitude": 135.479858,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市大正区三軒家東一丁目１７番３３号",
+      "address_source": "ubereats (大正第一ビル2F, デリバリー専門)",
+      "address_evidence": "delivery_listing",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市大正区三軒家東一丁目１７番３３号",
+        "osm_nearest": {
+          "id": "node/12318497315",
+          "name": "エステージ難波WEST Docomo Bike Share",
+          "distance_m": 290
+        },
+        "reverse": {
+          "muniCd": "27108",
+          "lv01Nm": "三軒家東一丁目"
+        }
+      },
+      "same_building": "三軒家東1-17-33（大正橋第1ビル2F）",
+      "notes": null,
+      "pickup_count": 3,
+      "first_pickup": "2026-09-24 09:18",
+      "last_pickup": "2026-10-18 12:49",
+      "active_days": 3,
+      "original_names": [
+        "【チキンステーキ弁当】Master Of Chicken～大正店～"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "site_id": "site_rwl2xq",
+      "display_name": "【チキンステーキ弁当】Master Of Chicken～大正店～",
+      "address_short": "大正区三軒家東"
+    },
+    {
       "id": "st_1a6qss1",
       "canonical_name": "ウエルシア大阪新町店",
       "name_keys": [
@@ -1170,48 +1257,36 @@
       "address_short": "福島区海老江"
     },
     {
-      "id": "st_akh9d5",
-      "canonical_name": "松屋 九条店",
+      "id": "st_rdkq9x",
+      "canonical_name": "リンガーハット イオンモール大阪ドームシティ店",
       "name_keys": [
-        "松屋九条店"
+        "リンガーハットイオンモール大阪ドームシティ店"
       ],
-      "category": "gyudon_teishoku",
-      "address": "大阪府大阪市西区九条1-14-26",
-      "latitude": 34.675159,
-      "longitude": 135.474838,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１４番２６号",
-      "address_source": "pkg.navitime.co.jp/matsuyafoods2 (松のや併設); OSM",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１４番２６号",
-        "osm_nearest": {
-          "id": "node/1735950052",
-          "name": "松屋 九条店 松屋",
-          "distance_m": 7
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": "九条1-14-26（松屋・松のや併設）",
-      "notes": null,
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-11 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
       "pickup_count": 3,
-      "first_pickup": "2026-09-18 13:55",
-      "last_pickup": "2026-10-11 08:30",
+      "first_pickup": "2026-10-09 16:19",
+      "last_pickup": "2026-10-18 11:47",
       "active_days": 3,
       "original_names": [
-        "松屋 九条店",
-        "松屋 九条店 Matsuya Kujo"
+        "リンガーハット イオンモール大阪ドームシティ店"
       ],
-      "brand_id": "matsuya",
-      "brand_name": "松屋",
-      "brand_reading": "まつや",
-      "branch_name": "九条店",
-      "site_id": "site_15arb50",
-      "display_name": "九条店",
-      "address_short": "西区九条"
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "リンガーハット イオンモール大阪ドームシティ店",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_lkuf3l",
@@ -1287,49 +1362,6 @@
       "display_name": "金のとりから/待茶 イオンモール大阪ドームシティ店",
       "address_short": null,
       "site_id": null
-    },
-    {
-      "id": "st_1njqw93",
-      "canonical_name": "【チキンステーキ弁当】Master Of Chicken～大正店～",
-      "name_keys": [
-        "【チキンステーキ弁当】MasterOfChicken～大正店～"
-      ],
-      "category": "gyudon_teishoku",
-      "address": "大阪府大阪市大正区三軒家東1-17-33",
-      "latitude": 34.665455,
-      "longitude": 135.479858,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市大正区三軒家東一丁目１７番３３号",
-      "address_source": "ubereats (大正第一ビル2F, デリバリー専門)",
-      "address_evidence": "delivery_listing",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市大正区三軒家東一丁目１７番３３号",
-        "osm_nearest": {
-          "id": "node/12318497315",
-          "name": "エステージ難波WEST Docomo Bike Share",
-          "distance_m": 290
-        },
-        "reverse": {
-          "muniCd": "27108",
-          "lv01Nm": "三軒家東一丁目"
-        }
-      },
-      "same_building": "三軒家東1-17-33（大正橋第1ビル2F）",
-      "notes": null,
-      "pickup_count": 2,
-      "first_pickup": "2026-09-24 09:18",
-      "last_pickup": "2026-10-09 18:33",
-      "active_days": 2,
-      "original_names": [
-        "【チキンステーキ弁当】Master Of Chicken～大正店～"
-      ],
-      "brand_id": null,
-      "brand_name": null,
-      "brand_reading": null,
-      "branch_name": null,
-      "site_id": "site_rwl2xq",
-      "display_name": "【チキンステーキ弁当】Master Of Chicken～大正店～",
-      "address_short": "大正区三軒家東"
     },
     {
       "id": "st_x9ixut",
@@ -2002,38 +2034,6 @@
       "site_id": null,
       "display_name": "朝潮橋店",
       "address_short": "港区八幡屋"
-    },
-    {
-      "id": "st_rdkq9x",
-      "canonical_name": "リンガーハット イオンモール大阪ドームシティ店",
-      "name_keys": [
-        "リンガーハットイオンモール大阪ドームシティ店"
-      ],
-      "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
-      "same_building": null,
-      "notes": "2026-10-11 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
-      "pickup_count": 2,
-      "first_pickup": "2026-10-09 16:19",
-      "last_pickup": "2026-10-17 16:46",
-      "active_days": 2,
-      "original_names": [
-        "リンガーハット イオンモール大阪ドームシティ店"
-      ],
-      "brand_id": null,
-      "brand_name": null,
-      "brand_reading": null,
-      "branch_name": null,
-      "display_name": "リンガーハット イオンモール大阪ドームシティ店",
-      "address_short": null,
-      "site_id": null
     },
     {
       "id": "st_szcubg",
@@ -3535,6 +3535,38 @@
       "site_id": null,
       "display_name": "大阪福島西通店",
       "address_short": "福島区福島"
+    },
+    {
+      "id": "st_9ola13",
+      "canonical_name": "セブン-イレブン 大阪本田4丁目店",
+      "name_keys": [
+        "7-Eleven大阪本田4丁目店"
+      ],
+      "category": "convenience",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-18 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-18 09:33",
+      "last_pickup": "2026-10-18 09:33",
+      "active_days": 1,
+      "original_names": [
+        "7-Eleven大阪本田４丁目店"
+      ],
+      "brand_id": "seven_eleven",
+      "brand_name": "セブン-イレブン",
+      "brand_reading": null,
+      "branch_name": "大阪本田4丁目店",
+      "display_name": "大阪本田4丁目店",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_962gh5",
@@ -5221,14 +5253,14 @@
   "summary": {
     "period": {
       "from": "2026-09-10",
-      "to": "2026-10-17",
-      "days": 30
+      "to": "2026-10-18",
+      "days": 31
     },
-    "total_trips": 397,
-    "total_pickups": 397,
-    "store_count": 125,
+    "total_trips": 409,
+    "total_pickups": 409,
+    "store_count": 126,
     "confirmed_count": 110,
-    "needs_review_count": 15,
+    "needs_review_count": 16,
     "trips_without_restaurant": 0
   },
   "category_labels": {
