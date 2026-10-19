@@ -249,6 +249,9 @@ async function startServer(env) {
     check(ui.includes('data-act="count_once"') && ui.includes('data-act="count_all"') && ui.includes('questDuplicates'),
       'クエスト重複は画面のボタン（同じ報酬＝count_once / 別々の報酬＝count_all）で指定できる');
     check(ui.includes('前回と同じ理由で停止しました'), '同じ理由で繰り返し止まった場合は「前回と同じ理由で停止」と表示');
+    check(ui.includes('id="btn-reimport"') && /v\.reimport \?/.test(ui) && /function reimport\(date, sourceType\)[\s\S]*?\$\('date'\)\.value = date;[\s\S]*?render\(null\);[\s\S]*?startBrowserFetch\(false\);/.test(ui),
+      '全工程完了の画面に「この日を最新データで再取込」: 同じ日付のまま最初の取得（内容確認つき）から始める');
+    check(ui.includes('反映すると下の最新の公式データに置き換わります（加算されません）'), '再取込の確認画面: 前回の取込と「置き換え（加算しない）」を表示');
 
     // ==========================================================
     // Uber Web 構造化データ（structured-tests と同じ形の人工データ。trip の数だけ作る）
@@ -303,6 +306,87 @@ async function startServer(env) {
     check(job.phase === 'COMPLETE' && day24.tripsCount === 3 && day24.deliveriesCount === 4 && new Set(ids24).size === 3 && day24.sales.total === 702 + 372 + 500 + 400 + 260,
       `再取込で trip 2 → 3・配達 3 → 4件・総売上 ¥${day24.sales.total}（同じ trip を二重にしない: ${ids24.join(',')}）`);
     check(day24.deliveries[0].id === 'del_0924_1' && day24.deliveries[1].tip === 97, '既存の trip ID・チップは変わらない');
+
+    section('13-11. 全工程完了の画面から同じ日を最新データで再取込（12 trip → 15 trip・加算しない・手入力を残す）');
+    const d26 = '2026-09-26';
+    // trip 番号ごとに一意の tripUuid・時刻（4の倍数はダブル配達）
+    const trip26 = i => ({
+      tripUuid: `${String(i).padStart(8, '0')}-2222-2222-2222-${d26.replace(/-/g, '').padStart(12, '0')}`,
+      statusType: 'COMPLETED', date: d26, time: `${String(8 + i).padStart(2, '0')}:${String(i).padStart(2, '0')}`, amount: 300 + i * 10, baseFee: 300 + i * 10, tip: null,
+      distanceKm: 2 + i / 10, durationStr: `${10 + i}分0秒`, points: i % 4 === 0 ? 2 : 1, restaurant: `再取込店${i}`, area: '大阪市港区弁天1丁目', tripLegCount: i % 4 === 0 ? 2 : 1,
+      legs: Array.from({ length: i % 4 === 0 ? 2 : 1 }, (_, k) => ({ legUuid: `leg-${d26}-${i}-${k}`, restaurant: `再取込店${i}`, pickupAddress: '大阪市港区弁天1-2-3', dropoffAddress: '大阪市港区弁天1丁目5-6' }))
+    });
+    const range = n => Array.from({ length: n }, (_, k) => trip26(k + 1));
+    const sales = n => range(n).reduce((a, t) => a + t.amount, 0);
+    const points = n => range(n).reduce((a, t) => a + t.points, 0);
+    const p26a = structured(d26, range(12), 500);
+    r = await apiPost('/api/import', { date: d26, structured: p26a, previewFirst: true });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'PREVIEW_READY' && job.result.previous === null, '1回目（未取込の日）: 確認画面に「前回の取込」は無い');
+    r = await apiPost('/api/import', { date: d26, structured: p26a, confirmed: true });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'COMPLETE' && seedDay(d26).tripsCount === 12 && seedDay(d26).deliveriesCount === points(12) && seedDay(d26).sales.total === sales(12) + 500,
+      `1回目の取込: 12 trip・${points(12)}件・¥${sales(12) + 500}`);
+    check(job.next === null && job.reimport && job.reimport.act === 'reimport' && job.reimport.date === d26 && job.reimport.label === 'この日を最新データで再取込',
+      `全工程完了（COMPLETE）の画面に「${job.reimport && job.reimport.label}」（主ボタンではない・同じ日 ${job.reimport && job.reimport.date}）`);
+    // 取込の後に端末で入力した手入力データ（経費・休みの指定・trip のメモ／評価・手動の天気）
+    const manual = seedDay(d26);
+    manual.expenses = [{ id: 'exp_manual_0926', category: 'バイクシェア', amount: 330, memo: '手入力の経費', createdAt: '2026-09-26T12:00:00Z', updatedAt: '2026-09-26T12:00:00Z' }];
+    manual.dayOff = false;
+    manual.weather = { type: 'rain', source: 'manual', raw: '', observedDate: d26 };
+    manual.deliveries[2].memo = '手入力のメモ';
+    Object.assign(manual.deliveries[2], { evaluation: 'AVOID', evaluationReason: '手入力の評価理由', evaluationUpdatedAt: '2026-09-26T12:00:00Z' });
+    delete manual.officialImport;
+    const imported26 = seedDay(d26).officialImport;
+    pipeline.writeSeedDay(storeFile, d26, { ...manual, officialImport: imported26 });
+    sh('git', ['commit', '-q', '-am', 'test: 手入力データ'], root);
+    const idsBefore = manual.deliveries.map(d => d.id);
+
+    // 「この日を最新データで再取込」= 同じ日の新しい取込ジョブ（取得 → 内容確認 → 反映 → テスト → HANDOFF → commit → push）
+    const p26b = structured(d26, range(15), 500);
+    const storeC = storeNow();
+    r = await apiPost('/api/import', { date: job.reimport.date, structured: p26b, previewFirst: true });
+    check(r.status === 202, '完了済み（COMPLETE）の取込があっても、同じ日の新しい取込を受け付ける');
+    job = await waitJob(r.json.id);
+    const prev26 = job.result && job.result.previous;
+    check(job.phase === 'PREVIEW_READY' && prev26 && prev26.trips === 12 && prev26.deliveriesCount === points(12) && prev26.totalSales === sales(12) + 500 && job.result.summary.trips === 15,
+      `再取込の確認画面: 前回 ${prev26 && prev26.trips} trip → 今回 ${job.result.summary.trips} trip（まだ反映しない）`);
+    check(storeNow() === storeC, '内容確認の段階では UBER_LOG を変更しない');
+    const headC = head();
+    r = await apiPost('/api/import', { date: d26, structured: p26b, confirmed: true });
+    job = await waitJob(r.json.id);
+    const day26 = seedDay(d26);
+    const ids26 = day26.deliveries.map(d => d.id);
+    check(job.phase === 'COMPLETE' && job.progress.every(p => p.status === 'done') && job.result.committed && job.result.pushed && head() !== headC && sh('git', ['status', '--porcelain'], root) === '',
+      `再取込も 反映 → テスト → HANDOFF → commit → push まで完了（${sh('git', ['log', '-1', '--format=%s'], root)}）`);
+    check(day26.tripsCount === 15 && day26.deliveries.length === 15 && new Set(ids26).size === 15, `trip は 15（12＋15＝27 にならない）: ${day26.tripsCount} trip / ${day26.deliveries.length} 件の明細`);
+    check(day26.deliveriesCount === points(15) && day26.officialPoints === points(15), `配達件数は ${points(15)}（加算されない: ${day26.deliveriesCount}）`);
+    check(day26.sales.delivery === sales(15) && day26.sales.total === sales(15) + 500 && day26.quests.length === 1, `売上は最新の公式値 ¥${day26.sales.total}（加算されない・クエストも1件のまま）`);
+    check(idsBefore.every((id, k) => ids26[k] === id), '既存の trip ID は変わらない（新しい3件だけ追加）');
+    check(day26.expenses.length === 1 && day26.expenses[0].id === 'exp_manual_0926' && day26.expenses[0].amount === 330, '手入力の経費を保持');
+    check(day26.dayOff === false, '手入力の休みの指定（dayOff）を保持');
+    const t3 = day26.deliveries.find(d => d.id === manual.deliveries[2].id);
+    check(t3.memo === '手入力のメモ' && t3.evaluation === 'AVOID' && t3.evaluationReason === '手入力の評価理由', 'trip のメモ・評価（○／×と理由）を保持');
+    check(day26.weather && day26.weather.type === 'rain' && day26.weather.source === 'manual', '手動の天気を保持');
+    check(day26.officialImport && day26.officialImport.importedAt !== imported26.importedAt, '公式取込の時刻（officialImport.importedAt）は新しい取込に更新');
+
+    // 同じ最新データをもう一度: 変更なし（二重にならない）
+    const storeD = storeNow();
+    r = await apiPost('/api/import', { date: d26, structured: p26b, confirmed: true });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'COMPLETE' && job.result.unchanged === true && storeNow() === storeD && job.reimport && job.reimport.date === d26,
+      '同じ内容でもう一度再取込しても変更なし（3回目も可能・二重にならない）');
+    // 古い公式データ（12 trip の途中データ）への巻き戻しは止める
+    r = await apiPost('/api/import', { date: d26, structured: p26a, confirmed: true });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'PREVIEW_BLOCKED' && storeNow() === storeD && (job.problems || []).some(p => /既存trip/.test(`${p.title} ${p.detail || ''}`)),
+      '古い途中データ（12 trip）で再取込しても 15 trip を巻き戻さない（消さずに止める・UBER_LOG は変更なし）');
+    // 別の日の取込は従来どおり
+    const d27 = '2026-09-27';
+    r = await apiPost('/api/import', { date: d27, structured: structured(d27, [trip(d27, 6, 480)]), confirmed: true });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'COMPLETE' && seedDay(d27).tripsCount === 1 && seedDay(d26).tripsCount === 15 && job.reimport.date === d27,
+      '別の日の取込も従来どおり完了（再取込した日は変わらない）');
 
     section('13-9. TEST_FAILED: 反映済み・テスト失敗 →「テストと保存を再開する」（取得・反映はやり直さない）');
     server.kill();

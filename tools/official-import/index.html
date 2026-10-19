@@ -182,7 +182,7 @@
     SAVING: { cls: 'info', title: '● 記録・保存中（HANDOFF・commit・push）', desc: 'このまま待ってください。' },
     SAVE_FAILED: { cls: 'err', title: '× 記録・保存でエラーになりました', desc: '<b>UBER_LOG には反映済みです。取り込みをやり直さないでください。</b>\nGitHub への保存はまだです。原因を直したら「テストと保存を再開する」を押してください。' },
     PUSH_FAILED: { cls: 'err', title: '× GitHub への送信だけ失敗しました', desc: 'UBER_LOG への反映と保存（commit）は完了しています。取り込みはやり直さないでください。\nネットワークを確認して「GitHubへの送信を再試行する」を押してください。' },
-    COMPLETE: { cls: 'ok', title: '✓ 全工程完了', desc: '次に押すボタンはありません。' },
+    COMPLETE: { cls: 'ok', title: '✓ 全工程完了', desc: '次に押すボタンはありません。\nこの日の後の配達や、公式データの更新を反映したいときは「この日を最新データで再取込」を押してください（加算ではなく最新の公式データへの更新・二重にはなりません）。' },
     ERROR: { cls: 'err', title: '× エラーで停止しました', desc: 'UBER_LOG には反映していません（変更なし）。原因を確認して「最初から取得し直す」を押してください。' }
   };
   const MARK = { done: ['✓', '完了'], doing: ['●', '実行中'], waiting: ['Ⅱ', 'ユーザー確認待ち'], error: ['×', 'エラー'], todo: ['・', '未実行'], skip: ['－', '不要'] };
@@ -216,8 +216,10 @@
     const isToday = (v ? v.date : $('date').value) === todayStr;
     $('today-warn').hidden = !isToday;
     $('today-warn').innerHTML = isToday ? `<div class="note warn">${esc(TODAY_WARNING)}</div>` : '';
-    $('next-warn').innerHTML = v && (v.partialDay || (v.result && v.result.partialDay)) && ['PREVIEW_READY', 'COMPLETE'].includes(phase)
-      ? `<div class="note warn"><b>今日（${esc(v.date)}）の途中のデータです。</b>${esc(TODAY_WARNING)}</div>` : '';
+    const prev = phase === 'PREVIEW_READY' && v.result && v.result.previous;
+    $('next-warn').innerHTML = (v && (v.partialDay || (v.result && v.result.partialDay)) && ['PREVIEW_READY', 'COMPLETE'].includes(phase)
+      ? `<div class="note warn"><b>今日（${esc(v.date)}）の途中のデータです。</b>${esc(TODAY_WARNING)}</div>` : '') +
+      (prev ? `<div class="note ok"><b>この日は取込済みです（前回: ${esc(cnt(prev.trips))} trip・${esc(cnt(prev.deliveriesCount, '件'))}・${esc(yen(prev.totalSales))}）。</b>反映すると下の最新の公式データに置き換わります（加算されません）。経費・休み・メモ・評価・天気などの手入力はそのまま残ります。</div>` : '');
 
     // 数字（取得結果）
     const r = v && v.result;
@@ -309,8 +311,25 @@
       : `<p class="muted">保存: commit ${esc(r.commit || '—')}${r.pushed ? '・GitHub へ送信済み' : ''}${r.version ? ` / version ${esc(r.version)}` : ''}</p>`;
     $('result').innerHTML = `<p class="complete-big">✓ 取込完了</p><p class="muted">${esc(`${y}/${m}/${d}`)}</p>${extra}
       ${(r.warnings || []).length ? `<details><summary class="muted">注意 ${r.warnings.length} 件</summary><ul class="muted">${r.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul></details>` : ''}
-      <a class="ghost" style="display:inline-block;margin-top:10px;text-decoration:none" href="/">UBER_LOGを見る</a>`;
+      <div class="row" style="margin-top:10px"><a class="ghost" style="display:inline-block;text-decoration:none" href="/">UBER_LOGを見る</a>
+      ${v.reimport ? `<button class="ghost" id="btn-reimport" type="button" data-date="${esc(v.reimport.date)}">${esc(v.reimport.label)}</button>` : ''}</div>`;
     $('result').hidden = false;
+    if (v.reimport) $('btn-reimport').addEventListener('click', () => reimport(v.reimport.date, v.sourceType));
+  }
+
+  // 同じ日の再取込: 新しい取込ジョブを最初の取得から始める（取得 → 内容確認 → 反映 → テスト → HANDOFF → commit → push）。
+  // 反映は加算ではなく最新の公式データへの置き換え（手入力の経費・休み・メモ・評価・天気は残る）
+  function reimport(date, sourceType) {
+    if (busy || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+    if (!confirm(`${date} を Uber Web から取得し直します。\n反映前に内容を確認できます（反映すると最新の公式データへ更新・加算されません）。よろしいですか？`)) return;
+    $('date').value = date;
+    lastStopSig = ''; sameStopCount = 0;
+    render(null);
+    if (sourceType === 'screenshots') { // スクショで取り込んだ日は、新しい一覧・スクショを入れてから「スクショで取り込む」
+      loadDate().then(() => { $('legacy').open = true; $('legacy').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+      return;
+    }
+    startBrowserFetch(false);
   }
 
   // ============================================================

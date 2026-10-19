@@ -100,6 +100,17 @@ function detectPending(root) {
   if (ahead && Number(ahead) > 0 && m) return { kind: 'unpushed', date: m[1] };
   return null;
 }
+/**
+ * その日に保存済みの公式取込（再取込の確認画面で「前回の取込」として出す。未取込なら null）
+ * 同じ日の再取込は加算ではなく、この値を最新の公式データで置き換える
+ */
+function previousImport(root, date) {
+  try {
+    const day = require('./pipeline.js').readSeed(path.join(root, 'js', 'store.js')).data.dailyLogs[date];
+    if (!day || !day.officialImport) return null;
+    return { trips: day.tripsCount, deliveriesCount: day.deliveriesCount, totalSales: day.sales ? day.sales.total : null, importedAt: day.officialImport.importedAt };
+  } catch (e) { return null; }
+}
 const IMAGE_EXT = /\.(png|jpe?g)$/i;
 const SCREEN_FIELDS = ['date', 'time', 'amount', 'durationStr', 'distanceKm', 'restaurant', 'area', 'points'];
 
@@ -203,12 +214,17 @@ class ImportJob {
     }
   }
 
+  // 完了後の「この日を最新データで再取込」（主操作ではない。同じ日の新しい取込ジョブを最初の取得から始める）
+  reimportAction() {
+    return this.phase === 'COMPLETE' ? { act: 'reimport', label: 'この日を最新データで再取込', date: this.date } : null;
+  }
+
   view() {
     return {
       id: this.id, date: this.date, state: this.state, phase: this.phase, step: this.step, message: this.message,
       sourceType: this.sourceType || 'screenshots',
       steps: STEPS.map(([key, label]) => ({ key, label })),
-      progress: this.progress(), next: this.nextAction(),
+      progress: this.progress(), next: this.nextAction(), reimport: this.reimportAction(),
       partialDay: this.partialDay, today: this.today, pendingDate: this.pendingDate, applied: this.applied,
       problems: this.problems, result: this.result, log: this.log.slice(-40), startedAt: this.startedAt
     };
@@ -333,6 +349,7 @@ class ImportJob {
           if (fs.existsSync(structuredFile)) {
             try {
               structuredData = JSON.parse(fs.readFileSync(structuredFile, 'utf8'));
+              this.fetchFallback = err.message; // 最新ではない可能性（確認画面で知らせる）
               this.log.push(`自動取得エラー (${err.message}) のため保存済み構造化データを使用します`);
             } catch (e) {
               throw err;
@@ -440,10 +457,12 @@ class ImportJob {
 
     // 初回構造化取得時は自動applyせず、プレビュー確認のため停止する（誤反映防止）
     if ((isBrowser || (isStructuredInput && payload.previewFirst)) && !payload.confirmed) {
+      const previous = previousImport(this.root, date);
       this.needsReview([{
         type: 'preview',
         title: `【プレビュー】${date} Uber Web構造化取得・検証完了（未反映）`,
-        detail: `全 ${v.summary.trips} 件のトリップ（配達件数: ${v.summary.deliveriesCount}）を正常に取得・検証しました。本体（store.js）への確定反映は保留しています。下の内訳を確認してください。`,
+        detail: (this.fetchFallback ? `⚠ Uber Web から最新を取得できなかったため、前回保存した取得結果を表示しています（最新ではない可能性があります）: ${this.fetchFallback}\n` : '') +
+          `全 ${v.summary.trips} 件のトリップ（配達件数: ${v.summary.deliveriesCount}）を正常に取得・検証しました。本体（store.js）への確定反映は保留しています。下の内訳を確認してください。`,
         summary: v.summary,
         items: (v.deliveries || []).map(d => ({
           time: d.time,
@@ -451,7 +470,7 @@ class ImportJob {
           reason: `${d.restaurant || ''} / ${d.area || ''} / ${d.distanceKm || 0}km / ${d.durationStr || ''}${d.tripLegCount > 1 ? ` 【${d.tripLegCount}件配達】` : ''}${d.tip ? ` (チップ: ¥${d.tip})` : ''}`
         }))
       }], 'PREVIEW_READY');
-      this.result = { date, summary: v.summary, status: 'PASS', preview: true, deliveries: v.deliveries, warnings: v.warnings };
+      this.result = { date, summary: v.summary, status: 'PASS', preview: true, deliveries: v.deliveries, warnings: v.warnings, previous };
       return;
     }
 
