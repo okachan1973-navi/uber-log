@@ -321,16 +321,18 @@ class ImportJob {
       let structuredData;
       const structuredFile = path.join(inbox, 'structured.json');
       if (payload.confirmed) this.reviewed = true;
-      if ((payload.confirmed || payload.decisions) && fs.existsSync(structuredFile)) {
-        this.message = '保存済みの構造化データを読み込んでいます...';
-        try {
-          structuredData = JSON.parse(fs.readFileSync(structuredFile, 'utf8'));
-          this.log.push(`読込: 保存済み構造化データ (${(structuredData.trips || []).length} trips) を使用して反映します`);
-        } catch (e) {
-          structuredData = null;
+      if (payload.confirmed || payload.decisions) {
+        // 反映・選択のやり直しは、この取込で取得して確認した結果（structured.json）だけを使う。
+        // 確認画面の取得日時（fetchedAt）と違う・無い場合は使わない（前回の取込の古い取得結果を反映しない）
+        try { structuredData = JSON.parse(fs.readFileSync(structuredFile, 'utf8')); } catch (e) { structuredData = null; }
+        if (!structuredData) throw new Error('確認した取得結果が見つかりません。「最初から取得し直す」を押してください（UBER_LOG は変更なし）。');
+        if (payload.confirmed && !payload.fetchedAt) throw new Error('どの取得結果を確認したか分からないため反映しません。「最初から取得し直す」を押してください（UBER_LOG は変更なし）。');
+        if (payload.fetchedAt && structuredData.fetchedAt !== payload.fetchedAt) {
+          throw new Error(`確認した取得結果（${payload.fetchedAt}）と保存されている取得結果（${structuredData.fetchedAt || '取得日時なし'}）が違うため反映しません。「最初から取得し直す」を押してください（UBER_LOG は変更なし）。`);
         }
-      }
-      if (!structuredData) {
+        this.log.push(`読込: この取込で取得した構造化データ（取得日時 ${structuredData.fetchedAt}・${(structuredData.trips || []).length} trips）を使用します`);
+      } else {
+        // 取得は毎回 Uber Web から新しく行う。失敗したら止める（保存済みの前回の取得結果では代用しない・inbox / staging も書き換えない）
         this.message = 'Uber Web から実績データを自動取得中...';
         try {
           structuredData = await browserFetcher.fetchUberDataForDate(this.root, date, {}, msg => {
@@ -346,21 +348,13 @@ class ImportJob {
             }]);
             return;
           }
-          if (fs.existsSync(structuredFile)) {
-            try {
-              structuredData = JSON.parse(fs.readFileSync(structuredFile, 'utf8'));
-              this.fetchFallback = err.message; // 最新ではない可能性（確認画面で知らせる）
-              this.log.push(`自動取得エラー (${err.message}) のため保存済み構造化データを使用します`);
-            } catch (e) {
-              throw err;
-            }
-          } else {
-            throw err;
-          }
+          throw new Error(`Uber Web から最新データを取得できませんでした。保存済みの前回の取得結果は使っていません（取得結果・UBER_LOG とも変更なし）。\n${err.message}`);
         }
+        browserFetcher.saveStructuredInbox(this.root, date, structuredData);
+        this.log.push(`保存: Uber Web から取得した構造化データ（取得日時 ${structuredData.fetchedAt}・${(structuredData.trips || []).length} trips）`);
       }
-      browserFetcher.saveStructuredInbox(this.root, date, structuredData);
-      this.log.push(`保存: Uber Web から構造化データを自動取得 (${(structuredData.trips || []).length} trips)`);
+      this.fetchedAt = structuredData.fetchedAt || null;
+      this.lastTripAt = structuredData.lastTripAt || null;
     } else if (isStructuredInput) {
       if (payload.confirmed) this.reviewed = true;
       browserFetcher.saveStructuredInbox(this.root, date, payload.structured);
@@ -451,18 +445,18 @@ class ImportJob {
     const v = await this.step_('validate');
     if (v.status !== 'PASS') {
       this.needsReview(this.explain(v, doc));
-      this.result = { summary: v.summary, status: v.status };
+      this.result = { summary: v.summary, status: v.status, fetchedAt: this.fetchedAt || null };
       return;
     }
 
     // 初回構造化取得時は自動applyせず、プレビュー確認のため停止する（誤反映防止）
     if ((isBrowser || (isStructuredInput && payload.previewFirst)) && !payload.confirmed) {
       const previous = previousImport(this.root, date);
+      const lastTripAt = this.lastTripAt || (v.deliveries || []).map(d => d.time).filter(Boolean).sort().pop() || null;
       this.needsReview([{
         type: 'preview',
         title: `【プレビュー】${date} Uber Web構造化取得・検証完了（未反映）`,
-        detail: (this.fetchFallback ? `⚠ Uber Web から最新を取得できなかったため、前回保存した取得結果を表示しています（最新ではない可能性があります）: ${this.fetchFallback}\n` : '') +
-          `全 ${v.summary.trips} 件のトリップ（配達件数: ${v.summary.deliveriesCount}）を正常に取得・検証しました。本体（store.js）への確定反映は保留しています。下の内訳を確認してください。`,
+        detail: `全 ${v.summary.trips} 件のトリップ（配達件数: ${v.summary.deliveriesCount}）を正常に取得・検証しました。本体（store.js）への確定反映は保留しています。下の内訳を確認してください。`,
         summary: v.summary,
         items: (v.deliveries || []).map(d => ({
           time: d.time,
@@ -470,7 +464,7 @@ class ImportJob {
           reason: `${d.restaurant || ''} / ${d.area || ''} / ${d.distanceKm || 0}km / ${d.durationStr || ''}${d.tripLegCount > 1 ? ` 【${d.tripLegCount}件配達】` : ''}${d.tip ? ` (チップ: ¥${d.tip})` : ''}`
         }))
       }], 'PREVIEW_READY');
-      this.result = { date, summary: v.summary, status: 'PASS', preview: true, deliveries: v.deliveries, warnings: v.warnings, previous };
+      this.result = { date, summary: v.summary, status: 'PASS', preview: true, deliveries: v.deliveries, warnings: v.warnings, previous, fetchedAt: this.fetchedAt || null, lastTripAt };
       return;
     }
 

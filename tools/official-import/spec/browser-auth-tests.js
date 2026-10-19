@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const http = require('node:http');
 const { EventEmitter } = require('node:events');
 const vm = require('node:vm');
-const { selectUberPage, checkAuthStatus, determineAuthState, CdpClient, openCdpTab, launchOrConnectBrowser } = require('../lib/browser-fetcher');
+const { selectUberPage, checkAuthStatus, determineAuthState, CdpClient, openCdpTab, launchOrConnectBrowser, reloadUberPage, uberApi, collectDay } = require('../lib/browser-fetcher');
 const auth = { type: 'page', id: 'auth', title: 'Uber に登録またはサインイン',
   url: 'https://auth.uber.com/v2/?next_url=https%3A%2F%2Fdrivers.uber.com%2Fearnings%2Factivities&state=PRIVATE',
   webSocketDebuggerUrl: 'ws://localhost/auth' };
@@ -175,4 +175,70 @@ test('専用EdgeのUberタブがアカウント画面だけ → アクティビ�
 test('アカウント画面（account.uber.com）は取得対象のタブに選ばない', () => {
   assert.equal(selectUberPage([account]), null);
   assert.equal(selectUberPage([account, activity]).id, 'activity');
+});
+
+// ---------- 取得（画面の再読込・API の上限時間と再試行・取得日時と最終トリップ時刻） ----------
+// 画面内 fetch の式から API と body を読み取り、handler の結果を返す偽の CDP クライアント
+function fakePageClient(handler) {
+  const calls = [];
+  return {
+    calls,
+    async send(method) { calls.push(method); return {}; },
+    async evaluate(expr) {
+      if (expr.includes('document.readyState')) { calls.push('ready'); return { ready: 'complete', host: 'drivers.uber.com' }; }
+      const api = expr.match(/fetch\("([^"]+)"/)[1];
+      const body = JSON.parse(JSON.parse(expr.match(/body: ("(?:[^"\\]|\\.)*")/)[1]));
+      assert.match(expr, /cache: 'no-store'/);
+      assert.match(expr, /AbortController/);
+      calls.push(api);
+      return handler(api, body);
+    }
+  };
+}
+const fast = { delayMs: 0, reload: { intervalMs: 1 } };
+
+test('取得の前に Uber画面を再読込し、読込完了まで待つ', async () => {
+  const c = fakePageClient(() => ({}));
+  const st = await reloadUberPage(c, { intervalMs: 1 });
+  assert.equal(st.ready, 'complete');
+  assert.deepEqual(c.calls, ['Page.reload', 'ready']);
+});
+
+test('API が応答しない（CDPタイムアウト）ときは画面を再読込して再試行する', async () => {
+  let n = 0;
+  const c = fakePageClient(() => { n++; if (n === 1) throw new Error('CDPコマンドタイムアウト (Runtime.evaluate)'); return { status: 'success', ok: n }; });
+  const progress = [];
+  const r = await uberApi(c, '/earnings/api/getTrip?localeCode=ja-JP', { tripUUID: 'db06ec4c-0000' }, 'getTrip db06ec4c', m => progress.push(m), fast);
+  assert.deepEqual(r, { status: 'success', ok: 2 });
+  assert.equal(c.calls.filter(x => x === 'Page.reload').length, 1);
+  assert.ok(progress.some(m => /再読込して再試行/.test(m)));
+});
+
+test('再試行しても取得できなければ例外（古い取得結果で代用しない）', async () => {
+  const c = fakePageClient(() => { throw new Error('CDPコマンドタイムアウト (Runtime.evaluate)'); });
+  await assert.rejects(uberApi(c, '/earnings/api/getTrip?localeCode=ja-JP', { tripUUID: 'x' }, 'getTrip x', () => {}, fast), /getTrip x を取得できませんでした（3回試行）/);
+  assert.equal(c.calls.filter(x => x.startsWith('/earnings/api/getTrip')).length, 3);
+});
+
+test('対象日の一覧（全ページ）と trip 詳細を新しく取得し、取得日時と Uber Web の最終トリップ時刻を返す', async () => {
+  const at = hhmm => Math.floor(Date.parse(`2026-10-18T${hhmm}:00+09:00`) / 1000);
+  const page1 = [{ uuid: 't1', type: 'TRIP', recognizedAt: at('12:49') }, { uuid: 'q1', type: 'QUEST', recognizedAt: at('23:00') }];
+  const page2 = [{ uuid: 't2', type: 'CT', recognizedAt: at('21:37') }, { uuid: 't3', type: 'TRIP', status: 'CANCELED', recognizedAt: at('22:10') }];
+  const feeds = [];
+  const c = fakePageClient((api, body) => {
+    if (api.includes('getWebActivityFeed')) {
+      feeds.push(body);
+      return body.paginationOption.cursor ? { data: { activities: page2, pagination: {} } } : { data: { activities: page1, pagination: { hasMoreData: true, nextCursor: 'c2' } } };
+    }
+    return { status: 'success', uuid: body.tripUUID };
+  });
+  const before = Date.now();
+  const progress = [];
+  const s = await collectDay(c, '2026-10-18', m => progress.push(m), fast);
+  assert.deepEqual(feeds.map(f => [f.startDateIso, f.endDateIso, f.paginationOption.cursor || null]), [['2026-10-18', '2026-10-19', null], ['2026-10-18', '2026-10-19', 'c2']]);
+  assert.deepEqual(s.trips.map(t => t.uuid), ['t1', 't2']); // キャンセル済みは詳細を取らない
+  assert.equal(s.activity.feedItems.length, 4);
+  assert.equal(s.lastTripAt, '10/18 21:37'); // クエスト・キャンセルは最終トリップに数えない
+  assert.ok(Date.parse(s.fetchedAt) >= before && Date.parse(s.fetchStartedAt) >= before);
+  assert.ok(progress.some(m => /取得日時 .*最終トリップ 10\/18 21:37/.test(m)));
 });

@@ -411,7 +411,9 @@ async function startServer(env) {
       '保存待ちのまま別の取込を押しても取得・反映しない（TEST_FAILED のまま・再開ボタンは保存待ちの日）');
     server.kill();
     await sleep(500);
-    await startServer({});
+    const browserMock = path.join(tmp, 'browser-mock.json'); // Uber Web 取得の代わり（13-12）。本物の Uber にはつながない
+    fs.writeFileSync(browserMock, JSON.stringify({ __mockError: '未設定' }), 'utf8');
+    await startServer({ UBER_BROWSER_MOCK: browserMock });
     check((await apiGet('/api/jobs/current')).status === 404 && (await apiGet('/api/pending')).json.pending.date === d25, 'サーバーを再起動しても保存待ちが分かる（/api/pending）');
     r = await apiPost('/api/resume', { date: d25 });
     job = await waitJob(r.json.id);
@@ -428,6 +430,53 @@ async function startServer(env) {
     r = await apiPost('/api/import', { date: today, structured: structured(today, [trip(today, 5, 450)]), previewFirst: true });
     job = await waitJob(r.json.id);
     check(job.partialDay === true && job.today === today && job.phase === 'PREVIEW_READY', `今日（${today}）の取込は partialDay（画面に「本日はまだ終了していません」）・取込自体はできる`);
+
+    section('13-12. Uber Web 取得の再取込は毎回新しく取得する（失敗時に前回の取得結果で代用しない）');
+    const d28 = '2026-09-28';
+    const inbox28 = path.join(root, 'tools', 'official-import', 'inbox', d28, 'structured.json');
+    const staging28 = path.join(root, 'tools', 'official-import', 'staging', `${d28}.json`);
+    const fetchAs = (trips, fetchedAt) => fs.writeFileSync(browserMock, JSON.stringify({ ...structured(d28, trips, 300), fetchedAt, lastTripAt: `9/28 ${trips[trips.length - 1].time}` }), 'utf8');
+    // 1回目（昼）: 2 trip を取得 → 確認 → 反映
+    const T1 = '2026-09-28T03:00:00.000Z';
+    fetchAs([trip(d28, 1, 400), trip(d28, 2, 500)], T1);
+    r = await apiPost('/api/import', { date: d28, useBrowser: true, confirmed: false });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'PREVIEW_READY' && job.result.fetchedAt === T1 && job.result.lastTripAt === '9/28 12:02' && job.result.summary.trips === 2,
+      `取得結果の確認画面に取得日時（${job.result.fetchedAt}）と Uber Web の最終トリップ（${job.result.lastTripAt}）`);
+    r = await apiPost('/api/import', { date: d28, useBrowser: true, confirmed: true, fetchedAt: T1 });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'COMPLETE' && seedDay(d28).tripsCount === 2, '確認した取得結果（取得日時が一致）を反映して完了');
+    // 2回目（夜）: Uber Web 側に trip が増えた → 新しく取得した 3 trip が出る（保存済みの 2 trip ではない）
+    const T2 = '2026-09-28T12:00:00.000Z';
+    fetchAs([trip(d28, 1, 400), trip(d28, 2, 500), trip(d28, 3, 600)], T2);
+    r = await apiPost('/api/import', { date: d28, useBrowser: true, confirmed: false });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'PREVIEW_READY' && job.result.summary.trips === 3 && job.result.fetchedAt === T2 && job.result.previous.trips === 2 && JSON.parse(fs.readFileSync(inbox28, 'utf8')).fetchedAt === T2,
+      `再取込は Uber Web から新しく取得（前回 ${job.result.previous && job.result.previous.trips} trip → 今回 ${job.result.summary.trips} trip・取得日時 ${job.result.fetchedAt}）`);
+    // 取得に失敗（10/18 の実例: getTrip の応答なし）→ 前回の取得結果で代用しない・取得結果（inbox / staging）も UBER_LOG も変えない
+    const inboxBefore = fs.readFileSync(inbox28, 'utf8');
+    const stagingBefore = fs.readFileSync(staging28, 'utf8');
+    const storeE = storeNow();
+    fs.writeFileSync(browserMock, JSON.stringify({ __mockError: 'getTrip db06ec4c を取得できませんでした（3回試行）: CDPコマンドタイムアウト (Runtime.evaluate)' }), 'utf8');
+    r = await apiPost('/api/import', { date: d28, useBrowser: true, confirmed: false });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'ERROR' && job.next && job.next.act === 'restart' && /保存済みの前回の取得結果は使っていません/.test(job.problems[0].detail) && /CDPコマンドタイムアウト/.test(job.problems[0].detail),
+      `取得失敗は ERROR（「最初から取得し直す」）: ${job.problems[0].detail.split('\n')[0]}`);
+    check(!job.result && !(job.problems || []).some(p => p.type === 'preview'), '取得失敗を「取得成功」の確認画面として出さない（数字を出さない）');
+    check(fs.readFileSync(inbox28, 'utf8') === inboxBefore && fs.readFileSync(staging28, 'utf8') === stagingBefore && storeNow() === storeE,
+      '取得失敗では inbox の取得結果・staging・UBER_LOG を書き換えない（新しい取得に成功したときだけ更新）');
+    // 確認していない取得結果を反映しない
+    r = await apiPost('/api/import', { date: d28, useBrowser: true, confirmed: true, fetchedAt: T1 });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'ERROR' && /確認した取得結果/.test(job.problems[0].detail) && storeNow() === storeE, '確認画面と違う取得結果（取得日時が不一致）は反映しない');
+    r = await apiPost('/api/import', { date: d28, useBrowser: true, confirmed: true });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'ERROR' && storeNow() === storeE, '取得日時の無い反映要求は反映しない（確認なしで反映しない）');
+    r = await apiPost('/api/import', { date: d28, useBrowser: true, confirmed: true, fetchedAt: T2 });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'COMPLETE' && seedDay(d28).tripsCount === 3 && seedDay(d28).sales.total === 1800, '確認した最新の取得結果（3 trip）を反映して完了（加算しない: ¥1,800）');
+    const ui2 = (await request('GET', '/tools/official-import/')).text;
+    check(ui2.includes('payload.fetchedAt = fetchedAt') && ui2.includes('前回の取込と同じ内容です'), '画面: 反映は確認した取得結果（取得日時）を指定・前回と同じ内容なら注意を表示');
 
     // ==========================================================
     section('13-6. Claude Code が見つからない場合');

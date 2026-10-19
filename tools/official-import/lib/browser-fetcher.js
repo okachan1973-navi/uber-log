@@ -20,6 +20,8 @@ const { spawn } = require('child_process');
 
 const DEFAULT_PORT = 9223;
 const DELAY_BETWEEN_TRIPS_MS = 1200; // 各trip詳細取得の間隔（サーバー負荷軽減）
+const API_TIMEOUT_MS = 25000;        // Uber API 1回の上限（応答が無いまま止まらない）
+const API_ATTEMPTS = 3;              // 失敗・応答なしのときは Uber画面を再読込して再試行（最大3回）
 
 function uberPageRank(target) {
   if (!target || target.type !== 'page') return 99;
@@ -185,12 +187,12 @@ class CdpClient {
     });
   }
 
-  async evaluate(expression) {
+  async evaluate(expression, timeoutMs) {
     const res = await this.send('Runtime.evaluate', {
       expression,
       returnByValue: true,
       awaitPromise: true
-    });
+    }, timeoutMs);
     if (res.exceptionDetails) {
       const desc = res.exceptionDetails.exception ? res.exceptionDetails.exception.description : res.exceptionDetails.text;
       throw new Error(`ブラウザ実行エラー: ${desc}`);
@@ -525,13 +527,15 @@ function determineAuthState(info) {
  */
 async function fetchUberDataForDate(root, date, opts = {}, onProgress = () => {}) {
   // モックモード（テスト・検証用）
+  // モックファイルが無いときに本物の Uber へつながないよう、指定されていれば必ずモックで完結する
+  // { "__mockError": "..." } は取得失敗（応答なし等）の再現
   if (process.env.UBER_BROWSER_MOCK) {
     const mockFile = process.env.UBER_BROWSER_MOCK;
-    if (fs.existsSync(mockFile)) {
-      onProgress('モックデータを読込中...');
-      const mockData = JSON.parse(fs.readFileSync(mockFile, 'utf8'));
-      return mockData;
-    }
+    if (!fs.existsSync(mockFile)) throw new Error(`モックデータがありません: ${mockFile}`);
+    onProgress('モックデータを読込中...');
+    const mockData = JSON.parse(fs.readFileSync(mockFile, 'utf8'));
+    if (mockData.__mockError) throw new Error(mockData.__mockError);
+    return mockData;
   }
 
   const port = opts.port || DEFAULT_PORT;
@@ -557,109 +561,128 @@ async function fetchUberDataForDate(root, date, opts = {}, onProgress = () => {}
   await client.connect();
 
   try {
-    onProgress(`対象日（${date}）のアクティビティ一覧を取得中...`);
-
-    // 1. アクティビティフィード（getWebActivityFeed）を全ページ取得
-    // ブラウザの fetch を利用し、Cookie・CSRFトークン（x-csrf-token: x）を自然に適用
-    const feedResult = await client.evaluate(`(async () => {
-      const targetDate = ${JSON.stringify(date)};
-      const d = new Date(targetDate + 'T00:00:00+09:00');
-      d.setDate(d.getDate() + 1);
-      const nextDate = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-
-      let cursor = null;
-      let allItems = [];
-      let pageCount = 0;
-      let hasMore = true;
-
-      while (hasMore && pageCount < 20) {
-        pageCount++;
-        const payload = {
-          startDateIso: targetDate,
-          endDateIso: nextDate,
-          paginationOption: cursor ? { cursor } : {}
-        };
-        const res = await fetch('/earnings/api/getWebActivityFeed?localeCode=ja-JP', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-csrf-token': 'x'
-          },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) {
-          throw new Error('getWebActivityFeed failed with HTTP ' + res.status);
-        }
-        const data = await res.json();
-        const items = data.data?.activities || data.feedItems || data.items || [];
-        allItems.push(...items);
-
-        const pagination = data.data?.pagination || data.paginationOption || data.pagination || {};
-        cursor = pagination.nextCursor || null;
-        hasMore = !!(pagination.hasMoreData && cursor);
-      }
-      return { items: allItems, totalItems: allItems.length };
-    })()`);
-
-    const items = feedResult.items || [];
-    onProgress(`アクティビティ取得完了: 全 ${items.length} 件`);
-
-    // Deliveryアイテムから tripUuid を抽出（キャンセル済みを除く）
-    const deliveries = items.filter(it => {
-      const status = String(it.status || it.statusType || '').toUpperCase();
-      if (status === 'CANCELED' || status === 'CANCELLED' || it.activityTitle === 'キャンセル済み') return false;
-      const t = (it.type || '').toUpperCase();
-      const title = (it.activityTitle || '').toLowerCase();
-      return t === 'TRIP' || t === 'CT' || title.includes('delivery');
-    });
-    const tripUuids = [...new Set(deliveries.map(d => d.uuid || d.tripUuid).filter(Boolean))];
-
-    onProgress(`対象日の Delivery: ${tripUuids.length} 件の詳細を取得します...`);
-
-    // 2. 各 tripUuid の getTrip 詳細を取得
-    const trips = [];
-    for (let i = 0; i < tripUuids.length; i++) {
-      const uuid = tripUuids[i];
-      onProgress(`配達詳細取得中 (${i + 1}/${tripUuids.length}): ${uuid.slice(0, 8)}...`);
-
-      const tripDetail = await client.evaluate(`(async () => {
-        const uuid = ${JSON.stringify(uuid)};
-        const res = await fetch('/earnings/api/getTrip?localeCode=ja-JP', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-csrf-token': 'x'
-          },
-          body: JSON.stringify({ tripUUID: uuid })
-        });
-        if (!res.ok) {
-          throw new Error('getTrip failed for ' + uuid + ' with HTTP ' + res.status);
-        }
-        return await res.json();
-      })()`);
-
-      trips.push(tripDetail);
-
-      // サーバー負荷軽減のため待機
-      if (i < tripUuids.length - 1) {
-        await new Promise(r => setTimeout(r, DELAY_BETWEEN_TRIPS_MS));
-      }
-    }
-
-    const structuredData = {
-      source: 'uber-driver-web',
-      fetchedAt: new Date().toISOString(),
-      targetDate: date,
-      activity: {
-        feedItems: items
-      },
-      trips
-    };
-
-    return structuredData;
+    // 毎回 Uber画面を再読込してから取得する（何時間も開いたままの画面の状態を引きずらない）
+    onProgress('Uber画面を再読込中...');
+    await reloadUberPage(client);
+    return await collectDay(client, date, onProgress, opts);
   } finally {
     client.close();
   }
+}
+
+// Uber画面を再読込して、読込完了（document.readyState === 'complete'）まで待つ
+async function reloadUberPage(client, opts = {}) {
+  const timeoutMs = opts.timeoutMs || 30000;
+  const intervalMs = opts.intervalMs || 500;
+  await client.send('Page.reload', { ignoreCache: true }, 10000);
+  for (let waited = 0; waited < timeoutMs; waited += intervalMs) {
+    await new Promise(r => setTimeout(r, intervalMs));
+    try {
+      const st = await client.evaluate('({ ready: document.readyState, host: location.host })', 5000);
+      if (st && st.ready === 'complete') return st;
+    } catch (e) { /* 読込中は評価できないことがある */ }
+  }
+  throw new Error('Uber画面の再読込が終わりません');
+}
+
+/**
+ * Uber Driver Web の API を画面内の fetch で呼ぶ（Cookie・CSRFトークン x-csrf-token: x をそのまま使う）
+ * 1回ごとに上限時間を設け、失敗・応答なしなら Uber画面を再読込して再試行する。最後まで失敗したら例外（古いデータで代用しない）
+ */
+async function uberApi(client, apiPath, body, label, onProgress = () => {}, opts = {}) {
+  const attempts = opts.attempts || API_ATTEMPTS;
+  const timeoutMs = opts.timeoutMs || API_TIMEOUT_MS;
+  let lastErr = null;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await client.evaluate(`(async () => {
+        const ctl = new AbortController();
+        const timer = setTimeout(() => ctl.abort(), ${timeoutMs});
+        try {
+          const res = await fetch(${JSON.stringify(apiPath)}, {
+            method: 'POST', cache: 'no-store', signal: ctl.signal,
+            headers: { 'Content-Type': 'application/json', 'x-csrf-token': 'x' },
+            body: ${JSON.stringify(JSON.stringify(body))}
+          });
+          if (!res.ok) throw new Error(${JSON.stringify(label)} + ' failed with HTTP ' + res.status);
+          return await res.json();
+        } catch (e) {
+          if (e && e.name === 'AbortError') throw new Error(${JSON.stringify(label)} + ' timed out (${timeoutMs}ms)');
+          throw e;
+        } finally { clearTimeout(timer); }
+      })()`, timeoutMs + 15000);
+    } catch (e) {
+      lastErr = e;
+      if (attempt < attempts) {
+        onProgress(`${label} に失敗しました（${e.message}）。Uber画面を再読込して再試行します（${attempt + 1}/${attempts}回目）`);
+        await reloadUberPage(client, opts.reload).catch(() => {});
+      }
+    }
+  }
+  throw new Error(`${label} を取得できませんでした（${attempts}回試行）: ${lastErr && lastErr.message}`);
+}
+
+const jstTime = ms => new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(ms));
+
+// 対象日のアクティビティフィード（全ページ）と各 trip の詳細を取得する
+async function collectDay(client, date, onProgress = () => {}, opts = {}) {
+  const startedAt = new Date().toISOString();
+  onProgress(`対象日（${date}）のアクティビティ一覧を取得中...`);
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  const nextDate = d.toISOString().slice(0, 10);
+
+  // 1. アクティビティフィード（getWebActivityFeed）を全ページ取得
+  const items = [];
+  let cursor = null;
+  for (let pageCount = 1; pageCount <= 20; pageCount++) {
+    const data = await uberApi(client, '/earnings/api/getWebActivityFeed?localeCode=ja-JP',
+      { startDateIso: date, endDateIso: nextDate, paginationOption: cursor ? { cursor } : {} }, 'getWebActivityFeed', onProgress, opts);
+    items.push(...((data && data.data && data.data.activities) || (data && (data.feedItems || data.items)) || []));
+    const pagination = (data && ((data.data && data.data.pagination) || data.paginationOption || data.pagination)) || {};
+    cursor = pagination.nextCursor || null;
+    if (!(pagination.hasMoreData && cursor)) break;
+  }
+  onProgress(`アクティビティ取得完了: 全 ${items.length} 件`);
+
+  // Deliveryアイテムから tripUuid を抽出（キャンセル済みを除く）
+  const deliveries = items.filter(it => {
+    const status = String(it.status || it.statusType || '').toUpperCase();
+    if (status === 'CANCELED' || status === 'CANCELLED' || it.activityTitle === 'キャンセル済み') return false;
+    const t = (it.type || '').toUpperCase();
+    const title = (it.activityTitle || '').toLowerCase();
+    return t === 'TRIP' || t === 'CT' || title.includes('delivery');
+  });
+  const tripUuids = [...new Set(deliveries.map(it => it.uuid || it.tripUuid).filter(Boolean))];
+  const lastAt = Math.max(0, ...deliveries.map(it => Number(it.recognizedAt) || 0));
+  const lastTripAt = lastAt ? jstTime(lastAt * 1000) : null; // Uber Web 側の最終トリップ時刻（ログ・確認用）
+
+  onProgress(`対象日の Delivery: ${tripUuids.length} 件（Uber Web の最終トリップ ${lastTripAt || '—'}）の詳細を取得します...`);
+
+  // 2. 各 tripUuid の getTrip 詳細を取得
+  const trips = [];
+  const delayMs = opts.delayMs === undefined ? DELAY_BETWEEN_TRIPS_MS : opts.delayMs;
+  for (let i = 0; i < tripUuids.length; i++) {
+    const uuid = tripUuids[i];
+    onProgress(`配達詳細取得中 (${i + 1}/${tripUuids.length}): ${uuid.slice(0, 8)}...`);
+    trips.push(await uberApi(client, '/earnings/api/getTrip?localeCode=ja-JP', { tripUUID: uuid }, `getTrip ${uuid.slice(0, 8)}`, onProgress, opts));
+    // サーバー負荷軽減のため待機
+    if (i < tripUuids.length - 1) await new Promise(r => setTimeout(r, delayMs));
+  }
+
+  const fetchedAt = new Date().toISOString();
+  onProgress(`Uber Web から取得完了: 取得日時 ${jstTime(Date.parse(fetchedAt))}・Delivery ${trips.length} 件・最終トリップ ${lastTripAt || '—'}`);
+  return {
+    source: 'uber-driver-web',
+    fetchedAt,
+    fetchStartedAt: startedAt,
+    lastTripAt,
+    targetDate: date,
+    activity: {
+      feedItems: items
+    },
+    trips
+  };
 }
 
 /**
@@ -689,6 +712,9 @@ module.exports = {
   checkAuthStatus,
   determineAuthState,
   fetchUberDataForDate,
+  reloadUberPage,
+  uberApi,
+  collectDay,
   saveStructuredInbox,
   CdpClient
 };

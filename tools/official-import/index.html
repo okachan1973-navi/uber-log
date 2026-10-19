@@ -217,7 +217,12 @@
     $('today-warn').hidden = !isToday;
     $('today-warn').innerHTML = isToday ? `<div class="note warn">${esc(TODAY_WARNING)}</div>` : '';
     const prev = phase === 'PREVIEW_READY' && v.result && v.result.previous;
-    $('next-warn').innerHTML = (v && (v.partialDay || (v.result && v.result.partialDay)) && ['PREVIEW_READY', 'COMPLETE'].includes(phase)
+    const fetched = phase === 'PREVIEW_READY' && v.result && v.result.fetchedAt;
+    const ps = v && v.result && v.result.summary;
+    const same = prev && ps && prev.trips === ps.trips && prev.deliveriesCount === ps.deliveriesCount && prev.totalSales === ps.totalSales;
+    $('next-warn').innerHTML = (fetched ? `<div class="note ok">Uber Web から取得: ${esc(new Date(fetched).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }))}・最終トリップ ${esc(v.result.lastTripAt || '—')}</div>` : '') +
+      (same ? '<div class="note warn"><b>前回の取込と同じ内容です（trip・件数・総売上が一致）。</b>この後の配達がまだ Uber Web に出ていない可能性があります。反映しても変更はありません。少し時間をおいて取得し直してください。</div>' : '') +
+      (v && (v.partialDay || (v.result && v.result.partialDay)) && ['PREVIEW_READY', 'COMPLETE'].includes(phase)
       ? `<div class="note warn"><b>今日（${esc(v.date)}）の途中のデータです。</b>${esc(TODAY_WARNING)}</div>` : '') +
       (prev ? `<div class="note ok"><b>この日は取込済みです（前回: ${esc(cnt(prev.trips))} trip・${esc(cnt(prev.deliveriesCount, '件'))}・${esc(yen(prev.totalSales))}）。</b>反映すると下の最新の公式データに置き換わります（加算されません）。経費・休み・メモ・評価・天気などの手入力はそのまま残ります。</div>` : '');
 
@@ -470,6 +475,9 @@
     if (date > todayStr) return;
     const payload = { date, useBrowser: true, confirmed };
     if (decisions) payload.decisions = decisions;
+    // 反映・選択は「確認した取得結果」だけに対して行う（取得日時で照合。違えばサーバーが止める）
+    const fetchedAt = view && view.date === date && view.result && view.result.fetchedAt;
+    if ((confirmed || decisions) && fetchedAt) payload.fetchedAt = fetchedAt;
     send('/api/import', payload, confirmed ? 'REFLECTING' : 'FETCHING');
   }
 
