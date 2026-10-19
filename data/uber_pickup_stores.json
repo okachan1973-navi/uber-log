@@ -76,10 +76,10 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 23,
+      "pickup_count": 24,
       "first_pickup": "2026-09-23 16:27",
-      "last_pickup": "2026-10-17 18:23",
-      "active_days": 13,
+      "last_pickup": "2026-10-18 16:47",
+      "active_days": 14,
       "original_names": [
         "マクドナルド イオンモール大阪ドームシティ店",
         "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY"
@@ -712,6 +712,50 @@
       "address_short": "大正区千島"
     },
     {
+      "id": "st_1i6vnp7",
+      "canonical_name": "松のや 九条店",
+      "name_keys": [
+        "松のや九条店"
+      ],
+      "category": "gyudon_teishoku",
+      "address": "大阪府大阪市西区九条1-14-26",
+      "latitude": 34.675159,
+      "longitude": 135.474838,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１４番２６号",
+      "address_source": "pkg.navitime.co.jp/matsuyafoods2 (松屋併設)",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目１４番２６号",
+        "osm_nearest": {
+          "id": "node/1735950052",
+          "name": "松屋 九条店 松屋",
+          "distance_m": 7
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": "九条1-14-26（松屋・松のや併設）",
+      "notes": null,
+      "pickup_count": 6,
+      "first_pickup": "2026-09-22 12:31",
+      "last_pickup": "2026-10-18 16:18",
+      "active_days": 5,
+      "original_names": [
+        "松のや 九条店",
+        "松のや 九条店 Matsunoya Kujo"
+      ],
+      "brand_id": "matsunoya",
+      "brand_name": "松のや",
+      "brand_reading": "まつのや",
+      "branch_name": "九条店",
+      "site_id": "site_15arb50",
+      "display_name": "九条店",
+      "address_short": "西区九条"
+    },
+    {
       "id": "st_bhb0ka",
       "canonical_name": "スターバックス コーヒー イオンモール大阪ドームシティ店",
       "name_keys": [
@@ -830,50 +874,6 @@
       "site_id": null,
       "display_name": "南堀江関西スーパー店",
       "address_short": "西区南堀江"
-    },
-    {
-      "id": "st_1i6vnp7",
-      "canonical_name": "松のや 九条店",
-      "name_keys": [
-        "松のや九条店"
-      ],
-      "category": "gyudon_teishoku",
-      "address": "大阪府大阪市西区九条1-14-26",
-      "latitude": 34.675159,
-      "longitude": 135.474838,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１４番２６号",
-      "address_source": "pkg.navitime.co.jp/matsuyafoods2 (松屋併設)",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１４番２６号",
-        "osm_nearest": {
-          "id": "node/1735950052",
-          "name": "松屋 九条店 松屋",
-          "distance_m": 7
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": "九条1-14-26（松屋・松のや併設）",
-      "notes": null,
-      "pickup_count": 5,
-      "first_pickup": "2026-09-22 12:31",
-      "last_pickup": "2026-10-11 13:59",
-      "active_days": 4,
-      "original_names": [
-        "松のや 九条店",
-        "松のや 九条店 Matsunoya Kujo"
-      ],
-      "brand_id": "matsunoya",
-      "brand_name": "松のや",
-      "brand_reading": "まつのや",
-      "branch_name": "九条店",
-      "site_id": "site_15arb50",
-      "display_name": "九条店",
-      "address_short": "西区九条"
     },
     {
       "id": "st_zm9ew6",
@@ -5256,8 +5256,8 @@
       "to": "2026-10-18",
       "days": 31
     },
-    "total_trips": 409,
-    "total_pickups": 409,
+    "total_trips": 411,
+    "total_pickups": 411,
     "store_count": 126,
     "confirmed_count": 110,
     "needs_review_count": 16,
