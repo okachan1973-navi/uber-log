@@ -208,10 +208,10 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 14,
+      "pickup_count": 15,
       "first_pickup": "2026-09-10 11:04",
-      "last_pickup": "2026-10-16 11:46",
-      "active_days": 12,
+      "last_pickup": "2026-10-20 17:14",
+      "active_days": 13,
       "original_names": [
         "ケンタッキーフライドチキン イオンモール大阪ドームシティ店"
       ],
@@ -5288,8 +5288,8 @@
       "to": "2026-10-20",
       "days": 32
     },
-    "total_trips": 418,
-    "total_pickups": 418,
+    "total_trips": 419,
+    "total_pickups": 419,
     "store_count": 127,
     "confirmed_count": 110,
     "needs_review_count": 17,

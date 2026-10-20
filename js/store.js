@@ -10967,10 +10967,10 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": 14.6,
-      "tripsCount": 7,
-      "officialPoints": 8,
-      "deliveriesCount": 8,
+      "totalDistanceKm": 15.86,
+      "tripsCount": 8,
+      "officialPoints": 9,
+      "deliveriesCount": 9,
       "workSessions": [],
       "deliveries": [
         {
@@ -11163,6 +11163,32 @@ const CONFIRMED_SEED_DATA = {
             }
           ],
           "sequence": null
+        },
+        {
+          "id": "del_1020_8",
+          "index": 8,
+          "completedAt": "17:14",
+          "restaurant": "ケンタッキーフライドチキン イオンモール大阪ドームシティ店",
+          "area": "大阪市西区南堀江4丁目",
+          "fee": 320,
+          "distanceKm": 1.26,
+          "durationStr": "13分4秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "32291d65-e88d-4f33-ac3f-293fa52e8709",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "32291d65-e88d-4f33-ac3f-293fa52e8709",
+              "restaurant": "ケンタッキーフライドチキン イオンモール大阪ドームシティ店",
+              "pickupAddress": "ケンタッキーフライドチキン イオンモール大阪ドームシティ店",
+              "dropoffAddress": "27大阪市西区南堀江４丁目",
+              "area": "大阪市西区南堀江4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
         }
       ],
       "quests": [
@@ -11195,19 +11221,29 @@ const CONFIRMED_SEED_DATA = {
           "questName": "1回乗車クエスト",
           "questType": "normal",
           "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）。15:00の「6 回乗車クエスト」¥0は報酬0のため売上非加算"
+        },
+        {
+          "id": "quest_1020_4",
+          "time": "17:27",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）。15:00の「6 回乗車クエスト」¥0は報酬0のため売上非加算"
         }
       ],
       "sales": {
-        "delivery": 2521,
-        "quest": 300,
+        "delivery": 2841,
+        "quest": 600,
         "adjustment": 0,
         "other": 0,
-        "total": 2821
+        "total": 3441
       },
       "expenses": [],
       "officialImport": {
         "source": "official-import-v1",
-        "importedAt": "2026-10-20T06:56:13.007Z"
+        "importedAt": "2026-10-20T09:18:15.405Z"
       }
     }
   },
