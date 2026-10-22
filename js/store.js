@@ -11251,10 +11251,10 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": 12.17,
-      "tripsCount": 5,
-      "officialPoints": 5,
-      "deliveriesCount": 5,
+      "totalDistanceKm": 18,
+      "tripsCount": 7,
+      "officialPoints": 7,
+      "deliveriesCount": 7,
       "workSessions": [],
       "deliveries": [
         {
@@ -11386,20 +11386,72 @@ const CONFIRMED_SEED_DATA = {
             }
           ],
           "sequence": null
+        },
+        {
+          "id": "del_1022_6",
+          "index": 6,
+          "completedAt": "16:19",
+          "restaurant": "京都北白川 ラーメン魁力屋 イオンモール大阪ドームシティ店",
+          "area": "大阪市福島区玉川4丁目",
+          "fee": 620,
+          "distanceKm": 3.27,
+          "durationStr": "23分59秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "2e74b271-9ad1-42e0-bd1e-0ae0dad0ed8f",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "2e74b271-9ad1-42e0-bd1e-0ae0dad0ed8f",
+              "restaurant": "京都北白川 ラーメン魁力屋 イオンモール大阪ドームシティ店",
+              "pickupAddress": "京都北白川 ラーメン魁力屋 イオンモール大阪ドームシティ店",
+              "dropoffAddress": "27大阪市福島区玉川４丁目",
+              "area": "大阪市福島区玉川4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1022_7",
+          "index": 7,
+          "completedAt": "17:14",
+          "restaurant": "スターバックス コーヒー イオンモール大阪ドームシティ店 Starbucks Coffee AEON MALL Osaka Dome City",
+          "area": "大阪市浪速区浪速西1丁目",
+          "fee": 332,
+          "distanceKm": 2.56,
+          "durationStr": "20分18秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "568133e7-6ba4-4cc4-90e5-ff39b05941c2",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "568133e7-6ba4-4cc4-90e5-ff39b05941c2",
+              "restaurant": "スターバックス コーヒー イオンモール大阪ドームシティ店 Starbucks Coffee AEON MALL Osaka Dome City",
+              "pickupAddress": "スターバックス コーヒー イオンモール大阪ドームシティ店 Starbucks Coffee AEON MALL Osaka Dome City",
+              "dropoffAddress": "27大阪市浪速区浪速西１丁目",
+              "area": "大阪市浪速区浪速西1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
         }
       ],
       "quests": [],
       "sales": {
-        "delivery": 1929,
+        "delivery": 2881,
         "quest": 0,
         "adjustment": 0,
         "other": 0,
-        "total": 1929
+        "total": 2881
       },
       "expenses": [],
       "officialImport": {
         "source": "official-import-v1",
-        "importedAt": "2026-10-22T04:51:55.550Z"
+        "importedAt": "2026-10-22T10:04:59.039Z"
       }
     }
   },
