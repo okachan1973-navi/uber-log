@@ -30,10 +30,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 78,
+      "pickup_count": 79,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-20 09:08",
-      "active_days": 24,
+      "last_pickup": "2026-10-22 09:32",
+      "active_days": 25,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
         "マクドナルド 九　条　店 McDonald's KUJO",
@@ -76,10 +76,10 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 24,
+      "pickup_count": 25,
       "first_pickup": "2026-09-23 16:27",
-      "last_pickup": "2026-10-18 16:47",
-      "active_days": 14,
+      "last_pickup": "2026-10-22 11:20",
+      "active_days": 15,
       "original_names": [
         "マクドナルド イオンモール大阪ドームシティ店",
         "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY"
@@ -788,6 +788,38 @@
       "address_short": "西区九条"
     },
     {
+      "id": "st_lw9vud",
+      "canonical_name": "バーガーキングフレスポ阿波座店",
+      "name_keys": [
+        "バーガーキングフレスポ阿波座店"
+      ],
+      "category": "fastfood",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-11 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 5,
+      "first_pickup": "2026-10-08 13:10",
+      "last_pickup": "2026-10-22 10:47",
+      "active_days": 5,
+      "original_names": [
+        "バーガーキングフレスポ阿波座店 Burger King Frespo Awaza"
+      ],
+      "brand_id": "burger_king",
+      "brand_name": "バーガーキング",
+      "brand_reading": null,
+      "branch_name": "フレスポ阿波座店",
+      "display_name": "フレスポ阿波座店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_3mzt1w",
       "canonical_name": "マクドナルド 高見プラザ店",
       "name_keys": [
@@ -1005,38 +1037,6 @@
       "site_id": "site_c4h33y",
       "display_name": "イオンモール大阪ドームシティ店",
       "address_short": "西区千代崎"
-    },
-    {
-      "id": "st_lw9vud",
-      "canonical_name": "バーガーキングフレスポ阿波座店",
-      "name_keys": [
-        "バーガーキングフレスポ阿波座店"
-      ],
-      "category": "fastfood",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
-      "same_building": null,
-      "notes": "2026-10-11 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
-      "pickup_count": 4,
-      "first_pickup": "2026-10-08 13:10",
-      "last_pickup": "2026-10-20 09:16",
-      "active_days": 4,
-      "original_names": [
-        "バーガーキングフレスポ阿波座店 Burger King Frespo Awaza"
-      ],
-      "brand_id": "burger_king",
-      "brand_name": "バーガーキング",
-      "brand_reading": null,
-      "branch_name": "フレスポ阿波座店",
-      "display_name": "フレスポ阿波座店",
-      "address_short": null,
-      "site_id": null
     },
     {
       "id": "st_1njqw93",
@@ -3805,6 +3805,38 @@
       "site_id": null
     },
     {
+      "id": "st_876fvv",
+      "canonical_name": "なか卯 みなと通店",
+      "name_keys": [
+        "なか卯みなと通店"
+      ],
+      "category": "gyudon_teishoku",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-22 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-22 08:12",
+      "last_pickup": "2026-10-22 08:12",
+      "active_days": 1,
+      "original_names": [
+        "なか卯 みなと通店 Nakau Minatodori"
+      ],
+      "brand_id": "nakau",
+      "brand_name": "なか卯",
+      "brand_reading": null,
+      "branch_name": "みなと通店",
+      "display_name": "みなと通店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_5117ol",
       "canonical_name": "なか卯 桜川店",
       "name_keys": [
@@ -4155,6 +4187,38 @@
       "brand_reading": null,
       "branch_name": null,
       "display_name": "マチの洋食屋さん by ローソン 西九条二丁目",
+      "address_short": null,
+      "site_id": null
+    },
+    {
+      "id": "st_10sa9ap",
+      "canonical_name": "松屋 大阪本町店",
+      "name_keys": [
+        "松屋大阪本町店"
+      ],
+      "category": "gyudon_teishoku",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-22 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-22 10:15",
+      "last_pickup": "2026-10-22 10:15",
+      "active_days": 1,
+      "original_names": [
+        "松屋 大阪本町店 Matsuya Honmachi"
+      ],
+      "brand_id": "matsuya",
+      "brand_name": "松屋",
+      "brand_reading": "まつや",
+      "branch_name": "大阪本町店",
+      "display_name": "大阪本町店",
       "address_short": null,
       "site_id": null
     },
@@ -5285,14 +5349,14 @@
   "summary": {
     "period": {
       "from": "2026-09-10",
-      "to": "2026-10-20",
-      "days": 32
+      "to": "2026-10-22",
+      "days": 33
     },
-    "total_trips": 419,
-    "total_pickups": 419,
-    "store_count": 127,
+    "total_trips": 424,
+    "total_pickups": 424,
+    "store_count": 129,
     "confirmed_count": 110,
-    "needs_review_count": 17,
+    "needs_review_count": 19,
     "trips_without_restaurant": 0
   },
   "category_labels": {

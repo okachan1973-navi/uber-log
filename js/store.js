@@ -11245,6 +11245,162 @@ const CONFIRMED_SEED_DATA = {
         "source": "official-import-v1",
         "importedAt": "2026-10-20T09:18:15.405Z"
       }
+    },
+    "2026-10-22": {
+      "date": "2026-10-22",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 12.17,
+      "tripsCount": 5,
+      "officialPoints": 5,
+      "deliveriesCount": 5,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_1022_1",
+          "index": 1,
+          "completedAt": "08:12",
+          "restaurant": "なか卯 みなと通店 Nakau Minatodori",
+          "area": "大阪市西区九条南4丁目",
+          "fee": 582,
+          "distanceKm": 5.89,
+          "durationStr": "27分5秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "4dbb6e78-f6aa-45d1-bb5d-fa76d4b4b1ea",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "4dbb6e78-f6aa-45d1-bb5d-fa76d4b4b1ea",
+              "restaurant": "なか卯 みなと通店 Nakau Minatodori",
+              "pickupAddress": "なか卯 みなと通店 Nakau Minatodori",
+              "dropoffAddress": "27大阪市西区九条南４丁目",
+              "area": "大阪市西区九条南4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1022_2",
+          "index": 2,
+          "completedAt": "09:32",
+          "restaurant": "マクドナルド 九条店",
+          "area": "大阪市西区千代崎2丁目",
+          "fee": 320,
+          "distanceKm": 0.89,
+          "durationStr": "11分53秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "3a95d153-ab50-4d79-8fc5-20225cfb2ca3",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "3a95d153-ab50-4d79-8fc5-20225cfb2ca3",
+              "restaurant": "マクドナルド 九条店",
+              "pickupAddress": "マクドナルド 九条店",
+              "dropoffAddress": "27大阪市西区千代崎２丁目",
+              "area": "大阪市西区千代崎2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1022_3",
+          "index": 3,
+          "completedAt": "10:15",
+          "restaurant": "松屋 大阪本町店 Matsuya Honmachi",
+          "area": "大阪市中央区南本町4丁目",
+          "fee": 320,
+          "distanceKm": 0.69,
+          "durationStr": "9分44秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "b670e920-99af-42db-8a0d-12d7fb7bcffc",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "b670e920-99af-42db-8a0d-12d7fb7bcffc",
+              "restaurant": "松屋 大阪本町店 Matsuya Honmachi",
+              "pickupAddress": "松屋 大阪本町店 Matsuya Honmachi",
+              "dropoffAddress": "27大阪市中央区南本町４丁目",
+              "area": "大阪市中央区南本町4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1022_4",
+          "index": 4,
+          "completedAt": "10:47",
+          "restaurant": "バーガーキングフレスポ阿波座店 Burger King Frespo Awaza",
+          "area": "大阪市大正区三軒家西1丁目",
+          "fee": 375,
+          "distanceKm": 2.45,
+          "durationStr": "14分40秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "7139cefb-2298-465f-93fe-6e4cebf02528",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "7139cefb-2298-465f-93fe-6e4cebf02528",
+              "restaurant": "バーガーキングフレスポ阿波座店 Burger King Frespo Awaza",
+              "pickupAddress": "バーガーキングフレスポ阿波座店 Burger King Frespo Awaza",
+              "dropoffAddress": "27大阪市大正区三軒家西１丁目",
+              "area": "大阪市大正区三軒家西1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1022_5",
+          "index": 5,
+          "completedAt": "11:20",
+          "restaurant": "マクドナルド イオンモール大阪ドームシティ店",
+          "area": "大阪市港区南市岡1丁目",
+          "fee": 332,
+          "distanceKm": 2.25,
+          "durationStr": "15分41秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "a0e0abf5-aa9a-4e5b-9437-78a6bfe2c540",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "a0e0abf5-aa9a-4e5b-9437-78a6bfe2c540",
+              "restaurant": "マクドナルド イオンモール大阪ドームシティ店",
+              "pickupAddress": "マクドナルド イオンモール大阪ドームシティ店",
+              "dropoffAddress": "27大阪市港区南市岡１丁目",
+              "area": "大阪市港区南市岡1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        }
+      ],
+      "quests": [],
+      "sales": {
+        "delivery": 1929,
+        "quest": 0,
+        "adjustment": 0,
+        "other": 0,
+        "total": 1929
+      },
+      "expenses": [],
+      "officialImport": {
+        "source": "official-import-v1",
+        "importedAt": "2026-10-22T04:51:55.550Z"
+      }
     }
   },
   "targetQuests": [
