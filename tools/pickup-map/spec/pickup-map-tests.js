@@ -236,7 +236,7 @@ test('名称順: どのカテゴリでも同じブランドが連続し、ブラ
   assert.deepStrictEqual(ff, [
     'KFC イオンモール大阪ドームシティ店', 'KFC うめきたグリーンプレイス店',
     'バーガーキングフレスポ阿波座店', 'バーガーキング 九条店', 'バーガーキング 御堂筋本町店',
-    'ピザハット 阿波座店', 'ピザハット 大阪ナインモール九条店',
+    'ピザハット 阿波座店', 'ピザハット 大阪ナインモール九条店', 'ピザハット 大正泉尾店',
     'ミスタードーナツ 福島大開ショップ',
     'モスバーガー JR福島駅前店', 'モスバーガー JR野田店', 'モスバーガー 市岡みなと通り店'
   ]);
@@ -307,7 +307,7 @@ test('一覧用 display_name: ブランド店は支店名（ブランド名を�
 
 test('ブランド判定: ミスタードーナツとピザハット、ローソンとローソンストア100は別ブランド', () => {
   assert.strictEqual(byName('ミスタードーナツ 福島大開ショップ').brand_id, 'mister_donut');
-  assert.deepStrictEqual(master.stores.filter(s => s.brand_id === 'pizza_hut').map(s => s.display_name).sort(), ['大阪ナインモール九条店', '阿波座店'].sort());
+  assert.deepStrictEqual(master.stores.filter(s => s.brand_id === 'pizza_hut').map(s => s.display_name).sort(), ['大阪ナインモール九条店', '阿波座店', '大正泉尾店'].sort());
   assert.deepStrictEqual(master.stores.filter(s => s.brand_id === 'lawson_store100').map(s => s.display_name).sort(), ['西区京町堀店', '西区新町店']);
   assert.ok(master.stores.filter(s => s.brand_id === 'lawson').length >= 5);
   assert.ok(master.stores.filter(s => s.brand_id === 'lawson').every(s => !/ストア100/.test(s.canonical_name)));

@@ -241,7 +241,7 @@ async function run() {
       ls = await listState(p);
       check('ファーストフード: 名称順・1店舗のブランドにも見出し（ミスタードーナツはピザハットと別）', ls.sort === 'name' && brandsContiguous(ls.items) && ls.heads.join('/') === 'KFC/バーガーキング/ピザハット/ミスタードーナツ/モスバーガー', { heads: ls.heads });
       const pizza = ls.groups.find(g => g.brand === 'pizza_hut'), misdo = ls.groups.find(g => g.brand === 'mister_donut');
-      check('ピザハットの下はピザハットだけ、ミスタードーナツは自分の見出しの下', pizza.rows.every(r => r.brand === 'pizza_hut') && pizza.rows.length === 2 && misdo.rows.length === 1 && misdo.rows[0].shown === '福島大開ショップ', { pizza, misdo });
+      check('ピザハットの下はピザハットだけ、ミスタードーナツは自分の見出しの下', pizza.rows.every(r => r.brand === 'pizza_hut') && pizza.rows.length === 3 && misdo.rows.length === 1 && misdo.rows[0].shown === '福島大開ショップ', { pizza, misdo });
       const kfc = ls.groups.find(g => g.brand === 'kfc');
       check('ファーストフード: KFC見出しの下は支店名だけ（正式名はKFC表記）', kfc.name === 'KFC' && kfc.rows.map(r => r.shown).join('/') === 'イオンモール大阪ドームシティ店/うめきたグリーンプレイス店' && ls.items.filter(i => i.brand === 'kfc').every(i => /^KFC /.test(i.name)) && !ls.items.some(i => /ケンタッキー/.test(i.name)), kfc);
       await p.tapSel('#pm-sort [data-sort="count"]');
