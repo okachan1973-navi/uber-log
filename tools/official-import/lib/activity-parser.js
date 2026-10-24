@@ -328,28 +328,62 @@
     });
 
     // 時刻がずれた「達成表示」と「売上計上」の統合（例: 2026-09-24 19:15「80 回乗車クエスト ¥8,890」→ 19:23「クエスト ¥8,890」）
-    // Uber一覧では回数クエストの達成行の数分後に、同額の「クエスト」行として売上に計上される。
-    // 同じ日・同じ金額で、達成行（回数クエスト）→ 売上計上行（クエスト）が 0〜60分以内の組だけを同一報酬として1回計上する。
-    // 金額だけでは統合しない。候補が複数ある場合は最も近い時刻の1件と1対1で組み、組めなかった行はそれぞれ別報酬として残る。
+    // Uber一覧では回数クエストの達成行の後に、同額の「クエスト」行として売上に計上される。同じ日・同じ金額の組だけを1対1で統合する。
+    //  1. 達成行 → 売上計上行が 0〜60分以内の組（従来どおり。候補が複数ある場合は最も近い時刻の1件）
+    //  2. 1. で組めない 60分超の遅れ（2026-10-24 は最大132分）: その日・その金額の達成行と売上計上行が同数で、
+    //     時刻順に k 番目どうしを組むと全組で「計上 ≧ 達成」になるときだけ、時刻順の組み合わせで確定する
+    //  3. 60分超で組める行が残るのに 2. の条件を満たさない（数が合わない・順序が崩れる）→ 推測で組まず「対応が曖昧」として止める
+    // 組める相手がいない行（達成表示だけ・売上計上だけ）は、従来どおりそれぞれ別報酬として残る
     const minutes = t => { const m = String(t || '').match(/^(\d{1,2}):(\d{2})$/); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
     const openVariants = out.filter(q => q.counted && isVariantQuest(q) && !isBaseQuest(q) && minutes(q.time) !== null);
     const openBases = out.filter(q => q.counted && isBaseQuest(q) && !q.questName && minutes(q.time) !== null);
-    openVariants
-      .sort((a, b) => minutes(a.time) - minutes(b.time))
-      .forEach(v => {
+    const byTime = (a, b) => minutes(a.time) - minutes(b.time) || (a.seq || 0) - (b.seq || 0);
+    const pair = (v, base) => {
+      base.pairedWith = v.seq;
+      base.questName = v.title;
+      base.achievedAt = v.time;
+      v.counted = false;
+      v.duplicateOfSeq = base.seq;
+      v.reason = `${base.time} の売上計上「${base.title}」と同一報酬（${v.time} は達成表示）のため計上しない`;
+    };
+    const payoutAmbiguities = [];
+    const amountGroups = new Map();
+    openVariants.concat(openBases).forEach(q => {
+      const key = `${q.date || ''}|${q.amount}`;
+      if (!amountGroups.has(key)) amountGroups.set(key, { variants: [], bases: [] });
+      amountGroups.get(key)[isBaseQuest(q) ? 'bases' : 'variants'].push(q);
+    });
+    amountGroups.forEach((g, key) => {
+      const variants = g.variants.slice().sort(byTime);
+      const bases = g.bases.slice().sort(byTime);
+      if (!variants.length || !bases.length) return;
+      // 1. 60分以内の組（従来ルール）を仮に作る
+      const near = [];
+      const taken = new Set();
+      variants.forEach(v => {
         const vt = minutes(v.time);
-        const cands = openBases.filter(b => !b.pairedWith && b.amount === v.amount && (b.date || '') === (v.date || '') &&
-          minutes(b.time) >= vt && minutes(b.time) - vt <= QUEST_PAYOUT_WINDOW_MIN);
-        if (!cands.length) return;
-        cands.sort((a, b) => minutes(a.time) - minutes(b.time));
-        const base = cands[0];
-        base.pairedWith = v.seq;
-        base.questName = v.title;
-        base.achievedAt = v.time;
-        v.counted = false;
-        v.duplicateOfSeq = base.seq;
-        v.reason = `${base.time} の売上計上「${base.title}」と同一報酬（${v.time} は達成表示）のため計上しない`;
+        const base = bases.find(b => !taken.has(b) && minutes(b.time) >= vt && minutes(b.time) - vt <= QUEST_PAYOUT_WINDOW_MIN);
+        if (!base) return;
+        taken.add(base);
+        near.push([v, base]);
       });
+      const pairedV = new Set(near.map(([v]) => v));
+      const restV = variants.filter(v => !pairedV.has(v));
+      const restB = bases.filter(b => !taken.has(b));
+      const longPossible = restV.some(v => restB.some(b => minutes(b.time) >= minutes(v.time)));
+      if (!longPossible) { near.forEach(([v, b]) => pair(v, b)); return; }
+      // 2. 60分超の遅れ: 同数・時刻順で全組が「計上 ≧ 達成」のときだけ、その金額の全行を時刻順に組む
+      const ordered = variants.length === bases.length && variants.every((v, k) => minutes(bases[k].time) >= minutes(v.time));
+      if (ordered) { variants.forEach((v, k) => pair(v, bases[k])); return; }
+      // 3. 曖昧: 組まずに止める（どれも計上扱いのまま。検証で止まるので反映されない）
+      const shortKey = key.split('|').slice(1).join('|');
+      variants.concat(bases).forEach(q => { q.reason = '達成表示と売上計上の対応が曖昧（要確認）'; });
+      payoutAmbiguities.push({
+        amount: Number(shortKey),
+        variants: variants.map(q => ({ seq: q.seq, time: q.time, title: q.title })),
+        bases: bases.map(q => ({ seq: q.seq, time: q.time, title: q.title }))
+      });
+    });
 
     // 同時刻の組でも、計上する行に回数クエストの名称を持たせる（特別クエストの識別に使う）
     out.forEach(q => {
@@ -360,7 +394,7 @@
       }
       if (q.counted) q.questType = questTypeOf(q.questName || q.title);
     });
-    return { quests: out, duplicateCandidates: candidates };
+    return { quests: out, duplicateCandidates: candidates, payoutAmbiguities };
   }
 
   // 画面表示用の簡易集計（取込補助画面で使用）
@@ -380,6 +414,7 @@
       questSales: quests.quests.filter(q => q.counted).reduce((s, q) => s + q.amount, 0),
       adjustmentSales: adjustments.reduce((s, e) => s + e.amount, 0),
       duplicateCandidates: quests.duplicateCandidates.length,
+      payoutAmbiguities: quests.payoutAmbiguities.length,
       undatedEvents: inDay.filter(e => e.date === null).length
     };
   }

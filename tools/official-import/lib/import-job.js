@@ -207,7 +207,8 @@ class ImportJob {
       case 'PREVIEW_BLOCKED': {
         const types = this.problems.map(p => p.type);
         if (types.includes('auth')) return { act: 'restart', label: 'ログインしたので取得し直す' };
-        if (types.some(t => ['unreadable', 'other', 'activity', 'check'].includes(t))) return { act: 'revalidate', label: '直した内容で検証し直す' };
+        // Uber Web 取得（structured）は保存済みの取得結果で検証し直す（Uber Web へは再アクセスしない）
+        if (types.some(t => ['unreadable', 'other', 'activity', 'check'].includes(t))) return { act: 'revalidate', label: this.sourceType === 'structured' ? '保存済みの取得結果で検証し直す（Uber Web へは再アクセスしません）' : '直した内容で検証し直す' };
         return null; // 選択ボタン（MAPなし・クエスト重複）や保守が必要な問題は、カードの中のボタンで操作する
       }
       default: return null;
@@ -321,14 +322,31 @@ class ImportJob {
       let structuredData;
       const structuredFile = path.join(inbox, 'structured.json');
       if (payload.confirmed) this.reviewed = true;
-      if (payload.confirmed || payload.decisions) {
-        // 反映・選択のやり直しは、この取込で取得して確認した結果（structured.json）だけを使う。
+      if (payload.confirmed || payload.decisions || payload.revalidate) {
+        // 反映・選択・検証のやり直しは、この取込で取得して確認した結果（structured.json）だけを使う（Uber Web へは再アクセスしない）。
         // 確認画面の取得日時（fetchedAt）と違う・無い場合は使わない（前回の取込の古い取得結果を反映しない）
-        try { structuredData = JSON.parse(fs.readFileSync(structuredFile, 'utf8')); } catch (e) { structuredData = null; }
+        let raw = null;
+        try { raw = fs.readFileSync(structuredFile); structuredData = JSON.parse(raw.toString('utf8')); } catch (e) { structuredData = null; }
         if (!structuredData) throw new Error('確認した取得結果が見つかりません。「最初から取得し直す」を押してください（UBER_LOG は変更なし）。');
-        if (payload.confirmed && !payload.fetchedAt) throw new Error('どの取得結果を確認したか分からないため反映しません。「最初から取得し直す」を押してください（UBER_LOG は変更なし）。');
+        if ((payload.confirmed || payload.revalidate) && !payload.fetchedAt) throw new Error('どの取得結果を確認したか分からないため反映・検証しません。「最初から取得し直す」を押してください（UBER_LOG は変更なし）。');
         if (payload.fetchedAt && structuredData.fetchedAt !== payload.fetchedAt) {
           throw new Error(`確認した取得結果（${payload.fetchedAt}）と保存されている取得結果（${structuredData.fetchedAt || '取得日時なし'}）が違うため反映しません。「最初から取得し直す」を押してください（UBER_LOG は変更なし）。`);
+        }
+        if (payload.revalidate) {
+          // 保存済みの取得結果だけで検証し直す: 対象日・内容（sha256）・一覧テキスト（activity.txt）が取得結果と一致することを確かめる。
+          // 一致しない・足りないときは推測で直さずに止める（保存済みのファイルは書き換えない）
+          if (structuredData.targetDate !== date) {
+            throw new Error(`保存されている取得結果の対象日（${structuredData.targetDate || '不明'}）が ${date} と違うため検証しません。「最初から取得し直す」を押してください（UBER_LOG は変更なし）。`);
+          }
+          if (!payload.structuredSha256 || sha256(raw) !== payload.structuredSha256) {
+            throw new Error('保存されている取得結果の内容が、確認画面に出した取得結果と一致しないため検証しません。「最初から取得し直す」を押してください（UBER_LOG は変更なし）。');
+          }
+          const actFile = path.join(inbox, 'activity.txt');
+          const expected = require('./structured-normalizer.js').buildActivityTextFromStructured(structuredData.activity || structuredData, date);
+          if (!fs.existsSync(actFile) || fs.readFileSync(actFile, 'utf8') !== expected) {
+            throw new Error('保存されている一覧（activity.txt）が取得結果（structured.json）から作った内容と一致しないため検証しません。保守で確認してください（UBER_LOG は変更なし）。');
+          }
+          this.log.push(`再検証: Uber Web へは再アクセスせず、保存済みの取得結果（取得日時 ${structuredData.fetchedAt}・${(structuredData.trips || []).length} trips）を今の検証ロジックで解析し直します`);
         }
         this.log.push(`読込: この取込で取得した構造化データ（取得日時 ${structuredData.fetchedAt}・${(structuredData.trips || []).length} trips）を使用します`);
       } else {
@@ -355,6 +373,7 @@ class ImportJob {
       }
       this.fetchedAt = structuredData.fetchedAt || null;
       this.lastTripAt = structuredData.lastTripAt || null;
+      this.structuredSha256 = fs.existsSync(structuredFile) ? sha256(fs.readFileSync(structuredFile)) : null;
     } else if (isStructuredInput) {
       if (payload.confirmed) this.reviewed = true;
       browserFetcher.saveStructuredInbox(this.root, date, payload.structured);
@@ -403,6 +422,7 @@ class ImportJob {
     this.setStep('parse');
     const prep = await this.step_('prepare');
     if (!prep.summary.delivery) {
+      if (this.fetchedAt) this.result = { status: 'FAIL', fetchedAt: this.fetchedAt, structuredSha256: this.structuredSha256 || null };
       this.needsReview([{ type: 'activity', title: `${date} の Delivery が一覧に見つかりません`, detail: '日付とコピー範囲（日付の行を含めて）を確認してください。' }]);
       return;
     }
@@ -445,7 +465,7 @@ class ImportJob {
     const v = await this.step_('validate');
     if (v.status !== 'PASS') {
       this.needsReview(this.explain(v, doc));
-      this.result = { summary: v.summary, status: v.status, fetchedAt: this.fetchedAt || null };
+      this.result = { summary: v.summary, status: v.status, fetchedAt: this.fetchedAt || null, structuredSha256: this.structuredSha256 || null };
       return;
     }
 
@@ -464,7 +484,7 @@ class ImportJob {
           reason: `${d.restaurant || ''} / ${d.area || ''} / ${d.distanceKm || 0}km / ${d.durationStr || ''}${d.tripLegCount > 1 ? ` 【${d.tripLegCount}件配達】` : ''}${d.tip ? ` (チップ: ¥${d.tip})` : ''}`
         }))
       }], 'PREVIEW_READY');
-      this.result = { date, summary: v.summary, status: 'PASS', preview: true, deliveries: v.deliveries, warnings: v.warnings, previous, fetchedAt: this.fetchedAt || null, lastTripAt };
+      this.result = { date, summary: v.summary, status: 'PASS', preview: true, deliveries: v.deliveries, warnings: v.warnings, previous, fetchedAt: this.fetchedAt || null, structuredSha256: this.structuredSha256 || null, lastTripAt };
       return;
     }
 

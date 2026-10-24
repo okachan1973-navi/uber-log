@@ -347,7 +347,7 @@
     else if (act === 'apply') { if (confirm('取得した内容を UBER_LOG へ反映します。よろしいですか？')) startBrowserFetch(true); }
     else if (act === 'resume') resume(date);
     else if (act === 'restart') (view && view.sourceType === 'screenshots') ? start() : startBrowserFetch(false);
-    else if (act === 'revalidate') (view && view.sourceType === 'screenshots') ? start() : startBrowserFetch(false);
+    else if (act === 'revalidate') (view && view.sourceType === 'screenshots') ? start() : startBrowserFetch(false, null, true);
   });
   $('btn-reset').addEventListener('click', () => { lastStopSig = ''; sameStopCount = 0; render(null); });
 
@@ -468,16 +468,20 @@
     send('/api/import', { date, activity: text, keep, files, decisions }, 'FETCHING');
   }
 
-  function startBrowserFetch(confirmed = false, decisions = null) {
+  // revalidate: 保存済みの取得結果で検証し直す（Uber Web へは再アクセスしない。取得日時と内容の sha256 でサーバーが照合する）
+  function startBrowserFetch(confirmed = false, decisions = null, revalidate = false) {
     if (busy) return;
     const date = $('date').value;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
     if (date > todayStr) return;
     const payload = { date, useBrowser: true, confirmed };
     if (decisions) payload.decisions = decisions;
-    // 反映・選択は「確認した取得結果」だけに対して行う（取得日時で照合。違えばサーバーが止める）
+    if (revalidate) payload.revalidate = true;
+    // 反映・選択・再検証は「確認した取得結果」だけに対して行う（取得日時で照合。違えばサーバーが止める）
     const fetchedAt = view && view.date === date && view.result && view.result.fetchedAt;
-    if ((confirmed || decisions) && fetchedAt) payload.fetchedAt = fetchedAt;
+    if ((confirmed || decisions || revalidate) && fetchedAt) payload.fetchedAt = fetchedAt;
+    const structuredSha256 = view && view.date === date && view.result && view.result.structuredSha256;
+    if (revalidate && structuredSha256) payload.structuredSha256 = structuredSha256;
     send('/api/import', payload, confirmed ? 'REFLECTING' : 'FETCHING');
   }
 

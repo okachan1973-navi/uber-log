@@ -342,8 +342,10 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
   section('4-3. クエストの達成表示と売上計上の統合ルール');
   {
     const q = (title, time, amount, seq) => ({ type: 'quest', title, category: null, time, amount, seq, date: '2026-09-24' });
+    // 2026-10-24 の実例で、達成表示から売上計上まで 62〜132分遅れることが分かったため、60分超でも 1対1 に組めるときは統合する（下の 4-4）
     const far = parser.dedupeQuests([q('6 回乗車クエスト', '12:00', 600, 1), q('クエスト', '13:30', 600, 2)]);
-    check(far.quests.filter(x => x.counted).length === 2, '60分を超えて離れた同額の行は統合しない（別報酬として両方計上）');
+    check(far.quests.filter(x => x.counted).length === 1 && far.quests[1].counted && far.quests[1].achievedAt === '12:00' && far.payoutAmbiguities.length === 0,
+      '60分を超えて離れた同額の達成表示1件・売上計上1件は、同じ報酬として1回計上（10/24 以降のルール）');
     const diff = parser.dedupeQuests([q('6 回乗車クエスト', '19:15', 600, 1), q('クエスト', '19:23', 700, 2)]);
     check(diff.quests.filter(x => x.counted).length === 2, '金額が違えば統合しない');
     const before = parser.dedupeQuests([q('クエスト', '19:10', 600, 1), q('6 回乗車クエスト', '19:15', 600, 2)]);
@@ -354,6 +356,59 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
       `特別クエストの判定: ${parser.SPECIAL_QUEST_MIN_TRIPS}回以上の回数クエスト（80回 → special / 6回・名称なし → normal）`);
     const two = parser.dedupeQuests([q('6 回乗車クエスト', '19:15', 600, 1), q('6 回乗車クエスト', '19:40', 600, 2), q('クエスト', '19:23', 600, 3)]);
     check(two.quests.filter(x => x.counted).length === 2, '達成表示2件・売上計上1件なら、近い組だけ統合して残り1件は別報酬として計上（1対1）');
+  }
+
+  // ==========================================================
+  section('4-4. 60分を超えて遅れた売上計上（2026-10-24 の実例）と、組み合わせが曖昧なときの停止');
+  {
+    const q = (title, time, amount, seq, date = '2026-10-24') => ({ type: 'quest', title, category: /^クエスト$/.test(title) ? 'MISC' : 'QUEST', time, amount, seq, date });
+    const counted = r => r.quests.filter(x => x.counted);
+    const sum = r => counted(r).reduce((s, x) => s + x.amount, 0);
+
+    // 実データ（クエスト行だけ・個人情報なし）: 一覧テキストに変換 → 解析 → 重複排除
+    const normalizer = require('../lib/structured-normalizer.js');
+    const fx = JSON.parse(fs.readFileSync(path.join(FIX, 'quest-payout-delay-2026-10-24.json'), 'utf8'));
+    const ev = parser.parseActivityText(normalizer.buildActivityTextFromStructured(fx, '2026-10-24'), { defaultYear: '2026' }).events.filter(e => e.type === 'quest');
+    const r24 = parser.dedupeQuests(ev);
+    const nQuest = fx.feedItems.filter(i => i.type === 'QUEST').length;
+    const nMisc = fx.feedItems.filter(i => i.type === 'MISC').length;
+    check(ev.length === 40 && nQuest === 20 && nMisc === 20, `10/24: クエスト行 40（QUEST ${nQuest} / MISC ${nMisc}）`);
+    check(sum(r24) === 5710 && counted(r24).length === 20 && counted(r24).every(x => x.title === 'クエスト'),
+      `10/24: 計上は売上計上行（MISC）20件だけ・¥5,710（=${sum(r24)}・計上 ${counted(r24).length} 件）`);
+    const paidSeqs = r24.quests.filter(x => !x.counted).map(x => x.duplicateOfSeq);
+    check(paidSeqs.length === 20 && new Set(paidSeqs).size === 20 && r24.duplicateCandidates.length === 0 && r24.payoutAmbiguities.length === 0,
+      '10/24: 達成表示 20件がそれぞれ別の売上計上 1件と組む（二重計上 0・同じ計上行を2回使わない・停止なし）');
+    const at = t => r24.quests.find(x => x.counted && x.time === t && x.amount === 200);
+    check(at('13:40').achievedAt === '11:54' && at('13:50').achievedAt === '12:29' && at('14:14').achievedAt === '12:53' && at('15:21').achievedAt === '13:10' &&
+      r24.quests.find(x => x.counted && x.time === '12:35').achievedAt === '11:33',
+      '10/24: 遅れた ¥200×4・¥100 は時刻順に組む（11:54→13:40 / 12:29→13:50 / 12:53→14:14 / 13:10→15:21 / 11:33→12:35）');
+    const app = spawnSync(process.execPath, ['-e', `global.localStorage={getItem:()=>null,setItem:()=>{},removeItem:()=>{}};
+      const m=require(${JSON.stringify(path.join(ROOT, 'js', 'store.js'))});
+      console.log(m.deduplicateQuests(JSON.parse(process.argv[1])).filter(x=>x.isDuplicateIgnored).length)`, JSON.stringify(counted(r24).map(x => ({ time: x.time, title: x.title, amount: x.amount })))], { encoding: 'utf8' });
+    check(app.stdout.trim() === '0', `10/24: 取込結果はアプリのクエスト表示ロジックでも除外 0 件（store.js は変更なし・=${app.stdout.trim()}）`);
+
+    // 同額が複数あっても 1対1・時刻順
+    const multi = parser.dedupeQuests([q('1 回乗車クエスト', '10:00', 200, 1), q('1 回乗車クエスト', '10:30', 200, 2), q('クエスト', '12:10', 200, 3), q('クエスト', '12:20', 200, 4)]);
+    check(sum(multi) === 400 && multi.quests[2].achievedAt === '10:00' && multi.quests[3].achievedAt === '10:30' && multi.payoutAmbiguities.length === 0,
+      '同額の達成表示2件 → 2時間後の売上計上2件: 時刻順に組んで ¥400（¥800 にしない）');
+    // 60分以内の組だけで済む日は従来どおり（遅れの大きい組合せに組み替えない）
+    const nearOnly = parser.dedupeQuests([q('1 回乗車クエスト', '10:00', 150, 1), q('クエスト', '10:01', 150, 2), q('1 回乗車クエスト', '15:00', 150, 3), q('クエスト', '15:01', 150, 4)]);
+    check(sum(nearOnly) === 300 && nearOnly.quests[1].achievedAt === '10:00' && nearOnly.quests[3].achievedAt === '15:00', '60分以内に組める日は従来どおりの組み合わせ');
+    // 曖昧: 60分超で組める行があるのに数が合わない → 推測で組まずに止める
+    const amb = parser.dedupeQuests([q('1 回乗車クエスト', '10:00', 200, 1), q('1 回乗車クエスト', '10:30', 200, 2), q('クエスト', '12:10', 200, 3)]);
+    check(amb.payoutAmbiguities.length === 1 && amb.payoutAmbiguities[0].amount === 200 && amb.quests.every(x => /曖昧/.test(x.reason)),
+      '達成表示2件・60分超の売上計上1件（数が合わない）→ 自動で統合せず「対応が曖昧」で停止');
+    // 曖昧: 数は合うが時刻順に組むと計上が達成より前になる → 止める
+    const order = parser.dedupeQuests([q('1 回乗車クエスト', '10:00', 200, 1), q('クエスト', '09:00', 200, 2), q('1 回乗車クエスト', '12:00', 200, 3), q('クエスト', '13:30', 200, 4)]);
+    check(order.payoutAmbiguities.length === 1, '数は合うが時刻順に組むと「計上が達成より前」になる組がある → 停止');
+    // 組める相手がいない行はそれぞれ別報酬（従来どおり）
+    const lone = parser.dedupeQuests([q('1 回乗車クエスト', '20:00', 300, 1), q('クエスト', '09:00', 500, 2)]);
+    check(sum(lone) === 800 && lone.payoutAmbiguities.length === 0, '達成表示だけ・売上計上だけの行（金額違い）はそれぞれ計上（従来どおり）');
+    // 日付境界: 別の日の行とは組まない
+    const cross = parser.dedupeQuests([q('1 回乗車クエスト', '23:50', 200, 1, '2026-10-24'), q('クエスト', '00:10', 200, 2, '2026-10-25')]);
+    check(sum(cross) === 400 && cross.payoutAmbiguities.length === 0 && !cross.quests[1].achievedAt, '日付が違う行どうしは組まない（日付境界をまたいで統合しない）');
+    // pipeline: 曖昧なときは検証で止まる（UBER_LOG に反映しない）
+    check(parser.summarize({ events: amb.quests.map(x => ({ ...x, type: 'quest' })) }, '2026-10-24').payoutAmbiguities === 1, '一覧の簡易集計にも「対応が曖昧」の件数を出す');
   }
 
   // ==========================================================

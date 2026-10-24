@@ -1,0 +1,246 @@
+{
+  "note": "2026-10-24 Uber Web アクティビティのクエスト行だけ（種別・件名・計上時刻・金額）。達成表示（QUEST）から売上計上（MISC）まで最大132分遅れた実例",
+  "targetDate": "2026-10-24",
+  "feedItems": [
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792841637,
+      "formattedTotal": "￥150"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792841637,
+      "formattedTotal": "￥1,120"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792841622,
+      "formattedTotal": "￥150.00"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "3 回乗車クエスト",
+      "recognizedAt": 1792841622,
+      "formattedTotal": "￥1,120.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792840964,
+      "formattedTotal": "￥150"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792840950,
+      "formattedTotal": "￥150.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792839696,
+      "formattedTotal": "￥150"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792839683,
+      "formattedTotal": "￥150.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792837987,
+      "formattedTotal": "￥150"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792837987,
+      "formattedTotal": "￥710"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "3 回乗車クエスト",
+      "recognizedAt": 1792837973,
+      "formattedTotal": "￥710.00"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792837973,
+      "formattedTotal": "￥150.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792836357,
+      "formattedTotal": "￥150"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792836343,
+      "formattedTotal": "￥150.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792835910,
+      "formattedTotal": "￥150"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792835895,
+      "formattedTotal": "￥150.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792833998,
+      "formattedTotal": "￥150"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792833997,
+      "formattedTotal": "￥650"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792833983,
+      "formattedTotal": "￥150.00"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "6 回乗車クエスト",
+      "recognizedAt": 1792833983,
+      "formattedTotal": "￥650.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792833667,
+      "formattedTotal": "￥150"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792833653,
+      "formattedTotal": "￥150.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792831194,
+      "formattedTotal": "￥75"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792831181,
+      "formattedTotal": "￥75.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792830396,
+      "formattedTotal": "￥225"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792830381,
+      "formattedTotal": "￥225.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792822911,
+      "formattedTotal": "￥200"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792822911,
+      "formattedTotal": "￥530"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "6 回乗車クエスト",
+      "recognizedAt": 1792822195,
+      "formattedTotal": "￥530.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792818856,
+      "formattedTotal": "￥200"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792817408,
+      "formattedTotal": "￥200"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792816834,
+      "formattedTotal": "￥200"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792815021,
+      "formattedTotal": "￥200.00"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792814003,
+      "formattedTotal": "￥200.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792812957,
+      "formattedTotal": "￥100"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792812543,
+      "formattedTotal": "￥200.00"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792810492,
+      "formattedTotal": "￥200.00"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792809225,
+      "formattedTotal": "￥100.00"
+    },
+    {
+      "type": "MISC",
+      "activityTitle": "クエスト",
+      "recognizedAt": 1792808244,
+      "formattedTotal": "￥300"
+    },
+    {
+      "type": "QUEST",
+      "activityTitle": "1 回乗車クエスト",
+      "recognizedAt": 1792808217,
+      "formattedTotal": "￥300.00"
+    }
+  ]
+}

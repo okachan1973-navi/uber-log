@@ -448,6 +448,10 @@ function buildStaging(root, date, opts = {}) {
   const dupCount = questResult.duplicateCandidates.length;
   check(dupCount === 0 ? 'クエスト重複候補なし' : `クエスト重複候補あり（${dupCount}件・同じ報酬か別の報酬かの確認が必要）`, dupCount === 0,
     questResult.duplicateCandidates.map(c => `${c.key.replace('|', ' ¥')}: ${c.items.map(i => `「${(i.category ? i.category + ' ' : '') + i.title}」`).join(' と ')}（同じ報酬の2種類の表示なら count_once（1回だけ計上）、別々に受け取った報酬なら count_all（両方計上）を decisions.json の questDuplicates で指定）`).join('\n'));
+  // 60分を超えて計上された達成表示と売上計上の組が一意に決まらない（数が合わない・順序が崩れる）ときは推測で組まずに止める
+  const amb = questResult.payoutAmbiguities || [];
+  check(amb.length === 0 ? 'クエスト達成表示と売上計上の対応が一意' : `クエスト達成表示と売上計上の対応が曖昧（${amb.length}件・保守で確認が必要）`, amb.length === 0,
+    amb.map(a => `${yen(a.amount)}: 達成表示 ${a.variants.map(v => v.time).join('・')} / 売上計上 ${a.bases.map(b => b.time).join('・')}（同数・時刻順に組めないため自動で統合しません）`).join('\n'));
 
   // 2. 詳細（スクショ または 構造化データ）
   const files = listScreenshots(p.screenshotDir);

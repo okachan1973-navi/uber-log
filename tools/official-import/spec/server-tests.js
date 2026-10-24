@@ -488,6 +488,73 @@ async function startServer(env) {
     const ui2 = (await request('GET', '/tools/official-import/')).text;
     check(ui2.includes('payload.fetchedAt = fetchedAt') && ui2.includes('前回の取込と同じ内容です'), '画面: 反映は確認した取得結果（取得日時）を指定・前回と同じ内容なら注意を表示');
 
+    section('13-13. 検証で止まったら、保存済みの取得結果で検証し直す（Uber Web へは再アクセスしない）');
+    const d30 = '2026-09-30';
+    const inbox30 = path.join(root, 'tools', 'official-import', 'inbox', d30);
+    const sha = buf => require('crypto').createHash('sha256').update(buf).digest('hex');
+    const questItem = (title, time, amount) => ({ type: 'quest', title, time, amount });
+    const withQuests = (s, items) => ({ ...s, activity: { feedItems: [...s.activity.feedItems, ...items] } });
+    // 達成表示 2件・60分超の売上計上 1件（数が合わない）→ 対応が曖昧で停止
+    fs.writeFileSync(browserMock, JSON.stringify(withQuests(structured(d30, [trip(d30, 1, 400)]),
+      [questItem('1 回乗車クエスト', '10:00', 200), questItem('1 回乗車クエスト', '10:30', 200), questItem('クエスト', '12:10', 200)])), 'utf8');
+    const store30 = storeNow();
+    r = await apiPost('/api/import', { date: d30, useBrowser: true, confirmed: false });
+    job = await waitJob(r.json.id);
+    const blocked = job;
+    check(job.phase === 'PREVIEW_BLOCKED' && job.problems.some(p => /対応が曖昧/.test(p.title)) && storeNow() === store30,
+      `60分超で組み合わせが曖昧なクエストは検証で停止・UBER_LOG は変更なし（${job.problems.map(p => p.title).join(' / ')}）`);
+    check(job.next && job.next.act === 'revalidate' && /保存済みの取得結果で検証し直す/.test(job.next.label) && job.result.fetchedAt && /^[0-9a-f]{64}$/.test(job.result.structuredSha256 || ''),
+      `主ボタンは「${job.next && job.next.label}」・確認画面に取得日時と取得結果の sha256`);
+    // ここから先は Uber Web 取得が必ず失敗するようにする（再検証が Uber Web へ取りに行けばエラーになる）
+    const savedStructured = fs.readFileSync(path.join(inbox30, 'structured.json'));
+    const savedActivity = fs.readFileSync(path.join(inbox30, 'activity.txt'), 'utf8');
+    fs.writeFileSync(browserMock, JSON.stringify({ __mockError: 'Uber Web へアクセスしました（再検証では呼ばれないはず）' }), 'utf8');
+    const reval = extra => apiPost('/api/import', { date: d30, useBrowser: true, confirmed: false, revalidate: true, fetchedAt: blocked.result.fetchedAt, structuredSha256: blocked.result.structuredSha256, ...extra });
+    r = await reval({});
+    job = await waitJob(r.json.id);
+    check(job.phase === 'PREVIEW_BLOCKED' && job.problems.some(p => /対応が曖昧/.test(p.title)) && job.log.some(l => /再検証: Uber Web へは再アクセスせず/.test(l)) && !job.log.some(l => /自動取得中/.test(l)),
+      '再検証は保存済みの取得結果を今の検証ロジックで解析し直す（Uber Web へアクセスしない・同じ理由で停止）');
+    check(fs.readFileSync(path.join(inbox30, 'structured.json')).equals(savedStructured) && fs.readFileSync(path.join(inbox30, 'activity.txt'), 'utf8') === savedActivity && storeNow() === store30,
+      '再検証は保存済みの取得結果・一覧・UBER_LOG を書き換えない');
+    r = await reval({ structuredSha256: 'f'.repeat(64) });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'ERROR' && /内容が、確認画面に出した取得結果と一致しない/.test(job.problems[0].detail), '取得結果の内容（sha256）が違う → 検証しない（ERROR）');
+    r = await reval({ structuredSha256: undefined });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'ERROR' && /一致しない/.test(job.problems[0].detail), 'sha256 の指定が無い再検証はしない（ERROR）');
+    r = await reval({ fetchedAt: undefined });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'ERROR' && /どの取得結果を確認したか分からない/.test(job.problems[0].detail), '取得日時の指定が無い再検証はしない（ERROR）');
+    r = await reval({ fetchedAt: '2026-01-01T00:00:00.000Z' });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'ERROR' && /取得結果.*が違うため/.test(job.problems[0].detail), '取得日時が違う → 検証しない（ERROR）');
+    fs.writeFileSync(path.join(inbox30, 'activity.txt'), savedActivity + '\nQUEST\nクエスト\n2026-09-30\n21:00\n￥999\n', 'utf8');
+    r = await reval({});
+    job = await waitJob(r.json.id);
+    check(job.phase === 'ERROR' && /activity\.txt/.test(job.problems[0].detail) && storeNow() === store30, '一覧（activity.txt）が取得結果から作った内容と違う → 推測で直さず停止（ERROR）');
+    fs.writeFileSync(path.join(inbox30, 'activity.txt'), savedActivity, 'utf8');
+    const other = JSON.parse(savedStructured.toString('utf8'));
+    other.targetDate = '2026-09-29';
+    const otherBuf = Buffer.from(JSON.stringify(other, null, 2) + '\n', 'utf8');
+    fs.writeFileSync(path.join(inbox30, 'structured.json'), otherBuf);
+    r = await reval({ structuredSha256: sha(otherBuf) });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'ERROR' && /対象日（2026-09-29）が 2026-09-30 と違う/.test(job.problems[0].detail), '取得結果の対象日が違う → 検証しない（ERROR）');
+    fs.writeFileSync(path.join(inbox30, 'structured.json'), savedStructured);
+    // 遅れて計上された（60分超）が 1対1 に組める取得結果: 再検証でも PREVIEW_READY・二重計上しない
+    fs.writeFileSync(browserMock, JSON.stringify(withQuests(structured(d30, [trip(d30, 1, 400)]),
+      [questItem('1 回乗車クエスト', '10:00', 200), questItem('1 回乗車クエスト', '10:30', 200), questItem('クエスト', '12:10', 200), questItem('クエスト', '12:40', 200)])), 'utf8');
+    r = await apiPost('/api/import', { date: d30, useBrowser: true, confirmed: false });
+    job = await waitJob(r.json.id);
+    const ready = job;
+    check(job.phase === 'PREVIEW_READY' && job.result.summary.questSales === 400 && job.result.summary.totalSales === 800, `60分超の遅れでも 1対1 に組めればクエスト ¥400（¥800 にしない）・総売上 ¥${job.result.summary.totalSales}`);
+    fs.writeFileSync(browserMock, JSON.stringify({ __mockError: 'Uber Web へアクセスしました（再検証では呼ばれないはず）' }), 'utf8');
+    r = await apiPost('/api/import', { date: d30, useBrowser: true, confirmed: false, revalidate: true, fetchedAt: ready.result.fetchedAt, structuredSha256: ready.result.structuredSha256 });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'PREVIEW_READY' && job.result.fetchedAt === ready.result.fetchedAt && job.result.summary.questSales === 400 && storeNow() === store30,
+      '再検証（Uber Web へアクセスなし）でも同じ取得結果・同じ計算で PREVIEW_READY（反映はまだしない）');
+    check(ui2.includes('payload.revalidate = true') && ui2.includes('payload.structuredSha256 = structuredSha256'), '画面: 「保存済みの取得結果で検証し直す」は取得日時と sha256 を付けて再検証を頼む');
+
     // ==========================================================
     section('13-6. Claude Code が見つからない場合');
     delete process.env.UBER_SCREEN_READER_MOCK;
