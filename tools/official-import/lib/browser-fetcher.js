@@ -586,8 +586,77 @@ async function reloadUberPage(client, opts = {}) {
 }
 
 /**
+ * HTTP エラー応答の安全な診断情報（画面内で作る）。
+ * 応答本文・Cookie・トークンは画面の外へ出さない。出すのは ステータス・許可したヘッダー・本文の種類と長さ・
+ * JSON の最上位キー名・短い英数字のエラーコード・HTML に含まれる定型語（captcha 等）の有無だけ。
+ */
+const HTTP_DIAG_EXPR = `async res => {
+  const short = (v, n) => v == null ? null : String(v).replace(/[^\\x20-\\x7e]/g, '').slice(0, n);
+  const token = v => typeof v === 'string' && /^[A-Za-z][A-Za-z0-9_.:-]{0,39}$/.test(v) ? v : null;
+  const d = { status: res.status, statusText: short(res.statusText, 40), redirected: !!res.redirected, finalPath: null,
+    contentType: short(res.headers.get('content-type'), 80), contentLength: short(res.headers.get('content-length'), 12),
+    retryAfter: short(res.headers.get('retry-after'), 40), bodyKind: 'unknown', bodyLength: null, jsonKeys: null, errorCode: null, hints: [] };
+  try { d.finalPath = new URL(res.url).pathname.slice(0, 80); } catch (e) {}
+  let text = '';
+  try { text = await res.text(); } catch (e) { return d; }
+  d.bodyLength = text.length;
+  const t = text.trim();
+  if (!t) { d.bodyKind = 'empty'; return d; }
+  if (t[0] === '{' || t[0] === '[') {
+    try {
+      const j = JSON.parse(t);
+      d.bodyKind = 'json';
+      if (j && typeof j === 'object' && !Array.isArray(j)) {
+        d.jsonKeys = Object.keys(j).filter(k => /^[A-Za-z0-9_.-]{1,40}$/.test(k)).slice(0, 10);
+        const e = j.error && typeof j.error === 'object' ? j.error : {};
+        d.errorCode = token(j.code) || token(e.code) || token(j.error) || token(j.status) || null;
+      }
+      return d;
+    } catch (e) { /* JSON ではない */ }
+  }
+  d.bodyKind = /^<(!doctype|html)/i.test(t) ? 'html' : 'text';
+  const low = t.toLowerCase();
+  d.hints = ['captcha', 'challenge', 'rate limit', 'too many', 'blocked', 'access denied', 'forbidden', 'csrf', 'login', 'sign in']
+    .filter(w => low.includes(w));
+  return d;
+}`;
+
+// 診断情報を 1 行の日本語にする（ログ・画面用。本文そのものは含まない）
+function describeHttpDiag(d) {
+  if (!d) return '';
+  const parts = [`HTTP ${d.status}${d.statusText ? ` ${d.statusText}` : ''}`];
+  parts.push(`Content-Type: ${d.contentType || 'なし'}`);
+  if (d.contentLength) parts.push(`Content-Length: ${d.contentLength}`);
+  if (d.retryAfter) parts.push(`Retry-After: ${d.retryAfter}`);
+  if (d.redirected) parts.push(`リダイレクトあり${d.finalPath ? `（${d.finalPath}）` : ''}`);
+  parts.push(`本文: ${d.bodyKind}${d.bodyLength != null ? ` ${d.bodyLength}文字` : ''}`);
+  if (d.jsonKeys && d.jsonKeys.length) parts.push(`JSONキー: ${d.jsonKeys.join(',')}`);
+  if (d.errorCode) parts.push(`コード: ${d.errorCode}`);
+  if (d.hints && d.hints.length) parts.push(`本文に含まれる語: ${d.hints.join(',')}`);
+  return parts.join(' / ');
+}
+
+// HTTP 403 の利用者向けメッセージ。原因は確定できないため断定しない。
+// 「ログイン」の語は使わない（import-job はこの語でログイン待ちと判断するため、403 を別の状態に変えてしまう）
+function http403Message(label, diag) {
+  return `${label}: Uber Web が HTTP 403（アクセス拒否）を返したため、取得を中止しました（自動の再試行・画面の再読込はしていません）。\n` +
+    '原因はまだ確定していません（一時的なアクセス制限・認証状態・Uber 側の変更などが考えられます）。続けて何度も実行せず、時間を空けてから 1 回だけ取得し直してください。\n' +
+    `診断: ${describeHttpDiag(diag)}`;
+}
+
+class UberHttpError extends Error {
+  constructor(label, diag) {
+    super(diag.status === 403 ? http403Message(label, diag) : `${label} failed with HTTP ${diag.status}（${describeHttpDiag(diag)}）`);
+    this.name = 'UberHttpError';
+    this.status = diag.status;
+    this.diag = diag;
+  }
+}
+
+/**
  * Uber Driver Web の API を画面内の fetch で呼ぶ（Cookie・CSRFトークン x-csrf-token: x をそのまま使う）
  * 1回ごとに上限時間を設け、失敗・応答なしなら Uber画面を再読込して再試行する。最後まで失敗したら例外（古いデータで代用しない）
+ * HTTP 403（アクセス拒否）だけは再試行・再読込をせず、すぐに止める（繰り返すと制限を長引かせるおそれがあるため）
  */
 async function uberApi(client, apiPath, body, label, onProgress = () => {}, opts = {}) {
   const attempts = opts.attempts || API_ATTEMPTS;
@@ -595,7 +664,7 @@ async function uberApi(client, apiPath, body, label, onProgress = () => {}, opts
   let lastErr = null;
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
-      return await client.evaluate(`(async () => {
+      const r = await client.evaluate(`(async () => {
         const ctl = new AbortController();
         const timer = setTimeout(() => ctl.abort(), ${timeoutMs});
         try {
@@ -604,14 +673,17 @@ async function uberApi(client, apiPath, body, label, onProgress = () => {}, opts
             headers: { 'Content-Type': 'application/json', 'x-csrf-token': 'x' },
             body: ${JSON.stringify(JSON.stringify(body))}
           });
-          if (!res.ok) throw new Error(${JSON.stringify(label)} + ' failed with HTTP ' + res.status);
+          if (!res.ok) return { __uberHttpError: await (${HTTP_DIAG_EXPR})(res) };
           return await res.json();
         } catch (e) {
           if (e && e.name === 'AbortError') throw new Error(${JSON.stringify(label)} + ' timed out (${timeoutMs}ms)');
           throw e;
         } finally { clearTimeout(timer); }
       })()`, timeoutMs + 15000);
+      if (r && r.__uberHttpError) throw new UberHttpError(label, r.__uberHttpError);
+      return r;
     } catch (e) {
+      if (e instanceof UberHttpError && e.status === 403) throw e;
       lastErr = e;
       if (attempt < attempts) {
         onProgress(`${label} に失敗しました（${e.message}）。Uber画面を再読込して再試行します（${attempt + 1}/${attempts}回目）`);
@@ -705,6 +777,10 @@ function saveStructuredInbox(root, date, structuredData) {
 }
 
 module.exports = {
+  UberHttpError,
+  HTTP_DIAG_EXPR,
+  describeHttpDiag,
+  http403Message,
   selectUberPage,
   findBrowserExecutable,
   launchOrConnectBrowser,

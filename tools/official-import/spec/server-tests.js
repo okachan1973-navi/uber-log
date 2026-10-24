@@ -465,6 +465,16 @@ async function startServer(env) {
     check(!job.result && !(job.problems || []).some(p => p.type === 'preview'), '取得失敗を「取得成功」の確認画面として出さない（数字を出さない）');
     check(fs.readFileSync(inbox28, 'utf8') === inboxBefore && fs.readFileSync(staging28, 'utf8') === stagingBefore && storeNow() === storeE,
       '取得失敗では inbox の取得結果・staging・UBER_LOG を書き換えない（新しい取得に成功したときだけ更新）');
+    // HTTP 403（10/24 の実例）→ ERROR で止まる。ログイン待ち・取得成功にはしない・inbox / staging / UBER_LOG を変えない
+    const { http403Message } = require('../lib/browser-fetcher.js');
+    fs.writeFileSync(browserMock, JSON.stringify({ __mockError: http403Message('getTrip 874d7c7d', { status: 403, statusText: 'Forbidden', contentType: 'text/html', bodyKind: 'html', bodyLength: 1234, hints: ['login'] }) }), 'utf8');
+    r = await apiPost('/api/import', { date: d28, useBrowser: true, confirmed: false });
+    job = await waitJob(r.json.id);
+    check(job.phase === 'ERROR' && job.state === 'error' && /HTTP 403（アクセス拒否）/.test(job.problems[0].detail) && /原因はまだ確定していません/.test(job.problems[0].detail) && /時間を空けて/.test(job.problems[0].detail),
+      `HTTP 403 は ERROR（原因未確定・時間を空けて確認）: ${job.problems[0].detail.split('\n')[1] || ''}`);
+    check(!job.result && !(job.problems || []).some(p => p.type === 'preview' || p.type === 'auth'), 'HTTP 403 を取得成功・ログイン待ちとして扱わない');
+    check(fs.readFileSync(inbox28, 'utf8') === inboxBefore && fs.readFileSync(staging28, 'utf8') === stagingBefore && storeNow() === storeE,
+      'HTTP 403 では inbox の取得結果・staging・UBER_LOG を書き換えない');
     // 確認していない取得結果を反映しない
     r = await apiPost('/api/import', { date: d28, useBrowser: true, confirmed: true, fetchedAt: T1 });
     job = await waitJob(r.json.id);

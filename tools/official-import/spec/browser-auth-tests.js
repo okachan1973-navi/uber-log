@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const http = require('node:http');
 const { EventEmitter } = require('node:events');
 const vm = require('node:vm');
-const { selectUberPage, checkAuthStatus, determineAuthState, CdpClient, openCdpTab, launchOrConnectBrowser, reloadUberPage, uberApi, collectDay } = require('../lib/browser-fetcher');
+const { selectUberPage, checkAuthStatus, determineAuthState, CdpClient, openCdpTab, launchOrConnectBrowser, reloadUberPage, uberApi, collectDay, UberHttpError } = require('../lib/browser-fetcher');
 const auth = { type: 'page', id: 'auth', title: 'Uber に登録またはサインイン',
   url: 'https://auth.uber.com/v2/?next_url=https%3A%2F%2Fdrivers.uber.com%2Fearnings%2Factivities&state=PRIVATE',
   webSocketDebuggerUrl: 'ws://localhost/auth' };
@@ -241,4 +241,89 @@ test('対象日の一覧（全ページ）と trip 詳細を新しく取得し�
   assert.equal(s.lastTripAt, '10/18 21:37'); // クエスト・キャンセルは最終トリップに数えない
   assert.ok(Date.parse(s.fetchedAt) >= before && Date.parse(s.fetchStartedAt) >= before);
   assert.ok(progress.some(m => /取得日時 .*最終トリップ 10\/18 21:37/.test(m)));
+});
+
+// ---------- HTTP 403（アクセス拒否）: 再試行・再読込をせずに止める・安全な診断情報だけを残す ----------
+// 画面内 fetch の式を実際に実行する偽の CDP クライアント（fetch だけ差し替え。本物の Uber にはつながない）
+function vmPageClient(respond) {
+  const calls = [];
+  return {
+    calls,
+    async send(method) { calls.push(method); return {}; },
+    async evaluate(expr) {
+      if (expr.includes('document.readyState')) { calls.push('ready'); return { ready: 'complete', host: 'drivers.uber.com' }; }
+      const ctx = vm.createContext({
+        AbortController, setTimeout, clearTimeout, URL, JSON,
+        fetch: async (url, init) => { calls.push(url); return respond(url, init); }
+      });
+      return vm.runInContext(expr, ctx);
+    }
+  };
+}
+const SECRET = 'cookie=sid-SECRET-123; driver 山田太郎 090-0000-0000 token=eyJSECRET';
+const res403 = (body, headers = { 'content-type': 'text/html; charset=utf-8' }) => new Response(body, { status: 403, statusText: 'Forbidden', headers });
+
+test('getTrip が HTTP 403 → 1回で止まる（自動の再試行・画面の再読込なし）', async () => {
+  const c = vmPageClient(() => res403(`<!DOCTYPE html><html><title>Access denied</title><body>captcha ${SECRET}</body></html>`));
+  const progress = [];
+  const err = await uberApi(c, '/earnings/api/getTrip?localeCode=ja-JP', { tripUUID: '874d7c7d-0000' }, 'getTrip 874d7c7d', m => progress.push(m), fast).then(() => null, e => e);
+  assert.ok(err instanceof UberHttpError);
+  assert.equal(err.status, 403);
+  assert.equal(c.calls.filter(x => x.startsWith('/earnings/api/getTrip')).length, 1);
+  assert.equal(c.calls.filter(x => x === 'Page.reload').length, 0);
+  assert.deepEqual(progress, []);
+  assert.match(err.message, /HTTP 403（アクセス拒否）/);
+  assert.match(err.message, /原因はまだ確定していません/);
+  assert.match(err.message, /時間を空けて/);
+  assert.doesNotMatch(err.message, /ログイン/); // import-job が「ログイン待ち」と取り違えない
+  assert.doesNotMatch(err.message, /3回試行/);
+  // 診断: ステータス・Content-Type・本文の種類と長さ・定型語の有無は残す
+  assert.match(err.message, /診断: HTTP 403 Forbidden \/ Content-Type: text\/html; charset=utf-8 \/ 本文: html \d+文字/);
+  assert.match(err.message, /本文に含まれる語: captcha,access denied/);
+});
+
+test('403 の診断情報に応答本文・Cookie・個人情報・トークンを含めない', async () => {
+  const bodies = [
+    res403(`<html><body>${SECRET}</body></html>`),
+    res403(JSON.stringify({ code: 'rtapi.forbidden', message: SECRET, user: { name: '山田太郎' }, [SECRET]: 1 }), { 'content-type': 'application/json', 'set-cookie': 'sid=SECRET' }),
+    res403(JSON.stringify({ error: { code: 'eyJSECRET.abc.def-very-long-token-value-that-is-not-a-code' }, status: 'failure' }), { 'content-type': 'application/json' }),
+    res403(SECRET, { 'content-type': 'text/plain', 'retry-after': '120' }),
+    res403('', {})
+  ];
+  for (const b of bodies) {
+    const c = vmPageClient(() => b);
+    const err = await uberApi(c, '/earnings/api/getTrip?localeCode=ja-JP', { tripUUID: 'x' }, 'getTrip x', () => {}, fast).then(() => null, e => e);
+    const out = err.message + JSON.stringify(err.diag);
+    assert.doesNotMatch(out, /SECRET|山田|090-|sid=|eyJ/);
+  }
+  const c = vmPageClient(() => res403(JSON.stringify({ code: 'rtapi.forbidden', message: SECRET }), { 'content-type': 'application/json' }));
+  const err = await uberApi(c, '/x', {}, 'getTrip x', () => {}, fast).then(() => null, e => e);
+  assert.equal(err.diag.bodyKind, 'json');
+  assert.deepEqual([...err.diag.jsonKeys], ['code', 'message']); // vm の配列は別 realm のため展開して比べる
+  assert.equal(err.diag.errorCode, 'rtapi.forbidden');
+  const c2 = vmPageClient(() => res403(SECRET, { 'content-type': 'text/plain', 'retry-after': '120' }));
+  const err2 = await uberApi(c2, '/x', {}, 'getTrip x', () => {}, fast).then(() => null, e => e);
+  assert.match(err2.message, /Retry-After: 120/);
+});
+
+test('403 以外の HTTP エラーは従来どおり再読込して再試行し、診断情報を付けて例外', async () => {
+  let n = 0;
+  const c = vmPageClient(() => { n++; return n < 3 ? new Response('<html>oops</html>', { status: 500, headers: { 'content-type': 'text/html' } }) : new Response(JSON.stringify({ status: 'success' }), { status: 200 }); });
+  const progress = [];
+  const r = await uberApi(c, '/earnings/api/getTrip?localeCode=ja-JP', { tripUUID: 'x' }, 'getTrip x', m => progress.push(m), fast);
+  assert.deepEqual({ ...r }, { status: 'success' });
+  assert.equal(c.calls.filter(x => x === 'Page.reload').length, 2);
+  assert.ok(progress.some(m => /getTrip x failed with HTTP 500（HTTP 500 \/ Content-Type: text\/html/.test(m)));
+  const c2 = vmPageClient(() => new Response('', { status: 502 }));
+  await assert.rejects(uberApi(c2, '/x', {}, 'getTrip x', () => {}, fast), /getTrip x を取得できませんでした（3回試行）: getTrip x failed with HTTP 502/);
+});
+
+test('一日分の取得の途中で 403 → 残りの trip は取りに行かず例外（取得結果を返さない）', async () => {
+  const c = vmPageClient((url, init) => {
+    if (url.includes('getWebActivityFeed')) return new Response(JSON.stringify({ data: { activities: [{ uuid: 't1', type: 'TRIP' }, { uuid: 't2', type: 'TRIP' }, { uuid: 't3', type: 'TRIP' }], pagination: {} } }), { status: 200 });
+    return JSON.parse(init.body).tripUUID === 't2' ? res403('') : new Response(JSON.stringify({ status: 'success' }), { status: 200 });
+  });
+  await assert.rejects(collectDay(c, '2026-10-24', () => {}, fast), e => e instanceof UberHttpError && e.status === 403);
+  assert.equal(c.calls.filter(x => x.includes('getTrip')).length, 2); // t1・t2 のみ（t3 は呼ばない・t2 の再試行なし）
+  assert.equal(c.calls.filter(x => x === 'Page.reload').length, 0);
 });
