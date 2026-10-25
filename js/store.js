@@ -12376,10 +12376,10 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": 20.84,
-      "tripsCount": 9,
-      "officialPoints": 13,
-      "deliveriesCount": 13,
+      "totalDistanceKm": 31.92,
+      "tripsCount": 15,
+      "officialPoints": 20,
+      "deliveriesCount": 20,
       "workSessions": [],
       "deliveries": [
         {
@@ -12651,6 +12651,173 @@ const CONFIRMED_SEED_DATA = {
             }
           ],
           "sequence": null
+        },
+        {
+          "id": "del_1025_10",
+          "index": 10,
+          "completedAt": "16:21",
+          "restaurant": "麺屋ここいち フォレオ大阪ドームシティ店",
+          "area": "大阪市西区九条2丁目",
+          "fee": 479,
+          "baseFee": 332,
+          "tip": 147,
+          "distanceKm": 2.78,
+          "durationStr": "17分45秒",
+          "points": 1,
+          "memo": "最終売上¥479（基本料金¥332＋チップ¥147）",
+          "tripUuid": "466f83bf-547f-45a9-b5ee-96d7e017f773",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "466f83bf-547f-45a9-b5ee-96d7e017f773",
+              "restaurant": "麺屋ここいち フォレオ大阪ドームシティ店",
+              "pickupAddress": "麺屋ここいち フォレオ大阪ドームシティ店",
+              "dropoffAddress": "27大阪市西区九条２丁目",
+              "area": "大阪市西区九条2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1025_11",
+          "index": 11,
+          "completedAt": "16:30",
+          "restaurant": "かっぱ寿司 境川店　Kappa Sushi Sakaigawa",
+          "area": "大阪市港区波除3丁目",
+          "fee": 393,
+          "distanceKm": 2.85,
+          "durationStr": "20分28秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "7fcfe10f-a0d5-4d09-a13f-4121bb78f0dc",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "7fcfe10f-a0d5-4d09-a13f-4121bb78f0dc",
+              "restaurant": "かっぱ寿司 境川店　Kappa Sushi Sakaigawa",
+              "pickupAddress": "かっぱ寿司 境川店　Kappa Sushi Sakaigawa",
+              "dropoffAddress": "27大阪市港区波除３丁目",
+              "area": "大阪市港区波除3丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1025_12",
+          "index": 12,
+          "completedAt": "17:19",
+          "restaurant": "餃子の王将 大阪九条",
+          "area": "大阪市西区九条南1丁目",
+          "fee": 320,
+          "distanceKm": 0.93,
+          "durationStr": "8分16秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "957ea10e-9688-44df-a4ba-dbdb0c982bde",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "957ea10e-9688-44df-a4ba-dbdb0c982bde",
+              "restaurant": "餃子の王将 大阪九条",
+              "pickupAddress": "餃子の王将 大阪九条",
+              "dropoffAddress": "27大阪市西区九条南１丁目",
+              "area": "大阪市西区九条南1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1025_13",
+          "index": 13,
+          "completedAt": "18:23",
+          "restaurant": "餃子の王将 大阪九条",
+          "area": "大阪市西区新町4丁目/大阪市西区北堀江4丁目",
+          "fee": 417,
+          "distanceKm": 2.14,
+          "durationStr": "21分53秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）／2件完了/2pt",
+          "tripUuid": "1e4abb5e-66e6-45bf-a6e1-63086afaba77",
+          "tripLegCount": 2,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "9ac6773d-b9ae-4f68-bad7-e2af1c76d48d",
+              "restaurant": "",
+              "pickupAddress": "27大阪市西区九条１丁目",
+              "dropoffAddress": "27大阪市西区新町４丁目",
+              "area": "大阪市西区新町4丁目",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Acenter%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.67487%2C135.4758&markers=%7Canchor%3Acenter%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.67686%2C135.48468&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3A%7DlsrEwb%7ByXpAyIUsBzAqB%7CC%7DLVkHwJoBw%40u%40F%7BEaGWQiC%3FrBeCNdBYq%40eAp%40x%40&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=n7fVcn-6toFSlOyQaegz6T4pjKg="
+            },
+            {
+              "legIndex": 1,
+              "legUuid": "c870f777-8564-439a-a646-706da4c1af1d",
+              "restaurant": "",
+              "pickupAddress": "27大阪市西区九条１丁目",
+              "dropoffAddress": "27大阪市西区北堀江４丁目",
+              "area": "大阪市西区北堀江4丁目",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Abottom%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.67487%2C135.4758&markers=%7Canchor%3Abottom%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.67366%2C135.48244&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3A%7DlsrEwb%7ByXpAyIUsBzAqB%7CC%7DLVkHyA%7B%40b%40%7C%40e%40G&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=OuJUhSK_x49QrLPPsp6T1osgWVU="
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1025_14",
+          "index": 14,
+          "completedAt": "18:48",
+          "restaurant": "バーガーキング 九条店 Burger King Kujo",
+          "area": "大阪市西区南堀江4丁目",
+          "fee": 320,
+          "distanceKm": 1.21,
+          "durationStr": "11分31秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "4de2c7d4-4fb4-43ff-a9c0-73556479c28f",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "4de2c7d4-4fb4-43ff-a9c0-73556479c28f",
+              "restaurant": "バーガーキング 九条店 Burger King Kujo",
+              "pickupAddress": "バーガーキング 九条店 Burger King Kujo",
+              "dropoffAddress": "27大阪市西区南堀江４丁目",
+              "area": "大阪市西区南堀江4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1025_15",
+          "index": 15,
+          "completedAt": "19:06",
+          "restaurant": "マクドナルド イオンモール大阪ドームシティ店",
+          "area": "大阪市大正区三軒家西1丁目",
+          "fee": 320,
+          "distanceKm": 1.17,
+          "durationStr": "15分46秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "2c0c02d6-99fa-41a4-a1b8-c81ff160087c",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "2c0c02d6-99fa-41a4-a1b8-c81ff160087c",
+              "restaurant": "マクドナルド イオンモール大阪ドームシティ店",
+              "pickupAddress": "マクドナルド イオンモール大阪ドームシティ店",
+              "dropoffAddress": "27大阪市大正区三軒家西１丁目",
+              "area": "大阪市大正区三軒家西1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
         }
       ],
       "quests": [
@@ -12718,19 +12885,89 @@ const CONFIRMED_SEED_DATA = {
           "questType": "normal",
           "achievedAt": "13:04",
           "note": "公式一覧は 13:04「1 回乗車クエスト ¥350」（達成表示）と 13:05「クエスト ¥350」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1025_7",
+          "time": "17:28",
+          "title": "クエスト",
+          "amount": 225,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥225」「1 回乗車クエスト ¥225」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1025_8",
+          "time": "18:38",
+          "title": "クエスト",
+          "amount": 75,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥75」「1 回乗車クエスト ¥75」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1025_9",
+          "time": "18:45",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥150」「1 回乗車クエスト ¥150」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1025_10",
+          "time": "19:05",
+          "title": "クエスト",
+          "amount": 650,
+          "isDuplicateIgnored": false,
+          "questName": "6回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥650」「6 回乗車クエスト ¥650」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1025_11",
+          "time": "19:05",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥150」「1 回乗車クエスト ¥150」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1025_12",
+          "time": "19:22",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥150」「1 回乗車クエスト ¥150」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1025_13",
+          "time": "19:22",
+          "title": "クエスト",
+          "amount": 3370,
+          "isDuplicateIgnored": false,
+          "questName": "50回乗車クエスト",
+          "questType": "special",
+          "note": "公式一覧は「クエスト ¥3,370」「50 回乗車クエスト ¥3,370」の2表示だが同一報酬のため1件のみ計上（二重計上防止）。15:00の「6 回乗車クエスト」¥0は報酬0のため売上非加算。21:30の「3 回乗車クエスト」¥0は報酬0のため売上非加算"
         }
       ],
       "sales": {
-        "delivery": 3991,
-        "quest": 2100,
+        "delivery": 6240,
+        "quest": 6870,
         "adjustment": 0,
         "other": 0,
-        "total": 6091
+        "total": 13110
       },
       "expenses": [],
       "officialImport": {
         "source": "official-import-v1",
-        "importedAt": "2026-10-25T05:32:15.178Z"
+        "importedAt": "2026-10-25T13:08:21.612Z"
       }
     }
   },

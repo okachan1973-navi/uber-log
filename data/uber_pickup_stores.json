@@ -76,9 +76,9 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 26,
+      "pickup_count": 27,
       "first_pickup": "2026-09-23 16:27",
-      "last_pickup": "2026-10-25 12:52",
+      "last_pickup": "2026-10-25 19:06",
       "active_days": 16,
       "original_names": [
         "マクドナルド イオンモール大阪ドームシティ店",
@@ -120,10 +120,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 23,
+      "pickup_count": 24,
       "first_pickup": "2026-09-18 11:09",
-      "last_pickup": "2026-10-24 20:05",
-      "active_days": 13,
+      "last_pickup": "2026-10-25 18:48",
+      "active_days": 14,
       "original_names": [
         "バーガーキング 九条店",
         "バーガーキング 九条店 Burger King Kujo"
@@ -224,6 +224,49 @@
       "address_short": "西区千代崎"
     },
     {
+      "id": "st_1omw10z",
+      "canonical_name": "餃子の王将 大阪九条",
+      "name_keys": [
+        "餃子の王将大阪九条"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市西区九条1-12-10",
+      "latitude": 34.674976,
+      "longitude": 135.47583,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１２番１０号",
+      "address_source": "map.ohsho.co.jp/b/ohsho/info/1252/",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目１２番１０号",
+        "osm_nearest": {
+          "id": "node/1619040549",
+          "name": "餃子の王将 九条店 餃子の王将",
+          "distance_m": 2
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 13,
+      "first_pickup": "2026-09-22 14:07",
+      "last_pickup": "2026-10-25 18:23",
+      "active_days": 8,
+      "original_names": [
+        "餃子の王将 大阪九条"
+      ],
+      "brand_id": "ohsho",
+      "brand_name": "餃子の王将",
+      "brand_reading": "ぎょうざのおうしょう",
+      "branch_name": "大阪九条",
+      "site_id": null,
+      "display_name": "大阪九条",
+      "address_short": "西区九条"
+    },
+    {
       "id": "st_189ay5t",
       "canonical_name": "マクドナルド 弁天町駅前店",
       "name_keys": [
@@ -266,49 +309,6 @@
       "site_id": null,
       "display_name": "弁天町駅前店",
       "address_short": "港区弁天"
-    },
-    {
-      "id": "st_1omw10z",
-      "canonical_name": "餃子の王将 大阪九条",
-      "name_keys": [
-        "餃子の王将大阪九条"
-      ],
-      "category": "other",
-      "address": "大阪府大阪市西区九条1-12-10",
-      "latitude": 34.674976,
-      "longitude": 135.47583,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１２番１０号",
-      "address_source": "map.ohsho.co.jp/b/ohsho/info/1252/",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１２番１０号",
-        "osm_nearest": {
-          "id": "node/1619040549",
-          "name": "餃子の王将 九条店 餃子の王将",
-          "distance_m": 2
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 11,
-      "first_pickup": "2026-09-22 14:07",
-      "last_pickup": "2026-10-16 19:01",
-      "active_days": 7,
-      "original_names": [
-        "餃子の王将 大阪九条"
-      ],
-      "brand_id": "ohsho",
-      "brand_name": "餃子の王将",
-      "brand_reading": "ぎょうざのおうしょう",
-      "branch_name": "大阪九条",
-      "site_id": null,
-      "display_name": "大阪九条",
-      "address_short": "西区九条"
     },
     {
       "id": "st_t581ya",
@@ -569,6 +569,50 @@
       "address_short": "西区千代崎"
     },
     {
+      "id": "st_xrov9e",
+      "canonical_name": "かっぱ寿司 境川店",
+      "name_keys": [
+        "かっぱ寿司境川店"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市港区南市岡1-1-52",
+      "latitude": 34.668774,
+      "longitude": 135.471802,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区南市岡一丁目１番５２号",
+      "address_source": "kappasushi.jp/shop/0587 (公式; 旧住所 西区境川1-2-27)",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市港区南市岡一丁目１番５２号",
+        "osm_nearest": {
+          "id": "way/302852523",
+          "name": "かっぱ寿司 かっぱ寿司",
+          "distance_m": 18
+        },
+        "reverse": {
+          "muniCd": "27107",
+          "lv01Nm": "南市岡一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 7,
+      "first_pickup": "2026-09-23 15:28",
+      "last_pickup": "2026-10-25 16:30",
+      "active_days": 6,
+      "original_names": [
+        "かっぱ寿司 境川店 Kappa Sushi Sakaigawa",
+        "かっぱ寿司 境川店　Kappa Sushi Sakaigawa"
+      ],
+      "brand_id": "kappa_sushi",
+      "brand_name": "かっぱ寿司",
+      "brand_reading": "かっぱずし",
+      "branch_name": "境川店",
+      "site_id": null,
+      "display_name": "境川店",
+      "address_short": "港区南市岡"
+    },
+    {
       "id": "st_1jtin90",
       "canonical_name": "やよい軒 九条店",
       "name_keys": [
@@ -610,50 +654,6 @@
       "site_id": null,
       "display_name": "九条店",
       "address_short": "西区九条"
-    },
-    {
-      "id": "st_xrov9e",
-      "canonical_name": "かっぱ寿司 境川店",
-      "name_keys": [
-        "かっぱ寿司境川店"
-      ],
-      "category": "other",
-      "address": "大阪府大阪市港区南市岡1-1-52",
-      "latitude": 34.668774,
-      "longitude": 135.471802,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区南市岡一丁目１番５２号",
-      "address_source": "kappasushi.jp/shop/0587 (公式; 旧住所 西区境川1-2-27)",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市港区南市岡一丁目１番５２号",
-        "osm_nearest": {
-          "id": "way/302852523",
-          "name": "かっぱ寿司 かっぱ寿司",
-          "distance_m": 18
-        },
-        "reverse": {
-          "muniCd": "27107",
-          "lv01Nm": "南市岡一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 6,
-      "first_pickup": "2026-09-23 15:28",
-      "last_pickup": "2026-10-17 10:18",
-      "active_days": 5,
-      "original_names": [
-        "かっぱ寿司 境川店 Kappa Sushi Sakaigawa",
-        "かっぱ寿司 境川店　Kappa Sushi Sakaigawa"
-      ],
-      "brand_id": "kappa_sushi",
-      "brand_name": "かっぱ寿司",
-      "brand_reading": "かっぱずし",
-      "branch_name": "境川店",
-      "site_id": null,
-      "display_name": "境川店",
-      "address_short": "港区南市岡"
     },
     {
       "id": "st_4px7w0",
@@ -2305,6 +2305,45 @@
       "site_id": "site_c4h33y",
       "display_name": "花満円弁当 大阪ドームシティ店",
       "address_short": "西区千代崎"
+    },
+    {
+      "id": "st_mfbg8i",
+      "canonical_name": "麺屋ここいち フォレオ大阪ドームシティ店",
+      "name_keys": [
+        "麺屋ここいちフォレオ大阪ドームシティ店"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市西区九条南1-12-33",
+      "latitude": 34.669296,
+      "longitude": 135.473404,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条南一丁目１２番３３号",
+      "address_source": "本人確認済み住所（2026-10-06 指示書） フォレオ大阪ドームシティ1階",
+      "address_evidence": "user_confirmed",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条南一丁目１２番３３号",
+        "osm_nearest": null,
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条南一丁目"
+        }
+      },
+      "same_building": "フォレオ大阪ドームシティ",
+      "notes": "フォレオ大阪ドームシティ1階",
+      "pickup_count": 2,
+      "first_pickup": "2026-10-05 19:22",
+      "last_pickup": "2026-10-25 16:21",
+      "active_days": 2,
+      "original_names": [
+        "麺屋ここいち フォレオ大阪ドームシティ店"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "麺屋ここいち フォレオ大阪ドームシティ店",
+      "address_short": "西区九条南",
+      "site_id": "site_69kcep"
     },
     {
       "id": "st_1ta3evv",
@@ -5423,45 +5462,6 @@
       "site_id": null
     },
     {
-      "id": "st_mfbg8i",
-      "canonical_name": "麺屋ここいち フォレオ大阪ドームシティ店",
-      "name_keys": [
-        "麺屋ここいちフォレオ大阪ドームシティ店"
-      ],
-      "category": "other",
-      "address": "大阪府大阪市西区九条南1-12-33",
-      "latitude": 34.669296,
-      "longitude": 135.473404,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条南一丁目１２番３３号",
-      "address_source": "本人確認済み住所（2026-10-06 指示書） フォレオ大阪ドームシティ1階",
-      "address_evidence": "user_confirmed",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条南一丁目１２番３３号",
-        "osm_nearest": null,
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条南一丁目"
-        }
-      },
-      "same_building": "フォレオ大阪ドームシティ",
-      "notes": "フォレオ大阪ドームシティ1階",
-      "pickup_count": 1,
-      "first_pickup": "2026-10-05 19:22",
-      "last_pickup": "2026-10-05 19:22",
-      "active_days": 1,
-      "original_names": [
-        "麺屋ここいち フォレオ大阪ドームシティ店"
-      ],
-      "brand_id": null,
-      "brand_name": null,
-      "brand_reading": null,
-      "branch_name": null,
-      "display_name": "麺屋ここいち フォレオ大阪ドームシティ店",
-      "address_short": "西区九条南",
-      "site_id": "site_69kcep"
-    },
-    {
       "id": "st_3sxwcy",
       "canonical_name": "珈琲とフレンチトースト MUC COFFEE ROASTERS うつぼ公園店",
       "name_keys": [
@@ -5544,8 +5544,8 @@
       "to": "2026-10-25",
       "days": 35
     },
-    "total_trips": 459,
-    "total_pickups": 459,
+    "total_trips": 465,
+    "total_pickups": 465,
     "store_count": 135,
     "confirmed_count": 110,
     "needs_review_count": 25,
@@ -5614,16 +5614,16 @@
       "label": "フォレオ大阪ドームシティ",
       "address": "大阪府大阪市西区九条南1-12-33",
       "store_ids": [
+        "st_mfbg8i",
         "st_10wgyup",
         "st_1522rd1",
-        "st_8wp77m",
-        "st_mfbg8i"
+        "st_8wp77m"
       ],
       "brands": [
+        "麺屋ここいち フォレオ大阪ドームシティ店",
         "カレーハウス CoCo壱番屋",
         "びっくりドンキー",
-        "やよい軒",
-        "麺屋ここいち フォレオ大阪ドームシティ店"
+        "やよい軒"
       ]
     },
     {
