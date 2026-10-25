@@ -30,10 +30,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 81,
+      "pickup_count": 85,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-24 19:53",
-      "active_days": 26,
+      "last_pickup": "2026-10-25 10:56",
+      "active_days": 27,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
         "マクドナルド 九　条　店 McDonald's KUJO",
@@ -76,10 +76,10 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 25,
+      "pickup_count": 26,
       "first_pickup": "2026-09-23 16:27",
-      "last_pickup": "2026-10-22 11:20",
-      "active_days": 15,
+      "last_pickup": "2026-10-25 12:52",
+      "active_days": 16,
       "original_names": [
         "マクドナルド イオンモール大阪ドームシティ店",
         "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY"
@@ -208,10 +208,10 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 15,
+      "pickup_count": 16,
       "first_pickup": "2026-09-10 11:04",
-      "last_pickup": "2026-10-20 17:14",
-      "active_days": 13,
+      "last_pickup": "2026-10-25 11:36",
+      "active_days": 14,
       "original_names": [
         "ケンタッキーフライドチキン イオンモール大阪ドームシティ店"
       ],
@@ -251,10 +251,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 12,
+      "pickup_count": 13,
       "first_pickup": "2026-09-15 09:04",
-      "last_pickup": "2026-10-20 10:11",
-      "active_days": 9,
+      "last_pickup": "2026-10-25 07:13",
+      "active_days": 10,
       "original_names": [
         "マクドナルド 弁天町駅前店",
         "マクドナルド 弁天町駅前店 McDonald's BENTENCHO EKIMAE"
@@ -387,10 +387,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 8,
+      "pickup_count": 9,
       "first_pickup": "2026-09-17 10:57",
-      "last_pickup": "2026-10-14 14:13",
-      "active_days": 7,
+      "last_pickup": "2026-10-25 12:14",
+      "active_days": 8,
       "original_names": [
         "スシロー スシロー辰巳橋店",
         "スシロー 辰巳橋店",
@@ -776,6 +776,50 @@
       "address_short": "大正区千島"
     },
     {
+      "id": "st_xvzzmy",
+      "canonical_name": "マクドナルド 南堀江関西スーパー店",
+      "name_keys": [
+        "マクドナルド南堀江関西スーパー店"
+      ],
+      "category": "mcdonalds",
+      "address": "大阪府大阪市西区南堀江4-5-22",
+      "latitude": 34.670895,
+      "longitude": 135.486282,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区南堀江四丁目５番２２号",
+      "address_source": "map.yahoo.co.jp; mapion",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区南堀江四丁目５番２２号",
+        "osm_nearest": {
+          "id": "node/1634143819",
+          "name": "マクドナルド マクドナルド",
+          "distance_m": 28
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "南堀江四丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 6,
+      "first_pickup": "2026-09-16 10:54",
+      "last_pickup": "2026-10-25 08:16",
+      "active_days": 5,
+      "original_names": [
+        "マクドナルド 南堀江関西スーパー店",
+        "マクドナルド 南堀江関西スーパー店 McDonald's MINAMI-HORIE KANSAI S.M."
+      ],
+      "brand_id": "mcdonalds",
+      "brand_name": "マクドナルド",
+      "brand_reading": null,
+      "branch_name": "南堀江関西スーパー店",
+      "site_id": null,
+      "display_name": "南堀江関西スーパー店",
+      "address_short": "西区南堀江"
+    },
+    {
       "id": "st_1i6vnp7",
       "canonical_name": "松のや 九条店",
       "name_keys": [
@@ -906,50 +950,6 @@
       "site_id": null,
       "display_name": "高見プラザ店",
       "address_short": "此花区高見"
-    },
-    {
-      "id": "st_xvzzmy",
-      "canonical_name": "マクドナルド 南堀江関西スーパー店",
-      "name_keys": [
-        "マクドナルド南堀江関西スーパー店"
-      ],
-      "category": "mcdonalds",
-      "address": "大阪府大阪市西区南堀江4-5-22",
-      "latitude": 34.670895,
-      "longitude": 135.486282,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区南堀江四丁目５番２２号",
-      "address_source": "map.yahoo.co.jp; mapion",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区南堀江四丁目５番２２号",
-        "osm_nearest": {
-          "id": "node/1634143819",
-          "name": "マクドナルド マクドナルド",
-          "distance_m": 28
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "南堀江四丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 5,
-      "first_pickup": "2026-09-16 10:54",
-      "last_pickup": "2026-10-12 10:15",
-      "active_days": 4,
-      "original_names": [
-        "マクドナルド 南堀江関西スーパー店",
-        "マクドナルド 南堀江関西スーパー店 McDonald's MINAMI-HORIE KANSAI S.M."
-      ],
-      "brand_id": "mcdonalds",
-      "brand_name": "マクドナルド",
-      "brand_reading": null,
-      "branch_name": "南堀江関西スーパー店",
-      "site_id": null,
-      "display_name": "南堀江関西スーパー店",
-      "address_short": "西区南堀江"
     },
     {
       "id": "st_akh9d5",
@@ -5541,11 +5541,11 @@
   "summary": {
     "period": {
       "from": "2026-09-10",
-      "to": "2026-10-24",
-      "days": 34
+      "to": "2026-10-25",
+      "days": 35
     },
-    "total_trips": 450,
-    "total_pickups": 450,
+    "total_trips": 459,
+    "total_pickups": 459,
     "store_count": 135,
     "confirmed_count": 110,
     "needs_review_count": 25,
