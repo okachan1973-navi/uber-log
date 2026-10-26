@@ -12975,10 +12975,10 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": 35.88,
-      "tripsCount": 16,
-      "officialPoints": 19,
-      "deliveriesCount": 19,
+      "totalDistanceKm": 46.71,
+      "tripsCount": 20,
+      "officialPoints": 23,
+      "deliveriesCount": 23,
       "workSessions": [],
       "deliveries": [
         {
@@ -13423,6 +13423,110 @@ const CONFIRMED_SEED_DATA = {
             }
           ],
           "sequence": null
+        },
+        {
+          "id": "del_1026_17",
+          "index": 17,
+          "completedAt": "18:00",
+          "restaurant": "グルメシティ 九条店",
+          "area": "大阪市港区市岡元町",
+          "fee": 320,
+          "distanceKm": 2.03,
+          "durationStr": "13分48秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "8aece5cb-2c46-4a55-b304-4f7ff8936272",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "8aece5cb-2c46-4a55-b304-4f7ff8936272",
+              "restaurant": "グルメシティ 九条店",
+              "pickupAddress": "グルメシティ 九条店",
+              "dropoffAddress": "27大阪市港区市岡元町",
+              "area": "大阪市港区市岡元町",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1026_18",
+          "index": 18,
+          "completedAt": "18:09",
+          "restaurant": "スシロー 辰巳橋店 Sushiro TATSUMIBASHI",
+          "area": "大阪市西区本田2丁目",
+          "fee": 350,
+          "distanceKm": 3.25,
+          "durationStr": "23分38秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "c75a9304-5d66-4a3b-ab25-76c466dd8d05",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "c75a9304-5d66-4a3b-ab25-76c466dd8d05",
+              "restaurant": "スシロー 辰巳橋店 Sushiro TATSUMIBASHI",
+              "pickupAddress": "スシロー 辰巳橋店 Sushiro TATSUMIBASHI",
+              "dropoffAddress": "27大阪市西区本田２丁目",
+              "area": "大阪市西区本田2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1026_19",
+          "index": 19,
+          "completedAt": "18:28",
+          "restaurant": "とりさし梅松　九条店",
+          "area": "大阪市浪速区幸町3丁目",
+          "fee": 680,
+          "distanceKm": 3.01,
+          "durationStr": "22分40秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "f171806a-6666-43db-8187-7c0787ee5d9b",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "f171806a-6666-43db-8187-7c0787ee5d9b",
+              "restaurant": "とりさし梅松　九条店",
+              "pickupAddress": "とりさし梅松　九条店",
+              "dropoffAddress": "27大阪市浪速区幸町３丁目",
+              "area": "大阪市浪速区幸町3丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1026_20",
+          "index": 20,
+          "completedAt": "18:46",
+          "restaurant": "ウエルシア大阪新町店",
+          "area": "大阪市西区新町1丁目",
+          "fee": 392,
+          "distanceKm": 2.54,
+          "durationStr": "21分22秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "336e7c79-906f-4c7e-ba4e-f6e862a90c79",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "336e7c79-906f-4c7e-ba4e-f6e862a90c79",
+              "restaurant": "ウエルシア大阪新町店",
+              "pickupAddress": "ウエルシア大阪新町店",
+              "dropoffAddress": "27大阪市西区新町１丁目",
+              "area": "大阪市西区新町1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
         }
       ],
       "quests": [
@@ -13548,6 +13652,16 @@ const CONFIRMED_SEED_DATA = {
           "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
         },
         {
+          "id": "quest_1026_14",
+          "time": "15:23",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
           "id": "quest_1026_13",
           "time": "15:23",
           "title": "クエスト",
@@ -13558,27 +13672,59 @@ const CONFIRMED_SEED_DATA = {
           "note": "公式一覧は「クエスト ¥480」「3 回乗車クエスト ¥480」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
         },
         {
-          "id": "quest_1026_14",
-          "time": "15:23",
+          "id": "quest_1026_15",
+          "time": "18:14",
           "title": "クエスト",
-          "amount": 100,
+          "amount": 75,
           "isDuplicateIgnored": false,
           "questName": "1回乗車クエスト",
           "questType": "normal",
-          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+          "note": "公式一覧は「クエスト ¥75」「1 回乗車クエスト ¥75」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1026_16",
+          "time": "18:36",
+          "title": "クエスト",
+          "amount": 25,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "18:35",
+          "note": "公式一覧は 18:35「1 回乗車クエスト ¥25」（達成表示）と 18:36「クエスト ¥25」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1026_17",
+          "time": "18:51",
+          "title": "クエスト",
+          "amount": 50,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥50」「1 回乗車クエスト ¥50」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1026_18",
+          "time": "19:10",
+          "title": "クエスト",
+          "amount": 50,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "19:09",
+          "note": "公式一覧は 19:09「1 回乗車クエスト ¥50」（達成表示）と 19:10「クエスト ¥50」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
         }
       ],
       "sales": {
-        "delivery": 6011,
-        "quest": 4170,
+        "delivery": 7753,
+        "quest": 4370,
         "adjustment": 0,
         "other": 0,
-        "total": 10181
+        "total": 12123
       },
       "expenses": [],
       "officialImport": {
         "source": "official-import-v1",
-        "importedAt": "2026-10-26T06:46:03.271Z"
+        "importedAt": "2026-10-26T11:40:13.710Z"
       }
     }
   },

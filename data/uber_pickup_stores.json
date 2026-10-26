@@ -359,6 +359,53 @@
       "address_short": "西区千代崎"
     },
     {
+      "id": "st_qri0e3",
+      "canonical_name": "スシロー 辰巳橋店",
+      "name_keys": [
+        "スシロー辰巳橋店",
+        "スシロースシロー辰巳橋店"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市西区境川2-1-1",
+      "latitude": 34.6726,
+      "longitude": 135.468674,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区境川二丁目１番１号",
+      "address_source": "akindo-sushiro.co.jp/shop/detail.php?id=367",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区境川二丁目１番１号",
+        "osm_nearest": {
+          "id": "way/156791101",
+          "name": "スシロー 辰巳橋店 スシロー",
+          "distance_m": 13
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "境川二丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 10,
+      "first_pickup": "2026-09-17 10:57",
+      "last_pickup": "2026-10-26 18:09",
+      "active_days": 9,
+      "original_names": [
+        "スシロー スシロー辰巳橋店",
+        "スシロー 辰巳橋店",
+        "スシロー 辰巳橋店 Sushiro TATSUMIBASHI",
+        "スシロースシロー辰巳橋店"
+      ],
+      "brand_id": "sushiro",
+      "brand_name": "スシロー",
+      "brand_reading": null,
+      "branch_name": "辰巳橋店",
+      "site_id": null,
+      "display_name": "辰巳橋店",
+      "address_short": "西区境川"
+    },
+    {
       "id": "st_bhb0ka",
       "canonical_name": "スターバックス コーヒー イオンモール大阪ドームシティ店",
       "name_keys": [
@@ -389,53 +436,6 @@
       "display_name": "イオンモール大阪ドームシティ店",
       "address_short": null,
       "site_id": null
-    },
-    {
-      "id": "st_qri0e3",
-      "canonical_name": "スシロー 辰巳橋店",
-      "name_keys": [
-        "スシロー辰巳橋店",
-        "スシロースシロー辰巳橋店"
-      ],
-      "category": "other",
-      "address": "大阪府大阪市西区境川2-1-1",
-      "latitude": 34.6726,
-      "longitude": 135.468674,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区境川二丁目１番１号",
-      "address_source": "akindo-sushiro.co.jp/shop/detail.php?id=367",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区境川二丁目１番１号",
-        "osm_nearest": {
-          "id": "way/156791101",
-          "name": "スシロー 辰巳橋店 スシロー",
-          "distance_m": 13
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "境川二丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 9,
-      "first_pickup": "2026-09-17 10:57",
-      "last_pickup": "2026-10-25 12:14",
-      "active_days": 8,
-      "original_names": [
-        "スシロー スシロー辰巳橋店",
-        "スシロー 辰巳橋店",
-        "スシロー 辰巳橋店 Sushiro TATSUMIBASHI",
-        "スシロースシロー辰巳橋店"
-      ],
-      "brand_id": "sushiro",
-      "brand_name": "スシロー",
-      "brand_reading": null,
-      "branch_name": "辰巳橋店",
-      "site_id": null,
-      "display_name": "辰巳橋店",
-      "address_short": "西区境川"
     },
     {
       "id": "st_17dn6fz",
@@ -1039,6 +1039,49 @@
       "address_short": "西区九条"
     },
     {
+      "id": "st_1a6qss1",
+      "canonical_name": "ウエルシア大阪新町店",
+      "name_keys": [
+        "ウエルシア大阪新町店"
+      ],
+      "category": "drug_super",
+      "address": "大阪府大阪市西区新町4-10-21",
+      "latitude": 34.676411,
+      "longitude": 135.484665,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区新町四丁目１０番２１号",
+      "address_source": "kusurinomadoguchi; mapion",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区新町四丁目１０番２１号",
+        "osm_nearest": {
+          "id": "node/9494308917",
+          "name": "ウエルシア薬局 welcia",
+          "distance_m": 27
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "新町四丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 4,
+      "first_pickup": "2026-09-23 13:47",
+      "last_pickup": "2026-10-26 18:46",
+      "active_days": 4,
+      "original_names": [
+        "ウエルシア大阪新町店"
+      ],
+      "brand_id": "welcia",
+      "brand_name": "ウエルシア",
+      "brand_reading": null,
+      "branch_name": "大阪新町店",
+      "site_id": null,
+      "display_name": "大阪新町店",
+      "address_short": "西区新町"
+    },
+    {
       "id": "st_1njqw93",
       "canonical_name": "【チキンステーキ弁当】Master Of Chicken～大正店～",
       "name_keys": [
@@ -1080,49 +1123,6 @@
       "site_id": "site_rwl2xq",
       "display_name": "【チキンステーキ弁当】Master Of Chicken～大正店～",
       "address_short": "大正区三軒家東"
-    },
-    {
-      "id": "st_1a6qss1",
-      "canonical_name": "ウエルシア大阪新町店",
-      "name_keys": [
-        "ウエルシア大阪新町店"
-      ],
-      "category": "drug_super",
-      "address": "大阪府大阪市西区新町4-10-21",
-      "latitude": 34.676411,
-      "longitude": 135.484665,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区新町四丁目１０番２１号",
-      "address_source": "kusurinomadoguchi; mapion",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区新町四丁目１０番２１号",
-        "osm_nearest": {
-          "id": "node/9494308917",
-          "name": "ウエルシア薬局 welcia",
-          "distance_m": 27
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "新町四丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 3,
-      "first_pickup": "2026-09-23 13:47",
-      "last_pickup": "2026-10-14 10:06",
-      "active_days": 3,
-      "original_names": [
-        "ウエルシア大阪新町店"
-      ],
-      "brand_id": "welcia",
-      "brand_name": "ウエルシア",
-      "brand_reading": null,
-      "branch_name": "大阪新町店",
-      "site_id": null,
-      "display_name": "大阪新町店",
-      "address_short": "西区新町"
     },
     {
       "id": "st_1rbxtgc",
@@ -1254,6 +1254,38 @@
       "site_id": null,
       "display_name": "此花四貫島店",
       "address_short": "此花区四貫島"
+    },
+    {
+      "id": "st_126gjny",
+      "canonical_name": "とりさし梅松 九条店",
+      "name_keys": [
+        "とりさし梅松九条店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-17 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 3,
+      "first_pickup": "2026-10-17 17:23",
+      "last_pickup": "2026-10-26 18:28",
+      "active_days": 3,
+      "original_names": [
+        "とりさし梅松　九条店"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "とりさし梅松 九条店",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_nun388",
@@ -1650,6 +1682,49 @@
       "address_short": "西区九条"
     },
     {
+      "id": "st_15grmne",
+      "canonical_name": "グルメシティ 九条店",
+      "name_keys": [
+        "グルメシティ九条店"
+      ],
+      "category": "drug_super",
+      "address": "大阪府大阪市西区境川1-5-34",
+      "latitude": 34.67189,
+      "longitude": 135.469757,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区境川一丁目５番３４号",
+      "address_source": "sasp.mapion.co.jp waon 18082; mapion",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区境川一丁目５番３４号",
+        "osm_nearest": {
+          "id": "node/13192063134",
+          "name": "グルメシティ九条店 Docomo Bike Share",
+          "distance_m": 37
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "境川一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 2,
+      "first_pickup": "2026-09-29 16:00",
+      "last_pickup": "2026-10-26 18:00",
+      "active_days": 2,
+      "original_names": [
+        "グルメシティ 九条店"
+      ],
+      "brand_id": "gourmet_city",
+      "brand_name": "グルメシティ",
+      "brand_reading": null,
+      "branch_name": "九条店",
+      "site_id": null,
+      "display_name": "九条店",
+      "address_short": "西区境川"
+    },
+    {
       "id": "st_s1jrte",
       "canonical_name": "CoDeLi 大阪九条駅前店",
       "name_keys": [
@@ -1864,38 +1939,6 @@
       "site_id": "site_c4h33y",
       "display_name": "イオンモール大阪ドームシティ店",
       "address_short": "西区千代崎"
-    },
-    {
-      "id": "st_126gjny",
-      "canonical_name": "とりさし梅松 九条店",
-      "name_keys": [
-        "とりさし梅松九条店"
-      ],
-      "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
-      "same_building": null,
-      "notes": "2026-10-17 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
-      "pickup_count": 2,
-      "first_pickup": "2026-10-17 17:23",
-      "last_pickup": "2026-10-24 20:20",
-      "active_days": 2,
-      "original_names": [
-        "とりさし梅松　九条店"
-      ],
-      "brand_id": null,
-      "brand_name": null,
-      "brand_reading": null,
-      "branch_name": null,
-      "display_name": "とりさし梅松 九条店",
-      "address_short": null,
-      "site_id": null
     },
     {
       "id": "st_19kklfr",
@@ -3044,49 +3087,6 @@
       "site_id": null,
       "display_name": "大正店",
       "address_short": "大正区三軒家東"
-    },
-    {
-      "id": "st_15grmne",
-      "canonical_name": "グルメシティ 九条店",
-      "name_keys": [
-        "グルメシティ九条店"
-      ],
-      "category": "drug_super",
-      "address": "大阪府大阪市西区境川1-5-34",
-      "latitude": 34.67189,
-      "longitude": 135.469757,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区境川一丁目５番３４号",
-      "address_source": "sasp.mapion.co.jp waon 18082; mapion",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区境川一丁目５番３４号",
-        "osm_nearest": {
-          "id": "node/13192063134",
-          "name": "グルメシティ九条店 Docomo Bike Share",
-          "distance_m": 37
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "境川一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-29 16:00",
-      "last_pickup": "2026-09-29 16:00",
-      "active_days": 1,
-      "original_names": [
-        "グルメシティ 九条店"
-      ],
-      "brand_id": "gourmet_city",
-      "brand_name": "グルメシティ",
-      "brand_reading": null,
-      "branch_name": "九条店",
-      "site_id": null,
-      "display_name": "九条店",
-      "address_short": "西区境川"
     },
     {
       "id": "st_1wx9qtz",
@@ -5672,8 +5672,8 @@
       "to": "2026-10-26",
       "days": 36
     },
-    "total_trips": 481,
-    "total_pickups": 481,
+    "total_trips": 485,
+    "total_pickups": 485,
     "store_count": 139,
     "confirmed_count": 110,
     "needs_review_count": 29,
