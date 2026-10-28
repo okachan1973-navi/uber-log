@@ -30,10 +30,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 90,
+      "pickup_count": 92,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-27 12:10",
-      "active_days": 29,
+      "last_pickup": "2026-10-28 11:37",
+      "active_days": 30,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
         "マクドナルド 九　条　店 McDonald's KUJO",
@@ -120,10 +120,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 24,
+      "pickup_count": 25,
       "first_pickup": "2026-09-18 11:09",
-      "last_pickup": "2026-10-25 18:48",
-      "active_days": 14,
+      "last_pickup": "2026-10-28 15:13",
+      "active_days": 15,
       "original_names": [
         "バーガーキング 九条店",
         "バーガーキング 九条店 Burger King Kujo"
@@ -438,6 +438,50 @@
       "site_id": null
     },
     {
+      "id": "st_xrov9e",
+      "canonical_name": "かっぱ寿司 境川店",
+      "name_keys": [
+        "かっぱ寿司境川店"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市港区南市岡1-1-52",
+      "latitude": 34.668774,
+      "longitude": 135.471802,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区南市岡一丁目１番５２号",
+      "address_source": "kappasushi.jp/shop/0587 (公式; 旧住所 西区境川1-2-27)",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市港区南市岡一丁目１番５２号",
+        "osm_nearest": {
+          "id": "way/302852523",
+          "name": "かっぱ寿司 かっぱ寿司",
+          "distance_m": 18
+        },
+        "reverse": {
+          "muniCd": "27107",
+          "lv01Nm": "南市岡一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 9,
+      "first_pickup": "2026-09-23 15:28",
+      "last_pickup": "2026-10-28 15:27",
+      "active_days": 8,
+      "original_names": [
+        "かっぱ寿司 境川店 Kappa Sushi Sakaigawa",
+        "かっぱ寿司 境川店　Kappa Sushi Sakaigawa"
+      ],
+      "brand_id": "kappa_sushi",
+      "brand_name": "かっぱ寿司",
+      "brand_reading": "かっぱずし",
+      "branch_name": "境川店",
+      "site_id": null,
+      "display_name": "境川店",
+      "address_short": "港区南市岡"
+    },
+    {
       "id": "st_17dn6fz",
       "canonical_name": "ローソン 大阪ドームシティ",
       "name_keys": [
@@ -479,50 +523,6 @@
       "site_id": null,
       "display_name": "大阪ドームシティ",
       "address_short": "西区千代崎"
-    },
-    {
-      "id": "st_xrov9e",
-      "canonical_name": "かっぱ寿司 境川店",
-      "name_keys": [
-        "かっぱ寿司境川店"
-      ],
-      "category": "other",
-      "address": "大阪府大阪市港区南市岡1-1-52",
-      "latitude": 34.668774,
-      "longitude": 135.471802,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市港区南市岡一丁目１番５２号",
-      "address_source": "kappasushi.jp/shop/0587 (公式; 旧住所 西区境川1-2-27)",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市港区南市岡一丁目１番５２号",
-        "osm_nearest": {
-          "id": "way/302852523",
-          "name": "かっぱ寿司 かっぱ寿司",
-          "distance_m": 18
-        },
-        "reverse": {
-          "muniCd": "27107",
-          "lv01Nm": "南市岡一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 8,
-      "first_pickup": "2026-09-23 15:28",
-      "last_pickup": "2026-10-27 13:05",
-      "active_days": 7,
-      "original_names": [
-        "かっぱ寿司 境川店 Kappa Sushi Sakaigawa",
-        "かっぱ寿司 境川店　Kappa Sushi Sakaigawa"
-      ],
-      "brand_id": "kappa_sushi",
-      "brand_name": "かっぱ寿司",
-      "brand_reading": "かっぱずし",
-      "branch_name": "境川店",
-      "site_id": null,
-      "display_name": "境川店",
-      "address_short": "港区南市岡"
     },
     {
       "id": "st_t9q3ll",
@@ -640,10 +640,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 7,
+      "pickup_count": 8,
       "first_pickup": "2026-09-16 10:54",
-      "last_pickup": "2026-10-26 10:08",
-      "active_days": 6,
+      "last_pickup": "2026-10-28 15:51",
+      "active_days": 7,
       "original_names": [
         "マクドナルド 南堀江関西スーパー店",
         "マクドナルド 南堀江関西スーパー店 McDonald's MINAMI-HORIE KANSAI S.M."
@@ -655,6 +655,50 @@
       "site_id": null,
       "display_name": "南堀江関西スーパー店",
       "address_short": "西区南堀江"
+    },
+    {
+      "id": "st_1i6vnp7",
+      "canonical_name": "松のや 九条店",
+      "name_keys": [
+        "松のや九条店"
+      ],
+      "category": "gyudon_teishoku",
+      "address": "大阪府大阪市西区九条1-14-26",
+      "latitude": 34.675159,
+      "longitude": 135.474838,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１４番２６号",
+      "address_source": "pkg.navitime.co.jp/matsuyafoods2 (松屋併設)",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目１４番２６号",
+        "osm_nearest": {
+          "id": "node/1735950052",
+          "name": "松屋 九条店 松屋",
+          "distance_m": 7
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": "九条1-14-26（松屋・松のや併設）",
+      "notes": null,
+      "pickup_count": 8,
+      "first_pickup": "2026-09-22 12:31",
+      "last_pickup": "2026-10-28 09:54",
+      "active_days": 6,
+      "original_names": [
+        "松のや 九条店",
+        "松のや 九条店 Matsunoya Kujo"
+      ],
+      "brand_id": "matsunoya",
+      "brand_name": "松のや",
+      "brand_reading": "まつのや",
+      "branch_name": "九条店",
+      "site_id": "site_15arb50",
+      "display_name": "九条店",
+      "address_short": "西区九条"
     },
     {
       "id": "st_1jtin90",
@@ -820,10 +864,10 @@
       "address_short": "大正区千島"
     },
     {
-      "id": "st_1i6vnp7",
-      "canonical_name": "松のや 九条店",
+      "id": "st_akh9d5",
+      "canonical_name": "松屋 九条店",
       "name_keys": [
-        "松のや九条店"
+        "松屋九条店"
       ],
       "category": "gyudon_teishoku",
       "address": "大阪府大阪市西区九条1-14-26",
@@ -831,7 +875,7 @@
       "longitude": 135.474838,
       "coordinate_status": "confirmed",
       "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１４番２６号",
-      "address_source": "pkg.navitime.co.jp/matsuyafoods2 (松屋併設)",
+      "address_source": "pkg.navitime.co.jp/matsuyafoods2 (松のや併設); OSM",
       "address_evidence": "official",
       "geocode_check": {
         "gsi_title": "大阪府大阪市西区九条一丁目１４番２６号",
@@ -848,16 +892,16 @@
       "same_building": "九条1-14-26（松屋・松のや併設）",
       "notes": null,
       "pickup_count": 6,
-      "first_pickup": "2026-09-22 12:31",
-      "last_pickup": "2026-10-18 16:18",
-      "active_days": 5,
+      "first_pickup": "2026-09-18 13:55",
+      "last_pickup": "2026-10-28 08:51",
+      "active_days": 6,
       "original_names": [
-        "松のや 九条店",
-        "松のや 九条店 Matsunoya Kujo"
+        "松屋 九条店",
+        "松屋 九条店 Matsuya Kujo"
       ],
-      "brand_id": "matsunoya",
-      "brand_name": "松のや",
-      "brand_reading": "まつのや",
+      "brand_id": "matsuya",
+      "brand_name": "松屋",
+      "brand_reading": "まつや",
       "branch_name": "九条店",
       "site_id": "site_15arb50",
       "display_name": "九条店",
@@ -950,50 +994,6 @@
       "site_id": null,
       "display_name": "高見プラザ店",
       "address_short": "此花区高見"
-    },
-    {
-      "id": "st_akh9d5",
-      "canonical_name": "松屋 九条店",
-      "name_keys": [
-        "松屋九条店"
-      ],
-      "category": "gyudon_teishoku",
-      "address": "大阪府大阪市西区九条1-14-26",
-      "latitude": 34.675159,
-      "longitude": 135.474838,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目１４番２６号",
-      "address_source": "pkg.navitime.co.jp/matsuyafoods2 (松のや併設); OSM",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目１４番２６号",
-        "osm_nearest": {
-          "id": "node/1735950052",
-          "name": "松屋 九条店 松屋",
-          "distance_m": 7
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": "九条1-14-26（松屋・松のや併設）",
-      "notes": null,
-      "pickup_count": 5,
-      "first_pickup": "2026-09-18 13:55",
-      "last_pickup": "2026-10-20 09:46",
-      "active_days": 5,
-      "original_names": [
-        "松屋 九条店",
-        "松屋 九条店 Matsuya Kujo"
-      ],
-      "brand_id": "matsuya",
-      "brand_name": "松屋",
-      "brand_reading": "まつや",
-      "branch_name": "九条店",
-      "site_id": "site_15arb50",
-      "display_name": "九条店",
-      "address_short": "西区九条"
     },
     {
       "id": "st_zm9ew6",
@@ -1982,6 +1982,38 @@
       "site_id": "site_c4h33y",
       "display_name": "イオンモール大阪ドームシティ店",
       "address_short": "西区千代崎"
+    },
+    {
+      "id": "st_1wup6vs",
+      "canonical_name": "【雑穀×発酵×ねばとろ丼】ねばとろみのり 大正店",
+      "name_keys": [
+        "【雑穀×発酵×ねばとろ丼】ねばとろみのり大正店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-11 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 2,
+      "first_pickup": "2026-10-08 18:06",
+      "last_pickup": "2026-10-28 15:39",
+      "active_days": 2,
+      "original_names": [
+        "【雑穀×発酵×ねばとろ丼】ねばとろみのり 大正店"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "【雑穀×発酵×ねばとろ丼】ねばとろみのり 大正店",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_19kklfr",
@@ -4154,38 +4186,6 @@
       "address_short": "浪速区桜川"
     },
     {
-      "id": "st_1wup6vs",
-      "canonical_name": "【雑穀×発酵×ねばとろ丼】ねばとろみのり 大正店",
-      "name_keys": [
-        "【雑穀×発酵×ねばとろ丼】ねばとろみのり大正店"
-      ],
-      "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
-      "same_building": null,
-      "notes": "2026-10-11 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
-      "pickup_count": 1,
-      "first_pickup": "2026-10-08 18:06",
-      "last_pickup": "2026-10-08 18:06",
-      "active_days": 1,
-      "original_names": [
-        "【雑穀×発酵×ねばとろ丼】ねばとろみのり 大正店"
-      ],
-      "brand_id": null,
-      "brand_name": null,
-      "brand_reading": null,
-      "branch_name": null,
-      "display_name": "【雑穀×発酵×ねばとろ丼】ねばとろみのり 大正店",
-      "address_short": null,
-      "site_id": null
-    },
-    {
       "id": "st_sdikuf",
       "canonical_name": "ピザハット 阿波座店",
       "name_keys": [
@@ -5515,6 +5515,38 @@
       "site_id": null
     },
     {
+      "id": "st_kcnvux",
+      "canonical_name": "本場!!アメリカ直輸入!!Harvest Potatoes 九条1丁目",
+      "name_keys": [
+        "本場!!アメリカ直輸入!!HarvestPotatoes九条1丁目"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-28 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-28 16:25",
+      "last_pickup": "2026-10-28 16:25",
+      "active_days": 1,
+      "original_names": [
+        "本場!!アメリカ直輸入!!Harvest Potatoes 九条1丁目"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "本場!!アメリカ直輸入!!Harvest Potatoes 九条1丁目",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_14u3yu5",
       "canonical_name": "名代 かすうどん ながた 西九条店",
       "name_keys": [
@@ -5669,14 +5701,14 @@
   "summary": {
     "period": {
       "from": "2026-09-10",
-      "to": "2026-10-27",
-      "days": 37
+      "to": "2026-10-28",
+      "days": 38
     },
-    "total_trips": 491,
-    "total_pickups": 491,
-    "store_count": 139,
+    "total_trips": 501,
+    "total_pickups": 501,
+    "store_count": 140,
     "confirmed_count": 110,
-    "needs_review_count": 29,
+    "needs_review_count": 30,
     "trips_without_restaurant": 0
   },
   "category_labels": {
