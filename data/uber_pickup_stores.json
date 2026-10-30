@@ -251,9 +251,9 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 15,
+      "pickup_count": 16,
       "first_pickup": "2026-09-22 14:07",
-      "last_pickup": "2026-10-30 12:45",
+      "last_pickup": "2026-10-30 21:19",
       "active_days": 10,
       "original_names": [
         "餃子の王将 大阪九条"
@@ -5896,8 +5896,8 @@
       "to": "2026-10-30",
       "days": 39
     },
-    "total_trips": 516,
-    "total_pickups": 516,
+    "total_trips": 517,
+    "total_pickups": 517,
     "store_count": 146,
     "confirmed_count": 110,
     "needs_review_count": 36,

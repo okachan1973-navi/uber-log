@@ -14256,10 +14256,10 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": 42.25,
-      "tripsCount": 15,
-      "officialPoints": 17,
-      "deliveriesCount": 17,
+      "totalDistanceKm": 44.58,
+      "tripsCount": 16,
+      "officialPoints": 19,
+      "deliveriesCount": 19,
       "workSessions": [],
       "deliveries": [
         {
@@ -14295,7 +14295,17 @@ const CONFIRMED_SEED_DATA = {
               "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Acenter%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.68614%2C135.51752&markers=%7Canchor%3Acenter%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.68089%2C135.5166&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3AksurEmgczXXv%40pNX%3FhFnAn%40%60JG%5E%7DE%7C%40n%40&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=MLKYNBUSo3XfBRRtBcN_Oi9VPk4="
             }
           ],
-          "sequence": null
+          "sequence": null,
+          "officialHistory": [
+            {
+              "type": "list-detail",
+              "at": "2026-10-30T20:32:05.855Z",
+              "listTime": "09:05",
+              "listAmount": 338,
+              "detailTime": "09:05",
+              "detailAmount": 676
+            }
+          ]
         },
         {
           "id": "del_1030_2",
@@ -14671,6 +14681,41 @@ const CONFIRMED_SEED_DATA = {
             }
           ],
           "sequence": null
+        },
+        {
+          "id": "del_1030_16",
+          "index": 16,
+          "completedAt": "21:19",
+          "restaurant": "餃子の王将 大阪九条",
+          "area": "大阪市西区千代崎2丁目/大阪市西区本田1丁目",
+          "fee": 422,
+          "distanceKm": 2.33,
+          "durationStr": "22分54秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）／2件完了/2pt",
+          "tripUuid": "8a29c141-518a-4cc8-9440-79aefb50bf9a",
+          "tripLegCount": 2,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "0c513ebc-5d41-4356-a6b8-3decd0f56f5a",
+              "restaurant": "",
+              "pickupAddress": "27大阪市西区九条１丁目",
+              "dropoffAddress": "27大阪市西区千代崎２丁目",
+              "area": "大阪市西区千代崎2丁目",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Aleft%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.67493%2C135.47571&markers=%7Canchor%3Aleft%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.67313%2C135.47669&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3AimsrEeb%7ByXcBdI%60EwT%60HrFtBaCmAa%40fANi%40rAuBk%40Xd%40&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=U1L03p6_XrljKhMCkj_reAajRvk="
+            },
+            {
+              "legIndex": 1,
+              "legUuid": "ad26ea22-14c3-4ae4-8680-988a5510bbf8",
+              "restaurant": "",
+              "pickupAddress": "27大阪市西区九条２丁目",
+              "dropoffAddress": "27大阪市西区本田１丁目",
+              "area": "大阪市西区本田1丁目",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Atop%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.67542%2C135.47408&markers=%7Canchor%3Atop%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.6782%2C135.48056&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3AkpsrE%7DwzyX%7EDyT%60HrFtBaCmAa%40fANi%40rA_Bk%40Ud%40%7DGyGqQkHj%40r%40%7D%40SOkBr%40oCaA_A%7B%40zA&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=3OsQhZtbTXldXsAPW4XaOeMR3qg="
+            }
+          ],
+          "sequence": null
         }
       ],
       "quests": [
@@ -14809,16 +14854,6 @@ const CONFIRMED_SEED_DATA = {
           "note": "公式一覧は「クエスト ¥25」「1 回乗車クエスト ¥25」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
         },
         {
-          "id": "quest_1030_14",
-          "time": "19:35",
-          "title": "クエスト",
-          "amount": 300,
-          "isDuplicateIgnored": false,
-          "questName": "1回乗車クエスト",
-          "questType": "normal",
-          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
-        },
-        {
           "id": "quest_1030_15",
           "time": "19:35",
           "title": "クエスト",
@@ -14827,6 +14862,16 @@ const CONFIRMED_SEED_DATA = {
           "questName": "6回乗車クエスト",
           "questType": "normal",
           "note": "公式一覧は「クエスト ¥610」「6 回乗車クエスト ¥610」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_14",
+          "time": "19:35",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
         },
         {
           "id": "quest_1030_16",
@@ -14847,19 +14892,69 @@ const CONFIRMED_SEED_DATA = {
           "questName": "1回乗車クエスト",
           "questType": "normal",
           "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）。15:30の「6 回乗車クエスト」¥0は報酬0のため売上非加算"
+        },
+        {
+          "id": "quest_1030_18",
+          "time": "21:32",
+          "title": "クエスト",
+          "amount": 50,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥50」「1 回乗車クエスト ¥50」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_19",
+          "time": "21:32",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_20",
+          "time": "21:42",
+          "title": "クエスト",
+          "amount": 540,
+          "isDuplicateIgnored": false,
+          "questName": "3回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥540」「3 回乗車クエスト ¥540」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_21",
+          "time": "21:42",
+          "title": "クエスト",
+          "amount": 50,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥50」「1 回乗車クエスト ¥50」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_22",
+          "time": "21:42",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）。15:30の「6 回乗車クエスト」¥0は報酬0のため売上非加算"
         }
       ],
       "sales": {
-        "delivery": 7110,
-        "quest": 3260,
+        "delivery": 7532,
+        "quest": 4500,
         "adjustment": 0,
         "other": 0,
-        "total": 10370
+        "total": 12032
       },
       "expenses": [],
       "officialImport": {
         "source": "official-import-v1",
-        "importedAt": "2026-10-30T11:10:02.116Z"
+        "importedAt": "2026-10-30T20:32:05.855Z"
       }
     }
   },
