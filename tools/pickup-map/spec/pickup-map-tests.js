@@ -191,9 +191,17 @@ test('カテゴリ順: マクドナルド → ファーストフード（マク�
   assert.strictEqual(master.stores.filter(s => s.category === 'mcdonalds').length, 13);
 });
 
-test('ファーストフード: BK・KFC・モス・ミスド・ピザハットだけ（たこ焼き店は入れない）', () => {
+// 実データの店舗は取込で増える（例 2026-10-30 フレッシュネスバーガー 天満橋OMM店 = ブランド定義 freshness の fastfood）。
+// 店舗一覧を固定せず、ブランド定義（uber_brands.json）の fastfood ブランドだけが入ることと、既存の5ブランドが残ることを確かめる
+const ffBrandIds = brandsDef.brands.filter(b => b.category === 'fastfood').map(b => b.id);
+const isSubsequence = (sub, arr) => { let i = 0; arr.forEach(x => { if (x === sub[i]) i++; }); return i === sub.length; };
+
+test('ファーストフード: ブランド定義の fastfood ブランドだけ（BK・KFC・モス・ミスド・ピザハット等。たこ焼き店は入れない）', () => {
   const ff = master.stores.filter(s => s.category === 'fastfood');
-  assert.deepStrictEqual([...new Set(ff.map(s => s.brand_id))].sort(), ['burger_king', 'kfc', 'mister_donut', 'mos_burger', 'pizza_hut']);
+  const ids = [...new Set(ff.map(s => s.brand_id))];
+  assert.ok(ids.every(id => ffBrandIds.includes(id)), `fastfood にブランド定義外のブランド: ${ids.filter(id => !ffBrandIds.includes(id))}`);
+  ['burger_king', 'kfc', 'mister_donut', 'mos_burger', 'pizza_hut'].forEach(id => assert.ok(ids.includes(id), `${id} が fastfood に無い`));
+  assert.ok(master.stores.filter(s => s.brand_id && ffBrandIds.includes(s.brand_id)).every(s => s.category === 'fastfood'), 'fastfood ブランドの店舗はすべて fastfood');
   assert.strictEqual(byName('たこ家 輝 西九条店').category, 'other');
   assert.strictEqual(byName('築地銀だこ イオンモール大阪ドームシティ店').category, 'other');
 });
@@ -232,14 +240,21 @@ test('名称順: どのカテゴリでも同じブランドが連続し、ブラ
       seen.add(s.brand_id); prev = s.brand_id;
     });
   });
+  // 既存の12店舗はこの順のまま（後から増えた店舗はブランドの名称順の位置に入る）
   const ff = master.stores.filter(s => s.category === 'fastfood').sort(PS.compareByName).map(s => s.canonical_name);
-  assert.deepStrictEqual(ff, [
+  const known = [
     'KFC イオンモール大阪ドームシティ店', 'KFC うめきたグリーンプレイス店',
     'バーガーキングフレスポ阿波座店', 'バーガーキング 九条店', 'バーガーキング 御堂筋本町店',
     'ピザハット 阿波座店', 'ピザハット 大阪ナインモール九条店', 'ピザハット 大正泉尾店',
     'ミスタードーナツ 福島大開ショップ',
     'モスバーガー JR福島駅前店', 'モスバーガー JR野田店', 'モスバーガー 市岡みなと通り店'
-  ]);
+  ];
+  assert.ok(known.every(n => ff.includes(n)) && isSubsequence(known, ff), ff.join(' / '));
+  // フレッシュネスバーガー（2026-10-30 初回）はピザハットとミスタードーナツの間（ブランドの名称順）
+  if (ff.includes('フレッシュネスバーガー 天満橋OMM店')) {
+    const i = ff.indexOf('フレッシュネスバーガー 天満橋OMM店');
+    assert.ok(i > ff.indexOf('ピザハット 大正泉尾店') && i < ff.indexOf('ミスタードーナツ 福島大開ショップ'), ff.join(' / '));
+  }
 });
 
 test('回数順: 多い順、同数は名称順', () => {

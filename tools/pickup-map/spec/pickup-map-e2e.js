@@ -239,7 +239,12 @@ async function run() {
       await p.tapSel('#pm-cat-filter [data-cat="fastfood"]');
       await sleep(250);
       ls = await listState(p);
-      check('ファーストフード: 名称順・1店舗のブランドにも見出し（ミスタードーナツはピザハットと別）', ls.sort === 'name' && brandsContiguous(ls.items) && ls.heads.join('/') === 'KFC/バーガーキング/ピザハット/ミスタードーナツ/モスバーガー', { heads: ls.heads });
+      // 見出しは店舗マスタの fastfood ブランドの数だけ（取込で増える）。既存の5ブランドはこの順のまま
+      const ffBrandCount = await p.ev(`new Set(window.__pickupMap.data.stores.filter(s => s.category === 'fastfood' && s.brand_id).map(s => s.brand_id)).size`);
+      const legacyHeads = ['KFC', 'バーガーキング', 'ピザハット', 'ミスタードーナツ', 'モスバーガー'];
+      let hi = 0; ls.heads.forEach(hd => { if (hd === legacyHeads[hi]) hi++; });
+      check('ファーストフード: 名称順・1店舗のブランドにも見出し（ミスタードーナツはピザハットと別）',
+        ls.sort === 'name' && brandsContiguous(ls.items) && ls.heads.length === ffBrandCount && new Set(ls.heads).size === ls.heads.length && hi === legacyHeads.length, { heads: ls.heads, ffBrandCount });
       const pizza = ls.groups.find(g => g.brand === 'pizza_hut'), misdo = ls.groups.find(g => g.brand === 'mister_donut');
       check('ピザハットの下はピザハットだけ、ミスタードーナツは自分の見出しの下', pizza.rows.every(r => r.brand === 'pizza_hut') && pizza.rows.length === 3 && misdo.rows.length === 1 && misdo.rows[0].shown === '福島大開ショップ', { pizza, misdo });
       const kfc = ls.groups.find(g => g.brand === 'kfc');
