@@ -30,10 +30,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 92,
+      "pickup_count": 93,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-28 11:37",
-      "active_days": 30,
+      "last_pickup": "2026-10-30 11:31",
+      "active_days": 31,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
         "マクドナルド 九　条　店 McDonald's KUJO",
@@ -251,10 +251,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 14,
+      "pickup_count": 15,
       "first_pickup": "2026-09-22 14:07",
-      "last_pickup": "2026-10-26 13:48",
-      "active_days": 9,
+      "last_pickup": "2026-10-30 12:45",
+      "active_days": 10,
       "original_names": [
         "餃子の王将 大阪九条"
       ],
@@ -265,6 +265,54 @@
       "site_id": null,
       "display_name": "大阪九条",
       "address_short": "西区九条"
+    },
+    {
+      "id": "st_t581ya",
+      "canonical_name": "【伝説のクロックムッシュ】サンドイッチ九条店",
+      "name_keys": [
+        "【伝説のクロックムッシュ】サンドイッチ九条店",
+        "【伝説のクロックムッシュ】サンドイッチ九条店Sandwichkujyo～お持ち帰り専門店～",
+        "【伝説のクロックムッシュ】サンドイッチ九条店Sandwichkujyo～お持帰り専門店～"
+      ],
+      "category": "cafe",
+      "address": "大阪府大阪市西区千代崎1-27-11",
+      "latitude": 34.674683,
+      "longitude": 135.47821,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区千代崎一丁目２７番１１号",
+      "address_source": "map.yahoo.co.jp 3krGz6UNWy-; demae-can 3064002",
+      "address_evidence": "delivery_listing",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区千代崎一丁目２７番１１号",
+        "osm_nearest": {
+          "id": "node/1735949599",
+          "name": "ドコモショップ 九条店 NTT docomo",
+          "distance_m": 61
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "千代崎一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 13,
+      "first_pickup": "2026-09-19 10:15",
+      "last_pickup": "2026-10-30 11:47",
+      "active_days": 13,
+      "original_names": [
+        "【伝説のクロックムッシュ】サンドイッチ 九条店",
+        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo〜お持帰り専門店〜",
+        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持ち帰り専門店～",
+        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持帰り専門店～"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "site_id": null,
+      "display_name": "【伝説のクロックムッシュ】サンドイッチ九条店",
+      "address_short": "西区千代崎"
     },
     {
       "id": "st_189ay5t",
@@ -309,54 +357,6 @@
       "site_id": null,
       "display_name": "弁天町駅前店",
       "address_short": "港区弁天"
-    },
-    {
-      "id": "st_t581ya",
-      "canonical_name": "【伝説のクロックムッシュ】サンドイッチ九条店",
-      "name_keys": [
-        "【伝説のクロックムッシュ】サンドイッチ九条店",
-        "【伝説のクロックムッシュ】サンドイッチ九条店Sandwichkujyo～お持ち帰り専門店～",
-        "【伝説のクロックムッシュ】サンドイッチ九条店Sandwichkujyo～お持帰り専門店～"
-      ],
-      "category": "cafe",
-      "address": "大阪府大阪市西区千代崎1-27-11",
-      "latitude": 34.674683,
-      "longitude": 135.47821,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区千代崎一丁目２７番１１号",
-      "address_source": "map.yahoo.co.jp 3krGz6UNWy-; demae-can 3064002",
-      "address_evidence": "delivery_listing",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区千代崎一丁目２７番１１号",
-        "osm_nearest": {
-          "id": "node/1735949599",
-          "name": "ドコモショップ 九条店 NTT docomo",
-          "distance_m": 61
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "千代崎一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 12,
-      "first_pickup": "2026-09-19 10:15",
-      "last_pickup": "2026-10-26 14:08",
-      "active_days": 12,
-      "original_names": [
-        "【伝説のクロックムッシュ】サンドイッチ 九条店",
-        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo〜お持帰り専門店〜",
-        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持ち帰り専門店～",
-        "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持帰り専門店～"
-      ],
-      "brand_id": null,
-      "brand_name": null,
-      "brand_reading": null,
-      "branch_name": null,
-      "site_id": null,
-      "display_name": "【伝説のクロックムッシュ】サンドイッチ九条店",
-      "address_short": "西区千代崎"
     },
     {
       "id": "st_qri0e3",
@@ -1332,6 +1332,49 @@
       "address_short": "西区九条"
     },
     {
+      "id": "st_1522rd1",
+      "canonical_name": "びっくりドンキー フォレオ大阪ドームシティ店",
+      "name_keys": [
+        "びっくりドンキーフォレオ大阪ドームシティ店"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市西区九条南1-12-33",
+      "latitude": 34.669296,
+      "longitude": 135.473404,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条南一丁目１２番３３号",
+      "address_source": "bikkuri-donkey.com/shop/shop_1765/",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条南一丁目１２番３３号",
+        "osm_nearest": {
+          "id": "node/1629885088",
+          "name": "びっくりドンキー フォレオ大阪ドームシティ店 びっくりドンキー",
+          "distance_m": 68
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条南一丁目"
+        }
+      },
+      "same_building": "フォレオ大阪ドームシティ",
+      "notes": null,
+      "pickup_count": 3,
+      "first_pickup": "2026-09-29 15:56",
+      "last_pickup": "2026-10-30 12:05",
+      "active_days": 3,
+      "original_names": [
+        "びっくりドンキー フォレオ大阪ドームシティ店 Bikkuri donkey Foleo Oska Dome City"
+      ],
+      "brand_id": "bikkuri_donkey",
+      "brand_name": "びっくりドンキー",
+      "brand_reading": null,
+      "branch_name": "フォレオ大阪ドームシティ店",
+      "site_id": "site_69kcep",
+      "display_name": "フォレオ大阪ドームシティ店",
+      "address_short": "西区九条南"
+    },
+    {
       "id": "st_1otgpzi",
       "canonical_name": "マクドナルド 野田阪神店",
       "name_keys": [
@@ -1895,6 +1938,49 @@
       "address_short": "此花区西九条"
     },
     {
+      "id": "st_tmu89p",
+      "canonical_name": "スターバックス コーヒー 北浜店",
+      "name_keys": [
+        "スターバックスコーヒー北浜店"
+      ],
+      "category": "cafe",
+      "address": "大阪府大阪市中央区今橋2-2-2",
+      "latitude": 34.690224,
+      "longitude": 135.506439,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市中央区今橋二丁目２番２号",
+      "address_source": "store.starbucks.co.jp/detail-4437/",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市中央区今橋二丁目２番２号",
+        "osm_nearest": {
+          "id": "node/3668335699",
+          "name": "ドトールコーヒーショップ 高麗橋店 ドトール",
+          "distance_m": 131
+        },
+        "reverse": {
+          "muniCd": "27128",
+          "lv01Nm": "今橋二丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 2,
+      "first_pickup": "2026-09-23 11:05",
+      "last_pickup": "2026-10-30 09:07",
+      "active_days": 2,
+      "original_names": [
+        "スターバックス コーヒー 北浜店 Starbucks Coffee Kitahama"
+      ],
+      "brand_id": "starbucks",
+      "brand_name": "スターバックス コーヒー",
+      "brand_reading": null,
+      "branch_name": "北浜店",
+      "site_id": null,
+      "display_name": "北浜店",
+      "address_short": "中央区今橋"
+    },
+    {
       "id": "st_8dai2f",
       "canonical_name": "たこ家 輝 西九条店",
       "name_keys": [
@@ -2089,49 +2175,6 @@
       "display_name": "バーミヤン 大正千島店",
       "address_short": null,
       "site_id": null
-    },
-    {
-      "id": "st_1522rd1",
-      "canonical_name": "びっくりドンキー フォレオ大阪ドームシティ店",
-      "name_keys": [
-        "びっくりドンキーフォレオ大阪ドームシティ店"
-      ],
-      "category": "other",
-      "address": "大阪府大阪市西区九条南1-12-33",
-      "latitude": 34.669296,
-      "longitude": 135.473404,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条南一丁目１２番３３号",
-      "address_source": "bikkuri-donkey.com/shop/shop_1765/",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条南一丁目１２番３３号",
-        "osm_nearest": {
-          "id": "node/1629885088",
-          "name": "びっくりドンキー フォレオ大阪ドームシティ店 びっくりドンキー",
-          "distance_m": 68
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条南一丁目"
-        }
-      },
-      "same_building": "フォレオ大阪ドームシティ",
-      "notes": null,
-      "pickup_count": 2,
-      "first_pickup": "2026-09-29 15:56",
-      "last_pickup": "2026-10-26 11:21",
-      "active_days": 2,
-      "original_names": [
-        "びっくりドンキー フォレオ大阪ドームシティ店 Bikkuri donkey Foleo Oska Dome City"
-      ],
-      "brand_id": "bikkuri_donkey",
-      "brand_name": "びっくりドンキー",
-      "brand_reading": null,
-      "branch_name": "フォレオ大阪ドームシティ店",
-      "site_id": "site_69kcep",
-      "display_name": "フォレオ大阪ドームシティ店",
-      "address_short": "西区九条南"
     },
     {
       "id": "st_1ygnern",
@@ -2505,6 +2548,38 @@
       "site_id": "site_rwl2xq",
       "display_name": "【カラダが喜ぶオムライスCafe】Egg House～大正店～",
       "address_short": "大正区三軒家東"
+    },
+    {
+      "id": "st_93nxnd",
+      "canonical_name": "LA HANOI DELI",
+      "name_keys": [
+        "LAHANOIDELI"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-30 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-30 09:50",
+      "last_pickup": "2026-10-30 09:50",
+      "active_days": 1,
+      "original_names": [
+        "LA HANOI DELI"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "LA HANOI DELI",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_10qdpdd",
@@ -3514,49 +3589,6 @@
       "address_short": "西区江戸堀"
     },
     {
-      "id": "st_tmu89p",
-      "canonical_name": "スターバックス コーヒー 北浜店",
-      "name_keys": [
-        "スターバックスコーヒー北浜店"
-      ],
-      "category": "cafe",
-      "address": "大阪府大阪市中央区今橋2-2-2",
-      "latitude": 34.690224,
-      "longitude": 135.506439,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市中央区今橋二丁目２番２号",
-      "address_source": "store.starbucks.co.jp/detail-4437/",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市中央区今橋二丁目２番２号",
-        "osm_nearest": {
-          "id": "node/3668335699",
-          "name": "ドトールコーヒーショップ 高麗橋店 ドトール",
-          "distance_m": 131
-        },
-        "reverse": {
-          "muniCd": "27128",
-          "lv01Nm": "今橋二丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-23 11:05",
-      "last_pickup": "2026-09-23 11:05",
-      "active_days": 1,
-      "original_names": [
-        "スターバックス コーヒー 北浜店 Starbucks Coffee Kitahama"
-      ],
-      "brand_id": "starbucks",
-      "brand_name": "スターバックス コーヒー",
-      "brand_reading": null,
-      "branch_name": "北浜店",
-      "site_id": null,
-      "display_name": "北浜店",
-      "address_short": "中央区今橋"
-    },
-    {
       "id": "st_sxv9fc",
       "canonical_name": "セブン-イレブン 大阪玉川2丁目店",
       "name_keys": [
@@ -4302,6 +4334,38 @@
       "site_id": null,
       "display_name": "梅田茶屋町カフェ",
       "address_short": "北区茶屋町"
+    },
+    {
+      "id": "st_1unr7pb",
+      "canonical_name": "フレッシュネスバーガー 天満橋OMM店",
+      "name_keys": [
+        "フレッシュネスバーガー天満橋OMM店"
+      ],
+      "category": "fastfood",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-30 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-30 09:05",
+      "last_pickup": "2026-10-30 09:05",
+      "active_days": 1,
+      "original_names": [
+        "フレッシュネスバーガー 天満橋ＯＭＭ店 Freshness Burger Temmabashi OMM"
+      ],
+      "brand_id": "freshness",
+      "brand_name": "フレッシュネスバーガー",
+      "brand_reading": null,
+      "branch_name": "天満橋OMM店",
+      "display_name": "天満橋OMM店",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_a9phir",
@@ -5701,14 +5765,14 @@
   "summary": {
     "period": {
       "from": "2026-09-10",
-      "to": "2026-10-28",
-      "days": 38
+      "to": "2026-10-30",
+      "days": 39
     },
-    "total_trips": 501,
-    "total_pickups": 501,
-    "store_count": 140,
+    "total_trips": 508,
+    "total_pickups": 508,
+    "store_count": 142,
     "confirmed_count": 110,
-    "needs_review_count": 30,
+    "needs_review_count": 32,
     "trips_without_restaurant": 0
   },
   "category_labels": {

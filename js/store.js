@@ -14250,6 +14250,267 @@ const CONFIRMED_SEED_DATA = {
         "source": "official-import-v1",
         "importedAt": "2026-10-28T19:55:33.188Z"
       }
+    },
+    "2026-10-30": {
+      "date": "2026-10-30",
+      "workStartedAt": null,
+      "workEndedAt": null,
+      "workMinutes": null,
+      "totalDistanceKm": 16.93,
+      "tripsCount": 7,
+      "officialPoints": 8,
+      "deliveriesCount": 8,
+      "workSessions": [],
+      "deliveries": [
+        {
+          "id": "del_1030_1",
+          "index": 1,
+          "completedAt": "09:05",
+          "restaurant": "フレッシュネスバーガー 天満橋ＯＭＭ店 Freshness Burger Temmabashi OMM",
+          "area": "大阪市中央区南船場2丁目/1-chōme27OsakaNōninbashi",
+          "fee": 676,
+          "distanceKm": 4.3,
+          "durationStr": "38分53秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）／2件完了/2pt",
+          "tripUuid": "0ae63354-428f-45fd-b891-02398b30a138",
+          "tripLegCount": 2,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "61d6cf4e-f0e5-4bad-a2af-cc3feefe8f73",
+              "restaurant": "",
+              "pickupAddress": "27大阪市中央区大手前１丁目",
+              "dropoffAddress": "27大阪市中央区南船場２丁目",
+              "area": "大阪市中央区南船場2丁目",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Atop%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.69008%2C135.51852&markers=%7Canchor%3Atop%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.67767%2C135.50578&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3A%7DkvrEwmczXb%40nD%60BX%60S%40n%40%7E%40dNN%3FhFnAn%40%60JG%5E%7DEbAJcBpKM%60PxHF%40jB%7CBb%40JhCvH%5ENz%5B_%40F&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=V9NEeKGMfgaAXnqcRM7hnn4GvE4="
+            },
+            {
+              "legIndex": 1,
+              "legUuid": "ca92fb6e-8cd0-4fe3-9a89-7cdf0bcadadd",
+              "restaurant": "",
+              "pickupAddress": "2-chōme 27 Osaka Tanimachi Japan",
+              "dropoffAddress": "1-chōme 27 Osaka Nōninbashi Japan",
+              "area": "1-chōme27OsakaNōninbashi",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Acenter%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.68614%2C135.51752&markers=%7Canchor%3Acenter%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.68089%2C135.5166&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3AksurEmgczXXv%40pNX%3FhFnAn%40%60JG%5E%7DE%7C%40n%40&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=MLKYNBUSo3XfBRRtBcN_Oi9VPk4="
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_2",
+          "index": 2,
+          "completedAt": "09:07",
+          "restaurant": "スターバックス コーヒー 北浜店 Starbucks Coffee Kitahama",
+          "area": "大阪市中央区内淡路町3丁目",
+          "fee": 320,
+          "distanceKm": 2.27,
+          "durationStr": "13分59秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "ab9cfb44-5ea6-42d2-ae83-9bf247312e6d",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "ab9cfb44-5ea6-42d2-ae83-9bf247312e6d",
+              "restaurant": "スターバックス コーヒー 北浜店 Starbucks Coffee Kitahama",
+              "pickupAddress": "スターバックス コーヒー 北浜店 Starbucks Coffee Kitahama",
+              "dropoffAddress": "27大阪市中央区内淡路町３丁目",
+              "area": "大阪市中央区内淡路町3丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_3",
+          "index": 3,
+          "completedAt": "09:50",
+          "restaurant": "LA HANOI DELI",
+          "area": "1-chōmeOsakaOsakaItachibori",
+          "fee": 531,
+          "distanceKm": 4.54,
+          "durationStr": "29分14秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "261191a7-f7d7-4a46-bc33-dcd6d7661597",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "261191a7-f7d7-4a46-bc33-dcd6d7661597",
+              "restaurant": "LA HANOI DELI",
+              "pickupAddress": "LA HANOI DELI",
+              "dropoffAddress": "1-chōme Osaka Osaka Itachibori 日本",
+              "area": "1-chōmeOsakaOsakaItachibori",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_4",
+          "index": 4,
+          "completedAt": "11:31",
+          "restaurant": "マクドナルド 九条店 McDonald's KUJO",
+          "area": "4-chōme27OsakaKawaguchi",
+          "fee": 320,
+          "distanceKm": 1.05,
+          "durationStr": "9分19秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "8b8397d9-8c35-41d6-bc84-f97583e1ea08",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "8b8397d9-8c35-41d6-bc84-f97583e1ea08",
+              "restaurant": "マクドナルド 九条店 McDonald's KUJO",
+              "pickupAddress": "マクドナルド 九条店 McDonald's KUJO",
+              "dropoffAddress": "4-chōme 27 Osaka Kawaguchi Japan",
+              "area": "4-chōme27OsakaKawaguchi",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_5",
+          "index": 5,
+          "completedAt": "11:47",
+          "restaurant": "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持帰り専門店～",
+          "area": "大阪市西区南堀江4丁目",
+          "fee": 320,
+          "distanceKm": 1.13,
+          "durationStr": "10分29秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "e3b5e00b-2acd-43f6-b311-0996c0eabd14",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "e3b5e00b-2acd-43f6-b311-0996c0eabd14",
+              "restaurant": "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持帰り専門店～",
+              "pickupAddress": "【伝説のクロックムッシュ】サンドイッチ九条店 Sandwich kujyo～お持帰り専門店～",
+              "dropoffAddress": "27大阪市西区南堀江４丁目",
+              "area": "大阪市西区南堀江4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_6",
+          "index": 6,
+          "completedAt": "12:05",
+          "restaurant": "びっくりドンキー フォレオ大阪ドームシティ店 Bikkuri donkey Foleo Oska Dome City",
+          "area": "大阪市大正区三軒家東2丁目",
+          "fee": 325,
+          "distanceKm": 2.35,
+          "durationStr": "14分49秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "ced0db6e-5471-4fa7-a3e8-2988066b14c2",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "ced0db6e-5471-4fa7-a3e8-2988066b14c2",
+              "restaurant": "びっくりドンキー フォレオ大阪ドームシティ店 Bikkuri donkey Foleo Oska Dome City",
+              "pickupAddress": "びっくりドンキー フォレオ大阪ドームシティ店 Bikkuri donkey Foleo Oska Dome City",
+              "dropoffAddress": "27大阪市大正区三軒家東２丁目",
+              "area": "大阪市大正区三軒家東2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_7",
+          "index": 7,
+          "completedAt": "12:45",
+          "restaurant": "餃子の王将 大阪九条",
+          "area": "大阪市西区南堀江4丁目",
+          "fee": 320,
+          "distanceKm": 1.29,
+          "durationStr": "9分3秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "d9476035-a0ab-48b8-93ec-d793057fb33f",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "d9476035-a0ab-48b8-93ec-d793057fb33f",
+              "restaurant": "餃子の王将 大阪九条",
+              "pickupAddress": "餃子の王将 大阪九条",
+              "dropoffAddress": "27大阪市西区南堀江４丁目",
+              "area": "大阪市西区南堀江4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        }
+      ],
+      "quests": [
+        {
+          "id": "quest_1030_1",
+          "time": "11:41",
+          "title": "クエスト",
+          "amount": 225,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "11:40",
+          "note": "公式一覧は 11:40「1 回乗車クエスト ¥225」（達成表示）と 11:41「クエスト ¥225」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_2",
+          "time": "12:00",
+          "title": "クエスト",
+          "amount": 75,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "11:59",
+          "note": "公式一覧は 11:59「1 回乗車クエスト ¥75」（達成表示）と 12:00「クエスト ¥75」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_3",
+          "time": "12:21",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "12:20",
+          "note": "公式一覧は 12:20「1 回乗車クエスト ¥150」（達成表示）と 12:21「クエスト ¥150」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_4",
+          "time": "12:54",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥150」「1 回乗車クエスト ¥150」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        }
+      ],
+      "sales": {
+        "delivery": 2812,
+        "quest": 600,
+        "adjustment": 0,
+        "other": 0,
+        "total": 3412
+      },
+      "expenses": [],
+      "officialImport": {
+        "source": "official-import-v1",
+        "importedAt": "2026-10-30T06:14:56.002Z"
+      }
     }
   },
   "targetQuests": [
