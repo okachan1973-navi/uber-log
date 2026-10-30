@@ -30,9 +30,9 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 93,
+      "pickup_count": 94,
       "first_pickup": "2026-09-14 08:54",
-      "last_pickup": "2026-10-30 11:31",
+      "last_pickup": "2026-10-30 19:32",
       "active_days": 31,
       "original_names": [
         "マクドナルド 九 条 店 McDonald's KUJO",
@@ -164,10 +164,10 @@
       },
       "same_building": null,
       "notes": null,
-      "pickup_count": 18,
+      "pickup_count": 19,
       "first_pickup": "2026-09-22 17:07",
-      "last_pickup": "2026-10-24 17:29",
-      "active_days": 14,
+      "last_pickup": "2026-10-30 16:12",
+      "active_days": 15,
       "original_names": [
         "マクドナルド 阪神西九条駅前店",
         "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE"
@@ -1082,6 +1082,49 @@
       "address_short": "西区新町"
     },
     {
+      "id": "st_s1jrte",
+      "canonical_name": "CoDeLi 大阪九条駅前店",
+      "name_keys": [
+        "CoDeLi大阪九条駅前店"
+      ],
+      "category": "drug_super",
+      "address": "大阪府大阪市西区九条1-26-9",
+      "latitude": 34.674088,
+      "longitude": 135.473495,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目２６番９号",
+      "address_source": "daiei.co.jp/stores/d4011/",
+      "address_evidence": "official",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条一丁目２６番９号",
+        "osm_nearest": {
+          "id": "node/1369920119",
+          "name": "セブン-イレブン 大阪九条南2丁目店 7-ELEVEN",
+          "distance_m": 69
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条一丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 4,
+      "first_pickup": "2026-09-27 09:10",
+      "last_pickup": "2026-10-30 16:56",
+      "active_days": 3,
+      "original_names": [
+        "CoDeLi 大阪九条駅前店"
+      ],
+      "brand_id": "codeli",
+      "brand_name": "CoDeLi",
+      "brand_reading": "コデリ",
+      "branch_name": "大阪九条駅前店",
+      "site_id": null,
+      "display_name": "大阪九条駅前店",
+      "address_short": "西区九条"
+    },
+    {
       "id": "st_1njqw93",
       "canonical_name": "【チキンステーキ弁当】Master Of Chicken～大正店～",
       "name_keys": [
@@ -1809,49 +1852,6 @@
       "site_id": null,
       "display_name": "九条店",
       "address_short": "西区境川"
-    },
-    {
-      "id": "st_s1jrte",
-      "canonical_name": "CoDeLi 大阪九条駅前店",
-      "name_keys": [
-        "CoDeLi大阪九条駅前店"
-      ],
-      "category": "drug_super",
-      "address": "大阪府大阪市西区九条1-26-9",
-      "latitude": 34.674088,
-      "longitude": 135.473495,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条一丁目２６番９号",
-      "address_source": "daiei.co.jp/stores/d4011/",
-      "address_evidence": "official",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条一丁目２６番９号",
-        "osm_nearest": {
-          "id": "node/1369920119",
-          "name": "セブン-イレブン 大阪九条南2丁目店 7-ELEVEN",
-          "distance_m": 69
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条一丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 2,
-      "first_pickup": "2026-09-27 09:10",
-      "last_pickup": "2026-10-04 11:57",
-      "active_days": 2,
-      "original_names": [
-        "CoDeLi 大阪九条駅前店"
-      ],
-      "brand_id": "codeli",
-      "brand_name": "CoDeLi",
-      "brand_reading": "コデリ",
-      "branch_name": "大阪九条駅前店",
-      "site_id": null,
-      "display_name": "大阪九条駅前店",
-      "address_short": "西区九条"
     },
     {
       "id": "st_1dahafm",
@@ -2962,6 +2962,38 @@
       "site_id": null,
       "display_name": "港弁天町店",
       "address_short": "港区磯路"
+    },
+    {
+      "id": "st_xgnr8y",
+      "canonical_name": "かつアンドかつ 福島大開店",
+      "name_keys": [
+        "かつアンドかつ福島大開店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-30 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-30 18:33",
+      "last_pickup": "2026-10-30 18:33",
+      "active_days": 1,
+      "original_names": [
+        "かつアンドかつ 福島大開店 Katsu and katsu FUKUSHIMAOHIRAKI"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "かつアンドかつ 福島大開店",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_1hryog3",
@@ -4141,6 +4173,38 @@
       "site_id": null,
       "display_name": "【もっちり玄米と低脂質チキン】とりげん食堂 弁天町店",
       "address_short": "港区波除"
+    },
+    {
+      "id": "st_xtmck6",
+      "canonical_name": "なか卯 JR野田店",
+      "name_keys": [
+        "なか卯JR野田店"
+      ],
+      "category": "gyudon_teishoku",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-30 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-30 19:17",
+      "last_pickup": "2026-10-30 19:17",
+      "active_days": 1,
+      "original_names": [
+        "なか卯 JR野田店 Nakau JR Noda"
+      ],
+      "brand_id": "nakau",
+      "brand_name": "なか卯",
+      "brand_reading": null,
+      "branch_name": "JR野田店",
+      "display_name": "JR野田店",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_876fvv",
@@ -5579,6 +5643,70 @@
       "site_id": null
     },
     {
+      "id": "st_9ea0dq",
+      "canonical_name": "中華料理 珍八香",
+      "name_keys": [
+        "中華料理珍八香"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-30 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-30 17:31",
+      "last_pickup": "2026-10-30 17:31",
+      "active_days": 1,
+      "original_names": [
+        "中華料理 珍八香 Chukaryori Chaco"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "中華料理 珍八香",
+      "address_short": null,
+      "site_id": null
+    },
+    {
+      "id": "st_8us8bf",
+      "canonical_name": "中華料理珉龍 土佐堀店",
+      "name_keys": [
+        "中華料理珉龍土佐堀店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-30 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-30 18:49",
+      "last_pickup": "2026-10-30 18:49",
+      "active_days": 1,
+      "original_names": [
+        "中華料理珉龍　土佐堀店"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "中華料理珉龍 土佐堀店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_kcnvux",
       "canonical_name": "本場!!アメリカ直輸入!!Harvest Potatoes 九条1丁目",
       "name_keys": [
@@ -5768,11 +5896,11 @@
       "to": "2026-10-30",
       "days": 39
     },
-    "total_trips": 508,
-    "total_pickups": 508,
-    "store_count": 142,
+    "total_trips": 516,
+    "total_pickups": 516,
+    "store_count": 146,
     "confirmed_count": 110,
-    "needs_review_count": 32,
+    "needs_review_count": 36,
     "trips_without_restaurant": 0
   },
   "category_labels": {

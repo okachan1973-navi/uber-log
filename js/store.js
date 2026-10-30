@@ -14256,10 +14256,10 @@ const CONFIRMED_SEED_DATA = {
       "workStartedAt": null,
       "workEndedAt": null,
       "workMinutes": null,
-      "totalDistanceKm": 16.93,
-      "tripsCount": 7,
-      "officialPoints": 8,
-      "deliveriesCount": 8,
+      "totalDistanceKm": 42.25,
+      "tripsCount": 15,
+      "officialPoints": 17,
+      "deliveriesCount": 17,
       "workSessions": [],
       "deliveries": [
         {
@@ -14452,6 +14452,225 @@ const CONFIRMED_SEED_DATA = {
             }
           ],
           "sequence": null
+        },
+        {
+          "id": "del_1030_8",
+          "index": 8,
+          "completedAt": "16:07",
+          "restaurant": "CoDeLi 大阪九条駅前店",
+          "area": "大阪市此花区西九条1丁目",
+          "fee": 437,
+          "distanceKm": 2.29,
+          "durationStr": "13分58秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "067997b2-ff39-4811-9e8a-da56ea9321db",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "067997b2-ff39-4811-9e8a-da56ea9321db",
+              "restaurant": "CoDeLi 大阪九条駅前店",
+              "pickupAddress": "CoDeLi 大阪九条駅前店",
+              "dropoffAddress": "27大阪市此花区西九条１丁目",
+              "area": "大阪市此花区西九条1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_9",
+          "index": 9,
+          "completedAt": "16:12",
+          "restaurant": "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE",
+          "area": "大阪市此花区春日出南2丁目",
+          "fee": 320,
+          "distanceKm": 2.99,
+          "durationStr": "24分4秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "c3f871de-df5b-49cd-a4b9-5b95323c8e18",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "c3f871de-df5b-49cd-a4b9-5b95323c8e18",
+              "restaurant": "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE",
+              "pickupAddress": "マクドナルド 阪神西九条駅前店 McDonald's HANSHIN NISHIKUJO EKI-MAE",
+              "dropoffAddress": "27大阪市此花区春日出南２丁目",
+              "area": "大阪市此花区春日出南2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_10",
+          "index": 10,
+          "completedAt": "16:56",
+          "restaurant": "CoDeLi 大阪九条駅前店",
+          "area": "大阪市西区本田1丁目/大阪市西区江之子島2丁目",
+          "fee": 575,
+          "distanceKm": 2.57,
+          "durationStr": "26分8秒",
+          "points": 2,
+          "memo": "ダブル配達（2件完了/2pt）／2件完了/2pt",
+          "tripUuid": "4a2d5da7-c232-4e31-bfb8-6cfe299e121e",
+          "tripLegCount": 2,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "0b1fde57-370c-4a34-a1e4-984c5054c945",
+              "restaurant": "",
+              "pickupAddress": "27大阪市西区九条１丁目",
+              "dropoffAddress": "27大阪市西区本田１丁目",
+              "area": "大阪市西区本田1丁目",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Abottom%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.67404%2C135.47342&markers=%7Canchor%3Abottom%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.67662%2C135.4794&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3AwgsrE%7BszyXuAjBqEyFhFoUcNaHfB%3FaBj%40VwA&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=apLDcB-9ksI1GOTiRREeQVXq_lQ="
+            },
+            {
+              "legIndex": 1,
+              "legUuid": "39a69d4f-950e-498e-ab61-9c5fccb52a33",
+              "restaurant": "",
+              "pickupAddress": "27大阪市西区九条２丁目",
+              "dropoffAddress": "27大阪市西区江之子島２丁目",
+              "area": "大阪市西区江之子島2丁目",
+              "customRouteMap": "https://maps.googleapis.com/maps/api/staticmap?size=360x200&scale=2&markers=%7Canchor%3Atop%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-pickup-pin.png%7Cscale%3A2%7C34.67547%2C135.47399&markers=%7Canchor%3Atop%7Cicon%3Ahttps%3A%2F%2Fd1a3f4spazzrp4.cloudfront.net%2Fmaps%2Fhelix%2Fcar-dropoff-pin.png%7Cscale%3A2%7C34.68182%2C135.48384&path=color%3A0x2DBAE4FF%7Cweight%3A4%7Cenc%3AupsrEkwzyX%7EEmVcNaHfB%3FaBj%40X_BcBd%40cHcBkIoEmDkVgAdCgAD&style=feature%3Aadministrative.locality%7Celement%3Alabels.text%7Ccolor%3A0x556275&style=feature%3Aadministrative.locality%7Celement%3Alabels.text.stroke%7Ccolor%3A0xe9edf3&style=feature%3Aadministrative.neighborhood%7Celement%3Alabels.text.fill%7Ccolor%3A0x90a8dd&style=feature%3Alandscape%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.man_made%7Celement%3Ageometry.stroke%7Ccolor%3A0xe6e9ec&style=feature%3Alandscape.natural.terrain%7Ccolor%3A0xe6e9ec%7Cvisibility%3Aoff&style=feature%3Apoi%7Celement%3Ageometry.fill%7Ccolor%3A0xe6e9ec&style=feature%3Apoi%7Celement%3Alabels.icon%7Csaturation%3A-100.0&style=feature%3Apoi%7Celement%3Alabels.text.fill%7Ccolor%3A0x6890df%7Csaturation%3A-65.0%7Clightness%3A-20.0&style=feature%3Apoi.park%7Celement%3Ageometry.fill%7Ccolor%3A0xa7dfb6&style=feature%3Apoi.park%7Celement%3Alabels.text.fill%7Ccolor%3A0x5ea678%7Csaturation%3A-25.0&style=feature%3Aroad%7Celement%3Alabels.icon%7Csaturation%3A-30.0%7Clightness%3A10.0&style=feature%3Aroad%7Celement%3Alabels.text.fill%7Ccolor%3A0x40484d&style=feature%3Aroad.arterial%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.arterial%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Aroad.highway%7Celement%3Ageometry.fill%7Ccolor%3A0xa6b5db&style=feature%3Aroad.highway%7Celement%3Ageometry.stroke%7Ccolor%3A0x96acd0&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.fill%7Ccolor%3A0x8b9fd4&style=feature%3Aroad.highway.controlled_access%7Celement%3Ageometry.stroke%7Ccolor%3A0x7996c9&style=feature%3Aroad.local%7Celement%3Ageometry.fill%7Ccolor%3A0xffffff&style=feature%3Aroad.local%7Celement%3Ageometry.stroke%7Ccolor%3A0xffffff&style=feature%3Atransit%7Celement%3Alabels.icon%7Csaturation%3A-65.0&style=feature%3Atransit.line%7Celement%3Ageometry.fill%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.line%7Celement%3Ageometry.stroke%7Ccolor%3A0x29b4e3%7Csaturation%3A-60.0%7Clightness%3A60.0&style=feature%3Atransit.station.airport%7Celement%3Ageometry.fill%7Ccolor%3A0xc9d4e3&style=feature%3Atransit.station.rail%7Celement%3Alabels.text%7Csaturation%3A-40.0%7Clightness%3A5.0&style=feature%3Awater%7Celement%3Ageometry.fill%7Ccolor%3A0xacd5f5&key=AIzaSyDU50VAD4HVefGeUpMlFxuCbsCvMrPzwZA&signature=SXQwji4DsGlHa5MsKeVU3QapMqU="
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_11",
+          "index": 11,
+          "completedAt": "17:31",
+          "restaurant": "中華料理 珍八香 Chukaryori Chaco",
+          "area": "大阪市福島区吉野4丁目",
+          "fee": 1344,
+          "baseFee": 1002,
+          "tip": 342,
+          "distanceKm": 6.92,
+          "durationStr": "41分18秒",
+          "points": 1,
+          "memo": "最終売上¥1344（基本料金¥1002＋チップ¥342）",
+          "tripUuid": "4d016490-f076-4cfd-8e95-01d3907cfc7b",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "4d016490-f076-4cfd-8e95-01d3907cfc7b",
+              "restaurant": "中華料理 珍八香 Chukaryori Chaco",
+              "pickupAddress": "中華料理 珍八香 Chukaryori Chaco",
+              "dropoffAddress": "27大阪市福島区吉野４丁目",
+              "area": "大阪市福島区吉野4丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_12",
+          "index": 12,
+          "completedAt": "18:33",
+          "restaurant": "かつアンドかつ 福島大開店 Katsu and katsu FUKUSHIMAOHIRAKI",
+          "area": "大阪市福島区玉川1丁目",
+          "fee": 439,
+          "distanceKm": 3.62,
+          "durationStr": "22分47秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "83ed14a7-0bbc-49e8-aefc-8756775f5e24",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "83ed14a7-0bbc-49e8-aefc-8756775f5e24",
+              "restaurant": "かつアンドかつ 福島大開店 Katsu and katsu FUKUSHIMAOHIRAKI",
+              "pickupAddress": "かつアンドかつ 福島大開店 Katsu and katsu FUKUSHIMAOHIRAKI",
+              "dropoffAddress": "27大阪市福島区玉川１丁目",
+              "area": "大阪市福島区玉川1丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_13",
+          "index": 13,
+          "completedAt": "18:49",
+          "restaurant": "中華料理珉龍　土佐堀店",
+          "area": "大阪市福島区野田",
+          "fee": 504,
+          "distanceKm": 2.91,
+          "durationStr": "17分24秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "5fdadd2c-9e3e-40cd-bf9c-cac270ec80f1",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "5fdadd2c-9e3e-40cd-bf9c-cac270ec80f1",
+              "restaurant": "中華料理珉龍　土佐堀店",
+              "pickupAddress": "中華料理珉龍　土佐堀店",
+              "dropoffAddress": "27大阪市福島区野田",
+              "area": "大阪市福島区野田",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_14",
+          "index": 14,
+          "completedAt": "19:17",
+          "restaurant": "なか卯 JR野田店 Nakau JR Noda",
+          "area": "大阪市西区川口3丁目",
+          "fee": 359,
+          "distanceKm": 2.8,
+          "durationStr": "15分21秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "a5980ea4-ea87-44e6-baf7-ba555ff43eaf",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "a5980ea4-ea87-44e6-baf7-ba555ff43eaf",
+              "restaurant": "なか卯 JR野田店 Nakau JR Noda",
+              "pickupAddress": "なか卯 JR野田店 Nakau JR Noda",
+              "dropoffAddress": "27大阪市西区川口３丁目",
+              "area": "大阪市西区川口3丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
+        },
+        {
+          "id": "del_1030_15",
+          "index": 15,
+          "completedAt": "19:32",
+          "restaurant": "マクドナルド 九条店 McDonald's KUJO",
+          "area": "大阪市西区九条2丁目",
+          "fee": 320,
+          "distanceKm": 1.22,
+          "durationStr": "17分12秒",
+          "points": 1,
+          "memo": "",
+          "tripUuid": "b2ba40ff-8107-4970-82c6-45facbe32d8a",
+          "tripLegCount": 1,
+          "legs": [
+            {
+              "legIndex": 0,
+              "legUuid": "b2ba40ff-8107-4970-82c6-45facbe32d8a",
+              "restaurant": "マクドナルド 九条店 McDonald's KUJO",
+              "pickupAddress": "マクドナルド 九条店 McDonald's KUJO",
+              "dropoffAddress": "27大阪市西区九条２丁目",
+              "area": "大阪市西区九条2丁目",
+              "customRouteMap": null
+            }
+          ],
+          "sequence": null
         }
       ],
       "quests": [
@@ -14497,19 +14716,150 @@ const CONFIRMED_SEED_DATA = {
           "questName": "1回乗車クエスト",
           "questType": "normal",
           "note": "公式一覧は「クエスト ¥150」「1 回乗車クエスト ¥150」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_5",
+          "time": "16:22",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "16:21",
+          "note": "公式一覧は 16:21「1 回乗車クエスト ¥150」（達成表示）と 16:22「クエスト ¥150」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_6",
+          "time": "16:40",
+          "title": "クエスト",
+          "amount": 50,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥50」「1 回乗車クエスト ¥50」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_7",
+          "time": "17:12",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥100」「1 回乗車クエスト ¥100」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_8",
+          "time": "17:23",
+          "title": "クエスト",
+          "amount": 100,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "achievedAt": "17:22",
+          "note": "公式一覧は 17:22「1 回乗車クエスト ¥100」（達成表示）と 17:23「クエスト ¥100」（売上計上）の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_9",
+          "time": "18:33",
+          "title": "クエスト",
+          "amount": 450,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥450」「1 回乗車クエスト ¥450」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_10",
+          "time": "18:58",
+          "title": "クエスト",
+          "amount": 150,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥150」「1 回乗車クエスト ¥150」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_11",
+          "time": "19:17",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_12",
+          "time": "19:17",
+          "title": "クエスト",
+          "amount": 75,
+          "isDuplicateIgnored": false,
+          "questName": "クエスト",
+          "questType": "normal"
+        },
+        {
+          "id": "quest_1030_13",
+          "time": "19:35",
+          "title": "クエスト",
+          "amount": 25,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥25」「1 回乗車クエスト ¥25」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_14",
+          "time": "19:35",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_15",
+          "time": "19:35",
+          "title": "クエスト",
+          "amount": 610,
+          "isDuplicateIgnored": false,
+          "questName": "6回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥610」「6 回乗車クエスト ¥610」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_16",
+          "time": "19:50",
+          "title": "クエスト",
+          "amount": 50,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥50」「1 回乗車クエスト ¥50」の2表示だが同一報酬のため1件のみ計上（二重計上防止）"
+        },
+        {
+          "id": "quest_1030_17",
+          "time": "19:50",
+          "title": "クエスト",
+          "amount": 300,
+          "isDuplicateIgnored": false,
+          "questName": "1回乗車クエスト",
+          "questType": "normal",
+          "note": "公式一覧は「クエスト ¥300」「1 回乗車クエスト ¥300」の2表示だが同一報酬のため1件のみ計上（二重計上防止）。15:30の「6 回乗車クエスト」¥0は報酬0のため売上非加算"
         }
       ],
       "sales": {
-        "delivery": 2812,
-        "quest": 600,
+        "delivery": 7110,
+        "quest": 3260,
         "adjustment": 0,
         "other": 0,
-        "total": 3412
+        "total": 10370
       },
       "expenses": [],
       "officialImport": {
         "source": "official-import-v1",
-        "importedAt": "2026-10-30T06:14:56.002Z"
+        "importedAt": "2026-10-30T11:10:02.116Z"
       }
     }
   },
