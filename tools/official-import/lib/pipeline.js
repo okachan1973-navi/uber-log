@@ -398,6 +398,7 @@ function buildStaging(root, date, opts = {}) {
   const warnings = [];
   const check = (name, ok, detail) => { checks.push({ name, ok: !!ok, detail: detail || '' }); return !!ok; };
   // finish() は途中終了時にも呼ばれるため、集計値は先に宣言しておく
+  const generatedAt = new Date().toISOString(); // 反映後の officialImport.importedAt・変更履歴の日時
   let trips, rec, questResult, actAdjustments, points, distance, seconds, tripSum, questSales, adjustmentSales, otherSales, totalSales;
 
   // 1. activity.txt
@@ -502,21 +503,50 @@ function buildStaging(root, date, opts = {}) {
     deliveryScreens.push(s);
   });
 
-  // 3. activity ↔ スクショ 照合（日付・時刻・金額が完全一致したものだけを同一tripとする）
+  // 3. activity ↔ 詳細 照合
+  //  (a) 構造化取込で一覧と詳細の両方に trip UUID があるものは UUID で同一tripとする（Uber の trip の識別子。金額・時刻が違っても同じ trip）。
+  //      同じ取得で一覧と詳細の金額・時刻が違うときは、内訳（配送料＋チップ＝売り上げ）を検証済みのトリップ詳細の値を採用する
+  //      （一覧は内訳の無い要約表示。2026-10-30 09:05 は一覧 ¥338 / 詳細 ¥676 で、時間・距離も詳細の方が全 leg 分）。一覧の値は記録だけ残し、止めない
+  //  (b) それ以外（スクショ取込・UUID の無いもの）は従来どおり 日付・時刻・金額が完全一致したものだけを同一tripとする
   const matchErrors = [];
+  const listDetailDiffs = [];
+  trips = [];
+  const uuidOf = x => (x && x.tripUuid ? String(x.tripUuid).toLowerCase() : null);
+  let restActs = actDeliveries;
+  let restScreens = deliveryScreens;
+  if (isStructured) {
+    const pairedScreens = new Set();
+    const pairedActs = new Set();
+    actDeliveries.forEach(a => {
+      const u = uuidOf(a);
+      const cands = u ? deliveryScreens.filter(s => !pairedScreens.has(s) && uuidOf(s) === u) : [];
+      if (cands.length !== 1) return;
+      const s = cands[0];
+      pairedActs.add(a);
+      pairedScreens.add(s);
+      const t = { activity: a, screen: s };
+      if (a.time !== s.time || a.amount !== s.amount) {
+        t.listDiff = { listTime: a.time, listAmount: a.amount, detailTime: s.time, detailAmount: s.amount };
+        listDetailDiffs.push({ tripUuid: u, ...t.listDiff });
+        warnings.push(`一覧 ${a.time} ${yen(a.amount)} とトリップ詳細 ${s.time} ${yen(s.amount)}（trip ${u.slice(0, 8)}）が違うため、内訳つきのトリップ詳細の値を採用しました`);
+      }
+      trips.push(t);
+    });
+    restActs = actDeliveries.filter(a => !pairedActs.has(a));
+    restScreens = deliveryScreens.filter(s => !pairedScreens.has(s));
+  }
   const groups = new Map();
   const keyOf = (t, a) => `${t}|${a}`;
-  actDeliveries.forEach(e => {
+  restActs.forEach(e => {
     const k = keyOf(e.time, e.amount);
     if (!groups.has(k)) groups.set(k, { acts: [], screens: [] });
     groups.get(k).acts.push(e);
   });
-  deliveryScreens.forEach(s => {
+  restScreens.forEach(s => {
     const k = keyOf(s.time, s.amount);
     if (!groups.has(k)) groups.set(k, { acts: [], screens: [] });
     groups.get(k).screens.push(s);
   });
-  trips = [];
   groups.forEach((g, k) => {
     const [time, amount] = k.split('|');
     if (g.acts.length !== g.screens.length) {
@@ -542,7 +572,10 @@ function buildStaging(root, date, opts = {}) {
 
   const actDeliverySum = actDeliveries.reduce((s, e) => s + e.amount, 0);
   tripSum = trips.reduce((s, t) => s + t.screen.amount, 0);
-  check('配達報酬合計一致（一覧合計 = 各trip金額合計）', actDeliverySum === tripSum, `一覧 ${yen(actDeliverySum)} / trip ${yen(tripSum)}`);
+  // 一覧と詳細の金額差（詳細を採用した分）を除いて一致すること
+  const listDetailGap = listDetailDiffs.reduce((s, d) => s + d.detailAmount - d.listAmount, 0);
+  check('配達報酬合計一致（一覧合計 = 各trip金額合計）', actDeliverySum + listDetailGap === tripSum,
+    `一覧 ${yen(actDeliverySum)} / trip ${yen(tripSum)}${listDetailGap ? `（一覧と詳細の差 ${listDetailGap < 0 ? '-' : '+'}${yen(Math.abs(listDetailGap))} はトリップ詳細の値を採用）` : ''}`);
 
   points = trips.reduce((s, t) => s + t.screen.points, 0);
   distance = round2(trips.reduce((s, t) => s + t.screen.distanceKm, 0));
@@ -571,9 +604,9 @@ function buildStaging(root, date, opts = {}) {
   const seed = readSeed(p.storeFile);
   const existing = seed.data.dailyLogs[date] || null;
   const tm = readTripMaps(p.tripMapsFile);
-  rec = reconcile(date, existing, trips, questResult.quests, actAdjustments, tm.catalog);
+  rec = reconcile(date, existing, trips, questResult.quests, actAdjustments, tm.catalog, { at: generatedAt, structured: isStructured });
   rec.warnings.forEach(w => warnings.push(w));
-  check('既存データとの整合（既存trip・クエスト・調整を削除/上書きしない）', rec.errors.length === 0, rec.errors.join('\n'));
+  check('既存データとの整合（既存trip・クエスト・調整を削除しない・安全に照合できないものは更新しない）', rec.errors.length === 0, rec.errors.join('\n'));
 
   otherSales = existing && existing.sales ? Number(existing.sales.other) || 0 : 0;
   totalSales = tripSum + questSales + adjustmentSales + otherSales;
@@ -665,7 +698,7 @@ function buildStaging(root, date, opts = {}) {
     const staging = {
       date,
       importer: IMPORTER,
-      generatedAt: new Date().toISOString(),
+      generatedAt,
       source: {
         activityFile: path.relative(root, p.activityFile),
         activitySha256: fs.existsSync(p.activityFile) ? sha256(fs.readFileSync(p.activityFile)) : null,
@@ -674,6 +707,8 @@ function buildStaging(root, date, opts = {}) {
       deliveries: !trips ? [] : trips.map((t, i) => ({
         id: rec && rec.tripIds[i],
         status: rec && rec.tripStatus[i],
+        changes: (rec && rec.tripChanges[i]) || [],
+        listDiff: t.listDiff || null,
         activity: { time: t.activity.time, amount: t.activity.amount, tripUuid: t.activity.tripUuid, activityUuid: t.activity.activityUuid, url: t.activity.url },
         screen: t.screen,
         map: t.map || null
@@ -681,6 +716,8 @@ function buildStaging(root, date, opts = {}) {
       quests: !questResult ? [] : questResult.quests.map(q => ({ time: q.time, category: q.category, title: q.title, amount: q.amount, counted: q.counted, reason: q.reason })),
       questDuplicateCandidates: !questResult ? [] : questResult.duplicateCandidates,
       adjustments: !actAdjustments ? [] : actAdjustments.map(a => ({ time: a.time, title: a.title, amount: a.amount, activityUuid: a.activityUuid })),
+      // 既存の trip・クエスト・調整を Uber 公式の最新値へ更新した内容（変更前 → 変更後）
+      officialUpdates: (rec && rec.updates) || [],
       summary: !trips || !rec ? {} : {
         trips: trips.length,
         deliveriesCount: points,
@@ -720,13 +757,44 @@ function appDeduplicateQuests(root, quests) {
   return JSON.parse(r.stdout).map(s => `アプリ表示で重複扱いになるクエスト: ${s}`);
 }
 
+// クエスト・調整の照合（取込の各項目 → 既存の項目 or null）。Uber 一覧のクエスト・調整には保存できる識別子が無いため時刻で照合する。
+//  1) 時刻・金額が完全一致 2) 残りで、同じ時刻の未照合が既存・取込とも1件だけのもの（金額が後から変わった項目。2件以上は推測で組まない）
+function pairByTimeThenUnique(items, exItems, used) {
+  const out = items.map(q => {
+    const ex = exItems.find(x => !used.has(x) && x.time === q.time && Number(x.amount) === q.amount);
+    if (ex) used.add(ex);
+    return ex || null;
+  });
+  items.forEach((q, i) => {
+    if (out[i]) return;
+    const sameTimeIn = items.filter((y, j) => !out[j] && y.time === q.time);
+    const cands = exItems.filter(x => !used.has(x) && x.time === q.time);
+    if (sameTimeIn.length === 1 && cands.length === 1) { out[i] = cands[0]; used.add(cands[0]); }
+  });
+  return out;
+}
+
+// 公式の値の変更を履歴（officialHistory）に1件追加する。同じ内容の記録は重ねない（同じデータを何度取り込んでも結果が変わらない）
+function withHistory(item, entry) {
+  const hist = Array.isArray(item.officialHistory) ? item.officialHistory : [];
+  const sig = e => JSON.stringify({ ...e, at: undefined });
+  const last = [...hist].reverse().find(e => e.type === entry.type);
+  if (last && sig(last) === sig(entry)) return item;
+  return { ...item, officialHistory: hist.concat([entry]) };
+}
+
 // 既存日のデータと取込データを突き合わせ、反映後の1日分データを作る
-function reconcile(date, existing, trips, quests, adjustments, catalog) {
+// 既存の trip・クエスト・調整は ID を保ったまま Uber 公式の最新の値へ更新する（報酬の後からの変更・調整に追従）。
+// 変更前後の値は officialHistory に残す。手入力の項目（○×評価・メモ・店舗名・配達先など）は変えない
+function reconcile(date, existing, trips, quests, adjustments, catalog, opts = {}) {
   const errors = [];
   const warnings = [];
   const md = mmdd(date);
+  const at = opts.at || null;
   const tripIds = [];
   const tripStatus = [];
+  const tripChanges = [];
+  const updates = [];
 
   if (existing && existing.sales && Number(existing.sales.guaranteeBonus) > 0) {
     errors.push('特別保証（guaranteeBonus）を含む日は自動取込の対象外です（手動で確認してください）');
@@ -740,24 +808,90 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
     return m ? Math.max(mx, parseInt(m[1], 10)) : mx;
   }, 0);
   const newDeliveries = [];
-  trips.forEach(t => {
+  // 既存 trip との照合（金額だけに頼らない。安全に同じ trip と言えないものは照合しない）
+  //  1) trip UUID が同じ（Uber の trip の識別子。金額・時刻・距離が変わっても同じ trip）
+  //  2) 完了時刻と金額が完全一致（UUID の無い既存 trip。両方に UUID があって違うものは除く）
+  //  3) UUID の無い既存 trip で、完了時刻が同じ trip が既存・取込とも1件だけ・店舗も同じ（金額が後から変わった trip）
+  // 公式の値への自動更新は Uber Web の構造化データ（opts.structured）だけ。スクショ取込は読み違いを更新として通さないよう、従来どおり違いがあれば止める
+  const official = !!opts.structured;
+  const uuidOf = x => (x && x.tripUuid ? String(x.tripUuid).toLowerCase() : null);
+  const sameStore = (a, b) => String(a || '').replace(/\s+/g, '') === String(b || '').replace(/\s+/g, '');
+  const matchOf = trips.map(() => null);
+  const matchHow = trips.map(() => null);
+  trips.forEach((t, i) => {
+    const u = uuidOf(t.screen);
+    if (!u) return;
+    const cands = exTrips.filter(d => !used.has(d) && uuidOf(d) === u);
+    if (cands.length > 1) errors.push(`既存tripに trip UUID ${u} が複数あり対応付けできません`);
+    if (cands.length === 1) { matchOf[i] = cands[0]; matchHow[i] = 'uuid'; used.add(cands[0]); }
+  });
+  trips.forEach((t, i) => {
+    if (matchOf[i]) return;
     const s = t.screen;
-    const cands = exTrips.filter(d => !used.has(d) && d.completedAt === s.time && Number(d.fee) === s.amount);
+    const u = uuidOf(s);
+    const cands = exTrips.filter(d => !used.has(d) && d.completedAt === s.time && Number(d.fee) === s.amount && !(u && uuidOf(d) && uuidOf(d) !== u));
     if (cands.length > 1) {
       errors.push(`既存tripに ${s.time} ${yen(s.amount)} が複数あり対応付けできません`);
     }
-    const ex = cands[0];
+    if (cands.length) { matchOf[i] = cands[0]; matchHow[i] = 'time-amount'; used.add(cands[0]); }
+  });
+  trips.forEach((t, i) => {
+    if (matchOf[i] || !official) return;
+    const s = t.screen;
+    const sameTimeIn = trips.filter((x, j) => !matchOf[j] && x.screen.time === s.time);
+    const cands = exTrips.filter(d => !used.has(d) && !uuidOf(d) && d.completedAt === s.time);
+    if (sameTimeIn.length === 1 && cands.length === 1 && sameStore(cands[0].restaurant, s.restaurant)) {
+      matchOf[i] = cands[0]; matchHow[i] = 'time-store'; used.add(cands[0]);
+    }
+  });
+  trips.forEach((t, i) => {
+    const s = t.screen;
+    const ex = matchOf[i];
     if (ex) {
-      used.add(ex);
-      const diffs = [];
-      if (ex.distanceKm !== null && ex.distanceKm !== undefined && round2(Number(ex.distanceKm)) !== round2(s.distanceKm)) diffs.push(`距離 ${ex.distanceKm}→${s.distanceKm}`);
-      if (ex.durationStr && durationToSeconds(ex.durationStr) !== s.durationSeconds) diffs.push(`時間 ${ex.durationStr}→${s.durationStr}`);
-      if (ex.points !== undefined && ex.points !== null && Number(ex.points) !== s.points) diffs.push(`ポイント ${ex.points}→${s.points}`);
-      if (diffs.length) errors.push(`既存trip ${ex.id}（${s.time} ${yen(s.amount)}）と公式スクショが不一致: ${diffs.join(', ')}`);
-      if (ex.restaurant && ex.restaurant !== s.restaurant) warnings.push(`${ex.id}: 店舗名の表記差（既存「${ex.restaurant}」を維持 / スクショ「${s.restaurant}」）`);
-      if (ex.area && ex.area !== s.area) warnings.push(`${ex.id}: 配達先の表記差（既存「${ex.area}」を維持 / スクショ「${s.area}」）`);
-      // 既存値は維持し、欠けている項目だけ補完
-      const merged = { ...ex };
+      if (ex.restaurant && ex.restaurant !== s.restaurant) warnings.push(`${ex.id}: 店舗名の表記差（既存「${ex.restaurant}」を維持 / 公式「${s.restaurant}」）`);
+      if (ex.area && ex.area !== s.area) warnings.push(`${ex.id}: 配達先の表記差（既存「${ex.area}」を維持 / 公式「${s.area}」）`);
+      // Uber 公式の値（報酬・完了時刻・距離・時間・ポイント・leg）が変わっていれば最新の値へ更新する
+      let merged = { ...ex };
+      const changes = [];
+      const update = (field, to, same = (a, b) => a === b) => {
+        const from = merged[field];
+        if (from === undefined || from === null || from === '' || to === undefined || to === null) return;
+        if (same(from, to)) return;
+        changes.push({ field, from, to });
+        merged[field] = to;
+      };
+      update('fee', s.amount, (a, b) => Number(a) === b);
+      update('completedAt', s.time);
+      update('distanceKm', s.distanceKm, (a, b) => round2(Number(a)) === round2(b));
+      update('durationStr', s.durationStr, (a, b) => durationToSeconds(a) === durationToSeconds(b));
+      update('points', s.points, (a, b) => Number(a) === b);
+      if (s.tripLegCount && merged.tripLegCount && merged.tripLegCount !== s.tripLegCount) {
+        update('tripLegCount', s.tripLegCount);
+        if (s.legs) merged.legs = s.legs;
+      }
+      if (merged.baseFee !== undefined) {
+        if (s.baseFee !== null && (merged.baseFee !== s.baseFee || (merged.tip ?? null) !== (s.tip ?? null))) {
+          changes.push({ field: 'baseFee', from: merged.baseFee, to: s.baseFee }, { field: 'tip', from: merged.tip ?? null, to: s.tip ?? null });
+          merged.baseFee = s.baseFee;
+          merged.tip = s.tip;
+        } else if (s.baseFee === null && changes.some(c => c.field === 'fee')) {
+          // 新しい公式データに内訳が無い: 古い内訳は金額と合わなくなるので外す（履歴に残す）
+          changes.push({ field: 'baseFee', from: merged.baseFee, to: null }, { field: 'tip', from: merged.tip ?? null, to: null });
+          delete merged.baseFee;
+          delete merged.tip;
+        }
+      }
+      if (changes.length && !official) {
+        errors.push(`既存trip ${ex.id}（${s.time} ${yen(s.amount)}）と公式スクショが不一致: ${changes.map(c => `${c.field} ${c.from}→${c.to}`).join(', ')}`);
+        merged = { ...ex };
+        changes.length = 0;
+      }
+      if (changes.length) {
+        merged = withHistory(merged, { type: 'update', at, match: matchHow[i], changes });
+        updates.push({ kind: 'trip', id: ex.id, time: s.time, match: matchHow[i], changes });
+        warnings.push(`${ex.id}（${s.time}）: Uber 公式の最新値に更新 — ${changes.map(c => `${c.field} ${c.from ?? '—'}→${c.to ?? '—'}`).join(', ')}`);
+      }
+      if (t.listDiff) merged = withHistory(merged, { type: 'list-detail', at, ...t.listDiff });
       if (!merged.restaurant) merged.restaurant = s.restaurant;
       if (!merged.area) merged.area = s.area;
       if (merged.distanceKm === null || merged.distanceKm === undefined) merged.distanceKm = s.distanceKm;
@@ -770,7 +904,8 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
       if (s.sequence !== undefined && merged.sequence === undefined) merged.sequence = s.sequence;
       newDeliveries.push(merged);
       tripIds.push(ex.id);
-      tripStatus.push('existing');
+      tripStatus.push(changes.length ? 'updated' : 'existing');
+      tripChanges.push(changes);
     } else {
       let id;
       do { nextNo += 1; id = `del_${md}_${nextNo}`; } while (exTrips.some(d => d.id === id));
@@ -795,9 +930,10 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
       if (s.tripLegCount) d.tripLegCount = s.tripLegCount;
       if (s.legs) d.legs = s.legs;
       if (s.sequence !== undefined) d.sequence = s.sequence;
-      newDeliveries.push(d);
+      newDeliveries.push(t.listDiff ? withHistory(d, { type: 'list-detail', at, ...t.listDiff }) : d);
       tripIds.push(id);
       tripStatus.push('new');
+      tripChanges.push([]);
     }
   });
   exTrips.filter(d => !used.has(d)).forEach(d => {
@@ -822,9 +958,17 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
     const m = String(q.id || '').match(new RegExp(`^quest_${md}_(\\d+)$`));
     return m ? Math.max(mx, parseInt(m[1], 10)) : mx;
   }, 0);
-  const newQuests = counted.map(q => {
-    const ex = exQuests.find(x => !usedQ.has(x) && x.time === q.time && Number(x.amount) === q.amount);
-    if (ex) { usedQ.add(ex); return ex; }
+  // 照合: 1) 時刻・金額が完全一致 2) 金額が後から変わったクエスト: その時刻の未照合が既存・取込とも1件だけのとき同じクエストとして金額を更新
+  const qMatch = pairByTimeThenUnique(counted, exQuests, usedQ);
+  const newQuests = counted.map((q, i) => {
+    const ex = qMatch[i];
+    if (ex && Number(ex.amount) === q.amount) return ex;
+    if (ex) {
+      const changes = [{ field: 'amount', from: Number(ex.amount), to: q.amount }];
+      updates.push({ kind: 'quest', id: ex.id, time: q.time, match: 'time', changes });
+      warnings.push(`${ex.id}（${q.time}）: Uber 公式の最新値に更新 — amount ${ex.amount}→${q.amount}`);
+      return withHistory({ ...ex, amount: q.amount }, { type: 'update', at, match: 'time', changes });
+    }
     nextQ += 1;
     const notes = notCounted
       .filter(n => n.duplicateOfSeq === q.seq)
@@ -845,7 +989,7 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
   });
   const zeroNotes = notCounted.filter(n => n.amount === 0).map(n => `${n.time || ''}の「${n.title}」¥0は報酬0のため売上非加算`);
   if (zeroNotes.length && newQuests.length) {
-    const lastNew = [...newQuests].reverse().find(q => !exQuests.includes(q));
+    const lastNew = [...newQuests].reverse().find(q => !exQuests.some(x => x.id === q.id));
     if (lastNew) lastNew.note = [lastNew.note, zeroNotes.join('。')].filter(Boolean).join('。');
   }
 
@@ -856,9 +1000,16 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
     const m = String(a.id || '').match(new RegExp(`^adj_${md}_(\\d+)$`));
     return m ? Math.max(mx, parseInt(m[1], 10)) : mx;
   }, 0);
-  const newAdj = adjustments.map(a => {
-    const ex = exAdj.find(x => !usedA.has(x) && x.time === a.time && Number(x.amount) === a.amount);
-    if (ex) { usedA.add(ex); return ex; }
+  const aMatch = pairByTimeThenUnique(adjustments, exAdj, usedA);
+  const newAdj = adjustments.map((a, i) => {
+    const ex = aMatch[i];
+    if (ex && Number(ex.amount) === a.amount) return ex;
+    if (ex) {
+      const changes = [{ field: 'amount', from: Number(ex.amount), to: a.amount }];
+      updates.push({ kind: 'adjustment', id: ex.id, time: a.time, match: 'time', changes });
+      warnings.push(`${ex.id}（${a.time}）: Uber 公式の最新値に更新 — amount ${ex.amount}→${a.amount}`);
+      return withHistory({ ...ex, amount: a.amount }, { type: 'update', at, match: 'time', changes });
+    }
     nextA += 1;
     const generic = /^(調整|adjustment|misc)$/i;
     const official = (a.labels || []).filter(l => !generic.test(l)).join(' ') || a.title || '調整';
@@ -878,7 +1029,8 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
   const otherSales = existing && existing.sales ? Number(existing.sales.other) || 0 : 0;
   const points = ordered.reduce((s, d) => s + Number(d.points || 0), 0);
   const distance = round2(ordered.reduce((s, d) => s + Number(d.distanceKm || 0), 0));
-  const hasNewTrips = tripStatus.includes('new');
+  // 新しい trip がある・既存 trip の公式の値（ポイント・距離など）が変わった日は、件数・距離を取込結果から計算し直す
+  const hasNewTrips = tripStatus.includes('new') || tripStatus.includes('updated');
 
   let log;
   if (existing) {
@@ -916,7 +1068,7 @@ function reconcile(date, existing, trips, quests, adjustments, catalog) {
   }
   const base = existing ? (() => { const c = JSON.parse(JSON.stringify(existing)); delete c.officialImport; return c; })() : null;
   const changed = !base || JSON.stringify(base) !== JSON.stringify(log);
-  return { errors, warnings, log, changed, tripIds, tripStatus };
+  return { errors, warnings, log, changed, tripIds, tripStatus, tripChanges, updates };
 }
 
 // ------------------------------------------------------------

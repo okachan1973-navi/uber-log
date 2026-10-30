@@ -1339,6 +1339,11 @@ out = im.copy(); out.paste((255, 255, 255), (r - 12, t, r, b)); out.save(sys.arg
     check(r.status === 0, '構造化自動取得 全テスト（単配達・ダブル・チップ・内訳一致・重複防止・安全停止）PASS');
   }
   {
+    const r = spawnSync(process.execPath, [path.join(__dirname, 'amount-follow-tests.js')], { encoding: 'utf8' });
+    if (r.status !== 0) console.log(r.stdout, r.stderr);
+    check(r.status === 0, 'Uber 公式の値の後からの変更に自動追従（金額変更・一覧と詳細の差・調整の増減・重複なし・手入力保護・安全停止）PASS');
+  }
+  {
     const r = spawnSync(process.execPath, [path.join(__dirname, 'browser-auth-tests.js')], { encoding: 'utf8', timeout: 2 * 60 * 1000 });
     if (r.status !== 0) console.log(r.stdout, r.stderr);
     check(r.status === 0, `Uber Web 取得（ログイン判定・画面の再読込・応答なしの再試行・取得日時と最終トリップ）PASS（${((r.stdout || '').match(/ℹ pass \d+/) || ['?'])[0]}）`);

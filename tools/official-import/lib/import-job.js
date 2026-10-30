@@ -481,7 +481,9 @@ class ImportJob {
         items: (v.deliveries || []).map(d => ({
           time: d.time,
           amount: d.amount,
-          reason: `${d.restaurant || ''} / ${d.area || ''} / ${d.distanceKm || 0}km / ${d.durationStr || ''}${d.tripLegCount > 1 ? ` 【${d.tripLegCount}件配達】` : ''}${d.tip ? ` (チップ: ¥${d.tip})` : ''}`
+          reason: `${d.restaurant || ''} / ${d.area || ''} / ${d.distanceKm || 0}km / ${d.durationStr || ''}${d.tripLegCount > 1 ? ` 【${d.tripLegCount}件配達】` : ''}${d.tip ? ` (チップ: ¥${d.tip})` : ''}` +
+            ((d.changes || []).some(c => c.field === 'fee') ? ` 【Uber公式の金額変更を反映: ¥${d.changes.find(c => c.field === 'fee').from} → ¥${d.amount}】` : '') +
+            (d.listDiff ? ` 【一覧は ¥${d.listDiff.listAmount}・内訳つきの詳細 ¥${d.listDiff.detailAmount} を採用】` : '')
         }))
       }], 'PREVIEW_READY');
       this.result = { date, summary: v.summary, status: 'PASS', preview: true, deliveries: v.deliveries, warnings: v.warnings, previous, fetchedAt: this.fetchedAt || null, structuredSha256: this.structuredSha256 || null, lastTripAt };

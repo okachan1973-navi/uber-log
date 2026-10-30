@@ -20,8 +20,12 @@ function stagingView(st) {
     warnings: st.validation.warnings,
     summary: st.summary,
     questDuplicateCandidates: st.questDuplicateCandidates || [],
+    officialUpdates: st.officialUpdates || [],
     deliveries: (st.deliveries || []).map(d => ({
       id: d.id,
+      status: d.status,
+      changes: d.changes || [],
+      listDiff: d.listDiff || null,
       file: d.screen && d.screen.file,
       time: d.screen && d.screen.time,
       amount: d.screen && d.screen.amount,
