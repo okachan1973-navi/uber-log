@@ -76,10 +76,10 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 30,
+      "pickup_count": 31,
       "first_pickup": "2026-09-23 16:27",
-      "last_pickup": "2026-10-27 12:55",
-      "active_days": 18,
+      "last_pickup": "2026-10-31 12:00",
+      "active_days": 19,
       "original_names": [
         "マクドナルド イオンモール大阪ドームシティ店",
         "マクドナルドイオンモール大阪ドームシティ店 McDonald's AEON MALL OSAKA DOME CITY"
@@ -208,10 +208,10 @@
       },
       "same_building": "イオンモール大阪ドームシティ",
       "notes": null,
-      "pickup_count": 17,
+      "pickup_count": 18,
       "first_pickup": "2026-09-10 11:04",
-      "last_pickup": "2026-10-27 13:44",
-      "active_days": 15,
+      "last_pickup": "2026-10-31 16:47",
+      "active_days": 16,
       "original_names": [
         "ケンタッキーフライドチキン イオンモール大阪ドームシティ店"
       ],
@@ -701,6 +701,38 @@
       "address_short": "西区九条"
     },
     {
+      "id": "st_lw9vud",
+      "canonical_name": "バーガーキングフレスポ阿波座店",
+      "name_keys": [
+        "バーガーキングフレスポ阿波座店"
+      ],
+      "category": "fastfood",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-11 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 7,
+      "first_pickup": "2026-10-08 13:10",
+      "last_pickup": "2026-10-31 13:59",
+      "active_days": 7,
+      "original_names": [
+        "バーガーキングフレスポ阿波座店 Burger King Frespo Awaza"
+      ],
+      "brand_id": "burger_king",
+      "brand_name": "バーガーキング",
+      "brand_reading": null,
+      "branch_name": "フレスポ阿波座店",
+      "display_name": "フレスポ阿波座店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_1jtin90",
       "canonical_name": "やよい軒 九条店",
       "name_keys": [
@@ -786,38 +818,6 @@
       "site_id": null,
       "display_name": "JR弁天町駅店",
       "address_short": "港区波除"
-    },
-    {
-      "id": "st_lw9vud",
-      "canonical_name": "バーガーキングフレスポ阿波座店",
-      "name_keys": [
-        "バーガーキングフレスポ阿波座店"
-      ],
-      "category": "fastfood",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
-      "same_building": null,
-      "notes": "2026-10-11 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
-      "pickup_count": 6,
-      "first_pickup": "2026-10-08 13:10",
-      "last_pickup": "2026-10-24 10:08",
-      "active_days": 6,
-      "original_names": [
-        "バーガーキングフレスポ阿波座店 Burger King Frespo Awaza"
-      ],
-      "brand_id": "burger_king",
-      "brand_name": "バーガーキング",
-      "brand_reading": null,
-      "branch_name": "フレスポ阿波座店",
-      "display_name": "フレスポ阿波座店",
-      "address_short": null,
-      "site_id": null
     },
     {
       "id": "st_tbe250",
@@ -1125,6 +1125,38 @@
       "address_short": "西区九条"
     },
     {
+      "id": "st_126gjny",
+      "canonical_name": "とりさし梅松 九条店",
+      "name_keys": [
+        "とりさし梅松九条店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-17 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 4,
+      "first_pickup": "2026-10-17 17:23",
+      "last_pickup": "2026-10-31 20:00",
+      "active_days": 4,
+      "original_names": [
+        "とりさし梅松　九条店"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "とりさし梅松 九条店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_1njqw93",
       "canonical_name": "【チキンステーキ弁当】Master Of Chicken～大正店～",
       "name_keys": [
@@ -1297,38 +1329,6 @@
       "site_id": null,
       "display_name": "此花四貫島店",
       "address_short": "此花区四貫島"
-    },
-    {
-      "id": "st_126gjny",
-      "canonical_name": "とりさし梅松 九条店",
-      "name_keys": [
-        "とりさし梅松九条店"
-      ],
-      "category": "other",
-      "address": null,
-      "latitude": null,
-      "longitude": null,
-      "coordinate_status": "needs_review",
-      "coordinate_source": null,
-      "address_source": null,
-      "address_evidence": null,
-      "geocode_check": null,
-      "same_building": null,
-      "notes": "2026-10-17 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
-      "pickup_count": 3,
-      "first_pickup": "2026-10-17 17:23",
-      "last_pickup": "2026-10-26 18:28",
-      "active_days": 3,
-      "original_names": [
-        "とりさし梅松　九条店"
-      ],
-      "brand_id": null,
-      "brand_name": null,
-      "brand_reading": null,
-      "branch_name": null,
-      "display_name": "とりさし梅松 九条店",
-      "address_short": null,
-      "site_id": null
     },
     {
       "id": "st_nun388",
@@ -1852,6 +1852,49 @@
       "site_id": null,
       "display_name": "九条店",
       "address_short": "西区境川"
+    },
+    {
+      "id": "st_10wgyup",
+      "canonical_name": "カレーハウス CoCo壱番屋 フォレオ大阪ドームシティ店",
+      "name_keys": [
+        "カレーハウスCoCo壱番屋フォレオ大阪ドームシティ店"
+      ],
+      "category": "other",
+      "address": "大阪府大阪市西区九条南1-12-33",
+      "latitude": 34.669296,
+      "longitude": 135.473404,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条南一丁目１２番３３号",
+      "address_source": "tabelog 27058115 (九条南1-12-20表記もあり; フォレオ施設内)",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区九条南一丁目１２番３３号",
+        "osm_nearest": {
+          "id": "node/1629885052",
+          "name": "CoCo壱番屋 フォレオ大阪ドームシティ店 CoCo壱番屋",
+          "distance_m": 15
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "九条南一丁目"
+        }
+      },
+      "same_building": "フォレオ大阪ドームシティ",
+      "notes": null,
+      "pickup_count": 2,
+      "first_pickup": "2026-09-29 11:25",
+      "last_pickup": "2026-10-31 17:28",
+      "active_days": 2,
+      "original_names": [
+        "カレーハウス CoCo壱番屋 フォレオ大阪ドームシティ店 Curry House CoCo Ichibanya Foleo-Oskadomecity"
+      ],
+      "brand_id": "cocoichi",
+      "brand_name": "カレーハウス CoCo壱番屋",
+      "brand_reading": "ココイチバンヤ",
+      "branch_name": "フォレオ大阪ドームシティ店",
+      "site_id": "site_69kcep",
+      "display_name": "フォレオ大阪ドームシティ店",
+      "address_short": "西区九条南"
     },
     {
       "id": "st_1dahafm",
@@ -2380,6 +2423,49 @@
       "site_id": null,
       "display_name": "朝潮橋店",
       "address_short": "港区八幡屋"
+    },
+    {
+      "id": "st_1bevipx",
+      "canonical_name": "ローソン 靱本町三丁目",
+      "name_keys": [
+        "ローソン靱本町三丁目"
+      ],
+      "category": "convenience",
+      "address": "大阪府大阪市西区靱本町3-10-15",
+      "latitude": 34.682739,
+      "longitude": 135.486465,
+      "coordinate_status": "confirmed",
+      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区靱本町三丁目１０番１５号",
+      "address_source": "navitime 01150-378193",
+      "address_evidence": "map_directory",
+      "geocode_check": {
+        "gsi_title": "大阪府大阪市西区靱本町三丁目１０番１５号",
+        "osm_nearest": {
+          "id": "node/11434320608",
+          "name": "ローソン京町堀三丁目店 ドコモ・バイクシェア",
+          "distance_m": 345
+        },
+        "reverse": {
+          "muniCd": "27106",
+          "lv01Nm": "靱本町三丁目"
+        }
+      },
+      "same_building": null,
+      "notes": null,
+      "pickup_count": 2,
+      "first_pickup": "2026-09-23 14:53",
+      "last_pickup": "2026-10-31 18:20",
+      "active_days": 2,
+      "original_names": [
+        "ローソン 靱本町三丁目"
+      ],
+      "brand_id": "lawson",
+      "brand_name": "ローソン",
+      "brand_reading": null,
+      "branch_name": "靱本町三丁目",
+      "site_id": null,
+      "display_name": "靱本町三丁目",
+      "address_short": "西区靱本町"
     },
     {
       "id": "st_pdcnnc",
@@ -3228,6 +3314,38 @@
       "address_short": "大正区三軒家東"
     },
     {
+      "id": "st_10t008",
+      "canonical_name": "クリスピーチキンアンドトマト 九条駅前店",
+      "name_keys": [
+        "クリスピーチキンアンドトマト九条駅前店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-31 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-31 12:33",
+      "last_pickup": "2026-10-31 12:33",
+      "active_days": 1,
+      "original_names": [
+        "クリスピーチキンアンドトマト 九条駅前店 CRISPY CHICKEN n' TOMATO Kujo Ekimae"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "クリスピーチキンアンドトマト 九条駅前店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_1wx9qtz",
       "canonical_name": "KFC うめきたグリーンプレイス店",
       "name_keys": [
@@ -3308,49 +3426,6 @@
       "site_id": null,
       "display_name": "ケーラベーカリー（KAYRA BAKERY）",
       "address_short": "福島区吉野"
-    },
-    {
-      "id": "st_10wgyup",
-      "canonical_name": "カレーハウス CoCo壱番屋 フォレオ大阪ドームシティ店",
-      "name_keys": [
-        "カレーハウスCoCo壱番屋フォレオ大阪ドームシティ店"
-      ],
-      "category": "other",
-      "address": "大阪府大阪市西区九条南1-12-33",
-      "latitude": 34.669296,
-      "longitude": 135.473404,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区九条南一丁目１２番３３号",
-      "address_source": "tabelog 27058115 (九条南1-12-20表記もあり; フォレオ施設内)",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区九条南一丁目１２番３３号",
-        "osm_nearest": {
-          "id": "node/1629885052",
-          "name": "CoCo壱番屋 フォレオ大阪ドームシティ店 CoCo壱番屋",
-          "distance_m": 15
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "九条南一丁目"
-        }
-      },
-      "same_building": "フォレオ大阪ドームシティ",
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-29 11:25",
-      "last_pickup": "2026-09-29 11:25",
-      "active_days": 1,
-      "original_names": [
-        "カレーハウス CoCo壱番屋 フォレオ大阪ドームシティ店 Curry House CoCo Ichibanya Foleo-Oskadomecity"
-      ],
-      "brand_id": "cocoichi",
-      "brand_name": "カレーハウス CoCo壱番屋",
-      "brand_reading": "ココイチバンヤ",
-      "branch_name": "フォレオ大阪ドームシティ店",
-      "site_id": "site_69kcep",
-      "display_name": "フォレオ大阪ドームシティ店",
-      "address_short": "西区九条南"
     },
     {
       "id": "st_sd2zr6",
@@ -4282,6 +4357,38 @@
       "address_short": "浪速区桜川"
     },
     {
+      "id": "st_1ublyjp",
+      "canonical_name": "バターミュージアムオオサカ",
+      "name_keys": [
+        "バターミュージアムオオサカ"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-31 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-31 13:04",
+      "last_pickup": "2026-10-31 13:04",
+      "active_days": 1,
+      "original_names": [
+        "バターミュージアムオオサカ Butter museum osaka"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "バターミュージアムオオサカ",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_sdikuf",
       "canonical_name": "ピザハット 阿波座店",
       "name_keys": [
@@ -4473,6 +4580,38 @@
       "site_id": null,
       "display_name": "南堀江4丁目店",
       "address_short": "西区南堀江"
+    },
+    {
+      "id": "st_15rk4h7",
+      "canonical_name": "ほっともっと 三軒家東4丁目店",
+      "name_keys": [
+        "ほっともっと三軒家東4丁目店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-31 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-31 17:07",
+      "last_pickup": "2026-10-31 17:07",
+      "active_days": 1,
+      "original_names": [
+        "ほっともっと 三軒家東４丁目店"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "ほっともっと 三軒家東4丁目店",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_1blnug8",
@@ -5304,49 +5443,6 @@
       "address_short": "港区夕凪"
     },
     {
-      "id": "st_1bevipx",
-      "canonical_name": "ローソン 靱本町三丁目",
-      "name_keys": [
-        "ローソン靱本町三丁目"
-      ],
-      "category": "convenience",
-      "address": "大阪府大阪市西区靱本町3-10-15",
-      "latitude": 34.682739,
-      "longitude": 135.486465,
-      "coordinate_status": "confirmed",
-      "coordinate_source": "国土地理院 住所検索: 大阪府大阪市西区靱本町三丁目１０番１５号",
-      "address_source": "navitime 01150-378193",
-      "address_evidence": "map_directory",
-      "geocode_check": {
-        "gsi_title": "大阪府大阪市西区靱本町三丁目１０番１５号",
-        "osm_nearest": {
-          "id": "node/11434320608",
-          "name": "ローソン京町堀三丁目店 ドコモ・バイクシェア",
-          "distance_m": 345
-        },
-        "reverse": {
-          "muniCd": "27106",
-          "lv01Nm": "靱本町三丁目"
-        }
-      },
-      "same_building": null,
-      "notes": null,
-      "pickup_count": 1,
-      "first_pickup": "2026-09-23 14:53",
-      "last_pickup": "2026-09-23 14:53",
-      "active_days": 1,
-      "original_names": [
-        "ローソン 靱本町三丁目"
-      ],
-      "brand_id": "lawson",
-      "brand_name": "ローソン",
-      "brand_reading": null,
-      "branch_name": "靱本町三丁目",
-      "site_id": null,
-      "display_name": "靱本町三丁目",
-      "address_short": "西区靱本町"
-    },
-    {
       "id": "st_1az6wvg",
       "canonical_name": "ローソンストア100 西区京町堀店",
       "name_keys": [
@@ -5388,6 +5484,38 @@
       "site_id": null,
       "display_name": "西区京町堀店",
       "address_short": "西区京町堀"
+    },
+    {
+      "id": "st_1qq6ods",
+      "canonical_name": "一人鍋本舗 南船場店",
+      "name_keys": [
+        "一人鍋本舗南船場店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-31 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-31 19:49",
+      "last_pickup": "2026-10-31 19:49",
+      "active_days": 1,
+      "original_names": [
+        "一人鍋本舗 南船場店"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "一人鍋本舗 南船場店",
+      "address_short": null,
+      "site_id": null
     },
     {
       "id": "st_uvz466",
@@ -5611,6 +5739,38 @@
       "site_id": null
     },
     {
+      "id": "st_1t6momf",
+      "canonical_name": "上等カレー 阿波座店",
+      "name_keys": [
+        "上等カレー阿波座店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-31 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-31 13:25",
+      "last_pickup": "2026-10-31 13:25",
+      "active_days": 1,
+      "original_names": [
+        "上等カレー 阿波座店 Joutoucurry Awazaten"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "上等カレー 阿波座店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
       "id": "st_19a0bbs",
       "canonical_name": "情熱のぶた",
       "name_keys": [
@@ -5703,6 +5863,70 @@
       "brand_reading": null,
       "branch_name": null,
       "display_name": "中華料理珉龍 土佐堀店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
+      "id": "st_rfue1j",
+      "canonical_name": "豚汁と米 大正店",
+      "name_keys": [
+        "豚汁と米大正店"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-31 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-31 12:21",
+      "last_pickup": "2026-10-31 12:21",
+      "active_days": 1,
+      "original_names": [
+        "豚汁と米 大正店 Pork soup and rice"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "豚汁と米 大正店",
+      "address_short": null,
+      "site_id": null
+    },
+    {
+      "id": "st_a594wp",
+      "canonical_name": "本格咖喱バル&ナンピッツァ マンダリン",
+      "name_keys": [
+        "本格咖喱バル&ナンピッツァマンダリン"
+      ],
+      "category": "other",
+      "address": null,
+      "latitude": null,
+      "longitude": null,
+      "coordinate_status": "needs_review",
+      "coordinate_source": null,
+      "address_source": null,
+      "address_evidence": null,
+      "geocode_check": null,
+      "same_building": null,
+      "notes": "2026-10-31 自動追加: 住所・座標が未登録。既存店舗の別表記なら既存店舗の name_keys に移すこと。",
+      "pickup_count": 1,
+      "first_pickup": "2026-10-31 18:46",
+      "last_pickup": "2026-10-31 18:46",
+      "active_days": 1,
+      "original_names": [
+        "本格咖喱バル&ナンピッツァ マンダリン Mandarin"
+      ],
+      "brand_id": null,
+      "brand_name": null,
+      "brand_reading": null,
+      "branch_name": null,
+      "display_name": "本格咖喱バル&ナンピッツァ マンダリン",
       "address_short": null,
       "site_id": null
     },
@@ -5893,14 +6117,14 @@
   "summary": {
     "period": {
       "from": "2026-09-10",
-      "to": "2026-10-30",
-      "days": 39
+      "to": "2026-10-31",
+      "days": 40
     },
-    "total_trips": 517,
-    "total_pickups": 517,
-    "store_count": 146,
+    "total_trips": 530,
+    "total_pickups": 530,
+    "store_count": 153,
     "confirmed_count": 110,
-    "needs_review_count": 36,
+    "needs_review_count": 43,
     "trips_without_restaurant": 0
   },
   "category_labels": {
@@ -5967,14 +6191,14 @@
       "address": "大阪府大阪市西区九条南1-12-33",
       "store_ids": [
         "st_1522rd1",
-        "st_mfbg8i",
         "st_10wgyup",
+        "st_mfbg8i",
         "st_8wp77m"
       ],
       "brands": [
         "びっくりドンキー",
-        "麺屋ここいち フォレオ大阪ドームシティ店",
         "カレーハウス CoCo壱番屋",
+        "麺屋ここいち フォレオ大阪ドームシティ店",
         "やよい軒"
       ]
     },
